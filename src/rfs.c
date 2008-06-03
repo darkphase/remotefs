@@ -18,6 +18,7 @@
 #include "alloc.h"
 #include "passwd.h"
 #include "crypt.h"
+#include "keep_alive.h"
 
 #define CLIENT_VERSION 1
 

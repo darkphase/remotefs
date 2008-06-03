@@ -9,6 +9,8 @@
 #include <utime.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
 
 #include "config.h"
 #include "buffer.h"
@@ -16,11 +18,14 @@
 #include "sendrecv.h"
 #include "attr_cache.h"
 #include "inet.h"
+#include "keep_alive_client.h"
 
 extern int g_server_socket;
 static const unsigned cache_ttl = 60 * 5; // seconds
+static pthread_t keep_alive_thread = 0;
 
 struct fuse_operations rfs_operations = {
+	.init		= rfs_init,
 	.destroy	= rfs_destroy,
 	
     .getattr	= rfs_getattr,
@@ -46,9 +51,51 @@ struct fuse_operations rfs_operations = {
 	.chown		= rfs_chown,
 };
 
+void* keep_alive()
+{
+	unsigned slept = 0;
+	unsigned shorter_sleep = 1; // secs
+	
+	while (g_server_socket != -1)
+	{
+		sleep(1);
+		slept += shorter_sleep;
+		
+		if (g_server_socket == -1)
+		{
+			pthread_exit(NULL);
+		}
+		
+		if (slept >= keep_alive_period()
+		&& keep_alive_trylock() == 0)
+		{
+			if (rfs_keep_alive() != 0)
+			{
+				keep_alive_unlock();
+				pthread_exit(NULL);
+			}
+			
+			keep_alive_unlock();
+			slept = 0;
+		}
+	}
+	
+	return NULL;
+}
+
+void* rfs_init()
+{
+	pthread_create(&keep_alive_thread, NULL, keep_alive, NULL);
+	return NULL;
+}
+
 void rfs_destroy(void *rfs_init_result)
 {
 	rfs_disconnect(g_server_socket);
+	g_server_socket = -1;
+	
+	pthread_join(keep_alive_thread, NULL);
+	keep_alive_destroy();
 	
 	destroy_cache();
 }
@@ -958,5 +1005,22 @@ int rfs_chmod(const char *path, mode_t mode)
 
 int rfs_chown(const char *path, uid_t uid, gid_t gid)
 {
+	return 0;
+}
+
+int rfs_keep_alive()
+{
+	if (g_server_socket == -1)
+	{
+		return -EIO;
+	}
+	
+	struct command cmd = { cmd_keepalive, 0 };
+	
+	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
+	{
+		return -EIO;
+	}
+	
 	return 0;
 }

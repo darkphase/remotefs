@@ -10,10 +10,12 @@ struct utimebuf;
 
 struct fuse_operations rfs_operations;
 
+void* rfs_init();
 void rfs_destroy(void *rfs_init_result);
 
 int rfs_mount(const char *path);
 int rfs_auth(const char *user, const char *passwd);
+int rfs_keep_alive();
 
 /// This function is called to get the attributes of a specific file.
 /// @param A path to the file that we want information about. 

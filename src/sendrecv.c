@@ -142,7 +142,6 @@ unsigned rfs_receive_data(const int sock, void *data, const unsigned data_len)
 		int done = recv(sock, data + size_received, data_len - size_received, 0);
 		if (done == -1)
 		{
-			DEBUG("%s\n", "oops");
 			return -1;
 		}
 		size_received += (unsigned)done;

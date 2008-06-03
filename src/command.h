@@ -37,16 +37,16 @@ enum server_commands
 
 struct command
 {
-	uint8_t command;
+	uint32_t command;
 	uint32_t data_len;
 };
 
 struct answer
 {
-	uint8_t command;
+	uint32_t command;
 	uint32_t data_len;
-	int8_t ret;
-	int8_t ret_errno;
+	int16_t ret;
+	int16_t ret_errno;
 };
 
 const char* describe_command(const enum server_commands cmd);

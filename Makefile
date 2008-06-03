@@ -14,7 +14,8 @@ src/alloc.o \
 src/attr_cache.o \
 src/passwd.o \
 src/crypt.o \
-src/list.o
+src/list.o \
+src/keep_alive_client.o
 
 default: $(OBJS) link_client
 	ln -sf bin/$(TARGET) $(TARGET)

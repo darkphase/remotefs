@@ -12,7 +12,8 @@ src/signals_server.o \
 src/alloc.o \
 src/list.o \
 src/exports.o \
-src/passwd.o
+src/passwd.o \
+src/keep_alive.o
 
 default: $(OBJS) link_server
 	ln -sf bin/rfsd rfsd

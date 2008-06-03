@@ -17,6 +17,8 @@
 #define NULL (void *)(0)
 #endif
 
+#define KEEP_ALIVE_PERIOD 60
+
 struct rfs_config
 {
 	char *host;

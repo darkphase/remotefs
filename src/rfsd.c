@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <malloc.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
 #include "config.h"
 #include "command.h"
@@ -16,14 +18,14 @@
 #include "list.h"
 #include "exports.h"
 #include "passwd.h"
+#include "keep_alive.h"
 
-int g_client_socket = -1;
+static int g_client_socket = -1;
 unsigned char directory_mounted = 0;
 extern char *auth_user;
 extern char *auth_passwd;
 
 static struct list *open_files = NULL;
-
 static const char *pidfile_name = "/var/run/rfsd.pid";
 
 int create_pidfile(const char *pidfile)
@@ -159,6 +161,8 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		return -1;
 	}
 	
+	update_keep_alive();
+	
 	switch (cmd->command)
 	{
 	case cmd_closeconnection:
@@ -234,17 +238,20 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 {
 	g_client_socket = client_socket;
-
+	
+	update_keep_alive();
+	alarm(keep_alive_period());
+	
 	struct command current_command = { 0 };
 	
 	while (1)
-	{
+	{	
 		int done = rfs_receive_cmd(client_socket, &current_command);
 		if (done == -1 || done == 0)
 		{
 			DEBUG("connection to %s is lost\n", inet_ntoa(client_addr->sin_addr));
 			server_close_connection(client_socket);
-			
+				
 			return 1;
 		}
 		
@@ -314,6 +321,23 @@ int start_server(const unsigned port)
 	}
 	
 	return 0;
+}
+
+void stop_server()
+{
+	server_close_connection(g_client_socket);
+	exit(0);
+}
+
+void check_keep_alive()
+{
+	if (keep_alive_locked() == 0
+	&& keep_alive_expired() != 0)
+	{
+		stop_server();
+	}
+	
+	alarm(keep_alive_period());
 }
 
 int main(int argc, char **argv)
