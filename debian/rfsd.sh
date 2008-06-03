@@ -23,6 +23,7 @@ INSTALL_DIR="/usr/bin"
 ETC_DIR="/etc"
 ETC_FILES="../etc/rfs-exports"
 INIT_SCRIPT="../init.d/rfsd.debian"
+CONTROL_TEMPLATE="control.rfsd"
 
 mkdir ${NAME}-${VERSION}
 
@@ -30,6 +31,9 @@ cp ${CLIENT_FILES} ${NAME}-${VERSION}/
 cp ${MAKEFILE} ${NAME}-${VERSION}/Makefile
 
 TARGET=../${TARGET} PASSWD_TARGET=../${PASSWD_TARGET} make -C ${NAME}-${VERSION}
+SIZE_RFSD=`ls -s ${TARGET} | sed -e "s/\([0-9]*\).*/\1/"`
+SIZE_RFSPASSWD=`ls -s ${PASSWD_TARGET} | sed -e "s/\([0-9]*\).*/\1/"`
+SIZE=`echo ${SIZE_RFSD} + ${SIZE_RFSPASSWD} | bc`
 
 rm -fr ${NAME}-${VERSION}
 
@@ -38,7 +42,9 @@ mkdir -p dpkg${INSTALL_DIR}
 mkdir -p dpkg${ETC_DIR}
 mkdir -p dpkg${ETC_DIR}/init.d
 mkdir -p dpkg/DEBIAN
-cp control.rfsd dpkg/DEBIAN/control
+sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" ${CONTROL_TEMPLATE} >dpkg/DEBIAN/control.1
+sed -e "s/AND SIZE HERE/${SIZE}/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control
+rm -f dpkg/DEBIAN/control.1
 mv ${TARGET} dpkg${INSTALL_DIR}
 mv ${PASSWD_TARGET} dpkg${INSTALL_DIR}
 cp ${ETC_FILES} dpkg${ETC_DIR}

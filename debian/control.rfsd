@@ -8,7 +8,7 @@ Depends: libgcrypt11 (>=1.2.3)
 Pre-Depends: 
 Recommends: 
 Suggests: 
-Installed-Size: AND SIZE HERE. PLEASE PLEASE?
+Installed-Size: AND SIZE HERE
 Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
 Conflicts: 
 Replaces: 

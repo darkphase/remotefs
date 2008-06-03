@@ -34,7 +34,7 @@ mkdir -p dpkg${INSTALL_DIR}
 mkdir -p dpkg/DEBIAN
 sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" ${CONTROL_TEMPLATE} >dpkg/DEBIAN/control.1
 sed -e "s/AND SIZE HERE/${SIZE}/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control
-rm dpkg/DEBIAN/control.1
+rm -f dpkg/DEBIAN/control.1
 mv ${TARGET} dpkg${INSTALL_DIR}
 
 dpkg -b dpkg ${NAME}-${VERSION}-${ARCH}.deb
