@@ -1,0 +1,28 @@
+CC = gcc
+CFLAGS = -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse` -O2
+LDFLAGS = `pkg-config --libs fuse` -lcrypt -s
+
+OBJS = rfs.o \
+operations.o \
+buffer.o \
+command.o \
+sendrecv.o \
+signals.o \
+signals_client.o \
+alloc.o \
+attr_cache.o \
+list.o \
+passwd.o \
+crypt.o
+
+default: $(OBJS) link_client
+
+link_client:
+	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
+	
+%.o : %.c
+	$(CC) -c $(CFLAGS) -Wall $< -o $@
+
+clean:
+	rm -f *.o
+	rm -f $(TARGET)

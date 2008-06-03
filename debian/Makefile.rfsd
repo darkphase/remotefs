@@ -1,0 +1,42 @@
+CC = gcc
+LDFLAGS = -s
+CFLAGS = -O2
+
+PASSWD_LDFLAGS = -s -lcrypt
+
+OBJS = rfsd.o \
+sendrecv.o \
+signals.o \
+command.o \
+buffer.o \
+server_handlers.o \
+signals_server.o \
+alloc.o \
+list.o \
+exports.o \
+passwd.o
+
+PASSWD_OBJS = rfspasswd.o \
+passwd.o \
+crypt.o \
+list.o \
+buffer.o \
+alloc.o
+
+default: $(OBJS)  $(PASSWD_OBJS) link_server link_passwd
+	ln -sf bin/rfsd rfsd
+
+link_server:
+	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
+
+link_passwd:
+	$(CC) $(PASSWD_OBJS) $(PASSWD_LDFLAGS) -o $(PASSWD_TARGET)
+
+%.o : %.c
+	$(CC) -c $(CFLAGS) -Wall $< -o $@
+
+clean:
+	rm -f bin/$(TARGET) $(TARGET)
+	rm -f bin/$(PASSWD_TARGET) $(PASSWD_TARGET)
+	rm -f *.o
+	rm -f $(TARGET) $(PASSWD_TARGET)

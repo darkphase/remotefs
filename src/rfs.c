@@ -1,0 +1,253 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+
+#include <fuse.h>
+#include <fuse_opt.h>
+
+#include "config.h"
+#include "operations.h"
+#include "sendrecv.h"
+#include "command.h"
+#include "buffer.h"
+#include "alloc.h"
+#include "passwd.h"
+#include "crypt.h"
+
+#define CLIENT_VERSION 1
+
+struct rfs_config rfs_config = { 0 };
+
+#ifdef RFS_DEBUG
+int test_connection()
+{
+	struct stat ret;
+
+	int i = 0; for (i = 0; i < 10; ++i)
+	{
+		int done = rfs_getattr("/", &ret);
+		DEBUG("getattr returned: %d\n", done);
+	}
+	
+	return 0;}
+#endif // RFS_DEBUG
+
+#define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
+
+struct fuse_opt rfs_opts[] = 
+{
+	FUSE_OPT_KEY("-h", KEY_HELP),
+	FUSE_OPT_KEY("--help", KEY_HELP),
+	RFS_OPT("username=%s", auth_user, 0),
+	RFS_OPT("password=%s", auth_passwd_file, 0),
+	
+	FUSE_OPT_END
+};
+
+void usage(const char *program)
+{
+	printf(
+"usage: %s host:path mountpoint [options]\n"
+"\n"
+"general options:\n"
+"    -o opt,[opt...]         mount options\n"
+"    -h   --help             print help\n"
+"\n"
+"RFS options:\n"
+"    -o username=name        auth username\n"
+"    -o password=filename    filename with password for auth (WITHOUT new line)"
+"\n"
+"\n", 
+	program);
+}
+
+int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
+{
+	switch (key)
+	{	
+	case FUSE_OPT_KEY_NONOPT:
+		if (rfs_config.host == NULL 
+		&& rfs_config.path == NULL)
+		{
+			const char *delimiter = strchr(arg, ':');
+			if (delimiter != NULL)
+			{
+				rfs_config.host = get_buffer(delimiter - arg + 1);
+				memset(rfs_config.host, 0, delimiter - arg + 1);
+				memcpy(rfs_config.host, arg, delimiter - arg);
+				
+				rfs_config.path = get_buffer(strlen(arg) - (delimiter - arg));
+				memset(rfs_config.path, 0, strlen(arg) - (delimiter - arg));
+				memcpy(rfs_config.path, delimiter + 1, strlen(arg) - (delimiter - arg) - 1);
+				
+				return 0;
+			}
+		}
+		return 1;
+	
+	case KEY_HELP:
+		usage(outargs->argv[0]);
+		fuse_opt_add_arg(outargs, "-ho");
+		fuse_main(outargs->argc, outargs->argv, NULL);
+		exit(0);
+		return 0;
+	}
+	
+	return 1;
+}
+
+int read_password()
+{
+	if (rfs_config.auth_passwd_file == NULL)
+	{
+		return -EINVAL;
+	}
+
+	errno = 0;
+	FILE *fp = fopen(rfs_config.auth_passwd_file, "rt");
+	if (fp == NULL)
+	{
+		return -errno;
+	}
+	
+	errno = 0;
+	if (fseek(fp, 0, SEEK_END) != 0)
+	{
+		int saved_errno = errno;
+		fclose(fp);
+		return -saved_errno;
+	}
+	
+	errno = 0;
+	long size = ftell(fp);
+	
+	if (size == -1)
+	{
+		int saved_errno = errno;
+		fclose(fp);
+		return -saved_errno;
+	}
+	
+	errno = 0;
+	if (fseek(fp, 0, SEEK_SET) != 0)
+	{
+		int saved_errno = errno;
+		fclose(fp);
+		return -saved_errno;
+	}
+	
+	char *buffer = get_buffer(size + 1);
+	memset(buffer, 0, size + 1);
+	
+	int done = fread(buffer, 1, size, fp);
+	
+	if (done != size)
+	{
+		fclose(fp);
+		return -EIO;
+	}
+	
+	fclose(fp);
+	
+	while (done > 0 &&
+	buffer[done - 1] == '\n')
+	{
+		--done;
+		buffer[done] = 0;
+	}
+	
+	rfs_config.auth_passwd = passwd_hash(buffer);
+	DEBUG("hashed passwd: %s\n", rfs_config.auth_passwd);
+	free_buffer(buffer);
+	
+	return 0;
+}
+
+int main(int argc, char **argv)
+{
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+	
+	if (fuse_opt_parse(&args, &rfs_config, rfs_opts, rfs_opt_proc) == -1)
+	{
+		exit(1);
+	}
+	
+	fuse_opt_add_arg(&args, "-s");
+	++argc;
+	
+//	DEBUG("connection info: %s:%s\n", rfs_config.host, rfs_config.path);
+	
+	if (rfs_config.host == NULL)
+	{
+		ERROR("%s\n", "Remote host is not specified");
+		exit(1);
+	}
+	
+	if (rfs_config.path == NULL)
+	{
+		ERROR("%s\n", "Remote path is not specified");
+		exit(1);
+	}
+	
+	if (rfs_config.auth_user != NULL
+	&& rfs_config.auth_passwd_file != NULL)
+	{
+		int read_ret = read_password();
+		if (read_ret != 0)
+		{
+			ERROR("Error reading password file: %s\n", strerror(-read_ret));
+			return 1;
+		}
+	}
+	
+	DEBUG("username: %s, password: %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
+	
+	int sock = rfs_connect(rfs_config.host, SERVER_PORT);
+	if (sock == -1)
+	{
+		ERROR("%s\n", "Error connecting to remote host");
+		return 1;
+	}
+	
+	if (rfs_config.auth_user != NULL 
+	&& rfs_config.auth_passwd != NULL)
+	{
+		int auth_ret = rfs_auth(rfs_config.auth_user, rfs_config.auth_passwd);
+		if (auth_ret != 0)
+		{
+			ERROR("Authentication error: %s", strerror(-auth_ret));
+			rfs_disconnect(sock);
+			return 1;
+		}
+	}
+
+	int mount_ret = rfs_mount(rfs_config.path);
+	if (mount_ret != 0)
+	{
+		ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
+		rfs_disconnect(sock);
+		return 1;
+	}
+
+	int ret = fuse_main(args.argc, args.argv, &rfs_operations);
+//	int ret = test_connection();
+	
+	fuse_opt_free_args(&args);
+
+	free_buffer(rfs_config.host);
+	free_buffer(rfs_config.path);
+	
+	if (rfs_config.auth_passwd != NULL)
+	{
+		free(rfs_config.auth_passwd);
+	}
+	
+	mp_force_free();
+	
+	return ret;
+}

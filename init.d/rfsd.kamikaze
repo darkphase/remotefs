@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+
+START=50
+
+start()
+{
+	rfsd
+}
+
+stop()
+{
+	killall rfsd
+}

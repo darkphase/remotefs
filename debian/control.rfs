@@ -1,0 +1,16 @@
+Package: rfs
+Version: 0.6-2
+Section: utilities
+Priority: optional
+Architecture: INSERT ARCH HERE, PLEASE
+Essential: no
+Depends: libfuse2 (>=2.5), libgcrypt11 (>=1.2.3)
+Pre-Depends: 
+Recommends: 
+Suggests: 
+Installed-Size: AND SIZE HERE
+Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
+Conflicts: 
+Replaces: 
+Provides: 
+Description: remote filesystem client

@@ -1,0 +1,16 @@
+Package: rfsd
+Version: 0.6-2
+Section: utilities
+Priority: optional
+Architecture: INSERT ARCH HERE, PLEASE
+Essential: no
+Depends: libgcrypt11 (>=1.2.3)
+Pre-Depends: 
+Recommends: 
+Suggests: 
+Installed-Size: AND SIZE HERE. PLEASE PLEASE?
+Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
+Conflicts: 
+Replaces: 
+Provides: 
+Description: remote filesystem server

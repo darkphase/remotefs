@@ -1,0 +1,42 @@
+RFSD_TARGET = rfsd
+RFSPASSWD_TARGET = rfspasswd
+
+RFSD_OBJS = rfsd.o \
+sendrecv.o \
+signals.o \
+command.o \
+buffer.o \
+server_handlers.o \
+signals_server.o \
+alloc.o \
+list.o \
+exports.o \
+passwd.o
+
+RFSPASSWD_OBJS = rfspasswd.o \
+buffer.o \
+alloc.o \
+list.o \
+passwd.o \
+crypt.o
+
+all: $(RFSD_OBJS) $(RFSPASSWD_OBJS) link_server link_passwd
+
+link_server:
+	$(CC) $(RFSD_OBJS) $(RFSD_LDFLAGS) -o $(RFSD_TARGET)
+
+link_passwd:
+	$(CC) $(RFSPASSWD_OBJS) $(RFSPASSWD_LDFLAGS) -o $(RFSPASSWD_TARGET)
+
+%.o : %.c
+	$(CC) -c $(CFLAGS) -Wall $< -o $@
+
+clean:
+	rm -f *.o
+	rm -f $(RFSD_TARGET)
+	rm -f $(RFSPASSWD_TARGET)
+
+install:
+	mkdir -p ${INSTALL_DIR}
+	cp ${RFSD_TARGET} ${INSTALL_DIR}
+	cp ${RFSPASSWD_TARGET} ${INSTALL_DIR}
