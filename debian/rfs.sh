@@ -1,5 +1,5 @@
-VERSION="0.6-2"
-ARCH=`uname -m`
+VERSION="0.7-1"
+ARCH="i386"
 NAME="rfs"
 CLIENT_FILES="../src/rfs.c \
 ../src/operations.c ../src/operations.h \

@@ -1,4 +1,4 @@
-VERSION="0.6"
+VERSION="0.7"
 SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/rfspasswd.c \
 	../src/buffer.h ../src/buffer.c \
