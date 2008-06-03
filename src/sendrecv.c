@@ -64,7 +64,7 @@ void rfs_disconnect(int sock)
 unsigned rfs_send_cmd(const int sock, const struct command *cmd)
 {
 	struct command send_command = { 0 };
-	send_command.command = cmd->command;
+	send_command.command = htonl(cmd->command);
 	send_command.data_len = htonl(cmd->data_len);
 	
 	DEBUG("%s", "sending "); dump_command(cmd);
@@ -74,10 +74,10 @@ unsigned rfs_send_cmd(const int sock, const struct command *cmd)
 unsigned rfs_send_answer(const int sock, const struct answer *ans)
 {
 	struct answer send_answer = { 0 };
-	send_answer.command = ans->command;
+	send_answer.command = htonl(ans->command);
 	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = ans->ret;
-	send_answer.ret_errno = ans->ret_errno;
+	send_answer.ret = htons(ans->ret);
+	send_answer.ret_errno = htons(ans->ret_errno);
 	
 	DEBUG("%s", "sending "); dump_answer(ans);
 	return rfs_send_data(sock, &send_answer, sizeof(send_answer));
@@ -113,10 +113,10 @@ unsigned rfs_receive_answer(const int sock, struct answer *ans)
 	unsigned ret = rfs_receive_data(sock, &recv_answer, sizeof(recv_answer));
 	if (ret == sizeof(*ans))
 	{
-		ans->command = recv_answer.command;
+		ans->command = ntohl(recv_answer.command);
 		ans->data_len = ntohl(recv_answer.data_len);
-		ans->ret = recv_answer.ret;
-		ans->ret_errno = recv_answer.ret_errno;
+		ans->ret = ntohs(recv_answer.ret);
+		ans->ret_errno = ntohs(recv_answer.ret_errno);
 	}
 	return ret;
 }
@@ -128,7 +128,7 @@ unsigned rfs_receive_cmd(const int sock, struct command *cmd)
 	unsigned ret = rfs_receive_data(sock, &recv_command, sizeof(recv_command));
 	if (ret == sizeof(*cmd))
 	{
-		cmd->command = recv_command.command;
+		cmd->command = ntohl(recv_command.command);
 		cmd->data_len = ntohl(recv_command.data_len);
 	}
 	return ret;
