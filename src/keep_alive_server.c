@@ -1,4 +1,4 @@
-#include "keep_alive.h"
+#include "keep_alive_server.h"
 
 #include <time.h>
 
@@ -12,9 +12,9 @@ unsigned keep_alive_period()
 	return KEEP_ALIVE_PERIOD * 2;
 }
 
-unsigned int keep_alive_expired()
+int keep_alive_expired()
 {
-	return ((time(NULL) - last_keep_alive) > KEEP_ALIVE_PERIOD * 2) ? 1 : 0;
+	return ((time(NULL) - last_keep_alive) >= KEEP_ALIVE_PERIOD * 2) ? 0 : -1;
 }
 
 void update_keep_alive()
@@ -22,12 +22,12 @@ void update_keep_alive()
 	time(&last_keep_alive);
 }
 
-unsigned int keep_alive_locked()
+int keep_alive_locked()
 {
-	return lock;
+	return lock == 1 ? 0 : -1;
 }
 
-int get_keep_alive_lock()
+int keep_alive_lock()
 {
 	if (lock == 0)
 	{
@@ -38,7 +38,8 @@ int get_keep_alive_lock()
 	return -1;
 }
 
-void release_keep_alive_lock()
+int keep_alive_unlock()
 {
 	lock = 0;
+	return 0;
 }

@@ -13,7 +13,8 @@ alloc.o \
 attr_cache.o \
 list.o \
 passwd.o \
-crypt.o
+crypt.o \
+keep_alive_client.o
 
 default: $(OBJS) link_client
 

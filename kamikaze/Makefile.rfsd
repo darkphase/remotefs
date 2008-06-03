@@ -11,7 +11,8 @@ signals_server.o \
 alloc.o \
 list.o \
 exports.o \
-passwd.o
+passwd.o \
+keep_alive_server.o
 
 RFSPASSWD_OBJS = rfspasswd.o \
 buffer.o \

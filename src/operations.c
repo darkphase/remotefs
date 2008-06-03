@@ -85,14 +85,18 @@ void* keep_alive()
 
 void* rfs_init()
 {
+	keep_alive_init();
 	pthread_create(&keep_alive_thread, NULL, keep_alive, NULL);
+	
 	return NULL;
 }
 
 void rfs_destroy(void *rfs_init_result)
 {
+	keep_alive_lock();
 	rfs_disconnect(g_server_socket);
 	g_server_socket = -1;
+	keep_alive_unlock();
 	
 	pthread_join(keep_alive_thread, NULL);
 	keep_alive_destroy();
@@ -100,7 +104,7 @@ void rfs_destroy(void *rfs_init_result)
 	destroy_cache();
 }
 
-int rfs_auth(const char *user, const char *passwd)
+int _rfs_auth(const char *user, const char *passwd)
 {
 	if (g_server_socket == -1)
 	{
@@ -136,7 +140,7 @@ int rfs_auth(const char *user, const char *passwd)
 	return 0;
 }
 
-int rfs_mount(const char *path)
+int _rfs_mount(const char *path)
 {
 	if (g_server_socket == -1)
 	{
@@ -171,7 +175,7 @@ int rfs_mount(const char *path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_getattr(const char *path, struct stat *stbuf)
+int _rfs_getattr(const char *path, struct stat *stbuf)
 {
 	if (g_server_socket == -1)
 	{
@@ -267,7 +271,7 @@ int rfs_getattr(const char *path, struct stat *stbuf)
 	
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;}
 
-int rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -346,7 +350,7 @@ int rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t
 	
 	return 0;}
 
-int rfs_open(const char *path, struct fuse_file_info *fi)
+int _rfs_open(const char *path, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -427,7 +431,7 @@ int rfs_open(const char *path, struct fuse_file_info *fi)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_release(const char *path, struct fuse_file_info *fi)
+int _rfs_release(const char *path, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -463,7 +467,7 @@ int rfs_release(const char *path, struct fuse_file_info *fi)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_truncate(const char *path, off_t offset)
+int _rfs_truncate(const char *path, off_t offset)
 {
 	if (g_server_socket == -1)
 	{
@@ -511,7 +515,7 @@ int rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -574,7 +578,7 @@ int rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse
 	return ans.data_len;
 }
 
-int rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -625,7 +629,7 @@ int rfs_write(const char *path, const char *buf, size_t size, off_t offset, stru
 	return ans.ret == -1 ? -ans.ret_errno : (int)ans.ret;
 }
 
-int rfs_mkdir(const char *path, mode_t mode)
+int _rfs_mkdir(const char *path, mode_t mode)
 {
 	if (g_server_socket == -1)
 	{
@@ -674,7 +678,7 @@ int rfs_mkdir(const char *path, mode_t mode)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_unlink(const char *path)
+int _rfs_unlink(const char *path)
 {
 	if (g_server_socket == -1)
 	{
@@ -714,7 +718,7 @@ int rfs_unlink(const char *path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_rmdir(const char *path)
+int _rfs_rmdir(const char *path)
 {
 	if (g_server_socket == -1)
 	{
@@ -754,7 +758,7 @@ int rfs_rmdir(const char *path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_rename(const char *path, const char *new_path)
+int _rfs_rename(const char *path, const char *new_path)
 {
 	if (g_server_socket == -1)
 	{
@@ -809,7 +813,7 @@ int rfs_rename(const char *path, const char *new_path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_utime(const char *path, struct utimbuf *buf)
+int _rfs_utime(const char *path, struct utimbuf *buf)
 {
 	if (g_server_socket == -1)
 	{
@@ -867,7 +871,7 @@ int rfs_utime(const char *path, struct utimbuf *buf)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_statfs(const char *path, struct statvfs *buf)
+int _rfs_statfs(const char *path, struct statvfs *buf)
 {
 	if (g_server_socket == -1)
 	{
@@ -950,7 +954,7 @@ int rfs_statfs(const char *path, struct statvfs *buf)
 	return ans.ret;
 }
 
-int rfs_mknod(const char *path, mode_t mode, dev_t dev)
+int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	if (g_server_socket == -1)
 	{
@@ -1024,3 +1028,5 @@ int rfs_keep_alive()
 	
 	return 0;
 }
+
+#include "operations_sync.c"

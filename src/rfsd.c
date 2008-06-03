@@ -18,7 +18,7 @@
 #include "list.h"
 #include "exports.h"
 #include "passwd.h"
-#include "keep_alive.h"
+#include "keep_alive_server.h"
 
 static int g_client_socket = -1;
 unsigned char directory_mounted = 0;
@@ -331,8 +331,8 @@ void stop_server()
 
 void check_keep_alive()
 {
-	if (keep_alive_locked() == 0
-	&& keep_alive_expired() != 0)
+	if (keep_alive_locked() != 0
+	&& keep_alive_expired() == 0)
 	{
 		stop_server();
 	}

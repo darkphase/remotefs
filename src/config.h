@@ -17,7 +17,8 @@
 #define NULL (void *)(0)
 #endif
 
-#define KEEP_ALIVE_PERIOD 60
+//#define KEEP_ALIVE_PERIOD 60 * 5 // secs
+#define KEEP_ALIVE_PERIOD 1 // secs
 
 struct rfs_config
 {

@@ -3,6 +3,7 @@ ARCH=`uname -m`
 NAME="rfs"
 CLIENT_FILES="../src/rfs.c \
 ../src/operations.c ../src/operations.h \
+../src/operations_sync.c \
 ../src/buffer.c ../src/buffer.h \
 ../src/command.c ../src/command.h \
 ../src/sendrecv.c ../src/sendrecv.h \
@@ -13,6 +14,7 @@ CLIENT_FILES="../src/rfs.c \
 ../src/list.c ../src/list.h \
 ../src/passwd.c ../src/passwd.h \
 ../src/crypt.c ../src/crypt.h \
+../src/keep_alive_client.c ../src/keep_alive_client.h \
 ../src/config.h \
 ../src/inet.h"
 MAKEFILE="Makefile.rfs"

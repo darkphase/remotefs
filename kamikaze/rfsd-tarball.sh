@@ -5,6 +5,7 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/command.h ../src/command.c \
 	../src/sendrecv.h ../src/sendrecv.c \
 	../src/server_handlers.h ../src/server_handlers.c \
+	../src/server_handlers_sync.c \
 	../src/signals.h ../src/signals.c \
 	../src/signals_server.h ../src/signals_server.c \
 	../src/alloc.h ../src/alloc.c \
@@ -12,6 +13,7 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/passwd.h ../src/passwd.c \
 	../src/exports.h ../src/exports.c \
 	../src/crypt.h ../src/crypt.c \
+	../src/keep_alive_server.h ../src/keep_alive_server.c \
 	../src/config.h \
 	../src/inet.h"
 MAKEFILE="Makefile.rfsd"

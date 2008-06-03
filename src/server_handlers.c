@@ -24,6 +24,7 @@
 #include "list.h"
 #include "passwd.h"
 #include "inet.h"
+#include "keep_alive_server.h"
 
 extern unsigned char directory_mounted;
 char *auth_user = NULL;
@@ -70,7 +71,7 @@ int check_permissions(const struct rfs_export *export_info, const char *client_i
 	return -1;
 }
 
-int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -100,7 +101,7 @@ int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, 
 	return 0;
 }
 
-int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	DEBUG("connection to %s is closed\n", inet_ntoa(client_addr->sin_addr));
 	
@@ -108,7 +109,7 @@ int handle_closeconnection(const int client_socket, const struct sockaddr_in *cl
 	exit(0);
 }
 
-int handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -163,7 +164,7 @@ int handle_changepath(const int client_socket, const struct sockaddr_in *client_
 	return 0;
 }
 
-int handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	
@@ -236,7 +237,7 @@ int handle_getattr(const int client_socket, const struct sockaddr_in *client_add
 	return 0;
 }
 
-int handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	
@@ -321,7 +322,7 @@ int handle_readdir(const int client_socket, const struct sockaddr_in *client_add
 	return 0;
 }
 
-int handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -388,7 +389,7 @@ int handle_open(const int client_socket, const struct sockaddr_in *client_addr, 
 	return 0;
 }
 
-int handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -423,7 +424,7 @@ int handle_truncate(const int client_socket, const struct sockaddr_in *client_ad
 	return result == 0 ? 0 : 1;
 }
 
-int handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -539,7 +540,7 @@ int handle_read(const int client_socket, const struct sockaddr_in *client_addr, 
 	return 0;
 }
 
-int handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -610,7 +611,7 @@ int handle_write(const int client_socket, const struct sockaddr_in *client_addr,
 	return result == -1 ? 1 : 0;
 }
 
-int handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -646,7 +647,7 @@ int handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr,
 	return result != 0 ? 1 : 0;
 }
 
-int handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -679,7 +680,7 @@ int handle_unlink(const int client_socket, const struct sockaddr_in *client_addr
 	return result != 0 ? 1 : 0;
 }
 
-int handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -712,7 +713,7 @@ int handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr,
 	return result != 0 ? 1 : 0;
 }
 
-int handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -749,7 +750,7 @@ int handle_rename(const int client_socket, const struct sockaddr_in *client_addr
 	return result != 0 ? 1 : 0;
 }
 
-int handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -801,7 +802,7 @@ int handle_utime(const int client_socket, const struct sockaddr_in *client_addr,
 	return result != 0 ? 1 : 0;
 }
 
-int handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -892,7 +893,7 @@ int handle_statfs(const int client_socket, const struct sockaddr_in *client_addr
 	return 0;
 }
 
-int handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -945,7 +946,7 @@ int handle_release(const int client_socket, const struct sockaddr_in *client_add
 	return 0;
 }
 
-int handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -982,3 +983,5 @@ int handle_keepalive(const int client_socket, const struct sockaddr_in *client_a
 {
 	return 0;
 }
+
+#include "server_handlers_sync.c"
