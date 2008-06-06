@@ -7,7 +7,7 @@
 
 char *passwd_hash(const char *password)
 {
-	const char salt[] = "$1$хуй";
+	const char salt[] = "$1$";
 	char *passwd = crypt(password, salt);
 	
 	if (passwd == NULL)
