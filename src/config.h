@@ -29,6 +29,7 @@ struct rfs_config
 	char *auth_passwd;
 	unsigned use_write_cache;
 	unsigned use_read_cache;
+	unsigned use_read_write_cache;
 };
 
 enum

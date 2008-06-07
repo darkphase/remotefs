@@ -45,6 +45,9 @@ struct fuse_opt rfs_opts[] =
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
+	RFS_OPT("rd_cache=%u", use_read_cache, 0),
+	RFS_OPT("wr_cache=%u", use_write_cache, 0),
+	RFS_OPT("rdwr_cache=%u", use_read_write_cache, 0),
 	
 	FUSE_OPT_END
 };
@@ -59,11 +62,21 @@ void usage(const char *program)
 "    -h   --help             print help\n"
 "\n"
 "RFS options:\n"
+"    -c                      enable read/write cache (improve r/w performance)"
 "    -o username=name        auth username\n"
-"    -o password=filename    filename with password for auth (WITHOUT new line)"
+"    -o password=filename    filename with password for auth"
 "\n"
 "\n", 
 	program);
+}
+
+void rfs_fix_options()
+{
+	if (rfs_config.use_read_write_cache)
+	{
+		rfs_config.use_read_cache = 1;
+		rfs_config.use_write_cache = 1;
+	}
 }
 
 int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
@@ -170,9 +183,6 @@ int read_password()
 
 int main(int argc, char **argv)
 {
-	rfs_config.use_write_cache = 1;
-	rfs_config.use_read_cache = 1;
-
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	if (fuse_opt_parse(&args, &rfs_config, rfs_opts, rfs_opt_proc) == -1)
@@ -183,7 +193,7 @@ int main(int argc, char **argv)
 	fuse_opt_add_arg(&args, "-s");
 	++argc;
 	
-//	DEBUG("connection info: %s:%s\n", rfs_config.host, rfs_config.path);
+	rfs_fix_options();
 	
 	if (rfs_config.host == NULL)
 	{
