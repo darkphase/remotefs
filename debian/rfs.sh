@@ -1,4 +1,4 @@
-VERSION="0.8-1"
+VERSION="0.8-4"
 ARCH="i386"
 NAME="rfs"
 CLIENT_FILES="../src/rfs.c \
@@ -16,6 +16,7 @@ CLIENT_FILES="../src/rfs.c \
 ../src/crypt.c ../src/crypt.h \
 ../src/keep_alive_client.c ../src/keep_alive_client.h \
 ../src/write_cache.c ../src/write_cache.h \
+../src/read_cache.c ../src/read_cache.h \
 ../src/config.h \
 ../src/inet.h"
 MAKEFILE="Makefile.rfs"
@@ -40,6 +41,6 @@ sed -e "s/AND SIZE HERE/${SIZE}/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control
 rm -f dpkg/DEBIAN/control.1
 mv ${TARGET} dpkg${INSTALL_DIR}
 
-dpkg -b dpkg ${NAME}-${VERSION}-${ARCH}.deb
+dpkg -b dpkg ${NAME}_${VERSION}_${ARCH}.deb
 
 rm -fr dpkg

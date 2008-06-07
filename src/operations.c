@@ -541,7 +541,8 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	}
 	
 	size_t cached_read_size = read_cache_size(fi->fh);
-	if (cached_read_size > 0)
+	if (cached_read_size > 0 
+	&& size_to_read < read_cache_max_size())
 	{
 		if (cached_read_size * 2 <= read_cache_max_size())
 		{
@@ -570,8 +571,11 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	
 	rfs_config.use_read_cache = old_val;
 	
-	memcpy(buf, buffer, size);
-	put_to_read_cache(fi->fh, buffer, size_to_read, offset);
+	memcpy(buf, buffer, ret < size ? ret : size);
+	if (ret > size)
+	{
+		put_to_read_cache(fi->fh, buffer, size_to_read, offset);
+	}
 	
 	return ret == size_to_read ? size : ret;
 }

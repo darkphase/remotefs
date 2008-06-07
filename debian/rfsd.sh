@@ -1,4 +1,4 @@
-VERSION="0.8-1"
+VERSION="0.8-3"
 ARCH=`uname -m`
 NAME="rfsd"
 CLIENT_FILES="../src/rfsd.c ../src/rfsd.h \
@@ -52,6 +52,6 @@ mv ${PASSWD_TARGET} dpkg${INSTALL_DIR}
 cp ${ETC_FILES} dpkg${ETC_DIR}
 cp ${INIT_SCRIPT} dpkg${ETC_DIR}/init.d/${NAME}
 
-dpkg -b dpkg ${NAME}-${VERSION}-${ARCH}.deb
+dpkg -b dpkg ${NAME}_${VERSION}_${ARCH}.deb
 
 rm -fr dpkg

@@ -15,7 +15,8 @@ list.o \
 passwd.o \
 crypt.o \
 keep_alive_client.o \
-write_cache.o
+write_cache.o \
+read_cache.o
 
 default: $(OBJS) link_client
 
