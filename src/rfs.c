@@ -171,7 +171,7 @@ int read_password()
 int main(int argc, char **argv)
 {
 	rfs_config.use_write_cache = 1;
-	rfs_config.use_read_cache = 0;
+	rfs_config.use_read_cache = 1;
 
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	

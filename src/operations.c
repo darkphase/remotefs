@@ -21,6 +21,7 @@
 #include "keep_alive_client.h"
 #include "write_cache.h"
 #include "list.h"
+#include "read_cache.h"
 
 extern int g_server_socket;
 static const unsigned cache_ttl = 60 * 5; // seconds
@@ -55,8 +56,9 @@ struct fuse_operations rfs_operations = {
 	.chown		= rfs_chown,
 };
 
-int _rfs_flush(const char *path, struct fuse_file_info *fi);
+int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
+int _rfs_flush(const char *path, struct fuse_file_info *fi);
 
 void* keep_alive()
 {
@@ -522,11 +524,68 @@ int _rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
+int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+{
+	size_t size_to_read = size;
+
+	if (read_cache_have_data(fi->fh, offset) >= size)
+	{
+		const char *cached_data = read_cache_get_data(fi->fh, size, offset);
+		if (cached_data == NULL)
+		{
+			return -EIO;
+		}
+		
+		memcpy(buf, cached_data, size);
+		return size;
+	}
+	
+	size_t cached_read_size = read_cache_size(fi->fh);
+	if (cached_read_size > 0)
+	{
+		if (cached_read_size * 2 <= read_cache_max_size())
+		{
+			size_to_read = cached_read_size * 2;
+		}
+		else
+		{
+			size_to_read = read_cache_max_size();
+		}
+	}
+		
+	destroy_read_cache();
+	
+	unsigned old_val = rfs_config.use_read_cache;
+	rfs_config.use_read_cache = 0;
+	
+	char *buffer = get_buffer(size_to_read);
+	
+	int ret = _rfs_read(path, buffer, size_to_read, offset, fi);
+	if (ret < 0)
+	{
+		rfs_config.use_read_cache = old_val;
+		free_buffer(buffer);
+		return ret;
+	}
+	
+	rfs_config.use_read_cache = old_val;
+	
+	memcpy(buf, buffer, size);
+	put_to_read_cache(fi->fh, buffer, size_to_read, offset);
+	
+	return ret == size_to_read ? size : ret;
+}
+
 int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
 		return -EIO;
+	}
+	
+	if (rfs_config.use_read_cache)
+	{
+		return _rfs_read_cached(path, buf, size, offset, fi);
 	}
 	
 	uint64_t handle = fi->fh;
@@ -587,9 +646,14 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 
 int _rfs_flush(const char *path, struct fuse_file_info *fi)
 {
+	if (rfs_config.use_read_cache != 0)
+	{
+		destroy_read_cache();
+	}
+
 	if (rfs_config.use_write_cache == 0)
 	{
-		return 0; // we don't need to flush read cache
+		return 0;
 	}
 	
 	if (get_write_cache_size() < 1)

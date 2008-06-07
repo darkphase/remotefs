@@ -22,14 +22,9 @@ void update_keep_alive()
 	time(&last_keep_alive);
 }
 
-int keep_alive_trylock()
+int keep_alive_locked()
 {
-	if (lock == 0)
-	{
-		lock = 1;
-		return 0;
-	}
-	return -1;
+	return lock == 1 ? 0 : -1;
 }
 
 int keep_alive_lock()

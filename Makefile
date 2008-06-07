@@ -16,7 +16,8 @@ src/passwd.o \
 src/crypt.o \
 src/list.o \
 src/keep_alive_client.o \
-src/write_cache.o
+src/write_cache.o \
+src/read_cache.o
 
 default: $(OBJS) link_client
 	ln -sf bin/$(TARGET) $(TARGET)

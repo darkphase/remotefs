@@ -157,7 +157,7 @@ void server_close_connection(int socket)
 
 int handle_command(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	if (cmd->command == cmd_first
+	if (cmd->command <= cmd_first
 	|| cmd->command >= cmd_last)
 	{
 		return -1;
@@ -339,7 +339,7 @@ void stop_server()
 
 void check_keep_alive()
 {
-	if (keep_alive_trylock() != 0
+	if (keep_alive_locked() != 0
 	&& keep_alive_expired() == 0)
 	{
 		stop_server();
