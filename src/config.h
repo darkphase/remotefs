@@ -1,10 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdio.h>
+
 #define SERVER_PORT 5001
 
 #ifdef RFS_DEBUG
-#include <stdio.h>
 #define DEBUG(format, args...) do { printf(format, args); } while (0)
 #else
 #define DEBUG(format, args...)
@@ -18,7 +19,6 @@
 #endif
 
 #define KEEP_ALIVE_PERIOD 60 * 5 // secs
-//#define KEEP_ALIVE_PERIOD 1 // secs
 
 struct rfs_config
 {
@@ -27,6 +27,8 @@ struct rfs_config
 	char *auth_user;
 	char *auth_passwd_file;
 	char *auth_passwd;
+	unsigned use_write_cache;
+	unsigned use_read_cache;
 };
 
 enum

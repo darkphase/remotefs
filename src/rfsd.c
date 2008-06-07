@@ -21,6 +21,7 @@
 #include "keep_alive_server.h"
 
 static int g_client_socket = -1;
+static int g_listen_socket = -1;
 unsigned char directory_mounted = 0;
 extern char *auth_user;
 extern char *auth_passwd;
@@ -116,6 +117,7 @@ void server_close_connection(int socket)
 {
 	if (socket != -1)
 	{
+		shutdown(socket, SHUT_RDWR);
 		close(socket);
 	}
 	
@@ -271,8 +273,8 @@ int start_server(const unsigned port)
 {
 	install_signal_handlers_server();
 
-	int listen_socket = socket(PF_INET, SOCK_STREAM, 0);
-	if (listen_socket == -1)
+	g_listen_socket = socket(PF_INET, SOCK_STREAM, 0);
+	if (g_listen_socket == -1)
 	{
 		ERROR("Error creating socket: %s\n", strerror(errno));
 		return 1;
@@ -283,13 +285,13 @@ int start_server(const unsigned port)
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = INADDR_ANY;
 	
-	if (bind(listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+	if (bind(g_listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
 	{
 		ERROR("Error binding: %s\n", strerror(errno));
 		return 1;
 	}
 	
-	if (listen(listen_socket, 10) == -1)
+	if (listen(g_listen_socket, 10) == -1)
 	{
 		ERROR("Error listening: %s\n", strerror(errno));
 		return 1;
@@ -301,7 +303,7 @@ int start_server(const unsigned port)
 	{
 		struct sockaddr_in client_addr;
 		socklen_t addr_len = sizeof(client_addr);
-		int client_socket = accept(listen_socket, (struct sockaddr *)&client_addr, &addr_len);
+		int client_socket = accept(g_listen_socket, (struct sockaddr *)&client_addr, &addr_len);
 		if (client_socket == -1)
 		{
 			continue;
@@ -311,7 +313,8 @@ int start_server(const unsigned port)
 
 		if (fork() == 0) // child
 		{
-			close(listen_socket);
+			close(g_listen_socket);
+			g_listen_socket = -1;
 			return handle_connection(client_socket, &client_addr);
 		}
 		else // parent
@@ -326,12 +329,17 @@ int start_server(const unsigned port)
 void stop_server()
 {
 	server_close_connection(g_client_socket);
+	if (g_listen_socket != -1)
+	{
+		shutdown(g_listen_socket, SHUT_RDWR);
+		close(g_listen_socket);
+	}
 	exit(0);
 }
 
 void check_keep_alive()
 {
-	if (keep_alive_locked() != 0
+	if (keep_alive_trylock() != 0
 	&& keep_alive_expired() == 0)
 	{
 		stop_server();

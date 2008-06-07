@@ -15,10 +15,10 @@
 int g_server_socket = -1;
 
 #ifdef RFS_DEBUG
-static unsigned long bytes_sent = 0;
-static unsigned long bytes_received = 0;
-static unsigned long receive_operations = 0;
-static unsigned long send_operations = 0;
+static size_t bytes_sent = 0;
+static size_t bytes_received = 0;
+static size_t receive_operations = 0;
+static size_t send_operations = 0;
 #endif
 
 int rfs_connect(const char *ip, const unsigned port)
@@ -61,7 +61,7 @@ void rfs_disconnect(int sock)
 	mp_force_free();
 }
 
-unsigned rfs_send_cmd(const int sock, const struct command *cmd)
+size_t rfs_send_cmd(const int sock, const struct command *cmd)
 {
 	struct command send_command = { 0 };
 	send_command.command = htonl(cmd->command);
@@ -71,31 +71,31 @@ unsigned rfs_send_cmd(const int sock, const struct command *cmd)
 	return rfs_send_data(sock, &send_command, sizeof(send_command));
 }
 
-unsigned rfs_send_answer(const int sock, const struct answer *ans)
+size_t rfs_send_answer(const int sock, const struct answer *ans)
 {
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);
 	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = htons(ans->ret);
+	send_answer.ret = htonl(ans->ret);
 	send_answer.ret_errno = htons(ans->ret_errno);
 	
 	DEBUG("%s", "sending "); dump_answer(ans);
 	return rfs_send_data(sock, &send_answer, sizeof(send_answer));
 }
 
-unsigned rfs_send_data(const int sock, const void *data, const unsigned data_len)
+size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 {
 	DEBUG("sending data: %u bytes\n", data_len);
-	unsigned size_sent = 0;
+	size_t size_sent = 0;
 	
 	while (size_sent < data_len)
 	{
 		int done = send(sock, data + size_sent, data_len - size_sent, 0);
-		if (done == -1)
+		if (done < 1)
 		{
 			return -1;
 		}
-		size_sent += (unsigned)done;
+		size_sent += (size_t)done;
 	}
 
 #ifdef RFS_DEBUG
@@ -106,26 +106,26 @@ unsigned rfs_send_data(const int sock, const void *data, const unsigned data_len
 	return size_sent;
 }
 
-unsigned rfs_receive_answer(const int sock, struct answer *ans)
+size_t rfs_receive_answer(const int sock, struct answer *ans)
 {
 	struct answer recv_answer = { 0 };
 
-	unsigned ret = rfs_receive_data(sock, &recv_answer, sizeof(recv_answer));
+	size_t ret = rfs_receive_data(sock, &recv_answer, sizeof(recv_answer));
 	if (ret == sizeof(*ans))
 	{
 		ans->command = ntohl(recv_answer.command);
 		ans->data_len = ntohl(recv_answer.data_len);
-		ans->ret = ntohs(recv_answer.ret);
+		ans->ret = ntohl(recv_answer.ret);
 		ans->ret_errno = ntohs(recv_answer.ret_errno);
 	}
 	return ret;
 }
 
-unsigned rfs_receive_cmd(const int sock, struct command *cmd)
+size_t rfs_receive_cmd(const int sock, struct command *cmd)
 {
 	struct command recv_command = { 0 };
 	
-	unsigned ret = rfs_receive_data(sock, &recv_command, sizeof(recv_command));
+	size_t ret = rfs_receive_data(sock, &recv_command, sizeof(recv_command));
 	if (ret == sizeof(*cmd))
 	{
 		cmd->command = ntohl(recv_command.command);
@@ -134,17 +134,17 @@ unsigned rfs_receive_cmd(const int sock, struct command *cmd)
 	return ret;
 }
 
-unsigned rfs_receive_data(const int sock, void *data, const unsigned data_len)
+size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 {
-	unsigned size_received = 0;
+	size_t size_received = 0;
 	while (size_received < data_len)
 	{
 		int done = recv(sock, data + size_received, data_len - size_received, 0);
-		if (done == -1)
+		if (done < 1)
 		{
 			return -1;
 		}
-		size_received += (unsigned)done;
+		size_received += (size_t)done;
 	}
 	
 #ifdef RFS_DEBUG
@@ -159,10 +159,10 @@ unsigned rfs_receive_data(const int sock, void *data, const unsigned data_len)
 void dump_sendrecv_stats()
 {
 	DEBUG("%s\n", "dumping transfer statistics:");
-	DEBUG("total send operations: %lu\n", send_operations);
-	DEBUG("total bytes sent: %lu\n", bytes_sent);
-	DEBUG("total receive operations: %lu\n", receive_operations);
-	DEBUG("total bytes received: %lu\n", bytes_received);
+	DEBUG("total send operations: %lu\n", (unsigned long)send_operations);
+	DEBUG("total bytes sent: %lu\n", (unsigned long)bytes_sent);
+	DEBUG("total receive operations: %lu\n", (unsigned long)receive_operations);
+	DEBUG("total bytes received: %lu\n", (unsigned long)bytes_received);
 }
 #endif
 

@@ -5,10 +5,10 @@
 #include "config.h"
 
 static char *last_allocated = NULL;
-static unsigned last_allocated_size = 0;
+static size_t last_allocated_size = 0;
 static int freed = 0;
 
-void *mp_alloc(unsigned size)
+void *mp_alloc(size_t size)
 {
 	if (freed != 0
 	&& last_allocated != NULL)

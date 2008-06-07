@@ -19,10 +19,13 @@
 #include "attr_cache.h"
 #include "inet.h"
 #include "keep_alive_client.h"
+#include "write_cache.h"
+#include "list.h"
 
 extern int g_server_socket;
 static const unsigned cache_ttl = 60 * 5; // seconds
 static pthread_t keep_alive_thread = 0;
+extern struct rfs_config rfs_config;
 
 struct fuse_operations rfs_operations = {
 	.init		= rfs_init,
@@ -43,6 +46,7 @@ struct fuse_operations rfs_operations = {
 	.read 		= rfs_read,
 	.write		= rfs_write,
 	.truncate	= rfs_truncate,
+	.flush		= rfs_flush,
 	
 	.statfs		= rfs_statfs,
 	
@@ -50,6 +54,9 @@ struct fuse_operations rfs_operations = {
 	.chmod		= rfs_chmod,
 	.chown		= rfs_chown,
 };
+
+int _rfs_flush(const char *path, struct fuse_file_info *fi);
+int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 
 void* keep_alive()
 {
@@ -578,11 +585,91 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 	return ans.data_len;
 }
 
+int _rfs_flush(const char *path, struct fuse_file_info *fi)
+{
+	if (rfs_config.use_write_cache == 0)
+	{
+		return 0; // we don't need to flush read cache
+	}
+	
+	if (get_write_cache_size() < 1)
+	{
+		return 0;
+	}
+	
+	if (get_write_cache() == NULL)
+	{
+		return -EIO;
+	}
+	
+	const struct list *write_cache = get_write_cache();
+	const struct write_cache_entry *first_entry = (const struct write_cache_entry *)write_cache->data;
+	
+	uint64_t handle = fi->fh;
+	uint32_t fsize = get_write_cache_size();
+	uint32_t foffset = first_entry->offset;
+	
+	size_t overall_size = sizeof(handle) + sizeof(fsize) + sizeof(foffset) + fsize;
+	
+	char *buffer = get_buffer(fsize);
+
+	size_t done = 0;
+	while (write_cache)
+	{
+		if (done > overall_size)
+		{
+			free_buffer(buffer);
+			return -EIO;
+		}
+		
+		struct write_cache_entry *item = (struct write_cache_entry *)write_cache->data;
+		
+		memcpy(buffer + done, item->buffer, item->size);
+		done += item->size;
+		
+		write_cache = write_cache->next;
+	}
+	
+	destroy_write_cache();
+	
+	unsigned old_val = rfs_config.use_write_cache;
+	rfs_config.use_write_cache = 0;
+	
+	int ret = _rfs_write(path, buffer, fsize, foffset, fi);
+	
+	DEBUG("write ret: %d\n", ret);
+	
+	rfs_config.use_write_cache = old_val;
+	return ret == fsize ? 0 : ret;
+}
+
+int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+{
+	if (is_fit_to_write_cache(fi->fh, size, offset))
+	{
+		return (add_to_write_cache(fi->fh, buf, size, offset) != 0 ? -EIO : size);
+	}
+	else
+	{
+		int ret = _rfs_flush(path, fi);
+		if (ret < 0)
+		{
+			return ret;
+		}
+		return (add_to_write_cache(fi->fh, buf, size, offset) != 0 ? -EIO : size);
+	}
+}
+
 int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
 		return -EIO;
+	}
+	
+	if (rfs_config.use_write_cache != 0)
+	{
+		return _rfs_write_cached(path, buf, size, offset, fi);
 	}
 	
 	uint64_t handle = fi->fh;

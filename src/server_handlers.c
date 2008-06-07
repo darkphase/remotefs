@@ -591,7 +591,7 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 		return 1;
 	}
 
-	int result = 0;
+	ssize_t result = 0;
 	
 	if (size > 0)
 	{
@@ -599,8 +599,8 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 		result = write(fd, data, size);
 	}
 	
-	struct answer ans = { cmd_write, 0, (uint32_t)result == size ? (uint32_t)result : -1, errno };
-
+	struct answer ans = { cmd_write, 0, (int32_t)result, errno };
+	
 	free_buffer(buffer);
 	
 	if (rfs_send_answer(client_socket, &ans) == -1)

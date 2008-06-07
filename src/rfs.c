@@ -170,6 +170,9 @@ int read_password()
 
 int main(int argc, char **argv)
 {
+	rfs_config.use_write_cache = 1;
+	rfs_config.use_read_cache = 0;
+
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	if (fuse_opt_parse(&args, &rfs_config, rfs_opts, rfs_opt_proc) == -1)

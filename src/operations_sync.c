@@ -174,3 +174,14 @@ int rfs_auth(const char *user, const char *passwd)
 	}
 	return -EIO;
 }
+
+int rfs_flush(const char *path, struct fuse_file_info *fi)
+{
+	if (keep_alive_lock() == 0)
+	{
+		int ret = _rfs_flush(path, fi);
+		keep_alive_unlock();
+		return ret;
+	}
+	return -EIO;
+}

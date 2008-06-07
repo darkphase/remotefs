@@ -1,4 +1,4 @@
-VERSION="0.7-1"
+VERSION="0.8-1"
 ARCH="i386"
 NAME="rfs"
 CLIENT_FILES="../src/rfs.c \
@@ -15,6 +15,7 @@ CLIENT_FILES="../src/rfs.c \
 ../src/passwd.c ../src/passwd.h \
 ../src/crypt.c ../src/crypt.h \
 ../src/keep_alive_client.c ../src/keep_alive_client.h \
+../src/write_cache.c ../src/write_cache.h \
 ../src/config.h \
 ../src/inet.h"
 MAKEFILE="Makefile.rfs"

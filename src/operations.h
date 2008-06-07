@@ -71,6 +71,8 @@ int rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse
 /// @return Write should return exactly the number of bytes requested except on error. An exception to this is when the 'direct_io' mount option is specified (see read operation).
 int rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 
+int rfs_flush(const char *path, struct fuse_file_info *fi);
+
 int rfs_statfs(const char *path, struct statvfs *buf);
 
 int rfs_chmod(const char *path, mode_t mode);

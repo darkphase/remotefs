@@ -7,43 +7,44 @@
 #include "alloc.h"
 #include "inet.h"
 
-char *get_buffer(const unsigned size)
+char *get_buffer(const size_t size)
 {
-	return mp_alloc(size);}
+	return mp_alloc(size);
+}
 
 void free_buffer(char *buffer)
 {
 	mp_free(buffer);}
 
-unsigned pack(const void *data, const unsigned size, char *buffer, const unsigned offset)
+unsigned pack(const void *data, const size_t size, char *buffer, const off_t offset)
 {
 	memcpy(buffer + offset, data, size);
 	return offset + size;}
 
-unsigned pack_16(const uint16_t *data, void *buffer, const unsigned offset)
+unsigned pack_16(const uint16_t *data, void *buffer, const off_t offset)
 {
 	uint16_t pack_u = htons(*data);
 	return pack(&pack_u, sizeof(pack_u), buffer, offset);
 }
 
-unsigned pack_32(const uint32_t *data, void *buffer, const unsigned offset)
+unsigned pack_32(const uint32_t *data, void *buffer, const off_t offset)
 {
 	uint32_t pack_u = htonl(*data);
 	return pack(&pack_u, sizeof(pack_u), buffer, offset);
 }
 
-unsigned pack_64(const uint64_t *data, void *buffer, const unsigned offset)
+unsigned pack_64(const uint64_t *data, void *buffer, const off_t offset)
 {
 	uint64_t pack_u = htonll(*data);
 	return pack(&pack_u, sizeof(pack_u), buffer, offset);
 }
 
-unsigned unpack(void *data, const unsigned size, const char *buffer, const unsigned offset)
+unsigned unpack(void *data, const size_t size, const char *buffer, const off_t offset)
 {
 	memcpy(data, buffer + offset, size);
 	return offset + size;}
 
-unsigned unpack_16(uint16_t *data, const void *buffer, const unsigned offset)
+unsigned unpack_16(uint16_t *data, const void *buffer, const off_t offset)
 {
 	uint16_t unpack_u = 0;
 	
@@ -53,7 +54,7 @@ unsigned unpack_16(uint16_t *data, const void *buffer, const unsigned offset)
 	return ret;
 }
 
-unsigned unpack_32(uint32_t *data, const void *buffer, const unsigned offset)
+unsigned unpack_32(uint32_t *data, const void *buffer, const off_t offset)
 {
 	uint32_t unpack_u = 0;
 	
@@ -63,7 +64,7 @@ unsigned unpack_32(uint32_t *data, const void *buffer, const unsigned offset)
 	return ret;
 }
 
-unsigned unpack_64(uint64_t *data, const void *buffer, const unsigned offset)
+unsigned unpack_64(uint64_t *data, const void *buffer, const off_t offset)
 {
 	uint64_t unpack_u = 0;
 	
@@ -73,7 +74,7 @@ unsigned unpack_64(uint64_t *data, const void *buffer, const unsigned offset)
 	return ret;
 }
 
-void dump(const void *data, const unsigned data_len)
+void dump(const void *data, const size_t data_len)
 {
 #ifdef RFS_DEBUG
 	DEBUG("dumping %u bytes:\n", data_len);

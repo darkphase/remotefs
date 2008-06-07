@@ -1,4 +1,4 @@
-VERSION="0.7-1"
+VERSION="0.8-1"
 ARCH=`uname -m`
 NAME="rfsd"
 CLIENT_FILES="../src/rfsd.c ../src/rfsd.h \

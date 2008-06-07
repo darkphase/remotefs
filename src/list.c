@@ -70,4 +70,3 @@ void destroy_list(struct list *head)
 		head = next;
 	}
 }
-
