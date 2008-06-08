@@ -1,5 +1,5 @@
 VERSION="0.8-3"
-ARCH=`uname -m`
+ARCH="i386"
 NAME="rfsd"
 CLIENT_FILES="../src/rfsd.c ../src/rfsd.h \
 ../src/rfspasswd.c \

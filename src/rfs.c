@@ -216,6 +216,18 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
+#ifdef RFS_DEBUG
+	if (rfs_config.use_read_cache != 0)
+	{
+		DEBUG("%s\n", "using read cache");
+	}
+	
+	if (rfs_config.use_write_cache != 0)
+	{
+		DEBUG("%s\n", "using write cache");
+	}
+#endif // RFS_DEBUG
+	
 	if (rfs_config.auth_user != NULL
 	&& rfs_config.auth_passwd_file != NULL)
 	{

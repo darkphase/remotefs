@@ -19,7 +19,8 @@ buffer.o \
 alloc.o \
 list.o \
 passwd.o \
-crypt.o
+crypt.o \
+signals.o
 
 all: $(RFSD_OBJS) $(RFSPASSWD_OBJS) link_server link_passwd
 

@@ -18,15 +18,12 @@ size_t read_cache_max_size()
 
 size_t read_cache_size(uint64_t descriptor)
 {
-	return ((last_cached_desc != (uint64_t)-1 && descriptor == last_cached_desc) ? last_cached_size : 0);
+	return (descriptor == last_cached_desc ? last_cached_size : 0);
 }
 
 size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 {
-	if (cache == NULL
-	|| last_cached_offset == (off_t)-1
-	|| last_cached_size == (size_t)-1
-	|| last_cached_desc == (uint64_t)-1)
+	if (cache == NULL)
 	{
 		return 0;
 	}
@@ -51,10 +48,7 @@ size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 
 const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 {
-	if (cache == NULL
-	|| last_cached_offset == (off_t)-1
-	|| last_cached_size == (size_t)-1
-	|| last_cached_desc == (uint64_t)-1)
+	if (cache == NULL)
 	{
 		return NULL;
 	}
@@ -77,6 +71,13 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 	return cache + (offset - last_cached_offset);
 }
 
+void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
+{
+	last_cached_desc = descriptor;
+	last_cached_size = size;
+	last_cached_offset = offset;
+}
+
 int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_t offset)
 {
 	if (cache != NULL)
@@ -96,9 +97,7 @@ int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_
 	}
 	
 	memcpy(cache, buffer, size);
-	last_cached_desc = descriptor;
-	last_cached_size = size;
-	last_cached_offset = offset;
+	update_read_cache_stats(descriptor, size, offset);
 	
 	return 0;
 }
@@ -110,8 +109,5 @@ void destroy_read_cache()
 		free_buffer(cache);
 		
 		cache = NULL;
-		last_cached_offset = (off_t)-1;
-		last_cached_size = (size_t)-1;
-		last_cached_desc = (uint64_t)-1;
 	}
 }

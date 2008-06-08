@@ -576,6 +576,10 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	{
 		put_to_read_cache(fi->fh, buffer, size_to_read, offset);
 	}
+	else
+	{
+		update_read_cache_stats(fi->fh, size_to_read, offset);
+	}
 	
 	return ret == size_to_read ? size : ret;
 }

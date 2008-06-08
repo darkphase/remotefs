@@ -22,7 +22,8 @@ passwd.o \
 crypt.o \
 list.o \
 buffer.o \
-alloc.o
+alloc.o \
+signals.o
 
 default: $(OBJS)  $(PASSWD_OBJS) link_server link_passwd
 	ln -sf bin/rfsd rfsd

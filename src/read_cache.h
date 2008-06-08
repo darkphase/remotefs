@@ -16,5 +16,6 @@ int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_
 void destroy_read_cache();
 size_t read_cache_max_size();
 size_t read_cache_size(uint64_t descriptor);
+void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset);
 
 #endif // READ_CACHE_H
