@@ -112,7 +112,7 @@ struct tree_item* get_cache(const char *path)
 
 void release_cache(const void *nodep, const VISIT which, const int depth)
 {
-	if (which == postorder 
+	if (which == endorder 
 	|| which == leaf)
 	{
 		struct tree_item *node = *(struct tree_item **)nodep;

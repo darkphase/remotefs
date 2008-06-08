@@ -5,7 +5,7 @@
 #include "config.h"
 #include "buffer.h"
 
-static const size_t max_cache_size = 512 * 1024; // bytes
+static const size_t max_cache_size = DEFAULT_RW_CACHE_SIZE;
 static char *cache = NULL;
 static off_t last_cached_offset = (off_t)-1;
 static size_t last_cached_size = (size_t)-1;

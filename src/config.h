@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 #define DEFAULT_SERVER_PORT 5001
+#define KEEP_ALIVE_PERIOD 60 * 5 // secs
+#define DEFAULT_RW_CACHE_SIZE 512 * 1024 // bytes
 
 #ifdef RFS_DEBUG
 #define DEBUG(format, args...) do { printf(format, args); } while (0)
@@ -17,8 +19,6 @@
 #ifndef NULL
 #define NULL (void *)(0)
 #endif
-
-#define KEEP_ALIVE_PERIOD 60 * 5 // secs
 
 struct rfs_config
 {

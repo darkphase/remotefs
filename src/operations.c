@@ -533,6 +533,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		const char *cached_data = read_cache_get_data(fi->fh, size, offset);
 		if (cached_data == NULL)
 		{
+			destroy_read_cache();
 			return -EIO;
 		}
 		
@@ -580,6 +581,8 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	{
 		update_read_cache_stats(fi->fh, size_to_read, offset);
 	}
+	
+	free_buffer(buffer);
 	
 	return ret == size_to_read ? size : ret;
 }
@@ -709,7 +712,7 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	
 	int ret = _rfs_write(path, buffer, fsize, foffset, fi);
 	
-	DEBUG("write ret: %d\n", ret);
+	free_buffer(buffer);
 	
 	rfs_config.use_write_cache = old_val;
 	return ret == fsize ? 0 : ret;
