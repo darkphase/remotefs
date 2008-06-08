@@ -575,16 +575,16 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	memcpy(buf, buffer, ret < size ? ret : size);
 	if (ret > size)
 	{
-		put_to_read_cache(fi->fh, buffer, size_to_read, offset);
+		put_to_read_cache(fi->fh, buffer, ret, offset);
 	}
 	else
 	{
-		update_read_cache_stats(fi->fh, size_to_read, offset);
+		update_read_cache_stats(fi->fh, ret, offset);
 	}
 	
 	free_buffer(buffer);
 	
-	return ret == size_to_read ? size : (ret > size ? size : ret);
+	return ret == size_to_read ? size : (ret >= size ? size : ret);
 }
 
 int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
