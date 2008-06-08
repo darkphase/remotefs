@@ -29,6 +29,8 @@ extern char *auth_passwd;
 static struct list *open_files = NULL;
 static const char *pidfile_name = "/var/run/rfsd.pid";
 
+static struct rfsd_config rfsd_config = { "0.0.0.0", DEFAULT_SERVER_PORT };
+
 int create_pidfile(const char *pidfile)
 {
 	FILE *fp = fopen(pidfile, "wt");
@@ -269,7 +271,7 @@ int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 	}
 }
 
-int start_server(const unsigned port)
+int start_server(const char *address, const unsigned port)
 {
 	install_signal_handlers_server();
 
@@ -283,7 +285,7 @@ int start_server(const unsigned port)
 	struct sockaddr_in addr = { 0 };
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_addr.s_addr = inet_addr(address);
 	
 	if (bind(g_listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
 	{
@@ -348,8 +350,50 @@ void check_keep_alive()
 	alarm(keep_alive_period());
 }
 
+void usage(const char *app_name)
+{
+	printf("usage: %s [options]\n"
+	"\n"
+	"Options:\n"
+	"-h \t\t\tshow this help screen\n"
+	"-a [address]\t\tlisten for connections on specified address\n"
+	"-p [port number]\tlisten for connections on specified port\n"
+	"\n"
+	, app_name);
+}
+
+int parse_opts(int argc, char **argv)
+{
+	int opt;
+	while ((opt = getopt(argc, argv, "ha:p:")) != -1)
+	{
+		switch (opt)
+		{	
+			case 'a':
+				rfsd_config.listen_address = strdup(optarg);
+				break;
+			case 'p':
+				rfsd_config.listen_port = atoi(optarg);
+				break;
+			case 'h':
+				usage(argv[0]);
+				exit(0);
+			default:
+				return -1;
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
+	if (parse_opts(argc, argv) != 0)
+	{
+		usage(argv[0]);
+		exit(1);
+	}
+
 	if (parse_exports() != 0)
 	{
 		ERROR("%s\n", "Error parsing exports file");
@@ -391,7 +435,7 @@ int main(int argc, char **argv)
 	fclose(stderr);
 #endif
 
-	int ret = start_server(SERVER_PORT);
+	int ret = start_server(rfsd_config.listen_address, rfsd_config.listen_port);
 	
 	release_exports();
 	release_passwords();

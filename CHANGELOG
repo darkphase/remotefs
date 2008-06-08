@@ -2,5 +2,11 @@
 
 [*] salt for crypt is changed to empty string
 
+rfs:
 [+] write caching
 [+] read caching
+[+] added -ord_cache -owr_cache -ordwr_cache options to enable read/write cache
+[+] added -oport option to specify server's port
+
+rfsd:
+[+] added -p -a options to specify listen port and address

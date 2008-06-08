@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define SERVER_PORT 5001
+#define DEFAULT_SERVER_PORT 5001
 
 #ifdef RFS_DEBUG
 #define DEBUG(format, args...) do { printf(format, args); } while (0)
@@ -30,6 +30,13 @@ struct rfs_config
 	unsigned use_write_cache;
 	unsigned use_read_cache;
 	unsigned use_read_write_cache;
+	unsigned server_port;
+};
+
+struct rfsd_config
+{
+	char *listen_address;
+	unsigned listen_port;
 };
 
 enum

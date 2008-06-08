@@ -48,6 +48,7 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("rd_cache=%u", use_read_cache, 0),
 	RFS_OPT("wr_cache=%u", use_write_cache, 0),
 	RFS_OPT("rdwr_cache=%u", use_read_write_cache, 0),
+	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	
 	FUSE_OPT_END
 };
@@ -62,9 +63,12 @@ void usage(const char *program)
 "    -h   --help             print help\n"
 "\n"
 "RFS options:\n"
-"    -c                      enable read/write cache (improve r/w performance)"
 "    -o username=name        auth username\n"
-"    -o password=filename    filename with password for auth"
+"    -o rd_cache=1           enable read cache\n"
+"    -o wr_cache=1           enable write cache\n"
+"    -o rdwr_cache=1         enable read/write cache\n"
+"    -o password=filename    filename with password for auth\n"
+"    -o port=server_port     port server is listening on\n"
 "\n"
 "\n", 
 	program);
@@ -201,6 +205,11 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
+	if (rfs_config.server_port == 0)
+	{
+		rfs_config.server_port = DEFAULT_SERVER_PORT;
+	}
+	
 	if (rfs_config.path == NULL)
 	{
 		ERROR("%s\n", "Remote path is not specified");
@@ -220,7 +229,7 @@ int main(int argc, char **argv)
 	
 	DEBUG("username: %s, password: %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
 	
-	int sock = rfs_connect(rfs_config.host, SERVER_PORT);
+	int sock = rfs_connect(rfs_config.host, rfs_config.server_port);
 	if (sock == -1)
 	{
 		ERROR("%s\n", "Error connecting to remote host");
