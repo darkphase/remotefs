@@ -584,7 +584,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	
 	free_buffer(buffer);
 	
-	return ret == size_to_read ? size : ret;
+	return ret == size_to_read ? size : (ret > size ? size : ret);
 }
 
 int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)

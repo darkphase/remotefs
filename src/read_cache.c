@@ -33,7 +33,7 @@ size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 		return 0;
 	}
 	
-	if (offset >= last_cached_offset + last_cached_size)
+	if (offset > last_cached_offset + last_cached_size)
 	{
 		return 0;
 	}
