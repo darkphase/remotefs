@@ -2,9 +2,12 @@
 
 START=50
 
+LISTEN="0.0.0.0"
+PORT="5001"
+
 start()
 {
-	rfsd
+	rfsd -a ${LISTEN} -p ${PORT}
 }
 
 stop()

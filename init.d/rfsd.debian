@@ -15,10 +15,13 @@ set -e
 
 . /lib/lsb/init-functions
 
+LISTEN="0.0.0.0"
+PORT="5001"
+
 case "$1" in
 	start)
 		log_daemon_msg "Starting rfsd"
-		if start-stop-daemon --start --quiet --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd; then 
+		if start-stop-daemon --start --quiet --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd -a ${LISTEN} -p ${PORT}; then 
 			log_end_msg 0
 		else
 			log_end_msg 1
