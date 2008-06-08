@@ -122,10 +122,16 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 		free_buffer(buffer);
 		return -1;
 	}
-
+	
+	while (strlen(buffer) > 1 // do not remove first '/'
+	&& buffer[strlen(buffer) - 1] == '/')
+	{
+		buffer[strlen(buffer) - 1] = 0;
+	}
+	
 	const char *path = buffer;
 	
-	const struct rfs_export *export_info = get_export(path);
+	const struct rfs_export *export_info = strlen(path) > 0 ? get_export(path) : NULL;
 	if (export_info == NULL 
 	|| check_permissions(export_info, inet_ntoa(client_addr->sin_addr)) != 0)
 	{

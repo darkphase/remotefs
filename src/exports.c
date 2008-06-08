@@ -114,6 +114,18 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	memset(share, 0, share_len + 1);
 	memcpy(share, local_buffer, share_len);
 	
+	while (strlen(share) > 1 // do not remove first '/'
+	&& share[strlen(share) - 1] == '/')
+	{
+		share[strlen(share) - 1] = 0;
+	}
+	
+	if (strlen(share) < 1)
+	{
+		free_buffer(share);
+		return (char *)-1;
+	}
+	
 	const char *users = trim_left(share_end, next_line - local_buffer);
 	if (users == NULL || users >= next_line)
 	{
