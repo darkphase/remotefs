@@ -9,9 +9,12 @@
 #include "config.h"
 #include "passwd.h"
 #include "crypt.h"
+#include "signals.h"
 
 static char *login = NULL;
 enum operations operation = OP_DEFAULT;
+static struct termios stored_settings = { 0 };
+static unsigned need_to_restore_termio = 0;
 
 // forward declarations
 int change_password(const char *login);
@@ -80,6 +83,19 @@ int parse_opts(int argc, char **argv)
 	return 0;
 }
 
+void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
+{
+	switch (signal)
+	{	
+	case SIGTERM:
+		if (need_to_restore_termio != 0)
+		{
+			tcsetattr(0, TCSANOW, &stored_settings);
+		}
+		exit(0);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	if (parse_opts(argc, argv) != 0)
@@ -103,6 +119,8 @@ int main(int argc, char **argv)
 	}
 	
 	dump_passwords();
+	
+	install_signal_handlers(SIGTERM, signal_handler_passwd);
 	
 	int ret = 0;
 	switch (operation)
@@ -157,12 +175,13 @@ int change_password(const char *login)
 	printf("Changing password for %s.\n", login);
 	printf("New password (%d characters max): ", sizeof(password1));
 	
-	struct termios stored_settings;
 	tcgetattr(0, &stored_settings);
 	struct termios new_settings = stored_settings;
 	
 	new_settings.c_lflag &= (~ICANON);
 	new_settings.c_lflag &= (~ECHO);
+	
+	need_to_restore_termio = 1;
 	
 	tcsetattr(0, TCSANOW, &new_settings);
 	
@@ -177,6 +196,8 @@ int change_password(const char *login)
 	
 	tcsetattr(0, TCSANOW, &stored_settings);
 	printf("\n");
+	
+	need_to_restore_termio = 0;
 	
 	if (strcmp(password1, password2) != 0)
 	{

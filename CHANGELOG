@@ -10,3 +10,4 @@ rfs:
 
 rfsd:
 [+] added -p -a options to specify listen port and address
+[*] deleting trailing '/' in the export path
