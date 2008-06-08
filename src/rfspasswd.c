@@ -88,9 +88,14 @@ void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 	switch (signal)
 	{	
 	case SIGTERM:
+	case SIGPIPE:
+	case SIGABRT:
+	case SIGINT:
+	case SIGQUIT:
 		if (need_to_restore_termio != 0)
 		{
 			tcsetattr(0, TCSANOW, &stored_settings);
+			printf("\n");
 		}
 		exit(0);
 	}
@@ -121,6 +126,10 @@ int main(int argc, char **argv)
 	dump_passwords();
 	
 	install_signal_handlers(SIGTERM, signal_handler_passwd);
+	install_signal_handlers(SIGPIPE, signal_handler_passwd);
+	install_signal_handlers(SIGABRT, signal_handler_passwd);
+	install_signal_handlers(SIGINT, signal_handler_passwd);
+	install_signal_handlers(SIGQUIT, signal_handler_passwd);
 	
 	int ret = 0;
 	switch (operation)
