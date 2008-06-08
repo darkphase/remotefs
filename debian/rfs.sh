@@ -1,4 +1,4 @@
-VERSION="0.8-7"
+VERSION="0.8-8"
 ARCH="i386"
 NAME="rfs"
 CLIENT_FILES="../src/rfs.c \

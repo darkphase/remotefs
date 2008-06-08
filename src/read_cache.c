@@ -58,7 +58,7 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 		return NULL;
 	}
 	
-	if (offset + size > last_cached_offset + last_cached_size)
+	if (offset + size >= last_cached_offset + last_cached_size)
 	{
 		return NULL;
 	}
