@@ -541,7 +541,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		return size;
 	}
 	
-	size_t cached_read_size = read_cache_size(fi->fh);
+	size_t cached_read_size = last_used_read_block(fi->fh);
 	if (cached_read_size > 0 
 	&& size_to_read < read_cache_max_size())
 	{
@@ -657,7 +657,8 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 
 int _rfs_flush(const char *path, struct fuse_file_info *fi)
 {
-	if (rfs_config.use_read_cache != 0)
+	if (rfs_config.use_read_cache != 0
+	&& read_cache_size(fi->fh) > 0)
 	{
 		destroy_read_cache();
 	}
@@ -679,10 +680,10 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	
 	const struct list *write_cache = get_write_cache();
 	const struct write_cache_entry *first_entry = (const struct write_cache_entry *)write_cache->data;
-	
-	uint64_t handle = fi->fh;
+
 	uint32_t fsize = get_write_cache_size();
 	uint32_t foffset = first_entry->offset;
+	uint64_t handle = first_entry->descriptor;
 	
 	size_t overall_size = sizeof(handle) + sizeof(fsize) + sizeof(foffset) + fsize;
 	
@@ -710,7 +711,11 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	unsigned old_val = rfs_config.use_write_cache;
 	rfs_config.use_write_cache = 0;
 	
-	int ret = _rfs_write(path, buffer, fsize, foffset, fi);
+	struct fuse_file_info tmp_fi = { 0 }; 	// look what _rfs_write is using from this struct
+											// now it is only ->fh, but be warned
+	tmp_fi.fh = handle;
+	
+	int ret = _rfs_write(path, buffer, fsize, foffset, &tmp_fi);
 	
 	free_buffer(buffer);
 	

@@ -42,8 +42,9 @@ class ArchTest:
 	
 	def checkFiles(self, files, md5s):
 		new_md5s = self.calcMD5(files)
-		for md5, new_md5 in zip(md5s, new_md5s):
+		for file, md5, new_md5 in zip(files, md5s, new_md5s):
 			if md5 != new_md5:
+				print '%s md5 should be %s, but it is %s' % (file, md5, new_md5)
 				return False
 		return True
 		
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 	at.deleteFiles(files)
 	print 'unpacking archive..'
 	at.unpackArch(test_arch_name)
-	print 'checking everything is alright..'
+	print 'checking if everything is alright..'
 	if at.checkFiles(files, md5s): print 'it is'
 	print 'cleaning up'
 	at.deleteFiles(files)

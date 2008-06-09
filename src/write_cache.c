@@ -25,13 +25,13 @@ size_t get_write_cache_size()
 
 unsigned is_fit_to_write_cache(uint64_t descriptor, size_t size, off_t offset)
 {
-	if (cache_size + size > max_cache_size)
+	if (last_cached_desc != (uint64_t)-1
+	&& descriptor != last_cached_desc)
 	{
 		return 0;
 	}
-
-	if (last_cached_desc != (uint64_t)-1
-	&& descriptor != last_cached_desc)
+	
+	if (cache_size + size > max_cache_size)
 	{
 		return 0;
 	}
@@ -75,6 +75,7 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 	}
 
 	memcpy(entry->buffer, buffer, size);
+	entry->descriptor = descriptor;
 	entry->size = size;
 	entry->offset = offset;
 

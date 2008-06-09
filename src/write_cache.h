@@ -8,6 +8,7 @@ struct list;
 
 struct write_cache_entry
 {
+	uint64_t descriptor;
 	char *buffer;
 	off_t offset;
 	size_t size;

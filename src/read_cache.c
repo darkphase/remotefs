@@ -18,14 +18,19 @@ size_t read_cache_max_size()
 
 size_t read_cache_size(uint64_t descriptor)
 {
-	return (descriptor == last_cached_desc ? last_cached_size : 0);
+	return ((cache != NULL && descriptor == last_cached_desc) ? last_cached_size : 0);
+}
+
+size_t last_used_read_block(uint64_t descriptor)
+{
+	return descriptor == last_cached_desc ? last_cached_size : 0;
 }
 
 size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 {
 	if (cache == NULL 
 	|| descriptor != last_cached_desc 
-	|| offset >= last_cached_offset + last_cached_size 
+	|| offset >= last_cached_offset + last_cached_size - 1
 	|| offset < last_cached_offset)
 	{
 		return 0;
@@ -38,7 +43,7 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 {
 	if (cache == NULL 
 	|| descriptor != last_cached_desc 
-	|| offset + size >= last_cached_offset + last_cached_size 
+	|| offset + size > last_cached_offset + last_cached_size 
 	|| offset < last_cached_offset)
 	{
 		return NULL;
