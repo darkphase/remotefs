@@ -30,7 +30,7 @@ size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 {
 	if (cache == NULL 
 	|| descriptor != last_cached_desc 
-	|| offset >= last_cached_offset + last_cached_size - 1
+	|| offset >= last_cached_offset + last_cached_size
 	|| offset < last_cached_offset)
 	{
 		return 0;
@@ -41,15 +41,12 @@ size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 
 const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 {
-	if (cache == NULL 
-	|| descriptor != last_cached_desc 
-	|| offset + size > last_cached_offset + last_cached_size 
-	|| offset < last_cached_offset)
+	if (read_cache_have_data(descriptor, offset) >= size)
 	{
-		return NULL;
+		return cache + (offset - last_cached_offset);
 	}
 	
-	return cache + (offset - last_cached_offset);
+	return NULL;
 }
 
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)

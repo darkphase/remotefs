@@ -30,7 +30,8 @@ void ReadCacheTest::testBasics()
 
 	CPPUNIT_ASSERT(read_cache_have_data(descriptor, offset) == size);
 	CPPUNIT_ASSERT(read_cache_have_data(descriptor, 1) == size - 1);
-	CPPUNIT_ASSERT(read_cache_have_data(descriptor, size - 1) == 0);
+	CPPUNIT_ASSERT(read_cache_have_data(descriptor, size - 1) == 1);
+	CPPUNIT_ASSERT(read_cache_have_data(descriptor, size) == 0);
 	
 	CPPUNIT_ASSERT(read_cache_have_data(wrong_descriptor, offset) == 0);
 

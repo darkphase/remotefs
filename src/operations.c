@@ -541,8 +541,11 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		return size;
 	}
 	
+	destroy_read_cache();
+	
 	size_t cached_read_size = last_used_read_block(fi->fh);
 	if (cached_read_size > 0 
+	&& cached_read_size > size_to_read
 	&& size_to_read < read_cache_max_size())
 	{
 		if (cached_read_size * 2 <= read_cache_max_size())
@@ -554,8 +557,6 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 			size_to_read = read_cache_max_size();
 		}
 	}
-		
-	destroy_read_cache();
 	
 	unsigned old_val = rfs_config.use_read_cache;
 	rfs_config.use_read_cache = 0;
@@ -580,6 +581,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	else
 	{
 		update_read_cache_stats(fi->fh, ret, offset);
+		destroy_read_cache();
 	}
 	
 	free_buffer(buffer);

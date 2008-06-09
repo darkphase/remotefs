@@ -24,7 +24,7 @@ class ArchTest:
 	def deleteFiles(self, files):
 		for file in files:
 			try: os.unlink(file)
-			except IOError: pass
+			except OSError: pass
 		
 	def calcMD5(self, files):
 		md5s = []
@@ -41,12 +41,13 @@ class ArchTest:
 		os.system('tar -xpvvjf %s >/dev/null' % arch_name)
 	
 	def checkFiles(self, files, md5s):
+		ret = True
 		new_md5s = self.calcMD5(files)
 		for file, md5, new_md5 in zip(files, md5s, new_md5s):
 			if md5 != new_md5:
 				print '%s md5 should be %s, but it is %s' % (file, md5, new_md5)
-				return False
-		return True
+				ret = False
+		return ret
 		
 if __name__ == '__main__':
 	at = ArchTest()
@@ -62,6 +63,4 @@ if __name__ == '__main__':
 	print 'checking if everything is alright..'
 	if at.checkFiles(files, md5s): print 'it is'
 	print 'cleaning up'
-	at.deleteFiles(files)
-	at.deleteFiles([test_arch_name])
-	
+	at.deleteFiles(files + [test_arch_name])
