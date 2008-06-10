@@ -21,18 +21,18 @@ NAME="rfsd"
 INIT_SCRIPT="../init.d/rfsd.kamikaze"
 ETC_FILES="../etc/rfs-exports"
 
-rm -fr ${NAME}-${VERSION} ${NAME}-${VERSION}.tar.bz2
-rm -f ${NAME}-${VERSION}.md5
-mkdir ${NAME}-${VERSION}
-mkdir ${NAME}-${VERSION}/init.d/
-mkdir ${NAME}-${VERSION}/etc/
+rm -fr ${NAME}_${VERSION} ${NAME}_${VERSION}.tar.bz2
+rm -f ${NAME}_${VERSION}.md5
+mkdir ${NAME}_${VERSION}
+mkdir ${NAME}_${VERSION}/init.d/
+mkdir ${NAME}_${VERSION}/etc/
 
-cp ${INIT_SCRIPT} ${NAME}-${VERSION}/init.d/${NAME}
-cp ${ETC_FILES} ${NAME}-${VERSION}/etc/
+cp ${INIT_SCRIPT} ${NAME}_${VERSION}/init.d/${NAME}
+cp ${ETC_FILES} ${NAME}_${VERSION}/etc/
 
-cp ${SERVER_FILES} ${NAME}-${VERSION}/
-cp ${MAKEFILE} ${NAME}-${VERSION}/Makefile
-tar -cpjf ${NAME}-${VERSION}.tar.bz2 ${NAME}-${VERSION}
-md5sum ${NAME}-${VERSION}.tar.bz2 >${NAME}-${VERSION}.md5
+cp ${SERVER_FILES} ${NAME}_${VERSION}/
+cp ${MAKEFILE} ${NAME}_${VERSION}/Makefile
+tar -cpjf ${NAME}_${VERSION}.tar.bz2 ${NAME}_${VERSION}
+md5sum ${NAME}_${VERSION}.tar.bz2 >${NAME}_${VERSION}.md5
 
-rm -fr ${NAME}-${VERSION}
+rm -fr ${NAME}_${VERSION}
