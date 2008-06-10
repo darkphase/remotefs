@@ -1,6 +1,6 @@
 0.8
 
-[*] salt for crypt is changed to empty string
+[*] salt for crypt changed to empty string
 
 rfs:
 [+] write caching
@@ -9,8 +9,8 @@ rfs:
 [+] added -oport option to specify server's port
 
 rfsd:
-[+] added -p -a options to specify listen port and address
-[*] deleting trailing '/' in the export path
+[+] added -p and -a options to specify port and address to listen to
+[*] deleting trailing '/' in export path
 
 rfspasswd:
 [*] fixed issue with ctrl-c during password prompt
