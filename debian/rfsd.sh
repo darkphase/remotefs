@@ -1,4 +1,4 @@
-VERSION="0.8-3"
+VERSION="0.8-1"
 ARCH="i386"
 NAME="rfsd"
 CLIENT_FILES="../src/rfsd.c ../src/rfsd.h \
