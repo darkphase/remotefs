@@ -34,4 +34,6 @@ size_t get_write_cache_size();
 /// @return 
 void destroy_write_cache();
 
+unsigned write_cache_is_for(uint64_t descriptor);
+
 #endif // WRITE_CACHE_H

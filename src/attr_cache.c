@@ -12,6 +12,11 @@ static void *cache = NULL;
 static unsigned cache_ttl = 60; // secs
 static time_t last_time_checked = (time_t)0;
 
+int any_node(const void *s1, const void *s2)
+{
+	return 0; // equal
+}
+
 int compare_path(const void *s1, const void *s2)
 {
 	return strcmp(((struct tree_item *)s1)->path, ((struct tree_item *)s2)->path);
@@ -61,12 +66,12 @@ void clear_cache()
 		
 		struct tree_item *node = *(struct tree_item **)found;
 		
+		free(node->path);
+		free_buffer(node);
+		
 		if (tdelete(node, &cache, compare_path) != NULL)
 		{
 			DEBUG("deleted from cache: %s\n", node->path);
-		
-			free(node->path);
-			free_buffer(node);
 		}
 	}
 	while (1);
@@ -74,7 +79,7 @@ void clear_cache()
 
 void* cache_file(const char *path, struct stat *stbuf)
 {
-	struct tree_item *key = get_buffer(sizeof(struct tree_item));
+	struct tree_item *key = get_buffer(sizeof(*key));
 	
 	key->path = strdup(path);
 	key->time = time(NULL);
@@ -83,6 +88,7 @@ void* cache_file(const char *path, struct stat *stbuf)
 	void *found = tfind(key, &cache, compare_path);
 	if (found != NULL)
 	{
+			free(key->path);
 			free_buffer(key);
 			
 			struct tree_item *value = *(struct tree_item **)found;
@@ -133,11 +139,12 @@ void destroy_cache()
 {
 	if (cache)
 	{
-		struct tree_item root = { 0 };
-		memcpy(&root, *(struct tree_item **)cache, sizeof(root));
-		
 		twalk(cache, release_cache);
-		tdelete(&root, &cache, compare_path);
+		
+		while (cache != NULL)
+		{
+			tdelete(NULL, &cache, any_node);
+		}
 		
 		cache = NULL;
 	}

@@ -1,3 +1,7 @@
+0.9
+
+[*] proper cache cleanup
+
 0.8
 
 [*] salt for crypt changed to empty string

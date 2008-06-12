@@ -126,3 +126,17 @@ void destroy_write_cache()
 	last_cached_size = (size_t)-1;
 	last_cached_offset = (off_t)-1;
 }
+
+unsigned write_cache_is_for(uint64_t descriptor)
+{
+	if (cache != 0)
+	{
+		struct write_cache_entry *entry = cache->data;
+		if (entry->descriptor == descriptor)
+		{
+			return 1;
+		}
+	}
+	
+	return 0;
+}

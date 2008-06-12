@@ -60,14 +60,14 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 int _rfs_flush(const char *path, struct fuse_file_info *fi);
 
-void* keep_alive()
+void* maintenance()
 {
 	unsigned slept = 0;
 	unsigned shorter_sleep = 1; // secs
 	
 	while (g_server_socket != -1)
 	{
-		sleep(1);
+		sleep(shorter_sleep);
 		slept += shorter_sleep;
 		
 		if (g_server_socket == -1)
@@ -84,6 +84,11 @@ void* keep_alive()
 				pthread_exit(NULL);
 			}
 			
+			if (cache_is_old() != 0)
+			{
+				clear_cache();
+			}
+			
 			keep_alive_unlock();
 			slept = 0;
 		}
@@ -95,7 +100,7 @@ void* keep_alive()
 void* rfs_init()
 {
 	keep_alive_init();
-	pthread_create(&keep_alive_thread, NULL, keep_alive, NULL);
+	pthread_create(&keep_alive_thread, NULL, maintenance, NULL);
 	
 	return NULL;
 }
@@ -189,11 +194,6 @@ int _rfs_getattr(const char *path, struct stat *stbuf)
 	if (g_server_socket == -1)
 	{
 		return -EIO;
-	}
-	
-	if (cache_is_old() != 0)
-	{
-		clear_cache();
 	}
 	
 	struct tree_item *cached_value = get_cache(path);
@@ -446,6 +446,16 @@ int _rfs_release(const char *path, struct fuse_file_info *fi)
 	{
 		return -EIO;
 	}
+	
+	if (read_cache_is_for(fi->fh) != 0)
+	{
+		destroy_read_cache();
+	}
+	
+	if (write_cache_is_for(fi->fh) != 0)
+	{
+		destroy_write_cache();
+	}
 
 	uint64_t handle = htonll(fi->fh);
 
@@ -564,14 +574,13 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	char *buffer = get_buffer(size_to_read);
 	
 	int ret = _rfs_read(path, buffer, size_to_read, offset, fi);
+	rfs_config.use_read_cache = old_val;
+	
 	if (ret < 0)
 	{
-		rfs_config.use_read_cache = old_val;
 		free_buffer(buffer);
 		return ret;
 	}
-	
-	rfs_config.use_read_cache = old_val;
 	
 	memcpy(buf, buffer, ret < size ? ret : size);
 	if (ret > size)
@@ -581,7 +590,6 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	else
 	{
 		update_read_cache_stats(fi->fh, ret, offset);
-		destroy_read_cache();
 	}
 	
 	free_buffer(buffer);

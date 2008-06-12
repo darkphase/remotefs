@@ -18,5 +18,6 @@ size_t read_cache_max_size();
 size_t read_cache_size(uint64_t descriptor);
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset);
 size_t last_used_read_block(uint64_t descriptor);
+unsigned read_cache_is_for(uint64_t descriptor);
 
 #endif // READ_CACHE_H

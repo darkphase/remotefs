@@ -89,3 +89,16 @@ void destroy_read_cache()
 		cache = NULL;
 	}
 }
+
+unsigned read_cache_is_for(uint64_t descriptor)
+{
+	if (cache != NULL)
+	{
+		if (last_cached_desc == descriptor)
+		{
+			return 1;
+		}
+	}
+	
+	return 0;
+}
