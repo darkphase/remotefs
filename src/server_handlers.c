@@ -27,6 +27,7 @@
 #include "keep_alive_server.h"
 
 extern unsigned char directory_mounted;
+extern struct rfsd_config rfsd_config;
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 
@@ -152,6 +153,11 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 
 	struct answer ans = { cmd_changepath, 0, result, errno };
 	
+	if (result == 0)
+	{
+		setuid(rfsd_config.worker_uid);
+	}
+	
 	free_buffer(buffer);
 
 	if (rfs_send_answer(client_socket, &ans) == -1)
@@ -160,7 +166,7 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	}
 	
 	if (result == 0)
-	{
+	{	
 		directory_mounted = 1;
 		
 		release_passwords();

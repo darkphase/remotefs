@@ -68,7 +68,7 @@ void usage(const char *program)
 "    -o wr_cache=1           enable write cache\n"
 "    -o rdwr_cache=1         enable read/write cache\n"
 "    -o password=filename    filename with password for auth\n"
-"    -o port=server_port     port server is listening on\n"
+"    -o port=server_port     port which the server is listening to\n"
 "\n"
 "\n", 
 	program);

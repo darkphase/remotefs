@@ -131,8 +131,7 @@ unsigned write_cache_is_for(uint64_t descriptor)
 {
 	if (cache != 0)
 	{
-		struct write_cache_entry *entry = cache->data;
-		if (entry->descriptor == descriptor)
+		if (last_cached_desc == descriptor)
 		{
 			return 1;
 		}

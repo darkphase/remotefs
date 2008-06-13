@@ -84,13 +84,19 @@ void* maintenance()
 				pthread_exit(NULL);
 			}
 			
+			keep_alive_unlock();
+			slept = 0;
+		}
+		
+		if (slept >= CACHE_TTL
+		&& keep_alive_lock() == 0)
+		{
 			if (cache_is_old() != 0)
 			{
 				clear_cache();
 			}
 			
 			keep_alive_unlock();
-			slept = 0;
 		}
 	}
 	

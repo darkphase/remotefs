@@ -2,10 +2,12 @@
 #define CONFIG_H
 
 #include <stdio.h>
+#include <sys/types.h>
 
 #define DEFAULT_SERVER_PORT 5001
 #define KEEP_ALIVE_PERIOD 60 * 5 // secs
 #define DEFAULT_RW_CACHE_SIZE 512 * 1024 // bytes
+#define CACHE_TTL 60 // secs
 
 #ifdef RFS_DEBUG
 #define DEBUG(format, args...) do { printf(format, args); } while (0)
@@ -37,6 +39,7 @@ struct rfsd_config
 {
 	char *listen_address;
 	unsigned listen_port;
+	uid_t worker_uid;
 };
 
 enum

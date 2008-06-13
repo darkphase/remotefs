@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <pwd.h>
 
 #include "config.h"
 #include "command.h"
@@ -29,7 +30,7 @@ extern char *auth_passwd;
 static struct list *open_files = NULL;
 static const char *pidfile_name = "/var/run/rfsd.pid";
 
-static struct rfsd_config rfsd_config = { "0.0.0.0", DEFAULT_SERVER_PORT };
+struct rfsd_config rfsd_config = { "0.0.0.0", DEFAULT_SERVER_PORT };
 
 int create_pidfile(const char *pidfile)
 {
@@ -358,6 +359,7 @@ void usage(const char *app_name)
 	"-h \t\t\tshow this help screen\n"
 	"-a [address]\t\tlisten for connections on specified address\n"
 	"-p [port number]\tlisten for connections on specified port\n"
+	"-u username\t\tworker process be running with privileges of this user\n"
 	"\n"
 	, app_name);
 }
@@ -365,19 +367,31 @@ void usage(const char *app_name)
 int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "ha:p:")) != -1)
+	while ((opt = getopt(argc, argv, "ha:p:u:")) != -1)
 	{
 		switch (opt)
 		{	
+			case 'h':
+				usage(argv[0]);
+				exit(0);
+			case 'u':
+			{
+				struct passwd *pwd = NULL;
+				errno = 0;
+				if ((pwd = getpwnam(optarg)) == NULL)
+				{
+					ERROR("Can not get uid for user %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
+					return -1;
+				}
+				rfsd_config.worker_uid = pwd->pw_uid;
+				break;
+			}
 			case 'a':
 				rfsd_config.listen_address = strdup(optarg);
 				break;
 			case 'p':
 				rfsd_config.listen_port = atoi(optarg);
 				break;
-			case 'h':
-				usage(argv[0]);
-				exit(0);
 			default:
 				return -1;
 		}
@@ -390,7 +404,6 @@ int main(int argc, char **argv)
 {
 	if (parse_opts(argc, argv) != 0)
 	{
-		usage(argv[0]);
 		exit(1);
 	}
 
@@ -414,6 +427,8 @@ int main(int argc, char **argv)
 #ifdef RFS_DEBUG
 	dump_passwords();
 #endif
+
+	DEBUG("worker's uid: %u\n", rfsd_config.worker_uid);
 
 #ifndef RFS_DEBUG
 	if (fork() != 0)
