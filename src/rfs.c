@@ -74,6 +74,11 @@ void usage(const char *program)
 	program);
 }
 
+void init_config()
+{
+	rfs_config.server_port = DEFAULT_SERVER_PORT;
+}
+
 void rfs_fix_options()
 {
 	if (rfs_config.use_read_write_cache)
@@ -187,6 +192,8 @@ int read_password()
 
 int main(int argc, char **argv)
 {
+	init_config();
+	
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	if (fuse_opt_parse(&args, &rfs_config, rfs_opts, rfs_opt_proc) == -1)
@@ -203,11 +210,6 @@ int main(int argc, char **argv)
 	{
 		ERROR("%s\n", "Remote host is not specified");
 		exit(1);
-	}
-	
-	if (rfs_config.server_port == 0)
-	{
-		rfs_config.server_port = DEFAULT_SERVER_PORT;
 	}
 	
 	if (rfs_config.path == NULL)
@@ -270,7 +272,7 @@ int main(int argc, char **argv)
 
 	int ret = fuse_main(args.argc, args.argv, &rfs_operations);
 //	int ret = test_connection();
-	
+
 	fuse_opt_free_args(&args);
 
 	free_buffer(rfs_config.host);

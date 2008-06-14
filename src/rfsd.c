@@ -30,7 +30,14 @@ extern char *auth_passwd;
 static struct list *open_files = NULL;
 static const char *pidfile_name = "/var/run/rfsd.pid";
 
-struct rfsd_config rfsd_config = { "0.0.0.0", DEFAULT_SERVER_PORT };
+struct rfsd_config rfsd_config;
+
+void init_config()
+{
+ 	rfsd_config.listen_address = "0.0.0.0";
+	rfsd_config.listen_port = DEFAULT_SERVER_PORT;
+	rfsd_config.worker_uid = getuid();
+}
 
 int create_pidfile(const char *pidfile)
 {
@@ -402,6 +409,8 @@ int parse_opts(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+	init_config();
+
 	if (parse_opts(argc, argv) != 0)
 	{
 		exit(1);
