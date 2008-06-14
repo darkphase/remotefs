@@ -9,7 +9,9 @@
 
 char *get_buffer(const size_t size)
 {
-	return mp_alloc(size);
+	char *ret = mp_alloc(size);
+	memset(ret, 0, size);
+	return ret;
 }
 
 void free_buffer(char *buffer)
