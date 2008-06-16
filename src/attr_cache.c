@@ -66,12 +66,12 @@ void clear_cache()
 		
 		struct tree_item *node = *(struct tree_item **)found;
 		
-		free(node->path);
-		free_buffer(node);
-		
 		if (tdelete(node, &cache, compare_path) != NULL)
 		{
 			DEBUG("deleted from cache: %s\n", node->path);
+			
+			free(node->path);
+			free_buffer(node);
 		}
 	}
 	while (1);

@@ -118,6 +118,7 @@ size_t rfs_receive_answer(const int sock, struct answer *ans)
 		ans->ret = ntohl(recv_answer.ret);
 		ans->ret_errno = ntohs(recv_answer.ret_errno);
 	}
+	DEBUG("%s", "received "); dump_answer(ans);
 	return ret;
 }
 
@@ -131,6 +132,7 @@ size_t rfs_receive_cmd(const int sock, struct command *cmd)
 		cmd->command = ntohl(recv_command.command);
 		cmd->data_len = ntohl(recv_command.data_len);
 	}
+	DEBUG("%s", "received "); dump_command(cmd);
 	return ret;
 }
 

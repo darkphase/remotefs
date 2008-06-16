@@ -561,7 +561,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	
 	size_t cached_read_size = last_used_read_block(fi->fh);
 	if (cached_read_size > 0 
-	&& cached_read_size > size_to_read
+	&& cached_read_size >= size_to_read
 	&& size_to_read < read_cache_max_size())
 	{
 		if (cached_read_size * 2 <= read_cache_max_size())
