@@ -28,11 +28,10 @@ extern char *auth_user;
 extern char *auth_passwd;
 
 static struct list *open_files = NULL;
+struct rfs_export *mounted_export = NULL;
 static const char *pidfile_name = "/var/run/rfsd.pid";
 
 struct rfsd_config rfsd_config;
-
-static struct rfs_export *mounted_export = NULL;
 
 void init_config()
 {
@@ -163,6 +162,11 @@ void server_close_connection(int socket)
 	
 	release_passwords();
 	release_exports();
+	
+	if (mounted_export != NULL)
+	{
+		free_buffer(mounted_export);
+	}
 
 	mp_force_free();
 }
@@ -252,7 +256,7 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 	}
 	
 	if (mounted_export == NULL
-	|| (mounted_export->options & opt_ro) == 0)
+	|| (mounted_export->options & opt_ro) > 0)
 	{
 		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
 	}

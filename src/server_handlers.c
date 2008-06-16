@@ -28,6 +28,7 @@
 
 extern unsigned char directory_mounted;
 extern struct rfsd_config rfsd_config;
+extern struct rfs_export *mounted_export;
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 
@@ -176,6 +177,8 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	if (result == 0)
 	{	
 		directory_mounted = 1;
+		mounted_export = get_buffer(sizeof(mounted_export));
+		memcpy(mounted_export, export_info, sizeof(mounted_export));
 		
 		release_passwords();
 		release_exports();
