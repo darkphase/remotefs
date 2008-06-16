@@ -1,8 +1,6 @@
 #ifndef OPERATIONS_H
 #define OPERATIONS_H
 
-enum e_operations { op_getattr = 1 };
-
 struct stat;
 struct utimebuf;
 

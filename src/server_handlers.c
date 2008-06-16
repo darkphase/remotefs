@@ -72,13 +72,6 @@ int check_permissions(const struct rfs_export *export_info, const char *client_i
 	return -1;
 }
 
-int reject_request(const int client_socket, uint32_t cmd, int32_t ret_errno)
-{
-	struct answer ans = { cmd, 0, -1, ret_errno };
-	
-	return rfs_send_answer(client_socket, &ans) != -1 ? 0 : -1;
-}
-
 int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
@@ -104,7 +97,7 @@ int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr,
 	+ strlen(passwd) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 		
 	DEBUG("user: %s, passwd: %s\n", user, passwd);
@@ -142,7 +135,7 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	if (strlen(buffer) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	while (strlen(buffer) > 1 // do not remove first '/'
@@ -158,7 +151,7 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	|| check_permissions(export_info, inet_ntoa(client_addr->sin_addr)) != 0)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EACCES) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EACCES) == 0 ? 1 : -1;
 	}
 	
 	DEBUG("client want to change path to %s\n", path);
@@ -210,7 +203,7 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 	if (strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 //	dump(buffer, cmd->data_len);
@@ -222,7 +215,7 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 		
 		free_buffer(buffer);
 		
-		return reject_request(client_socket, cmd->command, saved_errno) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 	
 	free_buffer(buffer);
@@ -290,7 +283,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	if (strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -385,7 +378,7 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	int flags = 0;
@@ -459,7 +452,7 @@ int _handle_truncate(const int client_socket, const struct sockaddr_in *client_a
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -502,7 +495,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 	+ sizeof(size) != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	unpack_64(&handle, buffer, 
@@ -516,7 +509,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 	
 	if (handle == (uint64_t)-1)
 	{
-		return reject_request(client_socket, cmd->command, EBADF) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
 	int fd = (int)handle;
@@ -527,7 +520,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		
 		close(fd);
 		
-		return reject_request(client_socket, cmd->command, saved_errno) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 
 	int result = 0;
@@ -538,7 +531,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		buffer = get_buffer(size);
 		if (buffer == NULL)
 		{
-			return reject_request(client_socket, cmd->command, EREMOTEIO) == 0 ? 1 : -1;
+			return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 		}
 		
 		errno = 0;
@@ -550,7 +543,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 			free_buffer(buffer);
 			close(fd);
 			
-			return reject_request(client_socket, cmd->command, saved_errno) == 0 ? 1 : -1;
+			return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
 		}
 	}
 	
@@ -620,7 +613,7 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 	{
 		free_buffer(buffer);
 		
-		return reject_request(client_socket, cmd->command, EBADF) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
 	int fd = (int)handle;
@@ -681,7 +674,7 @@ int _handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -720,7 +713,7 @@ int _handle_unlink(const int client_socket, const struct sockaddr_in *client_add
 	if (strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -759,7 +752,7 @@ int _handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr
 	if (strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -804,7 +797,7 @@ int _handle_rename(const int client_socket, const struct sockaddr_in *client_add
 	+ strlen(new_path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -853,7 +846,7 @@ int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	struct utimbuf *buf = NULL;
@@ -905,7 +898,7 @@ int _handle_statfs(const int client_socket, const struct sockaddr_in *client_add
 	if (strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -1001,7 +994,7 @@ int _handle_release(const int client_socket, const struct sockaddr_in *client_ad
 	
 	if (handle == (uint64_t)-1)
 	{
-		return reject_request(client_socket, cmd->command, EBADF) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
 	int fd = (int)handle;
@@ -1050,7 +1043,7 @@ int _handle_mknod(const int client_socket, const struct sockaddr_in *client_addr
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
-		return reject_request(client_socket, cmd->command, EBADE) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;

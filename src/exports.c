@@ -42,7 +42,8 @@ const char* trim_right(const char *buffer, unsigned size)
 	const char *local_buffer = buffer;
 	unsigned skipped = 0;
 	
-	while (local_buffer[0] == ' ' || local_buffer[0] == '\t')
+	while (local_buffer[0] == ' ' 
+	|| local_buffer[0] == '\t')
 	{
 		--local_buffer;
 		++skipped;
@@ -86,6 +87,84 @@ unsigned is_ipaddr(const char *string)
 	return inet_addr(string) == INADDR_NONE ? 0 : 1;
 }
 
+unsigned set_export_opts(struct list *opts)
+{
+	unsigned ret = 0;
+	
+	struct list *opt = opts;
+	while (opt)
+	{
+		const char *opt_str = opt->data;
+		
+		if (strlen(opt_str) > 0)
+		{
+			if (strcmp(opt_str, "ro") == 0)
+			{
+				ret |= opt_ro;
+			}
+			else
+			{
+				ERROR("Unknown export option: %s\n", opt_str);
+				return (unsigned)-1;
+			}
+		}
+		
+		opt = opt->next;
+	}
+	
+	return ret;
+}
+
+struct list* parse_list(const char *buffer, const char *border)
+{
+	struct list *ret = NULL;
+	
+	const char *local_buffer = buffer;
+	do
+	{
+		char *delimiter = strchr(local_buffer, ',');
+		
+		if (delimiter >= border)
+		{
+			break;
+		}
+		
+		int len = (delimiter != NULL ? delimiter - local_buffer : border - local_buffer);
+		
+		const char *item_end = trim_right(delimiter != NULL ? delimiter - 1 : border - 1, len - 1);
+		
+		len = item_end - local_buffer;
+		
+		char *item = get_buffer(len + 1);
+		memcpy(item, local_buffer, len);
+		item[len] = 0;
+		
+		struct list *added = add_to_list(ret, item);
+		if (added == NULL)
+		{
+			destroy_list(ret);
+			return NULL;
+		}
+		else
+		{
+			if (ret == NULL)
+			{
+				ret = added;
+			}
+		}
+		
+		if (delimiter == NULL)
+		{
+			break;
+		}
+		
+		local_buffer = trim_left(delimiter + 1, border - local_buffer);
+	}
+	while (local_buffer < border);
+	
+	return ret;
+}
+
 char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_export *line_export)
 {
 	const char *local_buffer = buffer + start_from;
@@ -100,8 +179,6 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	{
 		return next_line == NULL ? NULL : next_line + 1;
 	}
-	
-	struct list *this_line_users = NULL;
 	
 	const char *share_end = find_chr(local_buffer, next_line, "\t ", 2);
 	if (share_end == NULL)
@@ -127,37 +204,49 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	}
 	
 	const char *users = trim_left(share_end, next_line - local_buffer);
-	if (users == NULL || users >= next_line)
+	const char *users_end = find_chr(users, next_line + 1, "(\n", 2);
+	
+	if (users == NULL 
+	|| users >= next_line
+	|| users_end == NULL
+	|| users_end > next_line)
 	{
 		free_buffer(share);
 		return (char *)-1;
 	}
 	
-	do
+	struct list *this_line_users = parse_list(users, users_end);
+	
+	const char *options = find_chr(users_end, next_line + 1, "(", 1);
+	struct list *this_line_options = NULL;
+	
+	if (options != NULL)
 	{
-		const char *user_end = find_chr(users, next_line + 1, ",\n", 2);
-		if (user_end == NULL || user_end > next_line)
+		const char *options_end = find_chr(options, next_line + 1, ")", 1);
+		if (options_end != NULL)
 		{
-			return (char *)-1;
+			this_line_options = parse_list(options + 1, options_end);
 		}
-		
-		unsigned user_len = trim_right(user_end - 1, user_end - users - 1) - users;
-		char *user = get_buffer(user_len + 1);
-		memset(user, 0, user_len + 1);
-		memcpy(user, users, user_len);
-		
-		struct list *added = add_to_list(this_line_users, user);
-		if (this_line_users == NULL)
-		{
-			this_line_users = added;
-		}
-		
-		users = trim_left(user_end + 1, next_line - user_end + 1);
 	}
-	while (users < next_line && users != 0);
+	
+	unsigned this_line_options_unsigned = set_export_opts(this_line_options);
+	
+	if (this_line_options_unsigned == (unsigned)-1)
+	{
+		free_buffer(share);
+		destroy_list(this_line_users);
+		destroy_list(this_line_options);
+		return (char *)-1;
+	}
+	
+	if (this_line_options != NULL)
+	{
+		destroy_list(this_line_options);
+	}
 	
 	line_export->path = share;
 	line_export->users = this_line_users;
+	line_export->options = this_line_options_unsigned;
 
 	return next_line == NULL ? NULL : next_line + 1;
 }
@@ -261,9 +350,9 @@ void dump_export(const struct rfs_export *single_export)
 #ifdef RFS_DEBUG
 	DEBUG("%s", "dumping export:\n");
 	DEBUG("path: '%s'\n", single_export->path);
-	DEBUG("%s", "users: ");
 
 	struct list *user = single_export->users;
+	DEBUG("%s%s", "users: ", user == NULL ? "\n" : "");
 	while (user != NULL)
 	{
 		const char *username = (char *)user->data;
@@ -275,6 +364,8 @@ void dump_export(const struct rfs_export *single_export)
 		
 		user = user->next;
 	}
+
+	DEBUG("options: %d\n", single_export->options);
 #endif // RFS_DEBUG
 }
 

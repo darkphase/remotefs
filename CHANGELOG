@@ -1,6 +1,12 @@
 0.9
 
+rfs:
 [*] proper cache cleanup
+
+rfsd:
+[+] privileges lowering (-u option)
+[*] more security checks
+[+] r/o exports
 
 0.8
 

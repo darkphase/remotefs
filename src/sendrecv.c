@@ -155,6 +155,24 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 	return size_received;
 }
 
+size_t rfs_ignore_incoming_data(const int sock, const size_t data_len)
+{
+	size_t size_ignored = 0;
+	char buffer[4096] = { 0 };
+	
+	while (size_ignored < data_len)
+	{
+		int done = recv(sock, buffer, data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored, 0);
+		if (done < 1)
+		{
+			return -1;
+		}
+		size_ignored += (size_t)done;
+	}
+	
+	return size_ignored;
+}
+
 #ifdef RFS_DEBUG
 void dump_sendrecv_stats()
 {

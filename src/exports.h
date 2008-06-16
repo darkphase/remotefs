@@ -9,7 +9,10 @@ struct rfs_export
 {
 	char *path;
 	struct list *users;
+	unsigned options;
 };
+
+enum e_export_opts { opt_ro = 1 };
 
 unsigned parse_exports();
 void release_exports();

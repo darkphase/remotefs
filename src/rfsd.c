@@ -32,6 +32,8 @@ static const char *pidfile_name = "/var/run/rfsd.pid";
 
 struct rfsd_config rfsd_config;
 
+static struct rfs_export *mounted_export = NULL;
+
 void init_config()
 {
  	rfsd_config.listen_address = "0.0.0.0";
@@ -165,15 +167,47 @@ void server_close_connection(int socket)
 	mp_force_free();
 }
 
+int _reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
+{
+	struct answer ans = { cmd->command, 0, -1, ret_errno };
+	
+	if (data_is_in_queue != 0 
+	&& rfs_ignore_incoming_data(client_socket, cmd->data_len) != cmd->data_len)
+	{
+		return -1;
+	}
+	
+	return rfs_send_answer(client_socket, &ans) != -1 ? 0 : -1;
+}
+
+int reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno)
+{
+	return _reject_request(client_socket, cmd, ret_errno, 0);
+}
+
+int reject_request_with_cleanup(const int client_socket, const struct command *cmd, int32_t ret_errno)
+{
+	return _reject_request(client_socket, cmd, ret_errno, 1);
+}
+
 int handle_command(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	if (cmd->command <= cmd_first
 	|| cmd->command >= cmd_last)
 	{
+		reject_request_with_cleanup(client_socket, cmd, EBADE);
 		return -1;
 	}
 	
 	update_keep_alive();
+	
+	switch (cmd->command)
+	{
+	case cmd_last:
+	case cmd_first:
+		reject_request_with_cleanup(client_socket, cmd, EBADE);
+		return -1;
+	}
 	
 	switch (cmd->command)
 	{
@@ -192,6 +226,7 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 	
 	if (directory_mounted == 0)
 	{
+		reject_request_with_cleanup(client_socket, cmd, EACCES);
 		return -1;
 	}
 	
@@ -202,21 +237,34 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		
 	case cmd_getattr:
 		return handle_getattr(client_socket, client_addr, cmd);
-		
-	case cmd_mknod:
-		return handle_mknod(client_socket, client_addr, cmd);
-		
+	
 	case cmd_open:
 		return handle_open(client_socket, client_addr, cmd);
 	
 	case cmd_release:
 		return handle_release(client_socket, client_addr, cmd);
 		
-	case cmd_truncate:
-		return handle_truncate(client_socket, client_addr, cmd);
-	
 	case cmd_read:
 		return handle_read(client_socket, client_addr, cmd);
+		
+	case cmd_statfs:
+		return handle_statfs(client_socket, client_addr, cmd);
+	}
+	
+	if (mounted_export == NULL
+	|| (mounted_export->options & opt_ro) == 0)
+	{
+		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
+	}
+	
+	// operation which are require write permissions
+	switch (cmd->command)
+	{
+	case cmd_mknod:
+		return handle_mknod(client_socket, client_addr, cmd);
+		
+	case cmd_truncate:
+		return handle_truncate(client_socket, client_addr, cmd);
 		
 	case cmd_write:
 		return handle_write(client_socket, client_addr, cmd);
@@ -235,13 +283,6 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		
 	case cmd_utime:
 		return handle_utime(client_socket, client_addr, cmd);
-		
-	case cmd_statfs:
-		return handle_statfs(client_socket, client_addr, cmd);
-		
-	case cmd_last:
-	case cmd_first:
-		return -1;
 	}
 	
 	return -1;
