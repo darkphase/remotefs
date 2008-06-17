@@ -9,7 +9,6 @@ struct list;
 struct write_cache_entry
 {
 	uint64_t descriptor;
-	char *buffer;
 	off_t offset;
 	size_t size;
 };
@@ -27,6 +26,7 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 /// get cache as list of chunks
 /// @return 
 const struct list* get_write_cache();
+const char* get_write_cache_block();
 /// get cached data size
 /// @return 
 size_t get_write_cache_size();
@@ -35,5 +35,10 @@ size_t get_write_cache_size();
 void destroy_write_cache();
 
 unsigned write_cache_is_for(uint64_t descriptor);
+
+int init_write_cache(off_t offset, size_t size);
+void uninit_write_cache();
+size_t last_used_write_block();
+size_t write_cache_max_size();
 
 #endif // WRITE_CACHE_H

@@ -462,6 +462,11 @@ int _rfs_release(const char *path, struct fuse_file_info *fi)
 	{
 		destroy_write_cache();
 	}
+	
+	if (get_write_cache_size() == 0)
+	{
+		uninit_write_cache();
+	}
 
 	uint64_t handle = htonll(fi->fh);
 
@@ -701,29 +706,6 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	uint32_t foffset = first_entry->offset;
 	uint64_t handle = first_entry->descriptor;
 	
-	size_t overall_size = sizeof(handle) + sizeof(fsize) + sizeof(foffset) + fsize;
-	
-	char *buffer = get_buffer(fsize);
-
-	size_t done = 0;
-	while (write_cache)
-	{
-		if (done > overall_size)
-		{
-			free_buffer(buffer);
-			return -EIO;
-		}
-		
-		struct write_cache_entry *item = (struct write_cache_entry *)write_cache->data;
-		
-		memcpy(buffer + done, item->buffer, item->size);
-		done += item->size;
-		
-		write_cache = write_cache->next;
-	}
-	
-	destroy_write_cache();
-	
 	unsigned old_val = rfs_config.use_write_cache;
 	rfs_config.use_write_cache = 0;
 	
@@ -731,9 +713,9 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 											// now it is only ->fh, but be warned
 	tmp_fi.fh = handle;
 	
-	int ret = _rfs_write(path, buffer, fsize, foffset, &tmp_fi);
+	int ret = _rfs_write(path, get_write_cache_block(), fsize, foffset, &tmp_fi);
 	
-	free_buffer(buffer);
+	destroy_write_cache();
 	
 	rfs_config.use_write_cache = old_val;
 	return ret == fsize ? 0 : ret;
@@ -752,6 +734,29 @@ int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offs
 		{
 			return ret;
 		}
+		
+		size_t reinit_size = last_used_write_block();
+		if (reinit_size == (size_t)-1
+		|| reinit_size < size)
+		{
+			reinit_size = size;
+		}
+		
+		if (reinit_size * 2 < write_cache_max_size())
+		{
+			if (init_write_cache(offset, reinit_size * 2) != 0)
+			{
+				return -EIO;
+			}
+		}
+		else
+		{
+			if (init_write_cache(offset, write_cache_max_size()) != 0)
+			{
+				return -EIO;
+			}
+		}
+		
 		return (add_to_write_cache(fi->fh, buf, size, offset) != 0 ? -EIO : size);
 	}
 }
@@ -763,7 +768,8 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 		return -EIO;
 	}
 	
-	if (rfs_config.use_write_cache != 0)
+	if (rfs_config.use_write_cache != 0
+	&& size < write_cache_max_size())
 	{
 		return _rfs_write_cached(path, buf, size, offset, fi);
 	}

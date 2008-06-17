@@ -18,10 +18,12 @@ void WriteCacheTest::tearDown()
 
 void WriteCacheTest::testBasics()
 {
-	char buffer[DEFAULT_RW_CACHE_SIZE * 2] = { 0 };
+	char buffer[DEFAULT_RW_CACHE_SIZE] = { 0 };
 	uint64_t descriptor = 0;
 	size_t size = sizeof(buffer);
 	off_t offset = 0;
+	
+	CPPUNIT_ASSERT(init_write_cache(offset, size / 2) == 0);
 	
 	CPPUNIT_ASSERT(is_fit_to_write_cache(descriptor, size, offset) == 0);
 	CPPUNIT_ASSERT(is_fit_to_write_cache(descriptor, size / 2, offset) != 0);
@@ -48,8 +50,11 @@ void WriteCacheTest::testMultipleFiles()
 	uint64_t another_descriptor = 1;
 	size_t size = sizeof(buffer);
 	off_t offset = 0;
+	unsigned pieces = 4;
 	
-	for (int i = 0; i < 4; ++i)
+	CPPUNIT_ASSERT(init_write_cache(offset, size * pieces) == 0);
+	
+	for (unsigned i = 0; i < pieces; ++i)
 	{
 		CPPUNIT_ASSERT(is_fit_to_write_cache(descriptor, size, offset + size * i) != 0);
 		CPPUNIT_ASSERT(add_to_write_cache(descriptor, buffer, size, offset + size * i) == 0);
@@ -59,8 +64,11 @@ void WriteCacheTest::testMultipleFiles()
 	CPPUNIT_ASSERT(add_to_write_cache(another_descriptor, buffer, size, offset) != 0);
 	
 	destroy_write_cache();
+	uninit_write_cache();
 	
-	for (int i = 0; i < 4; ++i)
+	CPPUNIT_ASSERT(init_write_cache(offset, size * pieces) == 0);
+	
+	for (unsigned i = 0; i < pieces; ++i)
 	{
 		CPPUNIT_ASSERT(is_fit_to_write_cache(another_descriptor, size, offset + size * i) != 0);
 		CPPUNIT_ASSERT(add_to_write_cache(another_descriptor, buffer, size, offset + size * i) == 0);
@@ -72,10 +80,12 @@ void WriteCacheTest::testMultipleFiles()
 
 void WriteCacheTest::testMaxSize()
 {
-	char buffer[DEFAULT_RW_CACHE_SIZE * 2] = { 0 };
+	char buffer[DEFAULT_RW_CACHE_SIZE] = { 0 };
 	uint64_t descriptor = 0;
 	size_t size = sizeof(buffer);
 	off_t offset = 0;
+	
+	CPPUNIT_ASSERT(init_write_cache(offset, size / 2) == 0);
 	
 	CPPUNIT_ASSERT(is_fit_to_write_cache(descriptor, size, offset) == 0);
 	CPPUNIT_ASSERT(add_to_write_cache(descriptor, buffer, size, offset) != 0);
@@ -87,6 +97,8 @@ void WriteCacheTest::testCleanup()
 	uint64_t descriptor = 0;
 	size_t size = sizeof(buffer);
 	off_t offset = 0;
+	
+	CPPUNIT_ASSERT(init_write_cache(offset, size) == 0);
 	
 	CPPUNIT_ASSERT(is_fit_to_write_cache(descriptor, size, offset) != 0);
 	CPPUNIT_ASSERT(add_to_write_cache(descriptor, buffer, size, offset) == 0);

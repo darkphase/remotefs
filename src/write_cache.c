@@ -7,11 +7,59 @@
 #include "buffer.h"
 
 static struct list *cache = NULL;
+static char *cache_block = NULL;
 static const unsigned max_cache_size = DEFAULT_RW_CACHE_SIZE / 2;
 static unsigned cache_size = 0;
 static uint64_t last_cached_desc = (uint64_t)-1;
 static off_t last_cached_offset = (off_t)-1;
 static size_t last_cached_size = (size_t)-1;
+static size_t last_used_size = (size_t)-1;
+static size_t last_used_offset = (off_t)-1;
+
+size_t write_cache_max_size()
+{
+	return max_cache_size;
+}
+
+int init_write_cache(off_t offset, size_t size)
+{
+	if (cache_block != NULL)
+	{
+		return -1;
+	}
+	
+	if (size > max_cache_size)
+	{
+		return -1;
+	}
+	
+	if (size > 0)
+	{
+		cache_block = get_buffer(size);
+	}
+	
+	last_used_size = size;
+	last_used_offset = offset;
+	
+	return 0;
+}
+
+void uninit_write_cache()
+{
+	DEBUG("%s", "uniniting cache\n");
+	last_used_size = (size_t)-1;
+	last_used_offset = (off_t)-1;
+}
+
+size_t last_used_write_block()
+{
+	return last_used_size;
+}
+
+const char* get_write_cache_block()
+{
+	return cache_block;
+}
 
 const struct list* get_write_cache()
 {
@@ -20,18 +68,24 @@ const struct list* get_write_cache()
 
 size_t get_write_cache_size()
 {
-	return cache_size;
+	return cache_block == NULL ? 0 : cache_size;
 }
 
 unsigned is_fit_to_write_cache(uint64_t descriptor, size_t size, off_t offset)
 {
+	if (cache_block == NULL )
+	{
+		return 0;
+	}
+	
 	if (last_cached_desc != (uint64_t)-1
 	&& descriptor != last_cached_desc)
 	{
 		return 0;
 	}
 	
-	if (cache_size + size > max_cache_size)
+	if (cache_size + size > last_used_size
+	|| cache_size + size > max_cache_size)
 	{
 		return 0;
 	}
@@ -64,17 +118,7 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 	{
 		return -1;
 	}
-
-	entry->buffer = get_buffer(size);
-
-	if (entry->buffer == NULL)
-	{
-		free_buffer(entry);
-
-		return -1;
-	}
-
-	memcpy(entry->buffer, buffer, size);
+	
 	entry->descriptor = descriptor;
 	entry->size = size;
 	entry->offset = offset;
@@ -82,10 +126,11 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 	struct list *added = add_to_list(cache, entry);
 	if (added == NULL)
 	{
-		free_buffer(entry->buffer);
 		free_buffer(entry);
 		return -1;
 	}
+	
+	memcpy(cache_block + (offset - last_used_offset), buffer, size);
 
 	if (cache == NULL)
 	{
@@ -102,22 +147,6 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 
 void destroy_write_cache()
 {
-	struct list *item = cache;
-	while (item != NULL)
-	{
-		struct write_cache_entry *entry = (struct write_cache_entry *)item->data;
-
-		if (entry != NULL)
-		{
-			if (entry->buffer != NULL)
-			{
-				free_buffer(entry->buffer);
-			}
-		}
-
-		item = item->next;
-	}
-
 	destroy_list(cache);
 	
 	cache = NULL;
@@ -125,6 +154,12 @@ void destroy_write_cache()
 	last_cached_desc = (uint64_t)-1;
 	last_cached_size = (size_t)-1;
 	last_cached_offset = (off_t)-1;
+	
+	if (cache_block != NULL)
+	{
+		free_buffer(cache_block);
+		cache_block = NULL;
+	}
 }
 
 unsigned write_cache_is_for(uint64_t descriptor)
