@@ -36,9 +36,10 @@ void destroy_write_cache();
 
 unsigned write_cache_is_for(uint64_t descriptor);
 
-int init_write_cache(off_t offset, size_t size);
+int init_write_cache(const char *path, off_t offset, size_t size);
 void uninit_write_cache();
 size_t last_used_write_block();
+const char *write_cached_path();
 size_t write_cache_max_size();
 
 #endif // WRITE_CACHE_H

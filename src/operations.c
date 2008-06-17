@@ -729,7 +729,7 @@ int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offs
 	}
 	else
 	{
-		int ret = _rfs_flush(path, fi);
+		int ret = _rfs_flush(write_cached_path(), fi);
 		if (ret < 0)
 		{
 			return ret;
@@ -744,14 +744,14 @@ int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offs
 		
 		if (reinit_size * 2 < write_cache_max_size())
 		{
-			if (init_write_cache(offset, reinit_size * 2) != 0)
+			if (init_write_cache(path, offset, reinit_size * 2) != 0)
 			{
 				return -EIO;
 			}
 		}
 		else
 		{
-			if (init_write_cache(offset, write_cache_max_size()) != 0)
+			if (init_write_cache(path, offset, write_cache_max_size()) != 0)
 			{
 				return -EIO;
 			}

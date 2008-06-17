@@ -1,6 +1,7 @@
 #include "write_cache.h"
 
 #include <string.h>
+#include <malloc.h>
 
 #include "config.h"
 #include "list.h"
@@ -15,13 +16,19 @@ static off_t last_cached_offset = (off_t)-1;
 static size_t last_cached_size = (size_t)-1;
 static size_t last_used_size = (size_t)-1;
 static size_t last_used_offset = (off_t)-1;
+static char *last_used_path = NULL;
 
 size_t write_cache_max_size()
 {
 	return max_cache_size;
 }
 
-int init_write_cache(off_t offset, size_t size)
+const char* write_cached_path()
+{
+	return last_used_path;
+}
+
+int init_write_cache(const char *path, off_t offset, size_t size)
 {
 	if (cache_block != NULL)
 	{
@@ -40,6 +47,7 @@ int init_write_cache(off_t offset, size_t size)
 	
 	last_used_size = size;
 	last_used_offset = offset;
+	last_used_path = strdup(path);
 	
 	return 0;
 }
@@ -49,6 +57,12 @@ void uninit_write_cache()
 	DEBUG("%s", "uniniting cache\n");
 	last_used_size = (size_t)-1;
 	last_used_offset = (off_t)-1;
+	
+	if (last_used_path != NULL)
+	{
+		free(last_used_path);
+		last_used_path = NULL;
+	}
 }
 
 size_t last_used_write_block()
@@ -159,6 +173,12 @@ void destroy_write_cache()
 	{
 		free_buffer(cache_block);
 		cache_block = NULL;
+	}
+	
+	if (last_used_path != NULL)
+	{
+		free(last_used_path);
+		last_used_path = NULL;
 	}
 }
 
