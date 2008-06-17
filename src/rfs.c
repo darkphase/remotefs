@@ -77,14 +77,17 @@ void usage(const char *program)
 void init_config()
 {
 	rfs_config.server_port = DEFAULT_SERVER_PORT;
+	rfs_config.use_read_cache = 1;
+	rfs_config.use_write_cache = 1;
+	rfs_config.use_read_write_cache = 1;
 }
 
 void rfs_fix_options()
 {
-	if (rfs_config.use_read_write_cache)
+	if (rfs_config.use_read_write_cache == 0)
 	{
-		rfs_config.use_read_cache = 1;
-		rfs_config.use_write_cache = 1;
+		rfs_config.use_read_cache = 0;
+		rfs_config.use_write_cache = 0;
 	}
 }
 

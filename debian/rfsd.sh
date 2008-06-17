@@ -1,4 +1,4 @@
-VERSION="0.8-1"
+VERSION="0.9-1"
 ARCH="i386"
 NAME="rfsd"
 CLIENT_FILES="../src/rfsd.c ../src/rfsd.h \
@@ -50,6 +50,7 @@ rm -f dpkg/DEBIAN/control.1
 mv ${TARGET} dpkg${INSTALL_DIR}
 mv ${PASSWD_TARGET} dpkg${INSTALL_DIR}
 cp ${ETC_FILES} dpkg${ETC_DIR}
+chmod 600 dpkg${ETC_DIR}/*
 cp ${INIT_SCRIPT} dpkg${ETC_DIR}/init.d/${NAME}
 
 dpkg -b dpkg ${NAME}_${VERSION}_${ARCH}.deb

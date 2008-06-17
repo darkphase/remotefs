@@ -411,7 +411,7 @@ void usage(const char *app_name)
 	"-h \t\t\tshow this help screen\n"
 	"-a [address]\t\tlisten for connections on specified address\n"
 	"-p [port number]\tlisten for connections on specified port\n"
-	"-u username\t\tworker process be running with privileges of this user\n"
+	"-u [username]\t\tworker process be running with privileges of this user\n"
 	"\n"
 	, app_name);
 }

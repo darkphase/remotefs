@@ -4,6 +4,7 @@ rfs:
 [*] proper cache cleanup
 [+] new write cache
 [*] fixed bug in _rfs_write_cached() with wrong path passed to _rfs_flush()
+[*] read/write cache is enabled by default
 
 rfsd:
 [+] privileges lowering (-u option)

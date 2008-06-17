@@ -1,6 +1,7 @@
 # format:
-# [export path] [user/ip address,another user/another ip address]
+# [export path] [user/ip address,another user/another ip address] (options)
 #
 # example:
 # /tmp 	127.0.0.1, alex, 10.0.0.2
+# /tmp 	127.0.0.1, alex, 10.0.0.2 (ro)
 

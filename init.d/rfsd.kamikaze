@@ -4,10 +4,11 @@ START=50
 
 LISTEN="0.0.0.0"
 PORT="5001"
+RFSD_USER="root"
 
 start()
 {
-	rfsd -a ${LISTEN} -p ${PORT}
+	rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER}
 }
 
 stop()
