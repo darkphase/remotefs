@@ -1,4 +1,4 @@
-VERSION="0.8"
+VERSION="0.9"
 SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/rfspasswd.c \
 	../src/buffer.h ../src/buffer.c \
@@ -29,6 +29,7 @@ mkdir ${NAME}-${VERSION}/etc/
 
 cp ${INIT_SCRIPT} ${NAME}-${VERSION}/init.d/${NAME}
 cp ${ETC_FILES} ${NAME}-${VERSION}/etc/
+chmod 600 ${NAME}-${VERSION}/etc/*
 
 cp ${SERVER_FILES} ${NAME}-${VERSION}/
 cp ${MAKEFILE} ${NAME}-${VERSION}/Makefile
