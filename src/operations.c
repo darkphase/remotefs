@@ -694,17 +694,14 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 		return 0;
 	}
 	
-	if (get_write_cache() == NULL)
+	if (get_write_cache_block() == NULL)
 	{
 		return -EIO;
 	}
-	
-	const struct list *write_cache = get_write_cache();
-	const struct write_cache_entry *first_entry = (const struct write_cache_entry *)write_cache->data;
 
 	uint32_t fsize = get_write_cache_size();
-	uint32_t foffset = first_entry->offset;
-	uint64_t handle = first_entry->descriptor;
+	uint32_t foffset = write_cached_offset();
+	uint64_t handle = write_cached_descriptor();
 	
 	unsigned old_val = rfs_config.use_write_cache;
 	rfs_config.use_write_cache = 0;

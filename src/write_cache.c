@@ -4,10 +4,8 @@
 #include <malloc.h>
 
 #include "config.h"
-#include "list.h"
 #include "buffer.h"
 
-static struct list *cache = NULL;
 static char *cache_block = NULL;
 static const unsigned max_cache_size = DEFAULT_RW_CACHE_SIZE / 2;
 static unsigned cache_size = 0;
@@ -25,7 +23,17 @@ size_t write_cache_max_size()
 
 const char* write_cached_path()
 {
-	return last_used_path;
+	return cache_block != NULL ? last_used_path : NULL;
+}
+
+off_t write_cached_offset()
+{
+	return cache_block != NULL ? last_used_offset : (off_t)-1;
+}
+
+uint64_t write_cached_descriptor()
+{
+	return cache_block != NULL ? last_cached_desc : (uint64_t)-1;
 }
 
 int init_write_cache(const char *path, off_t offset, size_t size)
@@ -75,11 +83,6 @@ const char* get_write_cache_block()
 	return cache_block;
 }
 
-const struct list* get_write_cache()
-{
-	return cache;
-}
-
 size_t get_write_cache_size()
 {
 	return cache_block == NULL ? 0 : cache_size;
@@ -126,31 +129,8 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 		return -1;
 	}
 
-	struct write_cache_entry *entry = get_buffer(sizeof(*entry));
-
-	if (entry == NULL)
-	{
-		return -1;
-	}
-	
-	entry->descriptor = descriptor;
-	entry->size = size;
-	entry->offset = offset;
-
-	struct list *added = add_to_list(cache, entry);
-	if (added == NULL)
-	{
-		free_buffer(entry);
-		return -1;
-	}
-	
 	memcpy(cache_block + (offset - last_used_offset), buffer, size);
 
-	if (cache == NULL)
-	{
-		cache = added;
-	}
-	
 	cache_size += size;
 	last_cached_desc = descriptor;
 	last_cached_size = size;
@@ -161,9 +141,6 @@ int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off
 
 void destroy_write_cache()
 {
-	destroy_list(cache);
-	
-	cache = NULL;
 	cache_size = 0;
 	last_cached_desc = (uint64_t)-1;
 	last_cached_size = (size_t)-1;
@@ -184,7 +161,7 @@ void destroy_write_cache()
 
 unsigned write_cache_is_for(uint64_t descriptor)
 {
-	if (cache != 0)
+	if (cache_block != 0)
 	{
 		if (last_cached_desc == descriptor)
 		{

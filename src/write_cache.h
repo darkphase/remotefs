@@ -4,15 +4,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-struct list;
-
-struct write_cache_entry
-{
-	uint64_t descriptor;
-	off_t offset;
-	size_t size;
-};
-
 /// check if current cache size + given size is less than max cache size
 /// @param size 
 /// @return 
@@ -23,9 +14,7 @@ unsigned is_fit_to_write_cache(uint64_t descriptor, size_t size, off_t offset);
 /// @param size 
 /// @return 
 int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off_t offset);
-/// get cache as list of chunks
-/// @return 
-const struct list* get_write_cache();
+
 const char* get_write_cache_block();
 /// get cached data size
 /// @return 
@@ -41,5 +30,7 @@ void uninit_write_cache();
 size_t last_used_write_block();
 const char *write_cached_path();
 size_t write_cache_max_size();
+off_t write_cached_offset();
+uint64_t write_cached_descriptor();
 
 #endif // WRITE_CACHE_H
