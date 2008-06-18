@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -DRFS_DEBUG -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse` -g
-LDFLAGS = `pkg-config --libs fuse` -lcrypt
+LDFLAGS = `pkg-config --libs fuse` -lcrypt -lpthread
 TARGET = rfs
 
 OBJS = src/rfs.o \

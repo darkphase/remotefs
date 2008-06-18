@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse` -O2
-LDFLAGS = `pkg-config --libs fuse` -lcrypt -s
+LDFLAGS = `pkg-config --libs fuse` -lcrypt -lpthread -s
 
 OBJS = rfs.o \
 operations.o \
