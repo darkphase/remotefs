@@ -164,6 +164,17 @@ int rfs_mount(const char *path)
 	return -EIO;
 }
 
+int rfs_request_salt()
+{
+	if (keep_alive_lock() == 0)
+	{
+		int ret = _rfs_request_salt();
+		keep_alive_unlock();
+		return ret;
+	}
+	return -EIO;
+}
+
 int rfs_auth(const char *user, const char *passwd)
 {
 	if (keep_alive_lock() == 0)

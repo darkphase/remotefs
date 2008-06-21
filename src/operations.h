@@ -5,6 +5,7 @@ struct stat;
 struct utimebuf;
 
 #include <fuse.h>
+#include "config.h"
 
 struct fuse_operations rfs_operations;
 
@@ -13,6 +14,7 @@ void rfs_destroy(void *rfs_init_result);
 
 int rfs_mount(const char *path);
 int rfs_auth(const char *user, const char *passwd);
+int rfs_request_salt();
 int rfs_keep_alive();
 
 /// This function is called to get the attributes of a specific file.

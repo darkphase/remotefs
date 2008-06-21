@@ -9,6 +9,7 @@ const char* describe_command(const enum server_commands cmd)
 	switch (cmd)
 	{
 	case cmd_auth:				return "auth";
+	case cmd_request_salt:		return "request salt";
 	case cmd_closeconnection: 	return "closeconnection";
 	case cmd_changepath: 		return "changepath";
 	case cmd_keepalive: 		return "keepalive";

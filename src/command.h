@@ -8,6 +8,7 @@ enum server_commands
 	cmd_first = 0, 
 	
 	cmd_auth,
+	cmd_request_salt,
 	cmd_closeconnection,
 	cmd_changepath,
 	cmd_keepalive,

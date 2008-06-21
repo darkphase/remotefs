@@ -159,6 +159,16 @@ int handle_closeconnection(const int client_socket, const struct sockaddr_in *cl
 	return -1;
 }
 
+int handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	if (keep_alive_lock() == 0)
+	{
+		int ret = _handle_request_salt(client_socket, client_addr, cmd);
+		return keep_alive_unlock() == 0 ? ret : -1;
+	}
+	return -1;
+}
+
 int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	if (keep_alive_lock() == 0)

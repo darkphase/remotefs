@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <pwd.h>
+#include <time.h>
 
 #include "config.h"
 #include "command.h"
@@ -220,6 +221,9 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		
 	case cmd_auth:
 		return handle_auth(client_socket, client_addr, cmd);
+		
+	case cmd_request_salt:
+		return handle_request_salt(client_socket, client_addr, cmd);
 	
 	case cmd_changepath:
 		return handle_changepath(client_socket, client_addr, cmd);
@@ -295,6 +299,8 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 {
 	g_client_socket = client_socket;
+	
+	srand(time(NULL));
 	
 	update_keep_alive();
 	alarm(keep_alive_period());

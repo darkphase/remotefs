@@ -224,7 +224,7 @@ int change_password(const char *login)
 		password1[strlen(password1) - 1] = '\0';
 	}
 	
-	char *passwd = passwd_hash(password1);
+	char *passwd = passwd_hash(password1, EMPTY_SALT);
 	memset(password1, 0, sizeof(password1));
 	
 	if (add_or_replace_auth(login, passwd) != 0)

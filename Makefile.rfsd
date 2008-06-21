@@ -1,6 +1,6 @@
 CC = gcc
 TARGET = rfsd
-LDFLAGS =
+LDFLAGS = -lcrypt
 
 OBJS = src/rfsd.o \
 src/sendrecv.o \
@@ -13,7 +13,8 @@ src/alloc.o \
 src/list.o \
 src/exports.o \
 src/passwd.o \
-src/keep_alive_server.o
+src/keep_alive_server.o \
+src/crypt.o
 
 default: $(OBJS) link_server
 	ln -sf bin/rfsd rfsd

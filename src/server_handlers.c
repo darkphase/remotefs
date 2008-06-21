@@ -25,6 +25,7 @@
 #include "passwd.h"
 #include "inet.h"
 #include "keep_alive_server.h"
+#include "crypt.h"
 
 extern unsigned char directory_mounted;
 extern struct rfsd_config rfsd_config;
@@ -32,13 +33,22 @@ extern struct rfs_export *mounted_export;
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 
+static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
+
 int check_password(const char *user, const char *passwd)
 {
 	const char *stored_passwd = get_auth_password(user);
-	if (stored_passwd != NULL
-	&& strcmp(stored_passwd, passwd) == 0)
-	{
-		return 0;
+	
+	if (stored_passwd != NULL)
+	{	
+		char *check_crypted = passwd_hash(stored_passwd, auth_salt);
+		
+		DEBUG("user: %s, received passwd: %s, stored passwd: %s, salt: %s, required passwd: %s\n", user, passwd, stored_passwd, auth_salt, check_crypted);
+		
+		int ret = (strcmp(check_crypted, passwd) == 0 ? 0 : -1);
+		free(check_crypted);
+		
+		return ret;
 	}
 	
 	return -1;
@@ -73,6 +83,87 @@ int check_permissions(const struct rfs_export *export_info, const char *client_i
 	return -1;
 }
 
+int generate_salt(char *salt, size_t max_size)
+{
+	const char al_set_begin = 'a';
+	const char al_set_end = 'z';
+	const char alu_set_begin = 'A';
+	const char alu_set_end = 'Z';
+	const char num_set_begin = '0';
+	const char num_set_end = '9';
+	const char *additional = "./";
+	
+	memset(salt, 0, max_size);
+	
+	size_t empty_len = strlen(EMPTY_SALT);
+	
+	if (empty_len >= max_size)
+	{
+		return -1;
+	}
+	
+	memcpy(salt, EMPTY_SALT, empty_len);
+	
+	enum e_set { set_al = 0, set_alu, set_num, set_additional, set_max };
+	
+	int i; for (i = empty_len; i < max_size; ++i)
+	{
+		char ch = '\0';
+		
+		switch (rand() % set_max)
+		{
+		case set_al:
+			ch = al_set_begin + (rand() % (al_set_end - al_set_begin));
+			break;
+		case set_alu:
+			ch = alu_set_begin + (rand() % (alu_set_end - alu_set_begin));
+			break;
+		case set_num:
+			ch = num_set_begin + (rand() % (num_set_end - num_set_begin));
+			break;
+		case set_additional:
+			ch = additional[rand() % strlen(additional)];
+			break;
+			
+		default:
+			memset(salt, 0, max_size);
+			return -1;
+		}
+		
+		DEBUG("%c\n", ch);
+		
+		salt[i] = ch;
+	}
+	
+	return 0;
+}
+
+int _handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	memset(auth_salt, 0, sizeof(auth_salt));
+	if (generate_salt(auth_salt, sizeof(auth_salt) - 1) != 0)
+	{
+		reject_request(client_socket, cmd, EREMOTE);
+		return 1;
+	}
+	
+	uint32_t salt_len = strlen(auth_salt) + 1;
+	
+	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
+	
+	if (rfs_send_answer(client_socket, &ans) == -1)
+	{
+		return -1;
+	}
+	
+	if (rfs_send_data(client_socket, auth_salt, salt_len) == -1)
+	{
+		return -1;
+	}
+	
+	return 0;
+}
+
 int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
@@ -101,12 +192,19 @@ int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr,
 		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 		
-	DEBUG("user: %s, passwd: %s\n", user, passwd);
+	DEBUG("user: %s, passwd: %s, salt: %s\n", user, passwd, auth_salt);
 	
 	auth_user = strdup(user);
 	auth_passwd = strdup(passwd);
 	
 	free_buffer(buffer);
+	
+	struct answer ans = { cmd_auth, 0, 0, 0 };
+	
+	if (rfs_send_answer(client_socket, &ans) == -1)
+	{
+		return -1;
+	}
 	
 	return 0;
 }

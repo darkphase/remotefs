@@ -8,6 +8,8 @@
 #define KEEP_ALIVE_PERIOD 60 * 5 // secs
 #define DEFAULT_RW_CACHE_SIZE 512 * 1024 // bytes
 #define CACHE_TTL 60 // secs
+#define MAX_SALT_LEN 3 + 8 // "$1$" + 8 bytes of actual salt
+#define EMPTY_SALT "$1$"
 
 #ifdef RFS_DEBUG
 #define DEBUG(format, args...) do { printf(format, args); } while (0)

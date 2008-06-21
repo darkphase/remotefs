@@ -186,7 +186,7 @@ int read_password()
 		buffer[done] = 0;
 	}
 	
-	rfs_config.auth_passwd = passwd_hash(buffer);
+	rfs_config.auth_passwd = passwd_hash(buffer, EMPTY_SALT);
 	DEBUG("hashed passwd: %s\n", rfs_config.auth_passwd);
 	free_buffer(buffer);
 	
@@ -256,10 +256,18 @@ int main(int argc, char **argv)
 	if (rfs_config.auth_user != NULL 
 	&& rfs_config.auth_passwd != NULL)
 	{
+		int req_ret = rfs_request_salt();
+		if (req_ret != 0)
+		{
+			ERROR("Requesting salt for authentication error: %s\n", strerror(-req_ret));
+			rfs_disconnect(sock);
+			return 1;
+		}
+		
 		int auth_ret = rfs_auth(rfs_config.auth_user, rfs_config.auth_passwd);
 		if (auth_ret != 0)
 		{
-			ERROR("Authentication error: %s", strerror(-auth_ret));
+			ERROR("Authentication error: %s\n", strerror(-auth_ret));
 			rfs_disconnect(sock);
 			return 1;
 		}

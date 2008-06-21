@@ -6,6 +6,7 @@ struct command;
 
 #define SERVER_VERSION 1
 
+int handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);

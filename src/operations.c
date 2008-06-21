@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
+#include <malloc.h>
 
 #include "config.h"
 #include "buffer.h"
@@ -22,11 +23,14 @@
 #include "write_cache.h"
 #include "list.h"
 #include "read_cache.h"
+#include "crypt.h"
 
 extern int g_server_socket;
+extern struct rfs_config rfs_config;
+
 static const unsigned cache_ttl = 60 * 5; // seconds
 static pthread_t keep_alive_thread = 0;
-extern struct rfs_config rfs_config;
+static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
 
 struct fuse_operations rfs_operations = {
 	.init		= rfs_init,
@@ -124,16 +128,60 @@ void rfs_destroy(void *rfs_init_result)
 	destroy_cache();
 }
 
+int _rfs_request_salt()
+{
+	if (g_server_socket == -1)
+	{
+		return -EIO;
+	}
+	
+	memset(auth_salt, 0, sizeof(auth_salt));
+	
+	struct command cmd = { cmd_request_salt, 0 };
+	
+	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
+	{
+		return -EIO;
+	}
+	
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	{
+		return -EIO;
+	}
+	
+	if (ans.command != cmd_request_salt
+	|| (ans.ret == 0 && (ans.data_len < 1 || ans.data_len > sizeof(auth_salt))))
+	{
+		return -EIO;
+	}
+	
+	if (ans.ret == 0)
+	{
+		if (rfs_receive_data(g_server_socket, auth_salt, ans.data_len) == -1)
+		{
+			return -EIO;
+		}
+	}
+	
+	return -ans.ret;
+}
+
 int _rfs_auth(const char *user, const char *passwd)
 {
 	if (g_server_socket == -1)
 	{
 		return -EIO;
 	}
+	
+	char *crypted = passwd_hash(passwd, auth_salt);
+	
+	memset(auth_salt, 0, sizeof(auth_salt));
 
-	uint32_t passwd_len = strlen(passwd) + 1;
+	uint32_t crypted_len = strlen(crypted) + 1;
 	unsigned user_len = strlen(user) + 1;
-	unsigned overall_size = sizeof(passwd_len) + passwd_len + user_len;
+	unsigned overall_size = sizeof(crypted_len) + crypted_len + user_len;
 	
 	struct command cmd = { cmd_auth, overall_size };
 	
@@ -145,8 +193,8 @@ int _rfs_auth(const char *user, const char *passwd)
 	char *buffer = get_buffer(overall_size);
 	
 	pack(user, user_len, buffer, 
-	pack(passwd, passwd_len, buffer, 
-	pack_32(&passwd_len, buffer, 0
+	pack(crypted, crypted_len, buffer, 
+	pack_32(&crypted_len, buffer, 0
 		)));
 	
 	if (rfs_send_data(g_server_socket, buffer, cmd.data_len) == -1)
@@ -156,8 +204,22 @@ int _rfs_auth(const char *user, const char *passwd)
 	}
 	
 	free_buffer(buffer);
+	free(crypted);
 	
-	return 0;
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	{
+		return -EIO;
+	}
+	
+	if (ans.command != cmd_auth
+	|| ans.data_len > 0)
+	{
+		return -EIO;
+	}
+	
+	return -ans.ret;
 }
 
 int _rfs_mount(const char *path)
