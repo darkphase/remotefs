@@ -1,5 +1,5 @@
 CC = gcc
-LDFLAGS = -s
+LDFLAGS = -s -lcrypt
 CFLAGS = -O2
 
 PASSWD_LDFLAGS = -s -lcrypt
@@ -15,7 +15,8 @@ alloc.o \
 list.o \
 exports.o \
 passwd.o \
-keep_alive_server.o
+keep_alive_server.o \
+crypt.o
 
 PASSWD_OBJS = rfspasswd.o \
 passwd.o \

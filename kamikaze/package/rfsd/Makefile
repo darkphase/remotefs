@@ -32,7 +32,7 @@ define Build/Compile
 		$(TARGET_CONFIGURE_OPTS) \
 		CC="$(TARGET_CROSS)gcc" \
 		CFLAGS="-fhonour-copts -O2 "\
-		RFSD_LDFLAGS="-s" \
+		RFSD_LDFLAGS="-lcrypt -s" \
 		RFSPASSWD_LDFLAGS="-lcrypt -s" \
 		all
 	rm -rf $(PKG_INSTALL_DIR)
