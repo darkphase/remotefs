@@ -1,5 +1,7 @@
 0.9
 
+[*] new authentication mechanism
+
 rfs:
 [*] proper cache cleanup
 [+] new write cache
