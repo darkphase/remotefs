@@ -31,7 +31,7 @@
 		
 		<br/><br/>
 		
-		<strong>I'm currently looking for people who could review code and point out security issues. 
+		<strong>I'm currently looking for people who could review the code and point out security issues. 
 		Any help would be appreciated.</strong>
 
 		<br/><br/>
@@ -41,7 +41,7 @@
 		<br/><br/>
 		
 		<strong>Starting the server:</strong> <code>/etc/init.d/rfsd start</code><br/><br/>
-		(do not forget to write down exports in /etc/rfs-exports and set passwords with rfspasswd utility (if you need them)).
+		(do not forget to put your exports into /etc/rfs-exports and set passwords with rfspasswd utility (if you need them)).
 
 		<br/><br/>
 		
@@ -90,9 +90,9 @@
 		<br/><br/>
 		
 		<code>-o username=name        auth username<br/>
-	    -o rd_cache=1           enable read cache<br/>
-	    -o wr_cache=1           enable write cache<br/>
-	    -o rdwr_cache=1         enable read/write cache<br/>
+	    -o rd_cache=0           disable read cache<br/>
+	    -o wr_cache=0           disable write cache<br/>
+	    -o rdwr_cache=0         disable read/write cache<br/>
 	    -o password=filename    filename with password for auth<br/>
 	    -o port=server_port     port which the server is listening to</code>
 		
@@ -106,7 +106,7 @@
 		
 		Read and write caches are supposed to improve read/write performance.
 		I've managed to get more than 2.5Mb/s both ways on my hardware (WL-500gP). 
-		This performance improvement is good for large files only. 
+		However, this performance improvement is good for large files only. 
 		An application which writes small amounts of data to many files will not experience a performance increase.
 		
 		<br/><br/>
