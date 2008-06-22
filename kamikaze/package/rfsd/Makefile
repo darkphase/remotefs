@@ -8,7 +8,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://z-z-z.org.ua/rfs
-PKG_MD5SUM:=
+PKG_MD5SUM:=e33c794b7796f0202971a7be1519ee05
 
 include $(INCLUDE_DIR)/package.mk
 
