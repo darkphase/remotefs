@@ -362,6 +362,14 @@ int start_server(const char *address, const unsigned port)
 	
 	DEBUG("listening on %s (%d)\n", inet_ntoa(addr.sin_addr), port);
 	
+#ifndef RFS_DEBUG
+	chdir("/");
+	
+	fclose(stdin);
+	fclose(stdout);
+	fclose(stderr);
+#endif
+	
 	while (1)
 	{
 		struct sockaddr_in client_addr;
@@ -504,14 +512,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-#ifndef RFS_DEBUG
-	chdir("/");
-	
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
-#endif
-
 	int ret = start_server(rfsd_config.listen_address, rfsd_config.listen_port);
 	
 	release_exports();
@@ -520,4 +520,3 @@ int main(int argc, char **argv)
 	
 	return ret;
 }
-
