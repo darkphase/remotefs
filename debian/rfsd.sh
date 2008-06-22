@@ -42,7 +42,6 @@ rm -fr ${NAME}-${VERSION}
 rm -fr dpkg
 mkdir -p dpkg${INSTALL_DIR}
 mkdir -p dpkg${ETC_DIR}
-mkdir -p dpkg${ETC_DIR}/init.d
 mkdir -p dpkg/DEBIAN
 sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" ${CONTROL_TEMPLATE} >dpkg/DEBIAN/control.1
 sed -e "s/AND SIZE HERE/${SIZE}/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control
@@ -51,8 +50,9 @@ mv ${TARGET} dpkg${INSTALL_DIR}
 mv ${PASSWD_TARGET} dpkg${INSTALL_DIR}
 cp ${ETC_FILES} dpkg${ETC_DIR}
 chmod 600 dpkg${ETC_DIR}/*
+mkdir -p dpkg${ETC_DIR}/init.d
 cp ${INIT_SCRIPT} dpkg${ETC_DIR}/init.d/${NAME}
 
 dpkg -b dpkg ${NAME}_${VERSION}_${ARCH}.deb
 
-rm -fr dpkg
+#rm -fr dpkg

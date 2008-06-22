@@ -275,8 +275,8 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	if (result == 0)
 	{	
 		directory_mounted = 1;
-		mounted_export = get_buffer(sizeof(mounted_export));
-		memcpy(mounted_export, export_info, sizeof(mounted_export));
+		mounted_export = get_buffer(sizeof(*mounted_export));
+		memcpy(mounted_export, export_info, sizeof(*mounted_export));
 		
 		release_passwords();
 		release_exports();
