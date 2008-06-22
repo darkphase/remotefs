@@ -12,6 +12,7 @@ rfsd:
 [+] privileges lowering (-u option)
 [*] more security checks
 [+] r/o exports
+[*] fixed some memory leaks
 
 0.8
 

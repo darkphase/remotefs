@@ -969,6 +969,8 @@ int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr
 		free_buffer(buf);
 	}
 	
+	free_buffer(buffer);
+	
 	if (rfs_send_answer(client_socket, &ans) == -1)
 	{
 		return -1;
@@ -1151,6 +1153,8 @@ int _handle_mknod(const int client_socket, const struct sockaddr_in *client_addr
 	int ret = mknod(path, mode, S_IFREG);
 	
 	struct answer ans = { cmd_mknod, 0, ret, errno };
+	
+	free_buffer(buffer);
 	
 	if (rfs_send_answer(client_socket, &ans) == -1)
 	{

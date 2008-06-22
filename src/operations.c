@@ -187,6 +187,7 @@ int _rfs_auth(const char *user, const char *passwd)
 	
 	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
 	{
+		free(crypted);
 		return -EIO;
 	}
 	
@@ -199,6 +200,7 @@ int _rfs_auth(const char *user, const char *passwd)
 	
 	if (rfs_send_data(g_server_socket, buffer, cmd.data_len) == -1)
 	{
+		free(crypted);
 		free_buffer(buffer);
 		return -EIO;
 	}
