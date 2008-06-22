@@ -55,4 +55,4 @@ cp ${INIT_SCRIPT} dpkg${ETC_DIR}/init.d/${NAME}
 
 dpkg -b dpkg ${NAME}_${VERSION}_${ARCH}.deb
 
-#rm -fr dpkg
+rm -fr dpkg
