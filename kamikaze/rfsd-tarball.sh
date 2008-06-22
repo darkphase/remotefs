@@ -15,7 +15,8 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/crypt.h ../src/crypt.c \
 	../src/keep_alive_server.h ../src/keep_alive_server.c \
 	../src/config.h \
-	../src/inet.h"
+	../src/inet.h \
+	../LICENSE ../AUTHORS ../CHANGELOG"
 MAKEFILE="Makefile.rfsd"
 NAME="rfsd"
 INIT_SCRIPT="../init.d/rfsd.kamikaze"
