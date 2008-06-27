@@ -245,6 +245,8 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	
 	const char *path = buffer;
 	
+	DEBUG("client want to change path to %s\n", path);
+	
 	const struct rfs_export *export_info = strlen(path) > 0 ? get_export(path) : NULL;
 	if (export_info == NULL 
 	|| check_permissions(export_info, inet_ntoa(client_addr->sin_addr)) != 0)
@@ -252,8 +254,6 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 		free_buffer(buffer);
 		return reject_request(client_socket, cmd, EACCES) == 0 ? 1 : -1;
 	}
-	
-	DEBUG("client want to change path to %s\n", path);
 
 	errno = 0;
 	int result = chroot(path);
@@ -262,7 +262,7 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	
 	if (result == 0)
 	{
-		setuid(rfsd_config.worker_uid);
+		setuid(export_info->export_uid);
 	}
 	
 	free_buffer(buffer);
