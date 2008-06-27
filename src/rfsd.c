@@ -300,6 +300,9 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 
 int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 {
+	reset_signal_handlers();
+	install_signal_handlers_worker();
+
 	g_client_socket = client_socket;
 	
 	srand(time(NULL));
@@ -476,6 +479,8 @@ int main(int argc, char **argv)
 	{
 		exit(1);
 	}
+	
+	DEBUG("worker's uid: %u\n", rfsd_config.worker_uid);
 
 	if (parse_exports() != 0)
 	{
@@ -497,8 +502,6 @@ int main(int argc, char **argv)
 #ifdef RFS_DEBUG
 	dump_passwords();
 #endif
-
-	DEBUG("worker's uid: %u\n", rfsd_config.worker_uid);
 
 #ifndef RFS_DEBUG
 	if (fork() != 0)

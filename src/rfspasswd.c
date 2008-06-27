@@ -101,6 +101,15 @@ void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 	}
 }
 
+void install_signal_handlers()
+{
+	install_signal_handler(SIGTERM, signal_handler_passwd);
+	install_signal_handler(SIGPIPE, signal_handler_passwd);
+	install_signal_handler(SIGABRT, signal_handler_passwd);
+	install_signal_handler(SIGINT, signal_handler_passwd);
+	install_signal_handler(SIGQUIT, signal_handler_passwd);
+}
+
 int main(int argc, char **argv)
 {
 	if (parse_opts(argc, argv) != 0)
@@ -124,12 +133,6 @@ int main(int argc, char **argv)
 	}
 	
 	dump_passwords();
-	
-	install_signal_handlers(SIGTERM, signal_handler_passwd);
-	install_signal_handlers(SIGPIPE, signal_handler_passwd);
-	install_signal_handlers(SIGABRT, signal_handler_passwd);
-	install_signal_handlers(SIGINT, signal_handler_passwd);
-	install_signal_handlers(SIGQUIT, signal_handler_passwd);
 	
 	int ret = 0;
 	switch (operation)

@@ -4,6 +4,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "config.h"
 #include "buffer.h"
@@ -17,6 +19,7 @@ static const char *exports_file = "/etc/rfs-exports";
 static struct list *exports = NULL;
 
 void release_export(struct rfs_export *single_export);
+extern struct rfsd_config rfsd_config;
 
 const char* trim_left(const char *buffer, unsigned size)
 {
@@ -87,11 +90,11 @@ unsigned is_ipaddr(const char *string)
 	return inet_addr(string) == INADDR_NONE ? 0 : 1;
 }
 
-unsigned set_export_opts(struct list *opts)
+int set_export_opts(struct rfs_export *opts_export, const struct list *opts)
 {
-	unsigned ret = 0;
+	int ret = 0;
 	
-	struct list *opt = opts;
+	const struct list *opt = opts;
 	while (opt)
 	{
 		const char *opt_str = opt->data;
@@ -100,12 +103,32 @@ unsigned set_export_opts(struct list *opts)
 		{
 			if (strcmp(opt_str, "ro") == 0)
 			{
-				ret |= opt_ro;
+				opts_export->options |= opt_ro;
+			}
+			else if (strstr(opt_str, "user=") == opt_str)
+			{
+				if (opts_export->export_uid != (uid_t)-1)
+				{
+					ERROR("%s", "User option for export is set twice\n");
+					return -1;
+				}
+			
+				const char *username = opt_str + strlen("user=");
+				DEBUG("export username: %s\n", username);
+				
+				struct passwd *pwd = getpwnam(username);
+				if (pwd == NULL)
+				{
+					ERROR("User %s is not found in *system* users database\n", username);
+					return -1;
+				}
+				
+				opts_export->export_uid = pwd->pw_uid;
 			}
 			else
 			{
 				ERROR("Unknown export option: %s\n", opt_str);
-				return (unsigned)-1;
+				return -1;
 			}
 		}
 		
@@ -229,9 +252,7 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 		}
 	}
 	
-	unsigned this_line_options_unsigned = set_export_opts(this_line_options);
-	
-	if (this_line_options_unsigned == (unsigned)-1)
+	if (set_export_opts(line_export, this_line_options) != 0)
 	{
 		free_buffer(share);
 		destroy_list(this_line_users);
@@ -246,7 +267,6 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	
 	line_export->path = share;
 	line_export->users = this_line_users;
-	line_export->options = this_line_options_unsigned;
 
 	return next_line == NULL ? NULL : next_line + 1;
 }
@@ -294,6 +314,7 @@ unsigned parse_exports()
 	do
 	{
 		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
+		line_export->export_uid = (uid_t)-1;
 		
 		next_line = parse_line(buffer, (unsigned)((buffer + size) - next_line), next_line - buffer, line_export);
 		if (next_line == (char *)-1)
@@ -301,6 +322,11 @@ unsigned parse_exports()
 			free_buffer(line_export);
 			fclose(fd);
 			return -1;
+		}
+		
+		if (line_export->export_uid == (uid_t)-1)
+		{
+			line_export->export_uid = rfsd_config.worker_uid;
 		}
 		
 		if (line_export->path != 0 && line_export->users != 0)
@@ -366,6 +392,7 @@ void dump_export(const struct rfs_export *single_export)
 	}
 
 	DEBUG("options: %d\n", single_export->options);
+	DEBUG("export uid: %d\n", single_export->export_uid);
 #endif // RFS_DEBUG
 }
 

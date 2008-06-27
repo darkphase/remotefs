@@ -27,5 +27,5 @@ void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 
 void install_signal_handlers_client()
 {
-	install_signal_handlers(SIGTERM, signal_handler_client);
+	install_signal_handler(SIGTERM, signal_handler_client);
 }

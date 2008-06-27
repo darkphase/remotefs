@@ -33,9 +33,24 @@ void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 	}
 }
 
+void install_signal_handlers_worker()
+{
+	install_signal_handler(SIGCHLD, signal_handler_server);
+	install_signal_handler(SIGTERM, signal_handler_server);
+	install_signal_handler(SIGALRM, signal_handler_server);
+}
+
 void install_signal_handlers_server()
 {
-	install_signal_handlers(SIGCHLD, signal_handler_server);
-	install_signal_handlers(SIGTERM, signal_handler_server);
-	install_signal_handlers(SIGALRM, signal_handler_server);
+	install_signal_handlers_worker();
+	
+	install_signal_handler(SIGHUP, signal_handler_server);
+}
+
+void reset_signal_handlers()
+{
+	reset_signal_handler(SIGCHLD);
+	reset_signal_handler(SIGTERM);
+	reset_signal_handler(SIGALRM);
+	reset_signal_handler(SIGHUP);
 }

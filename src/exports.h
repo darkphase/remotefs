@@ -1,6 +1,8 @@
 #ifndef EXPORTS_H
 #define EXPORTS_H
 
+#include <sys/types.h>
+
 #include "config.h"
 
 struct list;
@@ -10,6 +12,7 @@ struct rfs_export
 	char *path;
 	struct list *users;
 	unsigned options;
+	uid_t export_uid;
 };
 
 enum e_export_opts { opt_ro = 1 };
