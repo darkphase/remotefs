@@ -149,7 +149,7 @@ struct list* parse_list(const char *buffer, const char *border)
 	{
 		const char *delimiter = find_chr(local_buffer, border, ",(\n");
 		
-		if (delimiter >= border)
+		if (delimiter > border)
 		{
 			break;
 		}
@@ -194,8 +194,9 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 {
 	const char *local_buffer = buffer + start_from;
 	char *next_line = strchr(local_buffer, '\n');
+	const char *border = (next_line != NULL ? next_line : local_buffer + strlen(local_buffer));
 	
-	local_buffer = trim_left(local_buffer, next_line - local_buffer);
+	local_buffer = trim_left(local_buffer, border - local_buffer);
 	
 	if (local_buffer == NULL 
 	|| local_buffer[0] == '\n'
@@ -205,7 +206,7 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 		return next_line == NULL ? NULL : next_line + 1;
 	}
 	
-	const char *share_end = find_chr(local_buffer, next_line, "\t ");
+	const char *share_end = find_chr(local_buffer, border, "\t ");
 	if (share_end == NULL)
 	{
 		return (char *)-1;
@@ -228,13 +229,13 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 		return (char *)-1;
 	}
 	
-	const char *users = trim_left(share_end, next_line - local_buffer);
-	const char *users_end = find_chr(users, next_line + 1, "(\n");
+	const char *users = trim_left(share_end, border - local_buffer);
+	const char *users_end = find_chr(users, border, "(\n");
 	
 	if (users == NULL 
-	|| users >= next_line
+	|| users >= border
 	|| users_end == NULL
-	|| users_end > next_line)
+	|| users_end > border)
 	{
 		free_buffer(share);
 		return (char *)-1;
@@ -242,12 +243,12 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	
 	struct list *this_line_users = parse_list(users, users_end);
 	
-	const char *options = find_chr(users_end, next_line + 1, "(");
+	const char *options = find_chr(users_end, border, "(");
 	struct list *this_line_options = NULL;
 	
 	if (options != NULL)
 	{
-		const char *options_end = find_chr(options, next_line + 1, ")");
+		const char *options_end = find_chr(options, border, ")");
 		if (options_end != NULL)
 		{
 			this_line_options = parse_list(options + 1, options_end);
