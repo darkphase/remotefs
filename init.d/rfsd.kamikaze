@@ -15,3 +15,8 @@ stop()
 {
 	killall rfsd
 }
+
+reload()
+{
+	# TODO
+}

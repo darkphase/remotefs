@@ -1,3 +1,7 @@
+0.10
+
+[+] privileges lowering per export (user=username) option
+
 0.9
 
 [*] new authentication mechanism
