@@ -30,7 +30,6 @@ extern char *auth_passwd;
 
 static struct list *open_files = NULL;
 struct rfs_export *mounted_export = NULL;
-static const char *pidfile_name = "/var/run/rfsd.pid";
 
 struct rfsd_config rfsd_config;
 
@@ -39,6 +38,11 @@ void init_config()
  	rfsd_config.listen_address = "0.0.0.0";
 	rfsd_config.listen_port = DEFAULT_SERVER_PORT;
 	rfsd_config.worker_uid = getuid();
+#ifdef RFS_DEBUG
+	rfsd_config.pid_file = "./rfsd.pid";
+#else
+	rfsd_config.pid_file = "/var/run/rfsd.pid";
+#endif // RFS_DEBUG
 }
 
 int create_pidfile(const char *pidfile)
@@ -351,6 +355,13 @@ int start_server(const char *address, const unsigned port)
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(address);
 	
+	int reuse = 1;
+	if (setsockopt(g_listen_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) != 0)
+	{
+		ERROR("Error setting proper option to socket: %s\n", strerror(errno));
+		return 1;
+	}
+	
 	if (bind(g_listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
 	{
 		ERROR("Error binding: %s\n", strerror(errno));
@@ -387,6 +398,7 @@ int start_server(const char *address, const unsigned port)
 
 		if (fork() == 0) // child
 		{
+			shutdown(g_listen_socket, SHUT_RDWR);
 			close(g_listen_socket);
 			g_listen_socket = -1;
 			return handle_connection(client_socket, &client_addr);
@@ -408,6 +420,9 @@ void stop_server()
 		shutdown(g_listen_socket, SHUT_RDWR);
 		close(g_listen_socket);
 	}
+	
+	unlink(rfsd_config.pid_file);
+	
 	exit(0);
 }
 
@@ -438,7 +453,7 @@ void usage(const char *app_name)
 int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "ha:p:u:")) != -1)
+	while ((opt = getopt(argc, argv, "ha:p:u:r:")) != -1)
 	{
 		switch (opt)
 		{	
@@ -462,6 +477,9 @@ int parse_opts(int argc, char **argv)
 				break;
 			case 'p':
 				rfsd_config.listen_port = atoi(optarg);
+				break;
+			case 'r':
+				rfsd_config.pid_file = strdup(optarg);
 				break;
 			default:
 				return -1;
@@ -509,9 +527,9 @@ int main(int argc, char **argv)
 		return 0;	}
 #endif 
 
-	if (create_pidfile(pidfile_name) != 0)
+	if (create_pidfile(rfsd_config.pid_file) != 0)
 	{
-		ERROR("Error creating pidfile: %s\n", pidfile_name);
+		ERROR("Error creating pidfile: %s\n", rfsd_config.pid_file);
 		return 1;
 	}
 

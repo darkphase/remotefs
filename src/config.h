@@ -39,7 +39,8 @@ struct rfs_config
 
 struct rfsd_config
 {
-	char *listen_address;
+	const char *listen_address;
+	const char *pid_file;
 	unsigned listen_port;
 	uid_t worker_uid;
 };

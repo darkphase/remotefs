@@ -1,6 +1,7 @@
 0.10
 
 [+] privileges lowering per export (user=username) option
+[*] fixed exports parsing if there is no line break at the end of the export line
 
 0.9
 
