@@ -1,7 +1,10 @@
 0.10
 
+rfsd:
 [+] privileges lowering per export (user=username) option
 [*] fixed exports parsing if there is no line break at the end of the export line
+[+] reload() support in init script
+[+] pidfile path setting with -r option
 
 0.9
 

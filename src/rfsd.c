@@ -304,9 +304,6 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 
 int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 {
-	reset_signal_handlers();
-	install_signal_handlers_worker();
-
 	g_client_socket = client_socket;
 	
 	srand(time(NULL));
@@ -446,6 +443,7 @@ void usage(const char *app_name)
 	"-a [address]\t\tlisten for connections on specified address\n"
 	"-p [port number]\tlisten for connections on specified port\n"
 	"-u [username]\t\tworker process be running with privileges of this user\n"
+	"-r [path]\t\tchange pidfile path from default to [path]\n"
 	"\n"
 	, app_name);
 }

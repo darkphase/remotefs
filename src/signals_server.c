@@ -38,7 +38,7 @@ void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 	}
 }
 
-void install_signal_handlers()
+void install_signal_handlers_server()
 {
 	install_signal_handler(SIGCHLD, signal_handler_server);
 	install_signal_handler(SIGTERM, signal_handler_server);
