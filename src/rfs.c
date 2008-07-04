@@ -246,38 +246,8 @@ int main(int argc, char **argv)
 	
 	DEBUG("username: %s, password: %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
 	
-	int sock = rfs_connect(rfs_config.host, rfs_config.server_port);
-	if (sock == -1)
+	if (rfs_reconnect(1) != 0)
 	{
-		ERROR("%s\n", "Error connecting to remote host");
-		return 1;
-	}
-	
-	if (rfs_config.auth_user != NULL 
-	&& rfs_config.auth_passwd != NULL)
-	{
-		int req_ret = rfs_request_salt();
-		if (req_ret != 0)
-		{
-			ERROR("Requesting salt for authentication error: %s\n", strerror(-req_ret));
-			rfs_disconnect(sock);
-			return 1;
-		}
-		
-		int auth_ret = rfs_auth(rfs_config.auth_user, rfs_config.auth_passwd);
-		if (auth_ret != 0)
-		{
-			ERROR("Authentication error: %s\n", strerror(-auth_ret));
-			rfs_disconnect(sock);
-			return 1;
-		}
-	}
-
-	int mount_ret = rfs_mount(rfs_config.path);
-	if (mount_ret != 0)
-	{
-		ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
-		rfs_disconnect(sock);
 		return 1;
 	}
 

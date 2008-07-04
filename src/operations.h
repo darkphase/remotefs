@@ -11,6 +11,7 @@ struct fuse_operations rfs_operations;
 
 void* rfs_init();
 void rfs_destroy(void *rfs_init_result);
+int rfs_reconnect(int show_errors);
 
 int rfs_mount(const char *path);
 int rfs_auth(const char *user, const char *passwd);

@@ -21,6 +21,16 @@ static size_t receive_operations = 0;
 static size_t send_operations = 0;
 #endif
 
+int connection_lost = 0;
+
+int rfs_is_connection_lost()
+{
+	return connection_lost;}
+
+void rfs_set_connection_restored()
+{
+	connection_lost = 0;}
+
 int rfs_connect(const char *ip, const unsigned port)
 {
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -51,12 +61,16 @@ int rfs_connect(const char *ip, const unsigned port)
 	return sock;
 }
 
-void rfs_disconnect(int sock)
+void rfs_disconnect(int sock, int gently)
 {
-	struct command cmd = { cmd_closeconnection, 0 };
-	rfs_send_cmd(sock, &cmd);
+	if (gently != 0)
+	{
+		struct command cmd = { cmd_closeconnection, 0 };
+		rfs_send_cmd(sock, &cmd);
+	}
 	
 	close(sock);
+	shutdown(sock, SHUT_RDWR);
 	
 	mp_force_free();
 }
@@ -68,7 +82,12 @@ size_t rfs_send_cmd(const int sock, const struct command *cmd)
 	send_command.data_len = htonl(cmd->data_len);
 	
 	DEBUG("%s", "sending "); dump_command(cmd);
-	return rfs_send_data(sock, &send_command, sizeof(send_command));
+	size_t ret = rfs_send_data(sock, &send_command, sizeof(send_command));
+	if (ret == 0)
+	{
+		connection_lost = 1;
+	}
+	return ret;
 }
 
 size_t rfs_send_answer(const int sock, const struct answer *ans)
@@ -80,7 +99,12 @@ size_t rfs_send_answer(const int sock, const struct answer *ans)
 	send_answer.ret_errno = htons(ans->ret_errno);
 	
 	DEBUG("%s", "sending "); dump_answer(ans);
-	return rfs_send_data(sock, &send_answer, sizeof(send_answer));
+	size_t ret = rfs_send_data(sock, &send_answer, sizeof(send_answer));
+	if (ret == 0)
+	{
+		connection_lost = 1;
+	}
+	return ret;
 }
 
 size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
@@ -93,6 +117,7 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 		int done = send(sock, data + size_sent, data_len - size_sent, 0);
 		if (done < 1)
 		{
+			connection_lost = 1;
 			return -1;
 		}
 		size_sent += (size_t)done;
@@ -118,7 +143,13 @@ size_t rfs_receive_answer(const int sock, struct answer *ans)
 		ans->ret = ntohl(recv_answer.ret);
 		ans->ret_errno = ntohs(recv_answer.ret_errno);
 	}
+	else
+	{
+		connection_lost = 1;
+	}
+	
 	DEBUG("%s", "received "); dump_answer(ans);
+	
 	return ret;
 }
 
@@ -132,6 +163,10 @@ size_t rfs_receive_cmd(const int sock, struct command *cmd)
 		cmd->command = ntohl(recv_command.command);
 		cmd->data_len = ntohl(recv_command.data_len);
 	}
+	else
+	{
+		connection_lost = 1;
+	}
 	DEBUG("%s", "received "); dump_command(cmd);
 	return ret;
 }
@@ -144,6 +179,7 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 		int done = recv(sock, data + size_received, data_len - size_received, 0);
 		if (done < 1)
 		{
+			connection_lost = 1;
 			return -1;
 		}
 		size_received += (size_t)done;
@@ -167,6 +203,7 @@ size_t rfs_ignore_incoming_data(const int sock, const size_t data_len)
 		int done = recv(sock, buffer, data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored, 0);
 		if (done < 1)
 		{
+			connection_lost = 1;
 			return -1;
 		}
 		size_ignored += (size_t)done;

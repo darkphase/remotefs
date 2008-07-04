@@ -6,6 +6,9 @@ rfsd:
 [+] reload() support in init script
 [+] pidfile path setting with -r option
 
+rfs:
+[+] auto reconnect support
+
 0.9
 
 [*] new authentication mechanism

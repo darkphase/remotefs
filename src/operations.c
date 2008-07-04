@@ -36,7 +36,7 @@ struct fuse_operations rfs_operations = {
 	.init		= rfs_init,
 	.destroy	= rfs_destroy,
 	
-    .getattr	= rfs_getattr,
+    	.getattr	= rfs_getattr,
 	
 	.readdir	= rfs_readdir,
 	.mkdir		= rfs_mkdir,
@@ -64,6 +64,22 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 int _rfs_flush(const char *path, struct fuse_file_info *fi);
 
+int check_connection()
+{
+	if (rfs_is_connection_lost() == 0)
+	{
+		return 0;
+	}
+	
+	if (rfs_reconnect(0) == 0)
+	{
+		rfs_set_connection_restored();
+		return 0;
+	}
+	
+	return -1;
+}
+
 void* maintenance()
 {
 	unsigned slept = 0;
@@ -82,10 +98,13 @@ void* maintenance()
 		if (slept >= keep_alive_period()
 		&& keep_alive_trylock() == 0)
 		{
-			if (rfs_keep_alive() != 0)
+			if (check_connection() == 0)
 			{
-				keep_alive_unlock();
-				pthread_exit(NULL);
+				if (rfs_keep_alive() != 0)
+				{
+					keep_alive_unlock();
+					pthread_exit(NULL);
+				}
 			}
 			
 			keep_alive_unlock();
@@ -107,6 +126,65 @@ void* maintenance()
 	return NULL;
 }
 
+int rfs_reconnect(int show_errors)
+{
+	DEBUG("(re)connecting to %s:%d\n", rfs_config.host, rfs_config.server_port);
+	
+	int sock = rfs_connect(rfs_config.host, rfs_config.server_port);
+	if (sock == -1)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("%s\n", "Error connecting to remote host");
+		}
+		return 1;
+	}
+	
+	if (rfs_config.auth_user != NULL 
+	&& rfs_config.auth_passwd != NULL)
+	{
+		DEBUG("authenticating as %s with pwd %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
+		
+		int req_ret = rfs_request_salt();
+		if (req_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Requesting salt for authentication error: %s\n", strerror(-req_ret));
+			}
+			rfs_disconnect(sock, 1);
+			return -1;
+		}
+		
+		int auth_ret = rfs_auth(rfs_config.auth_user, rfs_config.auth_passwd);
+		if (auth_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Authentication error: %s\n", strerror(-auth_ret));
+			}
+			rfs_disconnect(sock, 1);
+			return -1;
+		}
+	}
+	
+	DEBUG("mounting %s\n", rfs_config.path);
+
+	int mount_ret = rfs_mount(rfs_config.path);
+	if (mount_ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
+		}
+		rfs_disconnect(sock, 1);
+		return -1;
+	}
+	
+	DEBUG("%s\n", "all ok");
+	return 0;
+}
+
 void* rfs_init()
 {
 	keep_alive_init();
@@ -118,7 +196,7 @@ void* rfs_init()
 void rfs_destroy(void *rfs_init_result)
 {
 	keep_alive_lock();
-	rfs_disconnect(g_server_socket);
+	rfs_disconnect(g_server_socket, 1);
 	g_server_socket = -1;
 	keep_alive_unlock();
 	
@@ -128,7 +206,7 @@ void rfs_destroy(void *rfs_init_result)
 	destroy_cache();
 }
 
-int _rfs_request_salt()
+int rfs_request_salt()
 {
 	if (g_server_socket == -1)
 	{
@@ -168,7 +246,7 @@ int _rfs_request_salt()
 	return -ans.ret;
 }
 
-int _rfs_auth(const char *user, const char *passwd)
+int rfs_auth(const char *user, const char *passwd)
 {
 	if (g_server_socket == -1)
 	{
@@ -224,7 +302,7 @@ int _rfs_auth(const char *user, const char *passwd)
 	return -ans.ret;
 }
 
-int _rfs_mount(const char *path)
+int rfs_mount(const char *path)
 {
 	if (g_server_socket == -1)
 	{
