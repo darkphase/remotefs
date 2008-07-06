@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+/* rfs commands */
+
 enum server_commands
 { 
 	cmd_first = 0, 
@@ -36,12 +38,14 @@ enum server_commands
 	cmd_last,
 };
 
+/** command for server */
 struct command
 {
 	uint32_t command;
 	uint32_t data_len;
 };
 
+/** answer to client */
 struct answer
 {
 	uint32_t command;
@@ -50,9 +54,13 @@ struct answer
 	int16_t ret_errno;
 };
 
+/** get description of command. debug only */
 const char* describe_command(const enum server_commands cmd);
 
+/** write command to output. debug only */
 void dump_command(const struct command *cmd);
+
+/** write answer to output. debug only */
 void dump_answer(const struct answer *cmd);
 
 #endif // COMMAND_H

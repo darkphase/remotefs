@@ -1,4 +1,6 @@
 
+/* syncronized operations. will lock keep alive when it's needed */
+
 int rfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	if (keep_alive_lock() == 0

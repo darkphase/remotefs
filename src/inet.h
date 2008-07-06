@@ -4,6 +4,8 @@
 #include <arpa/inet.h>
 #include <endian.h>
 
+/* htonll() support */
+
 #ifndef htonll
 	#if __BYTE_ORDER == __BIG_ENDIAN
 		#define htonll(x) (x)

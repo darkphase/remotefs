@@ -1,4 +1,6 @@
 
+/* syncronized server handlers. will lock keep alive when it's needed */
+
 int handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	if (keep_alive_lock() == 0)

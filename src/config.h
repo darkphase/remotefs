@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#define DEFAULT_SERVER_PORT 5001
-#define KEEP_ALIVE_PERIOD 60 * 5 // secs
-#define DEFAULT_RW_CACHE_SIZE 512 * 1024 // bytes
-#define CACHE_TTL 60 // secs
-#define MAX_SALT_LEN 3 + 8 // "$1$" + 8 bytes of actual salt
-#define EMPTY_SALT "$1$"
+/* rfs configuration */
+
+#define DEFAULT_SERVER_PORT 	5001
+#define KEEP_ALIVE_PERIOD 	60 * 5 /* secs */
+#define DEFAULT_RW_CACHE_SIZE 	512 * 1024 /* bytes */
+#define CACHE_TTL 		60 /* secs */
+#define MAX_SALT_LEN 		3 + 8 /* "$1$" + 8 bytes of actual salt */
+#define EMPTY_SALT 		"$1$" /* use md5 */
 
 #ifdef RFS_DEBUG
 #define DEBUG(format, args...) do { printf(format, args); } while (0)
@@ -24,6 +26,7 @@
 #define NULL (void *)(0)
 #endif
 
+/** client options */
 struct rfs_config
 {
 	char *host;
@@ -37,6 +40,7 @@ struct rfs_config
 	unsigned server_port;
 };
 
+/** server options */
 struct rfsd_config
 {
 	const char *listen_address;
@@ -50,13 +54,14 @@ enum
 	KEY_HELP,
 };
 
+/** flags for rfs_open() */
 enum rfs_open_flags
 {
 	RFS_APPEND 		= 1, 
 	RFS_ASYNC 		= 2,
 	RFS_CREAT 		= 4,
 	RFS_EXCL 		= 8,
-	RFS_NONBLOCK 	= 16,
+	RFS_NONBLOCK 		= 16,
 	RFS_NDELAY 		= 32,
 	RFS_SYNC 		= 64,
 	RFS_TRUNC 		= 128,

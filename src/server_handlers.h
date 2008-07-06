@@ -1,6 +1,8 @@
 #ifndef SERVER_HANDLERS_H
 #define SERVER_HANDLERS_H
 
+/* server handlers of rfs operations */
+
 struct sockaddr_in;
 struct command;
 
