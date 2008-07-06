@@ -404,11 +404,11 @@ int _rfs_getattr(const char *path, struct stat *stbuf)
 	unpack_32(&uid, buffer, 
 	unpack_32(&mode, buffer, 0 
 		)))))));
-		
+	
 	free_buffer(buffer);
 	
 	struct stat result = { 0 };
-		
+	
 	result.st_mode = mode;
 	result.st_uid = getuid();
 	result.st_gid = getgid();
