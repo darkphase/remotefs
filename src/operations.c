@@ -131,11 +131,11 @@ int rfs_reconnect(int show_errors)
 	DEBUG("(re)connecting to %s:%d\n", rfs_config.host, rfs_config.server_port);
 	
 	int sock = rfs_connect(rfs_config.host, rfs_config.server_port);
-	if (sock == -1)
+	if (sock < 0)
 	{
 		if (show_errors != 0)
 		{
-			ERROR("%s\n", "Error connecting to remote host");
+			ERROR("Error connecting to remote host: %s", strerror(-sock));
 		}
 		return 1;
 	}
