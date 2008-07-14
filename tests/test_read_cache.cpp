@@ -1,10 +1,7 @@
 #include "test_read_cache.h"
 
-extern "C"
-{
 #include "../src/read_cache.h"
 #include "../src/config.h"
-}
 
 void ReadCacheTest::setUp()
 {

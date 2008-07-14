@@ -1,9 +1,13 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+/* rfs commands */
+
 #include <stdint.h>
 
-/* rfs commands */
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
 enum server_commands
 { 
@@ -62,5 +66,9 @@ void dump_command(const struct command *cmd);
 
 /** write answer to output. debug only */
 void dump_answer(const struct answer *cmd);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // COMMAND_H

@@ -1,38 +1,33 @@
-CC = gcc
-CFLAGS = -DRFS_DEBUG -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse` -g
-LDFLAGS = `pkg-config --libs fuse` -lcrypt -lpthread
-TARGET = rfs
 
-OBJS = src/rfs.o \
-src/operations.o \
-src/buffer.o \
-src/command.o \
-src/sendrecv.o \
-src/signals.o \
-src/signals_client.o \
-src/alloc.o \
-src/attr_cache.o \
-src/passwd.o \
-src/crypt.o \
-src/list.o \
-src/keep_alive_client.o \
-src/write_cache.o \
-src/read_cache.o
+DEBUG_CFLAGS = -DRFS_DEBUG -g -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse`
 
-default: $(OBJS) link_client
-	ln -sf bin/$(TARGET) $(TARGET)
-	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" $(MAKE) -f Makefile.rfsd
-	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" $(MAKE) -f Makefile.passwd
+all: default
+default: debug
 
-link_client:
-	$(CC) $(OBJS) $(LDFLAGS) -o bin/$(TARGET)
+debug:
+	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile
+
+rfs:
+	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile rfs
 	
-%.o : %.c
-	$(CC) -c $(CFLAGS) -Wall $< -o $@
-
+rfsd:
+	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile rfsd
+	
+rfspasswd:
+	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile rfspasswd
+	
+release: rfsdeb rfsddeb
+	
+rfsdeb:	cleanup
+	@$(MAKE) -sf debian/Makefile rfsdeb
+	
+rfsddeb: cleanup
+	@$(MAKE) -sf debian/Makefile rfsddeb
+	
+cleanup:
+	@$(MAKE) -sf Makefiles/Makefile clean
+	@$(MAKE) -sf debian/Makefile clean
+	
 clean:
-	rm -f src/*.o
-	rm -f bin/$(TARGET) $(TARGET)
-	$(MAKE) -f Makefile.rfsd clean
-	$(MAKE) -f Makefile.passwd clean
-	
+	@$(MAKE) -sf Makefiles/Makefile clean
+	@$(MAKE) -sf debian/Makefile mrproper

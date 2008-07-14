@@ -1,12 +1,14 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+/* attributes cache. used with rfs_getattr() */
+
 #include <sys/stat.h>
 #include <time.h>
 
-/* attributes cache. used with rfs_getattr()
-*
-*/
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
 /** tree_item is data type stored in cache 
 which is balanced tree with filename as key */
@@ -36,5 +38,9 @@ unsigned char cache_is_old();
 
 /** delete outdated files from cache */
 void clear_cache();
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // CACHE_H

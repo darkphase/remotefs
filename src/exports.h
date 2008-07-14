@@ -1,11 +1,15 @@
 #ifndef EXPORTS_H
 #define EXPORTS_H
 
+/* exports file routines */
+
 #include <sys/types.h>
 
 #include "config.h"
 
-/* exports file routines */
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
 struct list;
 
@@ -37,5 +41,9 @@ unsigned is_ipaddr(const char *string);
 
 /** write exports to output. debug only */
 void dump_exports();
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // EXPORTS_H

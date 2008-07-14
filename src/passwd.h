@@ -3,6 +3,10 @@
 
 /* passwd database routines */
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 /** authentication record */
 struct auth_entry
 {
@@ -36,5 +40,9 @@ int delete_auth(const char *user);
 
 /** write db to output. debug only */
 void dump_passwords();
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // PASSWD_H

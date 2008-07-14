@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <netdb.h>
+#include <errno.h>
 
 #include "config.h"
 #include "command.h"
@@ -33,16 +34,18 @@ void rfs_set_connection_restored()
 
 int rfs_connect(const char *ip, const unsigned port)
 {
+	errno = 0;
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
-		return -1;
+		return -errno;
 	}
 	
+	errno = 0;
 	struct hostent *host_addr = gethostbyname(ip);
 	if (host_addr == NULL)
 	{
-		return -1;
+		return -errno;
 	}
 	
 	struct sockaddr_in server_addr = { 0 };
@@ -51,9 +54,10 @@ int rfs_connect(const char *ip, const unsigned port)
 	
 	memcpy(&server_addr.sin_addr, host_addr->h_addr_list[0], sizeof(server_addr.sin_addr));
 
+	errno = 0;
 	if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
 	{
-		return -1;
+		return -errno;
 	}
 	
 	g_server_socket = sock;

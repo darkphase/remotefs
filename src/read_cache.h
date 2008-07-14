@@ -6,6 +6,10 @@
 #include <sys/types.h>
 #include <stdint.h>
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 size_t read_cache_have_data(uint64_t descriptor, off_t offset);
 const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset);
 int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_t offset);
@@ -15,5 +19,9 @@ size_t read_cache_size(uint64_t descriptor);
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset);
 size_t last_used_read_block(uint64_t descriptor);
 unsigned read_cache_is_for(uint64_t descriptor);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // READ_CACHE_H

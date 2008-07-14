@@ -6,6 +6,10 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 /** check if current cache size + given size is less than max cache size */
 unsigned is_fit_to_write_cache(uint64_t descriptor, size_t size, off_t offset);
 
@@ -48,5 +52,9 @@ off_t write_cached_offset();
 
 /** get descriptor for which is data in cache */
 uint64_t write_cached_descriptor();
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // WRITE_CACHE_H

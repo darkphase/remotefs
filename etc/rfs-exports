@@ -3,8 +3,10 @@
 #
 # supported option:
 #	ro - read-only export
+#	user=[username] - lower privileges to specified user (for this export only)
 #
 # example:
 # /tmp 	127.0.0.1, alex, 10.0.0.2
 # /tmp 	127.0.0.1, alex, 10.0.0.2 (ro)
+# /tmp 	127.0.0.1, alex, 10.0.0.2 (ro,user=alex)
 

@@ -1,7 +1,13 @@
 #ifndef SEND_H
 #define SEND_H
 
+/* socket send/recv and connect/disconnect routines */
+
 #include "config.h"
+
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
 struct command;
 struct answer;
@@ -22,6 +28,10 @@ void rfs_set_connection_restored();
 
 #ifdef RFS_DEBUG
 void dump_sendrecv_stats();
+#endif
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
 #endif
 
 #endif // SEND_H

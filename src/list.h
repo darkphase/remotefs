@@ -3,6 +3,10 @@
 
 /* linked list routines */
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 /** list node */
 struct list
 {
@@ -19,6 +23,10 @@ struct list* remove_from_list(struct list *item);
 
 /** delete whole list. will NOT update head */
 void destroy_list(struct list *head);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // LIST_H
 

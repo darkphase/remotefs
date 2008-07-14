@@ -1,10 +1,14 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+/* memory allocation routines */
+
 #include <stdint.h>
 #include <sys/types.h>
 
-/* memory allocation routines */
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
 /** allocate buffer of specified size */
 void* get_buffer(const size_t size);
@@ -52,5 +56,9 @@ unsigned unpack_64(uint64_t *data, const void *buffer, const off_t offset);
 
 /** print buffer to output. debug only */
 void dump(const void *data, const size_t data_len);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // BUFFER_H

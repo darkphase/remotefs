@@ -1,10 +1,7 @@
 #include "test_write_cache.h"
 
-extern "C"
-{
 #include "../src/write_cache.h"
 #include "../src/config.h"
-}
 
 void WriteCacheTest::setUp()
 {

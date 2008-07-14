@@ -3,6 +3,10 @@
 
 /* routines for checking keep alive state on server */
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 /** check if connection is should be closed during lack of activity 
 (no operations and no keep alive packets) 
 */
@@ -24,5 +28,9 @@ int keep_alive_unlock();
 
 /** get keep alive checking period */
 unsigned keep_alive_period();
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // KEEP_ALIVE_H

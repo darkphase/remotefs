@@ -3,6 +3,10 @@
 
 /* rfs operations */
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 struct stat;
 struct utimebuf;
 
@@ -84,5 +88,9 @@ int rfs_flush(const char *path, struct fuse_file_info *fi);
 int rfs_statfs(const char *path, struct statvfs *buf);
 int rfs_chmod(const char *path, mode_t mode);
 int rfs_chown(const char *path, uid_t uid, gid_t gid);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif // OPERATIONS_H
