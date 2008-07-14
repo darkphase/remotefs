@@ -1,5 +1,4 @@
-CC=gcc
-AR=ar
+include ../Makefiles/$(shell uname).mk
 
 TARGET=tests
 LIB_TARGET=librfs.a
@@ -16,23 +15,30 @@ LIB_OBJS= ../src/read_cache.o \
 ../src/buffer.o \
 ../src/alloc.o
 
-default: $(OBJS) $(LIB_OBJS) link_lib link_tests
+default: all
+all: $(LIB_OBJS) link_lib $(OBJS) link_tests
+
+run: clean all
+	@./$(TARGET)
 
 link_tests:
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+	@echo "Linking $(TARGET)"
+	@$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
 link_lib:
-	$(AR) rcs $(LIB_TARGET) $(LIB_OBJS)
+	@echo "Creating library $(LIB_TARGET)"
+	@$(AR) rcs $(LIB_TARGET) $(LIB_OBJS)
 
 %.o : %.cpp
-	$(CC) -c -Wall $< -o $@ 
+	@echo "Compiling $<"
+	@$(CC) -c -Wall $< -o $@ 
 
 %.o : %.c
-	$(CC) -c -Wall $< -o $@ 
+	@echo "Compiling $<"
+	@$(CC) -c -Wall $< -o $@ 
 
 clean:
-	rm -f $(TARGET)
-	rm -f $(OBJS)
-	rm -f $(LIB_TARGET)
-	rm -f $(LIB_OBJS)
-
+	@rm -f $(TARGET)
+	@rm -f $(OBJS)
+	@rm -f $(LIB_TARGET)
+	@rm -f $(LIB_OBJS)

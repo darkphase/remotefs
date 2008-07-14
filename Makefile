@@ -24,6 +24,10 @@ rfsdeb:	cleanup
 rfsddeb: cleanup
 	@$(MAKE) -sf debian/Makefile rfsddeb
 	
+runtests: 
+	@$(MAKE) -sC tests run
+	@$(MAKE) -sC tests clean
+	
 cleanup:
 	@$(MAKE) -sf Makefiles/Makefile clean
 	@$(MAKE) -sf debian/Makefile clean
