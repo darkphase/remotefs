@@ -19,8 +19,6 @@
 #include "passwd.h"
 #include "crypt.h"
 
-#define CLIENT_VERSION 1
-
 struct rfs_config rfs_config = { 0 };
 
 #ifdef RFS_DEBUG
