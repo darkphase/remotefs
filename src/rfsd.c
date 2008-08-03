@@ -395,14 +395,7 @@ int start_server(const char *address, const unsigned port)
 
 		if (fork() == 0) // child
 		{
-			shutdown(g_listen_socket, SHUT_RDWR);
-			close(g_listen_socket);
-			g_listen_socket = -1;
 			return handle_connection(client_socket, &client_addr);
-		}
-		else // parent
-		{
-			close(client_socket);
 		}
 	}
 	

@@ -399,12 +399,10 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		return 1;
 	}
 
-	uint32_t type = 0;
-	
 	struct dirent *dir_entry = NULL;
 	
 	{
-	struct answer ans = { cmd_readdir, sizeof(type) + sizeof(dir_entry->d_name) };
+	struct answer ans = { cmd_readdir, sizeof(dir_entry->d_name) };
 	
 	buffer = get_buffer(ans.data_len);
 	
@@ -424,11 +422,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		
 		memset(buffer, 0, ans.data_len);
 		
-		type = dir_entry->d_type;
-		
-		pack(dir_entry->d_name, sizeof(dir_entry->d_name), buffer, 
-		pack_32(&type, buffer, 0
-			));
+		pack(dir_entry->d_name, sizeof(dir_entry->d_name), buffer, 0);
 		
 //		dump(buffer, ans.data_len);
 		

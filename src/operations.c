@@ -451,7 +451,6 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	
 	struct answer ans = { 0 };
 	char *buffer = 0;
-	uint32_t type = 0;
 	
 	do
 	{
@@ -490,8 +489,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 			return -EIO;
 		}
 		
-		char *name = buffer 
-		+ unpack_32(&type, buffer, 0);
+		char *name = buffer;
 		
 		if (filler(buf, name, NULL, 0) != 0)
 		{
