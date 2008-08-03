@@ -13,7 +13,7 @@ static uint64_t last_cached_desc = (uint64_t)-1;
 static off_t last_cached_offset = (off_t)-1;
 static size_t last_cached_size = (size_t)-1;
 static size_t last_used_size = (size_t)-1;
-static size_t last_used_offset = (off_t)-1;
+static off_t last_used_offset = (off_t)-1;
 static char *last_used_path = NULL;
 
 size_t write_cache_max_size()
