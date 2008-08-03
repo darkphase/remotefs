@@ -135,7 +135,7 @@ int rfs_reconnect(int show_errors)
 	{
 		if (show_errors != 0)
 		{
-			ERROR("Error connecting to remote host: %s", strerror(-sock));
+			ERROR("Error connecting to remote host: %s\n", strerror(-sock));
 		}
 		return 1;
 	}
