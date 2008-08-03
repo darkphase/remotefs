@@ -143,8 +143,7 @@ int _handle_request_salt(const int client_socket, const struct sockaddr_in *clie
 	memset(auth_salt, 0, sizeof(auth_salt));
 	if (generate_salt(auth_salt, sizeof(auth_salt) - 1) != 0)
 	{
-		reject_request(client_socket, cmd, EREMOTE);
-		return 1;
+		return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 	}
 	
 	uint32_t salt_len = strlen(auth_salt) + 1;
@@ -508,8 +507,7 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 		if (add_file_to_open_list(fd) != 0)
 		{
 			close(fd);
-			ans.ret = -1;
-			ans.ret_errno = EREMOTEIO;
+			return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 		}
 	}
 	
@@ -1048,12 +1046,7 @@ int _handle_statfs(const int client_socket, const struct sockaddr_in *client_add
 	buffer = get_buffer(ans.data_len);
 	if (buffer == NULL)
 	{
-		ans.data_len = 0;
-		ans.ret = -1;
-		ans.ret_errno = EREMOTEIO;
-		
-		rfs_send_answer(client_socket, &ans);
-		return -1;
+		return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 	}
 	
 	pack_32(&namemax, buffer, 
@@ -1110,8 +1103,7 @@ int _handle_release(const int client_socket, const struct sockaddr_in *client_ad
 	
 	if (remove_file_from_open_list(fd) != 0)
 	{
-		ans.ret = -1;
-		ans.ret_errno = EREMOTEIO;
+		return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 	}
 	
 	if (rfs_send_answer(client_socket, &ans) == -1)
