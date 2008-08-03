@@ -1,7 +1,7 @@
 #ifndef MEMPOOL_H
 #define MEMPOOL_H
 
-/* memory allocator */
+/** memory allocator */
 
 #include <sys/types.h>
 
@@ -22,4 +22,4 @@ void mp_force_free();
 }
 #endif
 
-#endif // MEMPOOL_H
+#endif /* MEMPOOL_H */

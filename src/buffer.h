@@ -1,7 +1,7 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-/* memory allocation routines */
+/** memory allocation routines */
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -61,4 +61,4 @@ void dump(const void *data, const size_t data_len);
 }
 #endif
 
-#endif // BUFFER_H
+#endif /* BUFFER_H */

@@ -1,7 +1,7 @@
 #ifndef KEEP_ALIVE_H
 #define KEEP_ALIVE_H
 
-/* routines for checking keep alive state on server */
+/** routines for checking keep alive state on server */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -33,4 +33,4 @@ unsigned keep_alive_period();
 }
 #endif
 
-#endif // KEEP_ALIVE_H
+#endif /* KEEP_ALIVE_H */

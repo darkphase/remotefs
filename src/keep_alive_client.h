@@ -1,7 +1,7 @@
 #ifndef KEEP_ALIVE_CLIENT_H
 #define KEEP_ALIVE_CLIENT_H
 
-/* routines for sending keep alive from client */
+/** routines for sending keep alive from client */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -31,4 +31,4 @@ int keep_alive_unlock();
 }
 #endif
 
-#endif // KEEP_ALIVE_CLIENT_H
+#endif /* KEEP_ALIVE_CLIENT_H */

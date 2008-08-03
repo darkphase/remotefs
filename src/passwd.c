@@ -13,7 +13,7 @@
 static const char *passwd_file = "./rfs-passwd";
 #else
 static const char *passwd_file = "/etc/rfs-passwd";
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 static struct list *auths = NULL;
 
 int add_or_replace_auth(const char *user, const char *passwd)
@@ -273,5 +273,5 @@ void dump_passwords()
 		
 		item = item->next;
 	}
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 }

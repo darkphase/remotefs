@@ -16,7 +16,7 @@
 static const char *exports_file = "./rfs-exports";
 #else
 static const char *exports_file = "/etc/rfs-exports";
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 static struct list *exports = NULL;
 
 void release_export(struct rfs_export *single_export);
@@ -24,7 +24,7 @@ extern struct rfsd_config rfsd_config;
 
 #ifdef RFS_DEBUG
 void dump_export(const struct rfs_export *single_export);
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 
 const char* trim_left(const char *buffer, unsigned size)
 {
@@ -217,7 +217,7 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	memset(share, 0, share_len + 1);
 	memcpy(share, local_buffer, share_len);
 	
-	while (strlen(share) > 1 // do not remove first '/'
+	while (strlen(share) > 1 /* do not remove first '/' */
 	&& share[strlen(share) - 1] == '/')
 	{
 		share[strlen(share) - 1] = 0;
@@ -415,7 +415,7 @@ void dump_export(const struct rfs_export *single_export)
 
 	DEBUG("options: %d\n", single_export->options);
 	DEBUG("export uid: %d\n", single_export->export_uid);
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 }
 
 void dump_exports()
@@ -428,5 +428,5 @@ void dump_exports()
 		dump_export(single_export->data);
 		single_export = single_export->next;
 	}
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 }

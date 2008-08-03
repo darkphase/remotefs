@@ -1,7 +1,7 @@
 #ifndef INET_H
 #define INET_H
 
-/* htonll() support */
+/** htonll() support */
 
 #include <arpa/inet.h>
 #include <endian.h>
@@ -18,8 +18,8 @@ extern "C" {
 #		define htonll(x) bswap_64(x)
 #	else
 #		error "unsupported __BYTE_ORDER"
-#	endif // __BYTE_ORDER
-#endif // htonll
+#	endif /* __BYTE_ORDER */
+#endif /* htonll */
 
 #ifndef ntohll
 #	if __BYTE_ORDER == __BIG_ENDIAN
@@ -29,11 +29,11 @@ extern "C" {
 #		define ntohll(x) bswap_64(x)
 #	else
 #		error "unsupported __BYTE_ORDER"
-#	endif // __BYTE_ORDER
-#endif // ntohll
+#	endif /* __BYTE_ORDER */
+#endif /* ntohll */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
-#endif // INET_H
+#endif /* INET_H */

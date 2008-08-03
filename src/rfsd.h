@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-/* server interface, basically for signals */
+/** server interface, basically for signals */
 
 #include <stdint.h>
 

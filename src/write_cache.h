@@ -1,7 +1,7 @@
 #ifndef WRITE_CACHE_H
 #define WRITE_CACHE_H
 
-/* write cache routines */
+/** write cache routines */
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -57,4 +57,4 @@ uint64_t write_cached_descriptor();
 }
 #endif
 
-#endif // WRITE_CACHE_H
+#endif /* WRITE_CACHE_H */

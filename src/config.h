@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/* rfs configuration */
+/** rfs configuration */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -18,16 +18,16 @@ extern "C" {
 #define EMPTY_SALT 		"$1$" /* use md5 */
 
 #ifdef RFS_DEBUG
-#define DEBUG(format, args...) do { printf(format, args); } while (0)
+#        define DEBUG(format, args...) do { printf(format, args); } while (0)
 #else
-#define DEBUG(format, args...) {}
+#        define DEBUG(format, args...) {}
 #endif
 
 #define ERROR(format, args...) do { printf(format, args); } while (0)
 #define INFO(format, args...) do { printf(format, args); } while (0)
 
 #ifndef NULL
-#define NULL (void *)(0)
+#        define NULL (void *)(0)
 #endif
 
 /** client options */
@@ -55,7 +55,7 @@ struct rfsd_config
 
 enum
 {
-	KEY_HELP,
+	KEY_HELP
 };
 
 /** flags for rfs_open() */
@@ -71,11 +71,11 @@ enum rfs_open_flags
 	RFS_TRUNC 		= 128,
 	RFS_RDONLY		= 512,
 	RFS_WRONLY		= 1024,
-	RFS_RDWR		= 2048,
+	RFS_RDWR		= 2048
 };
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
-#endif // CONFIG_H
+#endif /* CONFIG_H */

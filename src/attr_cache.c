@@ -9,12 +9,12 @@
 #include "buffer.h"
 
 static void *cache = NULL;
-static unsigned cache_ttl = 60; // secs
+static unsigned cache_ttl = 60; /* secs */
 static time_t last_time_checked = (time_t)0;
 
 int any_node(const void *s1, const void *s2)
 {
-	return 0; // equal
+	return 0; /* equal */
 }
 
 int compare_path(const void *s1, const void *s2)

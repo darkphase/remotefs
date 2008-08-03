@@ -1,7 +1,7 @@
 #ifndef LIST_H
 #define LIST_H
 
-/* linked list routines */
+/** linked list routines */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -28,5 +28,5 @@ void destroy_list(struct list *head);
 }
 #endif
 
-#endif // LIST_H
+#endif /* LIST_H */
 

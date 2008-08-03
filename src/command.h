@@ -1,7 +1,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-/* rfs commands */
+/** rfs commands */
 
 #include <stdint.h>
 
@@ -39,7 +39,7 @@ enum server_commands
 	cmd_utime,
 	cmd_statfs,
 	
-	cmd_last,
+	cmd_last
 };
 
 /** command for server */
@@ -71,4 +71,4 @@ void dump_answer(const struct answer *cmd);
 }
 #endif
 
-#endif // COMMAND_H
+#endif /* COMMAND_H */

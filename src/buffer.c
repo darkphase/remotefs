@@ -85,5 +85,5 @@ void dump(const void *data, const size_t data_len)
 		DEBUG("%c", isgraph(((const char *)data)[i]) ? ((const char *)data)[i] : '.');
 	}
 	DEBUG("%s", "\n");
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 }

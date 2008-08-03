@@ -1,7 +1,7 @@
 #ifndef READ_CACHE_H
 #define READ_CACHE_H
 
-/* read cache routines */
+/** read cache routines */
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -24,4 +24,4 @@ unsigned read_cache_is_for(uint64_t descriptor);
 }
 #endif
 
-#endif // READ_CACHE_H
+#endif /* READ_CACHE_H */

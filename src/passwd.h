@@ -1,7 +1,7 @@
 #ifndef PASSWD_H
 #define PASSWD_H
 
-/* passwd database routines */
+/** passwd database routines */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -45,4 +45,4 @@ void dump_passwords();
 }
 #endif
 
-#endif // PASSWD_H
+#endif /* PASSWD_H */

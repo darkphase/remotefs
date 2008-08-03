@@ -1,7 +1,7 @@
 #ifndef OPERATIONS_H
 #define OPERATIONS_H
 
-/* rfs operations */
+/** rfs operations */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -93,4 +93,4 @@ int rfs_chown(const char *path, uid_t uid, gid_t gid);
 }
 #endif
 
-#endif // OPERATIONS_H
+#endif /* OPERATIONS_H */

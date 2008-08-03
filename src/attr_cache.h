@@ -1,7 +1,7 @@
 #ifndef CACHE_H
 #define CACHE_H
 
-/* attributes cache. used with rfs_getattr() */
+/** attributes cache. used with rfs_getattr() */
 
 #include <sys/stat.h>
 #include <time.h>
@@ -43,4 +43,4 @@ void clear_cache();
 }
 #endif
 
-#endif // CACHE_H
+#endif /* CACHE_H */

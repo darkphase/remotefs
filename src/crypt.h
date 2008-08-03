@@ -1,7 +1,7 @@
 #ifndef CRYPT_H
 #define CRYPT_H
 
-/* password encryption routine */
+/** password encryption routine */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -14,4 +14,4 @@ char *passwd_hash(const char *password, const char *salt);
 }
 #endif
 
-#endif // CRYPT_H
+#endif /* CRYPT_H */

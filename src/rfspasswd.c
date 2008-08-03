@@ -16,7 +16,7 @@ enum operations operation = OP_DEFAULT;
 static struct termios stored_settings = { 0 };
 static unsigned need_to_restore_termio = 0;
 
-// forward declarations
+/* forward declarations */
 int change_password(const char *login);
 int delete_password(const char *login);
 int lock_password(const char *login);

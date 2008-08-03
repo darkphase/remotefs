@@ -42,7 +42,7 @@ void init_config()
 	rfsd_config.pid_file = "./rfsd.pid";
 #else
 	rfsd_config.pid_file = "/var/run/rfsd.pid";
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 }
 
 int create_pidfile(const char *pidfile)
@@ -271,7 +271,7 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
 	}
 	
-	// operation which are require write permissions
+	/* operation which are require write permissions */
 	switch (cmd->command)
 	{
 	case cmd_mknod:
@@ -393,7 +393,7 @@ int start_server(const char *address, const unsigned port)
 		
 		DEBUG("incoming connection from: %s\n", inet_ntoa(client_addr.sin_addr));
 
-		if (fork() == 0) // child
+		if (fork() == 0) /* child */
 		{
 			return handle_connection(client_socket, &client_addr);
 		}

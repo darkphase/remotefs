@@ -1,7 +1,7 @@
 #ifndef SEND_H
 #define SEND_H
 
-/* socket send/recv and connect/disconnect routines */
+/** socket send/recv and connect/disconnect routines */
 
 #include "config.h"
 
@@ -34,4 +34,4 @@ void dump_sendrecv_stats();
 }
 #endif
 
-#endif // SEND_H
+#endif /* SEND_H */

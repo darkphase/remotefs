@@ -33,7 +33,7 @@ int test_connection()
 	}
 	
 	return 0;}
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 
 #define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
 
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 	{
 		DEBUG("%s\n", "using write cache");
 	}
-#endif // RFS_DEBUG
+#endif /* RFS_DEBUG */
 	
 	if (rfs_config.auth_user != NULL
 	&& rfs_config.auth_passwd_file != NULL)
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
 	}
 
 	int ret = fuse_main(args.argc, args.argv, &rfs_operations);
-//	int ret = test_connection();
+	/*	int ret = test_connection(); */
 
 	fuse_opt_free_args(&args);
 

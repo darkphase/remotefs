@@ -28,7 +28,7 @@
 extern int g_server_socket;
 extern struct rfs_config rfs_config;
 
-static const unsigned cache_ttl = 60 * 5; // seconds
+static const unsigned cache_ttl = 60 * 5; /* seconds */
 static pthread_t keep_alive_thread = 0;
 static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
 
@@ -45,7 +45,7 @@ struct fuse_operations rfs_operations = {
 	.rename		= rfs_rename,
 	.utime		= rfs_utime,
 	
-	.mknod		= rfs_mknod, // regular files only
+	.mknod		= rfs_mknod, /* regular files only */
 	.open 		= rfs_open,
 	.release	= rfs_release,
 	.read 		= rfs_read,
@@ -55,7 +55,7 @@ struct fuse_operations rfs_operations = {
 	
 	.statfs		= rfs_statfs,
 	
-	// dummies
+	/* dummies */
 	.chmod		= rfs_chmod,
 	.chown		= rfs_chown,
 };
@@ -83,7 +83,7 @@ int check_connection()
 void* maintenance(void *ignored)
 {
 	unsigned slept = 0;
-	unsigned shorter_sleep = 1; // secs
+	unsigned shorter_sleep = 1; /* secs */
 	
 	while (g_server_socket != -1)
 	{
@@ -418,8 +418,6 @@ int _rfs_getattr(const char *path, struct stat *stbuf)
 	result.st_ctime = ctime;
 	
 	memcpy(stbuf, &result, sizeof(*stbuf));
-	
-//	dump(&result, sizeof(result));
 	
 	if (cache_file(path, &result) == NULL)
 	{
@@ -867,8 +865,9 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	unsigned old_val = rfs_config.use_write_cache;
 	rfs_config.use_write_cache = 0;
 	
-	struct fuse_file_info tmp_fi = { 0 }; 	// look what _rfs_write is using from this struct
-											// now it is only ->fh, but be warned
+	struct fuse_file_info tmp_fi = { 0 }; 	/* take a look what _rfs_write is using 
+						from this struct. now it is only ->fh, 
+						but be warned */
 	tmp_fi.fh = handle;
 	
 	int ret = _rfs_write(path, get_write_cache_block(), fsize, foffset, &tmp_fi);

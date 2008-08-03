@@ -1,7 +1,7 @@
 #ifndef EXPORTS_H
 #define EXPORTS_H
 
-/* exports file routines */
+/** exports file routines */
 
 #include <sys/types.h>
 
@@ -46,4 +46,4 @@ void dump_exports();
 }
 #endif
 
-#endif // EXPORTS_H
+#endif /* EXPORTS_H */

@@ -1,7 +1,7 @@
 #ifndef SIGNALS_CLIENT_H
 #define SIGNALS_CLIENT_H
 
-/* client signals installer */
+/** client signals installer */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -14,4 +14,4 @@ void install_signal_handlers_client();
 }
 #endif
 
-#endif // SIGNALS_CLIENT_H
+#endif /* SIGNALS_CLIENT_H */

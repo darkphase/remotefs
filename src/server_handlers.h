@@ -1,7 +1,7 @@
 #ifndef SERVER_HANDLERS_H
 #define SERVER_HANDLERS_H
 
-/* server handlers of rfs operations */
+/** server handlers of rfs operations */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -35,4 +35,4 @@ int handle_release(const int client_socket, const struct sockaddr_in *client_add
 }
 #endif
 
-#endif // SERVER_HANDLERS_H
+#endif /* SERVER_HANDLERS_H */
