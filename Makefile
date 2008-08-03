@@ -1,11 +1,13 @@
 
-DEBUG_CFLAGS = -DRFS_DEBUG -g -DFUSE_USE_VERSION=25 `pkg-config --cflags fuse`
+DEBUG_CFLAGS=-DRFS_DEBUG -g
 
-all: default
+all: rfs rfsd rfspasswd
 default: debug
 
 debug:
 	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile
+	
+release: rfsdeb rfsddeb
 
 rfs:
 	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile rfs
@@ -15,8 +17,6 @@ rfsd:
 	
 rfspasswd:
 	@CFLAGS="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/Makefile rfspasswd
-	
-release: rfsdeb rfsddeb
 	
 rfsdeb:	cleanup
 	@$(MAKE) -sf debian/Makefile rfsdeb

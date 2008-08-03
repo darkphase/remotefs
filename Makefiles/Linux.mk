@@ -1,3 +1,3 @@
 
-CC = gcc
-AR = ar
+CC="gcc"
+AR="ar"

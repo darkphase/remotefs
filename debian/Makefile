@@ -1,5 +1,5 @@
 
-RELEASE_CFLAGS = -s -O2
+RELEASE_CFLAGS=-s -O2
 
 default: all
 all: rfsdeb rfsddeb
