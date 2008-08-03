@@ -1,11 +1,4 @@
 
-# gmake
-OS=$(shell uname)
-# Solaris, FreeBSD
-OS:sh=uname
-
-include Makefiles/$(OS).mk
-
 default: all
 
 all: rfs rfsd rfspasswd
