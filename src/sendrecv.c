@@ -118,7 +118,7 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 	
 	while (size_sent < data_len)
 	{
-		int done = send(sock, data + size_sent, data_len - size_sent, 0);
+		int done = send(sock, (const char *)data + size_sent, data_len - size_sent, 0);
 		if (done < 1)
 		{
 			connection_lost = 1;
@@ -180,7 +180,7 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 	size_t size_received = 0;
 	while (size_received < data_len)
 	{
-		int done = recv(sock, data + size_received, data_len - size_received, 0);
+		int done = recv(sock, (char *)data + size_received, data_len - size_received, 0);
 		if (done < 1)
 		{
 			connection_lost = 1;
