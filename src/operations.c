@@ -450,22 +450,37 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	}
 	
 	struct answer ans = { 0 };
-	char *buffer = 0;
+	char *buffer = NULL;
 	
 	do
 	{
 		if (rfs_receive_answer(g_server_socket, &ans) == -1)
 		{
+			if (buffer != NULL)
+			{
+				free_buffer(buffer);
+			}
+			
 			return -EIO;
 		}
 		
 		if (ans.command != cmd_readdir)
 		{
+			if (buffer != NULL)
+			{
+				free_buffer(buffer);
+			}
+			
 			return -EIO;
 		}
 		
 		if (ans.ret == -1)
 		{
+			if (buffer != NULL)
+			{
+				free_buffer(buffer);
+			}
+			
 			return -ans.ret_errno;
 		}
 		
@@ -474,10 +489,18 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 			break;
 		}
 		
+		if (ans.data_len > NAME_MAX
+		&& buffer != NULL)
+		{
+			free_buffer(buffer);
+			buffer = NULL;		}
+		
 		if (buffer == NULL)
 		{
-			buffer = get_buffer(ans.data_len);
+			buffer = get_buffer(ans.data_len > NAME_MAX ? ans.data_len : NAME_MAX);
 		}
+		
+		memset(buffer, 0, ans.data_len > NAME_MAX ? ans.data_len : NAME_MAX);
 		
 		if (rfs_receive_data(g_server_socket, buffer, ans.data_len) == -1)
 		{
@@ -489,16 +512,14 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 			return -EIO;
 		}
 		
-		char *name = buffer;
-		
-		if (filler(buf, name, NULL, 0) != 0)
+		if (filler(buf, buffer, NULL, 0) != 0)
 		{
 			break;
 		}
 	}
 	while (ans.data_len > 0);
 	
-	if (buffer != 0)
+	if (buffer != NULL)
 	{
 		free_buffer(buffer);
 	}

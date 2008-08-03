@@ -402,40 +402,25 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	struct dirent *dir_entry = NULL;
 	
 	{
-	struct answer ans = { cmd_readdir, sizeof(dir_entry->d_name) };
-	
-	buffer = get_buffer(ans.data_len);
-	
-	if (buffer == NULL)
-	{
-		return -1;
-	}
 	
 	while ((dir_entry = readdir(dir)) != 0)
 	{	
+		struct answer ans = { cmd_readdir, strlen(dir_entry->d_name) + 1 };
+		
 		if (rfs_send_answer(client_socket, &ans) == -1)
 		{
-			free_buffer(buffer);
 			closedir(dir);
 			return -1;
 		}
 		
-		memset(buffer, 0, ans.data_len);
-		
-		pack(dir_entry->d_name, sizeof(dir_entry->d_name), buffer, 0);
-		
-//		dump(buffer, ans.data_len);
-		
-		if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
+		if (rfs_send_data(client_socket, dir_entry->d_name, ans.data_len) == -1)
 		{
-			free_buffer(buffer);
 			closedir(dir);
 			return -1;
 		}
 	}
 
 	closedir(dir);
-	free_buffer(buffer);
 	
 	ans.data_len = 0;
 	if (rfs_send_answer(client_socket, &ans) == -1)
