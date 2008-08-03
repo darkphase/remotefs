@@ -116,9 +116,8 @@ int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 	case KEY_HELP:
 		usage(outargs->argv[0]);
 		fuse_opt_add_arg(outargs, "-ho");
-		fuse_main(outargs->argc, outargs->argv, NULL);
+		fuse_main(outargs->argc, outargs->argv, (struct fuse_operations *)NULL);
 		exit(0);
-		return 0;
 	}
 	
 	return 1;

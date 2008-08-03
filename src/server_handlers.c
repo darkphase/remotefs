@@ -543,7 +543,7 @@ int _handle_truncate(const int client_socket, const struct sockaddr_in *client_a
 	
 //	dump(buffer, cmd->data_len);
 	
-	uint32_t offset = -1;
+	uint32_t offset = (uint32_t)-1;
 	const char *path = buffer +
 	unpack_32(&offset, buffer, 0);
 	

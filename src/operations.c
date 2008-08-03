@@ -80,7 +80,7 @@ int check_connection()
 	return -1;
 }
 
-void* maintenance()
+void* maintenance(void *ignored)
 {
 	unsigned slept = 0;
 	unsigned shorter_sleep = 1; // secs
@@ -493,7 +493,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 		char *name = buffer 
 		+ unpack_32(&type, buffer, 0);
 		
-		if (filler(buf, name, NULL, 0))
+		if (filler(buf, name, NULL, 0) != 0)
 		{
 			break;
 		}
