@@ -206,7 +206,7 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 		return next_line == NULL ? NULL : next_line + 1;
 	}
 	
-	const char *share_end = find_chr(local_buffer, border, "\t ");
+	const char *share_end = find_chr(local_buffer, border, "\t ()");
 	if (share_end == NULL)
 	{
 		return (char *)-1;
@@ -230,7 +230,11 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	}
 	
 	const char *users = trim_left(share_end, border - local_buffer);
-	const char *users_end = find_chr(users, border, "(\n");
+	const char *users_end = find_chr(users, border, "()");
+	
+	if (users_end == NULL)
+	{
+		users_end = next_line;	}
 	
 	if (users == NULL 
 	|| users >= border
@@ -252,20 +256,28 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 		if (options_end != NULL)
 		{
 			this_line_options = parse_list(options + 1, options_end);
+			
+			if (set_export_opts(line_export, this_line_options) != 0)
+			{
+				free_buffer(share);
+				destroy_list(this_line_users);
+				destroy_list(this_line_options);
+				return (char *)-1;
+			}
+			
+			if (this_line_options != NULL)
+			{
+				destroy_list(this_line_options);
+			}
 		}
-	}
-	
-	if (set_export_opts(line_export, this_line_options) != 0)
-	{
-		free_buffer(share);
-		destroy_list(this_line_users);
-		destroy_list(this_line_options);
-		return (char *)-1;
-	}
-	
-	if (this_line_options != NULL)
-	{
-		destroy_list(this_line_options);
+		else
+		{
+			free_buffer(share);
+			destroy_list(this_line_users);
+			destroy_list(this_line_options);
+			
+			return (char *)-1;
+		}
 	}
 	
 	line_export->path = share;
