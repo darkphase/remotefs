@@ -377,48 +377,140 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	}
 
 	char *path = buffer;
+	unsigned path_len = strlen(path) + 1;
 	
-	if (strlen(path) + 1 != cmd->data_len)
+	if (path_len != cmd->data_len)
 	{
 		free_buffer(buffer);
 		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
+	
+	if (path_len > NAME_MAX)
+	{
+		free_buffer(buffer);
+		return reject_request(client_socket, cmd, EINVAL) == 0 ? 1 : -1;	}
 	
 	errno = 0;
 	DIR *dir = opendir(path);
 	
 	struct answer ans = { cmd_readdir, 0, dir == NULL ? -1 : 0, errno };
 
-	free_buffer(buffer);
-	
 	if (dir == NULL)
 	{
+		free_buffer(path);
 		rfs_send_answer(client_socket, &ans);
 		return 1;
 	}
 
 	struct dirent *dir_entry = NULL;
+	struct stat stbuf = { 0 };
+	uint32_t mode = 0;
+	uint32_t uid = 0;
+	uint32_t gid = 0;
+	uint32_t size = 0;
+	uint32_t atime = 0;
+	uint32_t mtime = 0;
+	uint32_t ctime = 0;
+	
+	unsigned stat_size = sizeof(mode)
+	+ sizeof(uid)
+	+ sizeof(gid)
+	+ sizeof(size)
+	+ sizeof(atime)
+	+ sizeof(mtime)
+	+ sizeof(ctime);
+	
+	buffer = get_buffer(stat_size + NAME_MAX);
+	char full_path[NAME_MAX] = { 0 };
 	
 	{
 	
 	while ((dir_entry = readdir(dir)) != 0)
 	{	
-		struct answer ans = { cmd_readdir, strlen(dir_entry->d_name) + 1 };
+		const char *entry_name = dir_entry->d_name;
+		unsigned entry_len = strlen(entry_name) + 1;
+		
+		memset(full_path, 0, NAME_MAX);
+		
+		const unsigned char copy_path = 
+		(strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0 )
+		? 0
+		: 1;
+		const unsigned char add_slash = (copy_path == 1 && path[path_len - 2] == '/' ? 0 : 1);
+		
+		if (copy_path == 1)
+		{
+			memcpy(full_path, path, path_len - 1);		}
+		
+		if (copy_path == 1
+		&& add_slash == 1)
+		{
+			memcpy(full_path + path_len - 1, "/", 1);
+		}
+		
+		memcpy(full_path + (copy_path == 1 ? path_len - 1 + add_slash : 0), 
+		entry_name, 
+		strlen(entry_name));
+		
+		DEBUG("%s\n", full_path);
+		
+		unsigned overall_size = stat_size + entry_len;
+		
+		errno = 0;
+		if (copy_path == 1
+		&& stat(full_path, &stbuf) != 0)
+		{
+			int saved_errno = errno;
+			
+			closedir(dir);
+			free_buffer(path);
+			free_buffer(buffer);
+			
+			return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
+		}
+		
+		mode = stbuf.st_mode;
+		uid = stbuf.st_uid;
+		gid = stbuf.st_gid;
+		size = stbuf.st_size;
+		atime = stbuf.st_atime;
+		mtime = stbuf.st_mtime;
+		ctime = stbuf.st_ctime;
+		
+		struct answer ans = { cmd_readdir, overall_size };
+		
+		pack(entry_name, entry_len, buffer, 
+		pack_32(&ctime, buffer, 
+		pack_32(&mtime, buffer, 
+		pack_32(&atime, buffer, 
+		pack_32(&size, buffer, 
+		pack_32(&gid, buffer, 
+		pack_32(&uid, buffer, 
+		pack_32(&mode, buffer, 0
+			))))))));
+		
+		dump(buffer, overall_size);
 		
 		if (rfs_send_answer(client_socket, &ans) == -1)
 		{
 			closedir(dir);
+			free_buffer(path);
+			free_buffer(buffer);
 			return -1;
 		}
 		
-		if (rfs_send_data(client_socket, dir_entry->d_name, ans.data_len) == -1)
+		if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
 		{
 			closedir(dir);
+			free_buffer(path);
+			free_buffer(buffer);
 			return -1;
 		}
 	}
 
 	closedir(dir);
+	free_buffer(path);
+	free_buffer(buffer);
 	
 	ans.data_len = 0;
 	if (rfs_send_answer(client_socket, &ans) == -1)

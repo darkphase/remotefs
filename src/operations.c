@@ -448,7 +448,26 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	}
 	
 	struct answer ans = { 0 };
-	char *buffer = NULL;
+	struct stat stbuf = { 0 };
+	uint32_t mode = 0;
+	uint32_t uid = 0;
+	uint32_t gid = 0;
+	uint32_t size = 0;
+	uint32_t atime = 0;
+	uint32_t mtime = 0;
+	uint32_t ctime = 0;
+	
+	unsigned stat_size = sizeof(mode)
+	+ sizeof(uid)
+	+ sizeof(gid)
+	+ sizeof(size)
+	+ sizeof(atime)
+	+ sizeof(mtime)
+	+ sizeof(ctime);
+	
+	unsigned buffer_size = stat_size + NAME_MAX;
+	char *buffer = get_buffer(buffer_size);
+	char full_path[NAME_MAX] = { 0 };
 	
 	do
 	{
@@ -487,30 +506,72 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 			break;
 		}
 		
-		if (ans.data_len > NAME_MAX
-		&& buffer != NULL)
+		if (ans.data_len > buffer_size)
 		{
-			free_buffer(buffer);
-			buffer = NULL;		}
+			free_buffer(buffer);		}
 		
-		if (buffer == NULL)
-		{
-			buffer = get_buffer(ans.data_len > NAME_MAX ? ans.data_len : NAME_MAX);
-		}
-		
-		memset(buffer, 0, ans.data_len > NAME_MAX ? ans.data_len : NAME_MAX);
+		memset(buffer, 0, buffer_size);
 		
 		if (rfs_receive_data(g_server_socket, buffer, ans.data_len) == -1)
 		{
-			if (buffer != NULL)
-			{
-				free_buffer(buffer);
-			}
-	
+			free_buffer(buffer);
+			
 			return -EIO;
 		}
 		
-		if (filler(buf, buffer, NULL, 0) != 0)
+		dump(buffer, ans.data_len);
+		
+		char *entry_name = buffer + 
+		unpack_32(&ctime, buffer, 
+		unpack_32(&mtime, buffer, 
+		unpack_32(&atime, buffer, 
+		unpack_32(&size, buffer, 
+		unpack_32(&gid, buffer, 
+		unpack_32(&uid, buffer, 
+		unpack_32(&mode, buffer, 0 
+			)))))));
+		
+		memset(full_path, 0, NAME_MAX);
+		
+		const unsigned char copy_path = 
+		(strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0 )
+		? 0
+		: 1;
+		const unsigned char add_slash = (copy_path == 1 && path[path_len - 2] == '/' ? 0 : 1);
+		
+		if (copy_path == 1)
+		{
+			memcpy(full_path, path, path_len - 1);
+		}
+		
+		if (copy_path == 1
+		&& add_slash == 1)
+		{
+			memcpy(full_path + path_len - 1, "/", 1);
+		}
+		
+		memcpy(full_path + (copy_path == 1 ? path_len - 1 + add_slash : 0), 
+		entry_name, 
+		strlen(entry_name));
+		
+		DEBUG("%s\n", full_path);
+		
+		stbuf.st_mode = mode;
+		stbuf.st_uid = getuid();
+		stbuf.st_gid = getgid();
+		stbuf.st_size = size;
+		stbuf.st_atime = atime;
+		stbuf.st_mtime = mtime;
+		stbuf.st_ctime = ctime;
+		
+		if (copy_path == 1 
+		&& cache_file(full_path, &stbuf) == NULL)
+		{
+			free_buffer(buffer);
+			return -EIO;
+		}
+		
+		if (filler(buf, entry_name, NULL, 0) != 0)
 		{
 			break;
 		}

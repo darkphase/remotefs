@@ -88,14 +88,14 @@ void* cache_file(const char *path, struct stat *stbuf)
 	void *found = tfind(key, &cache, compare_path);
 	if (found != NULL)
 	{
-			free(key->path);
-			free_buffer(key);
-			
-			struct tree_item *value = *(struct tree_item **)found;
-			memcpy(&value->data, stbuf, sizeof(value->data));
-			value->time = time(NULL);
-			
-			return found;
+		free(key->path);
+		free_buffer(key);
+		
+		struct tree_item *value = *(struct tree_item **)found;
+		memcpy(&value->data, stbuf, sizeof(value->data));
+		value->time = time(NULL);
+		
+		return found;
 	}
 	else
 	{
@@ -122,7 +122,7 @@ void release_cache(const void *nodep, const VISIT which, const int depth)
 	|| which == leaf)
 	{
 		struct tree_item *node = *(struct tree_item **)nodep;
-	
+		
 		if (node)
 		{
 			if (node->path)
