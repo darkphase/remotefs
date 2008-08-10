@@ -1,0 +1,61 @@
+Makefiles for porting of remotefs:
+----------------------------------
+
+Porting of remotefs to an other platform shall not be complicated.
+
+The first step is to create the file remotefs/Makefiles/<OS>.mk
+<OS> shall be the output from the command uname
+
+This OS-specific file shall contain some flags needed for compiling
+and linking. Look also at Linux.mk and / or SunOS.mk
+
+You may also to add OS dependent includes into some files.
+
+Compiling with an alternative compiler:
+---------------------------------------
+
+You can use an other compiler as the default compiler if you
+pass the variable ALTCC at the calling time of make e.g.
+
+ALT=SunCC make
+or
+make ALT=SunCC
+
+will compile the project using the settings set into the file
+LinuxSunCC.mk (we assume that you compile on a Linux system).
+The name of the specific include file is the concatenation of
+the output of uname and the content of ALT.
+
+Flags used my the makefiles:
+----------------------------
+
+CFLAGS_G      CGLAGS passed by the main Makefile (debug output)
+CFLAGS_O      OS specific flags needed for porting
+CFLAGS_FUSE   CFLAGS  for including fuse.h and related settings
+CFLAGS_DBG    -g for most compiler
+CFLAGS_OPT    Optimization options
+
+LDFLAGS_O     OS specific LDFLAGS
+LDFLAGS_FUSE  LDFLAGS for fuse
+LDFLAGS_NET   LDFLAGS for the network
+LDFLAGS_PTHR  LDFLAGS for pthread if not set by LDFLAGS_FUSE
+LDFLAGS_CRYPT normally -lcrypt
+
+How the Makefiles works:
+------------------------
+
+The main Makefile include, depending of the OS and the variable ALT
+the corresponding file within the directory Makefiles e.g. Linux.mk
+
+IThe main Makefile call for each binary  make and pass it the component
+dependent Makefile (rfs.mk, rfsd.mk or rfspasswd.mk)
+
+The component dependent files read the the OS dependent Makefiles
+set the CFLAGS and LDFLAGS declare the target and the object and
+finaly include Makefiles/base.mk is responsible for the dependencies
+
+
+Refer also to the included files SunOS.mk / SunOSGcc.mk and
+Linux.mk / LinuxSunCC.mk
+
+
