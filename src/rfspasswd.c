@@ -190,7 +190,6 @@ int change_password(const char *login)
 	tcgetattr(0, &stored_settings);
 	struct termios new_settings = stored_settings;
 	
-	new_settings.c_lflag &= (~ICANON);
 	new_settings.c_lflag &= (~ECHO);
 	
 	need_to_restore_termio = 1;
