@@ -1158,6 +1158,9 @@ int _handle_release(const int client_socket, const struct sockaddr_in *client_ad
 		return -1;
 	}
 	
+	/* release cached memory not to keep it in server's memory */
+	mp_force_free();
+	
 	return 0;
 }
 
