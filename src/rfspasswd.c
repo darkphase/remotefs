@@ -35,6 +35,16 @@ void usage(const char *app_name)
 	, app_name);
 }
 
+int check_opts()
+{
+	if (login != NULL 
+	&& strchr(login, ':') != NULL)
+	{
+		ERROR("%s\n", "Username can not contain ':'");
+		return -1;	}
+	
+	return 0;}
+
 int parse_opts(int argc, char **argv)
 {
 	int opt;
@@ -115,6 +125,11 @@ int main(int argc, char **argv)
 	if (parse_opts(argc, argv) != 0)
 	{
 		usage(argv[0]);
+		exit(1);
+	}
+	
+	if (check_opts() != 0)
+	{
 		exit(1);
 	}
 	
