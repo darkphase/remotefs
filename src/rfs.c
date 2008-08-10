@@ -177,7 +177,10 @@ int read_password()
 	fclose(fp);
 	
 	while (done > 0 &&
-	buffer[done - 1] == '\n')
+	(buffer[done - 1] == '\n'
+	|| buffer[done - 1] == '\r'
+	|| buffer[done - 1] == '\t'
+	|| buffer[done - 1] == ' '))
 	{
 		--done;
 		buffer[done] = 0;
