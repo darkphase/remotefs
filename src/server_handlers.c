@@ -35,6 +35,25 @@ char *auth_passwd = NULL;
 
 static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
 
+int stat_file(const char *path, struct stat *stbuf)
+{
+	errno = 0;
+	if (stat(path, stbuf) != 0)
+	{
+		return errno;
+	}
+	
+	if (mounted_export != NULL
+	&& (mounted_export->options & opt_ro) != 0)
+	{
+		stbuf->st_mode &= (~S_IWUSR);
+		stbuf->st_mode &= (~S_IWGRP);
+		stbuf->st_mode &= (~S_IWOTH);
+	}
+	
+	return 0;
+}
+
 int check_password(const char *user, const char *passwd)
 {
 	const char *stored_passwd = get_auth_password(user);
@@ -306,8 +325,9 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
-	errno = 0;
-	if (stat(path, &stbuf) != 0)
+	
+	errno = stat_file(path, &stbuf);
+	if (errno != 0)
 	{
 		int saved_errno = errno;
 		
@@ -325,7 +345,7 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 	uint32_t atime = stbuf.st_atime;
 	uint32_t mtime = stbuf.st_mtime;
 	uint32_t ctime = stbuf.st_ctime;
-	
+
 	unsigned overall_size = sizeof(mode)
 	+ sizeof(uid)
 	+ sizeof(gid)
@@ -456,17 +476,19 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		
 		unsigned overall_size = stat_size + entry_len;
 		
-		errno = 0;
-		if (copy_path == 1
-		&& stat(full_path, &stbuf) != 0)
+		if (copy_path == 1)
 		{
-			int saved_errno = errno;
-			
-			closedir(dir);
-			free_buffer(path);
-			free_buffer(buffer);
-			
-			return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
+			errno = stat_file(full_path, &stbuf);
+			if (errno != 0)
+			{
+				int saved_errno = errno;
+				
+				closedir(dir);
+				free_buffer(path);
+				free_buffer(buffer);
+				
+				return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
+			}
 		}
 		
 		mode = stbuf.st_mode;
