@@ -6,8 +6,12 @@
 # chkconfig: - 60 20
 # description: RFS is a fast network file system based on fuse \
 #              (client side). It is designed for NAS systems.
-# probe: true
-# config: /etc/sysconfig/rfsd
+### BEGIN INIT INFO
+# Default-Start:  2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop rfs daemon
+# Description: A fast remote file system
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions
