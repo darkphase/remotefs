@@ -16,12 +16,11 @@ include Makefiles/$(OS)$(ALT).mk
 # The begin of the world
 #############################
 
-#CFLAGS += "$(DEBUG_CFLAGS)"
-
-
 all: rfspasswd rfsd rfspasswd rfs 
 
 release: rfsdeb rfsddeb
+
+rpm: rpm-rfsd rpm-rfs
 
 rfs: dummy
 	@if [ "`pkg-config --cflags fuse 2> /dev/null`" != "" ]; then \
@@ -64,6 +63,12 @@ flags:
 	@CFLAGS_G="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/rfs.mk flags
 	@CFLAGS_G="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/rfsd.mk flags
 	@CFLAGS_G="$(DEBUG_CFLAGS)" $(MAKE) -sf Makefiles/rfspasswd.mk flags
+
+rpm-rfsd: clean
+	@RPMNAME=rfsd $(MAKE) -sf Makefiles/base.mk bldrpm
+	
+rpm-rfs:  clean
+	@RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk bldrpm
 
 depends:
 	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.h\)"/src\/\1/' > Makefiles/depends.mk
