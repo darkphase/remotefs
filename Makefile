@@ -50,10 +50,10 @@ cleanup: clean
 	@$(MAKE) -sf debian/Makefile clean
 	
 clean:
-	@if ls src/*.o >/dev/null 2>&1; then $(RM) src/*.o; fi
-	@if [ -f rfs ]; then $(RM) rfs; fi
-	@if [ -f rfsd ]; then $(RM) rfsd; fi
-	@if [ -f rfspasswd ]; then $(RM) rfspasswd; fi
+	@if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
+	@if [ -f rfs ]; then $(RM) -f rfs; fi
+	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
+	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
 
 
 dummy: # Force the call of the variuos Makefiles
