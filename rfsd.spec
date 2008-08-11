@@ -30,7 +30,7 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
 cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
-cp init.d/rfsd.redhar $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
+cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
 
 # ------------------------     clean     -----------------------------------
 %clean
