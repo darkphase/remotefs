@@ -187,7 +187,7 @@ int read_password()
 	}
 	
 	rfs_config.auth_passwd = passwd_hash(buffer, EMPTY_SALT);
-	DEBUG("hashed passwd: %s\n", rfs_config.auth_passwd);
+	DEBUG("hashed passwd: %s\n", rfs_config.auth_passwd ? rfs_config.auth_passwd : "NULL");
 	free_buffer(buffer);
 	
 	return 0;
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	DEBUG("username: %s, password: %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
+	DEBUG("username: %s, password: %s\n", rfs_config.auth_user ? rfs_config.auth_user : "NULL", rfs_config.auth_passwd ? rfs_config.auth_passwd : "NULL");
 	
 	if (rfs_reconnect(1) != 0)
 	{
