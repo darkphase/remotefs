@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# rfsd          This shell script takes care of starting and stopping
+#               the RFS services.
+#
+# chkconfig: - 60 20
+# description: RFS is a fast network file system based on fuse \
+#              (client side). It is designed for NAS systems.
+# probe: true
+# config: /etc/sysconfig/rfsd
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+if [ ! -f /etc/sysconfig/network ]; then
+    exit 6
+fi
+
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "${NETWORKING}" = "no" ] && exit 6
+
+
+###[ -x /usr/bin/rfsd ] || exit 5
+
+# Fail if /etc/rfs-exports doesn't exist;
+[ -r /etc/rfs-exports ] || \
+    { echo "/etc/rfs-exports does not exist" ; exit 5 ; }
+
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+	echo -n $"Starting RFS daemon: "
+	daemon rfsd
+	RETVAL=$?
+	echo
+	[ $RETVAL -ne 0 ] && exit $RETVAL
+	touch /var/lock/subsys/rfsd
+	;;
+  stop)
+	# Stop daemons.
+	killproc rfsd
+	echo
+	rm -f /var/lock/subsys/rfsd
+	;;
+  status)
+	status rfsd
+	RETVAL=$?
+	;;
+  restart)
+	$0 stop
+	$0 start
+	;;
+  reload)
+	touch /var/lock/subsys/rfsd
+	;;
+  probe)
+	if [ ! -f /var/lock/subsys/rfsd ] ; then
+	  echo $"start"; exit 0
+	fi
+	/sbin/pidof rfsd >/dev/null 2>&1; RFSD="$?"
+	if [ $RFSD = 1 ] ; then
+	  echo $"restart"; exit 0
+	fi
+	if [ /etc/rfs-exports -nt /var/lock/subsys/rfss ] ; then
+	  echo $"reload"; exit 0
+	fi
+	;;
+  condrestart)
+	[ -f /var/lock/subsys/rfsd ] && {
+		$0 stop
+		$0 start
+	}
+	;;
+  *)
+	echo $"Usage: rfsd {start|stop|status|restart|reload|condrestart}"
+	RETVAL=3
+	;;
+esac
+
+exit $RETVAL
