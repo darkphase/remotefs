@@ -56,18 +56,22 @@ void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
 	last_cached_offset = offset;
 }
 
-int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_t offset)
+int put_to_read_cache(uint64_t descriptor, char *buffer, size_t size, off_t offset)
 {
 	if (cache != NULL)
 	{
 		return -1;
 	}
 	
+	/*
 	if (size > max_cache_size)
 	{
 		return -1;
 	}
-	
+	*/
+
+	cache = buffer;
+	/*
 	cache = get_buffer(size);
 	if (cache == NULL)
 	{
@@ -75,6 +79,7 @@ int put_to_read_cache(uint64_t descriptor, const char *buffer, size_t size, off_
 	}
 	
 	memcpy(cache, buffer, size);
+	*/
 	update_read_cache_stats(descriptor, size, offset);
 	
 	return 0;

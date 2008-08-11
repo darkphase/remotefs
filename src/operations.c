@@ -768,7 +768,7 @@ int _rfs_truncate(const char *path, off_t offset)
 int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
-
+	
 	if (read_cache_have_data(fi->fh, offset) >= size)
 	{
 		const char *cached_data = read_cache_get_data(fi->fh, size, offset);
@@ -799,12 +799,13 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		}
 	}
 	
+	unsigned overall_size = size_to_read + size;
 	unsigned old_val = rfs_config.use_read_cache;
 	rfs_config.use_read_cache = 0;
 	
-	char *buffer = get_buffer(size_to_read);
+	char *buffer = get_buffer(overall_size);
 	
-	int ret = _rfs_read(path, buffer, size_to_read, offset, fi);
+	int ret = _rfs_read(path, buffer, overall_size, offset, fi);
 	rfs_config.use_read_cache = old_val;
 	
 	if (ret < 0)
@@ -816,16 +817,20 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	memcpy(buf, buffer, ret < size ? ret : size);
 	if (ret > size)
 	{
-		put_to_read_cache(fi->fh, buffer, ret, offset);
+		/* normally we don't have to destroy read buffer here
+		because it wasn't copied */
+		if (put_to_read_cache(fi->fh, buffer, ret, offset) != 0)
+		{
+			free_buffer(buffer);
+		}
 	}
 	else
 	{
 		update_read_cache_stats(fi->fh, ret, offset);
+		free_buffer(buffer);
 	}
-	
-	free_buffer(buffer);
-	
-	return ret == size_to_read ? size : (ret >= size ? size : ret);
+
+	return ret == overall_size ? size : (ret >= size ? size : ret);
 }
 
 int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
