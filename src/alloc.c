@@ -9,7 +9,7 @@ void *mp_alloc(size_t size)
 
 void mp_free(void *buffer)
 {
-	return free(buffer);
+	free(buffer);
 }
 
 void mp_force_free()
