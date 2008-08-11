@@ -263,8 +263,6 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		return handle_statfs(client_socket, client_addr, cmd);
 	}
 	
-	DEBUG("mounted options: %d\n", mounted_export->options);
-	
 	if (mounted_export == NULL
 	|| (mounted_export->options & opt_ro) != 0)
 	{
