@@ -4,7 +4,11 @@
 /** htonll() support */
 
 #include <arpa/inet.h>
-#include <endian.h>
+#ifdef SOLARIS
+#	include <sys/byteorder.h>
+#else
+#	include <endian.h>
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
