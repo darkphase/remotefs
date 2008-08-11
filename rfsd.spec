@@ -30,7 +30,7 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
 cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
-#cp etc/rfsd-rh $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
+cp init.d/rfsd.redhar $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -44,6 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfsd
 %attr(755, root,root) %{_prefix}/bin/rfspasswd
+%attr(755, root,root) %{_prefix}/etc/rfsd
 
 %post
 CHKCONFIGPARM="--add rfsd"
