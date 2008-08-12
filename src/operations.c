@@ -469,6 +469,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	char *buffer = get_buffer(buffer_size);
 	char full_path[NAME_MAX] = { 0 };
 	
+	char operation_failed = 0;
 	do
 	{
 		if (rfs_receive_answer(g_server_socket, &ans) == -1)
@@ -531,49 +532,37 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 		unpack_32(&mode, buffer, 0 
 			)))))));
 		
-		memset(full_path, 0, NAME_MAX);
+		int joined = path_join(full_path, path, entry_name);
 		
-		const unsigned char copy_path = 
-		(strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0 )
-		? 0
-		: 1;
-		const unsigned char add_slash = (copy_path == 1 && path[path_len - 2] == '/' ? 0 : 1);
-		
-		if (copy_path == 1)
+		if (joined < 0)
 		{
-			memcpy(full_path, path, path_len - 1);
-		}
-		
-		if (copy_path == 1
-		&& add_slash == 1)
-		{
-			memcpy(full_path + path_len - 1, "/", 1);
-		}
-		
-		memcpy(full_path + (copy_path == 1 ? path_len - 1 + add_slash : 0), 
-		entry_name, 
-		strlen(entry_name));
-		
-		DEBUG("%s\n", full_path);
-		
-		stbuf.st_mode = mode;
-		stbuf.st_uid = getuid();
-		stbuf.st_gid = getgid();
-		stbuf.st_size = size;
-		stbuf.st_atime = atime;
-		stbuf.st_mtime = mtime;
-		stbuf.st_ctime = ctime;
-		
-		if (copy_path == 1 
-		&& cache_file(full_path, &stbuf) == NULL)
-		{
-			free_buffer(buffer);
+			operation_failed = 1;
 			return -EIO;
 		}
 		
-		if (filler(buf, entry_name, NULL, 0) != 0)
+		if (joined == 0)
 		{
-			break;
+			stbuf.st_mode = mode;
+			stbuf.st_uid = getuid();
+			stbuf.st_gid = getgid();
+			stbuf.st_size = size;
+			stbuf.st_atime = atime;
+			stbuf.st_mtime = mtime;
+			stbuf.st_ctime = ctime;
+			
+			if (cache_file(full_path, &stbuf) == NULL)
+			{
+				free_buffer(buffer);
+				return -EIO;
+			}
+		}
+		
+		if (operation_failed == 0)
+		{
+			if (filler(buf, entry_name, NULL, 0) != 0)
+			{
+				break;
+			}
 		}
 	}
 	while (ans.data_len > 0);

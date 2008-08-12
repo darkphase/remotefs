@@ -29,6 +29,7 @@
 #include "inet.h"
 #include "keep_alive_server.h"
 #include "crypt.h"
+#include "path.h"
 
 extern unsigned char directory_mounted;
 extern struct rfsd_config rfsd_config;
@@ -151,8 +152,6 @@ int generate_salt(char *salt, size_t max_size)
 			memset(salt, 0, max_size);
 			return -1;
 		}
-		
-		DEBUG("%c\n", ch);
 		
 		salt[i] = ch;
 	}
@@ -453,33 +452,18 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		const char *entry_name = dir_entry->d_name;
 		unsigned entry_len = strlen(entry_name) + 1;
 		
-		memset(full_path, 0, NAME_MAX);
-		
-		const unsigned char copy_path = 
-		(strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0 )
-		? 0
-		: 1;
-		const unsigned char add_slash = (copy_path == 1 && path[path_len - 2] == '/' ? 0 : 1);
-		
-		if (copy_path == 1)
+		int joined = path_join(full_path, path, entry_name);
+		if (joined != 0)
 		{
-			memcpy(full_path, path, path_len - 1);		}
-		
-		if (copy_path == 1
-		&& add_slash == 1)
-		{
-			memcpy(full_path + path_len - 1, "/", 1);
+			closedir(dir);
+			free_buffer(path);
+			free_buffer(buffer);
+			return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
 		}
-		
-		memcpy(full_path + (copy_path == 1 ? path_len - 1 + add_slash : 0), 
-		entry_name, 
-		strlen(entry_name));
-		
-		DEBUG("%s\n", full_path);
 		
 		unsigned overall_size = stat_size + entry_len;
 		
-		if (copy_path == 1)
+		if (joined == 0)
 		{
 			errno = stat_file(full_path, &stbuf);
 			if (errno != 0)
