@@ -1,6 +1,9 @@
 #include "server_handlers.h"
 
 #include <arpa/inet.h>
+#if defined FREEBSD
+#       include <netinet/in.h>
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
