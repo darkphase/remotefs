@@ -13,7 +13,7 @@ include Makefiles/$(OS)$(ALT).mk
 
 all: flags $(TARGET)
 
-%.o : %.c
+.c.o:
 	@echo Compiling $<
 	@$(CC) -c $(CFLAGS) $< -o $@
 	
