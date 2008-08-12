@@ -1,4 +1,4 @@
-VERSION="0.9"
+VERSION="0.10"
 SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/rfspasswd.c \
 	../src/buffer.h ../src/buffer.c \
@@ -16,6 +16,7 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/keep_alive_server.h ../src/keep_alive_server.c \
 	../src/config.h \
 	../src/inet.h \
+	../src/path.h ../src/path.c \
 	../LICENSE ../AUTHORS ../CHANGELOG"
 MAKEFILE="Makefile.rfsd"
 NAME="rfsd"

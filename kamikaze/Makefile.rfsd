@@ -13,7 +13,8 @@ list.o \
 exports.o \
 passwd.o \
 keep_alive_server.o \
-crypt.o
+crypt.o \
+path.o
 
 RFSPASSWD_OBJS = rfspasswd.o \
 buffer.o \
