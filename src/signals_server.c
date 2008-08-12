@@ -7,7 +7,7 @@
 #       include <wait.h>
 #endif
 #include <unistd.h>
-#include <stdlib.h>vi 
+#include <stdlib.h>
 
 #include "config.h"
 #include "signals.h"
