@@ -71,4 +71,4 @@ rpm-rfs:  clean
 	@RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk bldrpm
 
 depends:
-	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.h\)"/src\/\1/' > Makefiles/depends.mk
+	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
