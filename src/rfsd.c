@@ -215,14 +215,6 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 	
 	switch (cmd->command)
 	{
-	case cmd_last:
-	case cmd_first:
-		reject_request_with_cleanup(client_socket, cmd, EBADE);
-		return -1;
-	}
-	
-	switch (cmd->command)
-	{
 	case cmd_closeconnection:
 		return handle_closeconnection(client_socket, client_addr, cmd);
 		
