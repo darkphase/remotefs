@@ -5,7 +5,7 @@
 #       include <sys/wait.h>
 #else
 #       include <wait.h>
-#endifvi
+#endif
 #include <unistd.h>
 #include <stdlib.h>vi 
 
