@@ -4,8 +4,10 @@
 /** htonll() support */
 
 #include <arpa/inet.h>
-#ifdef SOLARIS
+#if defined SOLARIS
 #	include <sys/byteorder.h>
+#elif defined FREEBSD
+#       include <sys/endian.h>
 #else
 #	include <endian.h>
 #endif
