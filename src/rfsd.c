@@ -1,5 +1,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#if defined FREEBSD
+#       include <netinet/in.h>
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
