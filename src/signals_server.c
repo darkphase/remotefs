@@ -1,9 +1,13 @@
 #include "signals_server.h"
 
 #include <signal.h>
-#include <wait.h>
+#if defined FREEBSD
+#       include <sys/wait.h>
+#else
+#       include <wait.h>
+#endifvi
 #include <unistd.h>
-#include <stdlib.h>
+#include <stdlib.h>vi 
 
 #include "config.h"
 #include "signals.h"
