@@ -33,7 +33,8 @@ OBJS =  src/rfsd.o \
         src/exports.o \
         src/passwd.o \
         src/keep_alive_server.o \
-        src/crypt.o
+        src/crypt.o \
+	src/path.o
 
 #######################################
 # Rules for compiling, ...

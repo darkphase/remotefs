@@ -37,7 +37,8 @@ OBJS =  src/rfs.o \
         src/crypt.o \
         src/keep_alive_client.o \
         src/write_cache.o \
-        src/read_cache.o
+        src/read_cache.o \
+	src/path.o
 
 #######################################
 # Rules for compiling, ...
