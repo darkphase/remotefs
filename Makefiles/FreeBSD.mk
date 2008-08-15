@@ -7,10 +7,14 @@ CC = cc
 AR = ar
 RM = rm
 
+###############################
+# wrong behaviour for dmake
+################################
+SUB=$(@F:%.o=%.c)
+
 ################################
 # OS / CC specifics flags
 ################################
-
 CFLAGS_O     = -I./src -DFREEBSD -DEBADE=EINVAL -DEREMOTEIO=ECANCELED -DNAME_MAX=255 
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3
@@ -29,3 +33,4 @@ LDFLAGS_FUSE = -lfuse
 LDFLAGS_NET   =
 #LDFLAGS_PTHR  = -lpthread
 LDFLAGS_CRYPT = -lcrypt
+

@@ -3,33 +3,25 @@
 # CC specific flags 
 #######################################
 
-CFLAGS  = $(CFLAGS_G) \
-          $(CFLAGS_O) \
-          $(CFLAGS_DBG) \
-          $(CFLAGS_OPT)
+rfspasswd_CFLAGS  = $(CFLAGS_G) \
+                    $(CFLAGS_O)
 
-LDFLAGS = $(LDFLAGS_G) \
-          $(LDFLAGS_O) \
-          $(LDFLAGS_CRYPT)
+rfspasswd_LDFLAGS = $(LDFLAGS_G) \
+                    $(LDFLAGS_O) \
+                    $(LDFLAGS_CRYPT)
 
 #######################################
 # Define target and object files
 #######################################
 
-TARGET  = rfspasswd
+rfspasswd_OBJS =  src/rfspasswd.o
 
-OBJS =  src/rfspasswd.o \
-        src/passwd.o \
-        src/crypt.o \
-        src/list.o \
-        src/buffer.o \
-        src/alloc.o \
-        src/signals.o
-
-
-
-#######################################
-# Rules for compiling, ...
-#######################################
-
-include Makefiles/base.mk
+# the following object are declared
+# whithin rfs.mk as com1_OBJS and
+# are used for rfs rfsd and rfspasswd
+#                  src/crypt.o \
+#                  src/passwd.o \
+#                  src/list.o \
+#                  src/buffer.o \
+#                  src/alloc.o \
+#                  src/signals.o

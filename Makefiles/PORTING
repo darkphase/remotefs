@@ -9,7 +9,9 @@ The first step is to create the file remotefs/Makefiles/<OS>.mk
 This OS-specific file shall contain some flags needed for compiling
 and linking. Look also at Linux.mk and / or SunOS.mk
 
-You may also to add OS dependent includes into some files.
+You may also to add OS dependent includes into some files,
+this was necessary within src/inet.h, dsignals_server.c and
+server_handlers.c
 
 Compiling with an alternative compiler:
 ---------------------------------------
@@ -47,15 +49,12 @@ How the Makefiles works:
 The main Makefile include, depending of the OS and the variable ALT
 the corresponding file within the directory Makefiles e.g. Linux.mk
 
-IThe main Makefile call for each binary  make and pass it the component
-dependent Makefile (rfs.mk, rfsd.mk or rfspasswd.mk)
+The main Makefile launch for all TAGs "make -f Makefiles/base.mk <TAG>"
+This allow to create without modifying the makefiles a debug or a
+release verion of the binaries. Which flag are used is set within
+the main Makefile and passed through the enviroment (variable DRF)
 
-The component dependent files read the the OS dependent Makefiles
-set the CFLAGS and LDFLAGS declare the target and the object and
-finaly include Makefiles/base.mk is responsible for the dependencies
-
-
-Refer also to the included files SunOS.mk / SunOSGcc.mk and
-Linux.mk / LinuxSunCC.mk
+Refer also to the included files SunOS.mk / SunOSGcc.mk,
+Linux.mk / LinuxSunCC.mk and FreeBSD.mk
 
 

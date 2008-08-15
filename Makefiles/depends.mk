@@ -32,6 +32,7 @@ src/operations.o:src/write_cache.h
 src/operations.o:src/list.h
 src/operations.o:src/read_cache.h
 src/operations.o:src/crypt.h
+src/operations.o:src/path.h
 src/operations.o:src/operations_sync.c
 src/passwd.o:src/passwd.h
 src/passwd.o:src/config.h

@@ -1,10 +1,27 @@
+#########################################
+#
+# For cross-compiling under Linux for
+# the buffalo Link Station LS-GL V2
+# with arm processor.
+#
+# The path for searchinh the cross compile
+# binaries must be set correctly so we
+# can found them.
+##########################################
+
+################################
+# Target processor for deb packages
+################################
+
+TGTARCH = ARCH=armv5tejl
+
 ################################
 # The executables
 ################################
 
 MAKE = make
-CC = cc
-AR = ar
+CC = arm-none-linux-gnueabi-gcc
+AR = arm-none-linux-gnueabi-ar
 RM = rm
 
 ################################
