@@ -5,7 +5,7 @@
 #include "config.h"
 #include "buffer.h"
 
-static const size_t max_cache_size = DEFAULT_RW_CACHE_SIZE;
+static const size_t max_cache_size = DEFAULT_RW_CACHE_SIZE * 2;
 static char *cache = NULL;
 static off_t last_cached_offset = (off_t)-1;
 static size_t last_cached_size = (size_t)-1;
@@ -56,35 +56,6 @@ void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
 	last_cached_offset = offset;
 }
 
-int put_to_read_cache(uint64_t descriptor, char *buffer, size_t size, off_t offset)
-{
-	if (cache != NULL)
-	{
-		return -1;
-	}
-	
-	/*
-	if (size > max_cache_size)
-	{
-		return -1;
-	}
-	*/
-
-	cache = buffer;
-	/*
-	cache = get_buffer(size);
-	if (cache == NULL)
-	{
-		return -1;
-	}
-	
-	memcpy(cache, buffer, size);
-	*/
-	update_read_cache_stats(descriptor, size, offset);
-	
-	return 0;
-}
-
 void destroy_read_cache()
 {
 	if (cache != NULL)
@@ -106,4 +77,21 @@ unsigned read_cache_is_for(uint64_t descriptor)
 	}
 	
 	return 0;
+}
+
+char* read_cache_resize(size_t size)
+{
+	if (last_cached_size != size
+	&& cache != NULL)
+	{
+		DEBUG("%s\n", "need to resize cache");
+		free_buffer(cache);
+		cache = NULL;	}
+	
+	if (cache == NULL)
+	{
+		cache = get_buffer(size);
+	}
+	
+	return cache;
 }

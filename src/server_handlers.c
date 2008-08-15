@@ -645,38 +645,30 @@ int _handle_truncate(const int client_socket, const struct sockaddr_in *client_a
 
 int _handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
-	if (buffer == NULL)
-	{
-		return -1;
-	}
-	
-	if (rfs_receive_data(client_socket, buffer, cmd->data_len) == -1)
-	{
-		free_buffer(buffer);
-		return -1;
-	}
-	
+#define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
 	uint32_t offset = 0;
 	uint32_t size = 0;
 	
-	if (sizeof(handle)
-	+ sizeof(offset)
-	+ sizeof(size) != cmd->data_len)
+	char read_buffer[overall_size] = { 0 };
+	
+	if (rfs_receive_data(client_socket, read_buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
-		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
+		return -1;
 	}
 	
-	unpack_64(&handle, buffer, 
-	unpack_32(&offset, buffer, 
-	unpack_32(&size, buffer, 0
+	if (cmd->data_len != overall_size)
+	{
+		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
+	}
+#undef  overall_size
+	
+	unpack_64(&handle, read_buffer, 
+	unpack_32(&offset, read_buffer, 
+	unpack_32(&size, read_buffer, 0
 		)));
 	
 	DEBUG("handle: %llu, offset: %u, size: %u\n", handle, offset, size);
-	
-	free_buffer(buffer);
 	
 	if (handle == (uint64_t)-1)
 	{
@@ -685,71 +677,43 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 	
 	int fd = (int)handle;
 	
+	errno = 0;
 	if (lseek(fd, offset, SEEK_SET) != offset)
 	{
-		int saved_errno = errno;
-		
-		close(fd);
-		
-		return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
+		return reject_request(client_socket, cmd, errno) == 0 ? 1 : -1;
 	}
 
-	int result = 0;
-	buffer = NULL;
+	char *buffer = get_buffer(size);;
 	
+	if (buffer == NULL)
+	{
+		return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
+	}
+	
+	size_t result = 0;
 	if (size > 0)
 	{
-		buffer = get_buffer(size);
-		if (buffer == NULL)
-		{
-			return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
-		}
-		
 		errno = 0;
 		result = read(fd, buffer, size);
-		if (result == -1)
-		{
-			int saved_errno = errno;
-			
-			free_buffer(buffer);
-			close(fd);
-			
-			return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
-		}
 	}
 	
-	if (result != -1)
-	{
-		struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, 0 };
-		
-		if (rfs_send_answer(client_socket, &ans) == -1)
-		{
-			if (buffer != NULL)
-			{
-				free_buffer(buffer);
-			}
-			
-			return -1;
-		}
-		
-		if (ans.data_len > 0)
-		{
-			if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
-			{
-				if (buffer != 0)
-				{
-					free_buffer(buffer);
-				}
-				
-				return -1;
-			}
-		}
-	}
+	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno };
 	
-	if (buffer != NULL)
+	if (rfs_send_answer(client_socket, &ans) == -1)
 	{
 		free_buffer(buffer);
+		
+		return -1;
 	}
+
+	if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
+	{
+		free_buffer(buffer);
+		
+		return -1;
+	}
+	
+	free_buffer(buffer);
 	
 	return 0;
 }
@@ -792,13 +756,12 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 		struct answer ans = { cmd_write, 0, -1, errno };
 		
 		free_buffer(buffer);
-		close(fd);
-
+		
 		rfs_send_answer(client_socket, &ans);			
 		return 1;
 	}
 
-	ssize_t result = 0;
+	size_t result = 0;
 	
 	if (size > 0)
 	{

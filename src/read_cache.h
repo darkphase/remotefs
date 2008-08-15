@@ -12,13 +12,13 @@ extern "C" {
 
 size_t read_cache_have_data(uint64_t descriptor, off_t offset);
 const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset);
-int put_to_read_cache(uint64_t descriptor, char *buffer, size_t size, off_t offset);
 void destroy_read_cache();
 size_t read_cache_max_size();
 size_t read_cache_size(uint64_t descriptor);
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset);
 size_t last_used_read_block(uint64_t descriptor);
 unsigned read_cache_is_for(uint64_t descriptor);
+char* read_cache_resize();
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -754,7 +754,7 @@ int _rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
 	
@@ -771,8 +771,6 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		return size;
 	}
 	
-	destroy_read_cache();
-	
 	size_t cached_read_size = last_used_read_block(fi->fh);
 	if (cached_read_size > 0 
 	&& cached_read_size >= size_to_read
@@ -788,36 +786,23 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		}
 	}
 	
-	unsigned overall_size = size_to_read + size;
+	unsigned overall_size = size_to_read;
 	unsigned old_val = rfs_config.use_read_cache;
 	rfs_config.use_read_cache = 0;
 	
-	char *buffer = get_buffer(overall_size);
+	char *buffer = read_cache_resize(overall_size);
+	update_read_cache_stats(fi->fh, overall_size, offset);
 	
 	int ret = _rfs_read(path, buffer, overall_size, offset, fi);
 	rfs_config.use_read_cache = old_val;
 	
 	if (ret < 0)
 	{
-		free_buffer(buffer);
+		destroy_read_cache();
 		return ret;
 	}
 	
 	memcpy(buf, buffer, ret < size ? ret : size);
-	if (ret > size)
-	{
-		/* normally we don't have to destroy read buffer here
-		because it wasn't copied */
-		if (put_to_read_cache(fi->fh, buffer, ret, offset) != 0)
-		{
-			free_buffer(buffer);
-		}
-	}
-	else
-	{
-		update_read_cache_stats(fi->fh, ret, offset);
-		free_buffer(buffer);
-	}
 
 	return ret == overall_size ? size : (ret >= size ? size : ret);
 }
@@ -829,7 +814,8 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 		return -EIO;
 	}
 	
-	if (rfs_config.use_read_cache)
+	if (rfs_config.use_read_cache
+	&& size < read_cache_max_size())
 	{
 		return _rfs_read_cached(path, buf, size, offset, fi);
 	}
@@ -838,8 +824,7 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 	uint32_t fsize = size;
 	uint32_t foffset = offset;
 	
-	unsigned overall_size = sizeof(fsize) + sizeof(foffset) + sizeof(handle);
-
+#define overall_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
 	struct command cmd = { cmd_read, overall_size };
 	
 	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
@@ -847,7 +832,8 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 		return -EIO;
 	}
 	
-	char *buffer = get_buffer(cmd.data_len);
+	char buffer[sizeof(fsize) + sizeof(foffset) + sizeof(handle)] = { 0 };
+#undef  overall_size
 	
 	pack_64(&handle, buffer, 
 	pack_32(&foffset, buffer, 
@@ -856,11 +842,8 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 	
 	if (rfs_send_data(g_server_socket, buffer, cmd.data_len) == -1)
 	{
-		free_buffer(buffer);
-		return -EALREADY;
+		return -EIO;
 	}
-	
-	free_buffer(buffer);
 	
 	struct answer ans = { 0 };
 	

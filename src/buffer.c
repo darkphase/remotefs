@@ -10,7 +10,6 @@
 char *get_buffer(const size_t size)
 {
 	char *ret = mp_alloc(size);
-	memset(ret, 0, size);
 	return ret;
 }
 
