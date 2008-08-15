@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "buffer.h"

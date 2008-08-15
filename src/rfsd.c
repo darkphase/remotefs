@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <pwd.h>
