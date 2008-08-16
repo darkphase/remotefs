@@ -37,34 +37,29 @@
 		
 		<br/><br/>
 		
-		<strong>I'm currently looking for people who could review the code for security issues. 
-		Any help would be appreciated.</strong>
-
-		<br/><br/>
-		
 		<a name="howitworks"><h3>How it works:</h3></a>
 		
 		remotefs only translates the filesystem from remote host to your local host. To do that, the original file-owning user on the remote host is substituted by the local host user who has actually mounted an export via remotefs.
 		
 		<br/><br/>
-
+		
 		This is may look too simple, but this is enough for tasks performed by my home NAS. 
 		My system is single-user and i'm always running remotefs as root on LAN interface (invisible from outside network). 
 		So translating root's files' permissions to alex's permissions works just fine. 
 		Server side has root access to filesystem and client side has alex's access, just as alex expects.
 		
 		<br/><br/>
-
+		
 		But if you need something more complex, like transferring a home directory from a remote host, you may define users on a per-export basis. 
 		After an export is mounted on the local host, remotefs will lower its privileges to specified user and gain this user’s privileges on the remote host. 
 		Since home directory usually has its user's permissions, you should not have any permission problems with this translation.
-
+		
 		<br/><br/>
-
+		
 		See typical use cases for details.
 		
 		<br/><br/>
-
+		
 		As an additional security measure, remotefs server could run connections with user other than root. 
 		Use -u option to specify which user permissions every connection-handling process should aquire.
 		For example: rfsd -h 10.0.0.1 -u rfs. 
@@ -73,47 +68,47 @@
 		Main rfsd still needs to be run as root to do chroot() properly.
 		
 		<br/><br/>
-
+		
 		<a name="usecases"><h3>Typical use cases:</h3></a>
 		
 		<strong>1. Exporting part of filesystem</strong>
 		
 		<br/><br/><code>
-
+		
 		# export directory to anyone with ip 10.0.0.2<br/>
 		/mnt/usb/store 	10.0.0.2
 		
 		<br/><br/>
-
+		
 		# read-only export to user authenticated as mpd<br/>
 		/mnt/usb/mp3		mpd (ro) 
 		
 		<br/><br/>
-
+		
 		# export this directory to user authenticated as alex with r/w access<br/>
 		/mnt/usb/store		alex 
 		
 		</code><br/><br/>
-
+		
 		Use rfspasswd utility to setup passwords.
-
+		
 		<br/><br/>
 		
 		<strong>2. Exporting home directory</strong>
 		
 		<br/><br/><code>
-
+		
 		# export alex's home to user authenticated as alexatwork<br/>
 		# with access permissions of *local* user alex<br/>
 		/home/alex		alexatwork (user=alex) 
-
+		
 		</code><br/><br/>
 		
 		<a name="howto"><h3>How-to:</h3></a>
 		
 		<strong>Starting the server:</strong> <code>/etc/init.d/rfsd start</code><br/><br/>
 		(do not forget to put your exports into /etc/rfs-exports and set passwords with rfspasswd utility (if you need them)).
-
+		
 		<br/><br/>
 		
 		Available options for rfsd:
@@ -147,7 +142,7 @@
 		<strong>Client setup:</strong>
 		
 		<br/><br/>
-
+		
 		Mounting export: <code>rfs 10.0.0.1:/mnt/usb/store begemoth/</code>
 		
 		<br/><br/>
@@ -161,17 +156,17 @@
 		<br/><br/>
 		
 		<code>-o username=name        auth username<br/>
-	    -o rd_cache=0           disable read cache<br/>
-	    -o wr_cache=0           disable write cache<br/>
-	    -o rdwr_cache=0         disable read/write cache<br/>
-	    -o password=filename    filename with password for auth<br/>
-	    -o port=server_port     port which the server is listening to</code>
+		-o rd_cache=0           disable read cache<br/>
+		-o wr_cache=0           disable write cache<br/>
+		-o rdwr_cache=0         disable read/write cache<br/>
+		-o password=filename    filename with password for auth<br/>
+		-o port=server_port     port which the server is listening to</code>
 		
 		<br/><br/>
 		
 		Since version 0.9, both read and write caches are enabled by default. You may use options -ord_cache=0, -owr_cache=0, and -ordwr_cache=0 to disable read cache, write cache or both.
 		Example: <code>rfs 10.0.0.1:/mnt/usb/store begemoth/ -ordwr_cache=0</code>
-
+		
 		
 		<br/><br/>
 		
