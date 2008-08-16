@@ -88,7 +88,7 @@ clean:
 #############################
 depends:
 	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
-
+	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
 
 #############################
 # Print out the flags we use
