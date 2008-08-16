@@ -757,9 +757,11 @@ int _rfs_truncate(const char *path, off_t offset)
 inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
+	size_t cached_size = read_cache_have_data(fi->fh, offset);
 	
-	if (read_cache_have_data(fi->fh, offset) >= size)
+	if (cached_size >= size)
 	{
+		DEBUG("%s\n", "hit!");
 		const char *cached_data = read_cache_get_data(fi->fh, size, offset);
 		if (cached_data == NULL)
 		{
@@ -768,7 +770,15 @@ inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offs
 		}
 		
 		memcpy(buf, cached_data, size);
-		return size;
+		if (cached_size > size)
+		{
+			return size;
+		}
+		/* else proceed with next caching operation */
+	}
+	else
+	{
+		cached_size = 0;
 	}
 	
 	size_t cached_read_size = last_used_read_block(fi->fh);
@@ -791,9 +801,9 @@ inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offs
 	rfs_config.use_read_cache = 0;
 	
 	char *buffer = read_cache_resize(overall_size);
-	update_read_cache_stats(fi->fh, overall_size, offset);
+	update_read_cache_stats(fi->fh, overall_size, offset + cached_size);
 	
-	int ret = _rfs_read(path, buffer, overall_size, offset, fi);
+	int ret = _rfs_read(path, buffer, overall_size, offset + cached_size, fi);
 	rfs_config.use_read_cache = old_val;
 	
 	if (ret < 0)
@@ -802,9 +812,15 @@ inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offs
 		return ret;
 	}
 	
-	memcpy(buf, buffer, ret < size ? ret : size);
-
-	return ret == overall_size ? size : (ret >= size ? size : ret);
+	if (cached_size < size)
+	{
+		memcpy(buf, buffer, ret < size ? ret : size);
+		return ret == overall_size ? size : (ret >= size ? size : ret);
+	}
+	else
+	{
+		return size; /* data were copied earlier */
+	}
 }
 
 int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
