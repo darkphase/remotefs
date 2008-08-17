@@ -34,7 +34,7 @@ size_t last_used_read_block(uint64_t descriptor)
 
 size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 {
-	if (cache == NULL 
+if (cache == NULL 
 	|| descriptor != last_cached_desc 
 	|| offset >= last_cached_offset + last_cached_size
 	|| offset < last_cached_offset)
@@ -70,6 +70,7 @@ void destroy_read_cache()
 		
 		cache = NULL;
 	}
+	update_read_cache_stats(-1, -1, -1);
 }
 
 unsigned read_cache_is_for(uint64_t descriptor)

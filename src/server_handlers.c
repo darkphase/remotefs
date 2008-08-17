@@ -328,7 +328,6 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
-	
 	errno = stat_file(path, &stbuf);
 	if (errno != 0)
 	{
@@ -668,13 +667,10 @@ char* get_cache(uint64_t handle, off_t offset, size_t size)
 size_t get_new_cache_size(uint64_t handle, size_t requested_size)
 {
 	size_t cache_size = last_used_read_block(handle);
-	if (cache_size == 0)
-	{
-		cache_size = requested_size;
-	}
 	
-	if (requested_size < read_cache_max_size()
-	&& requested_size < cache_size * 2)
+	if (cache_size > 0 
+	&& cache_size >= requested_size
+	&& requested_size < read_cache_max_size())
 	{
 		if (cache_size * 2 <= read_cache_max_size())
 		{
@@ -735,7 +731,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 	}
 	else
 	{
-		buffer = read_cache_resize(cache_read_size);
+	buffer = read_cache_resize(cache_read_size);
 		
 		int fd = (int)handle;
 		
@@ -754,7 +750,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		
 		int saved_errno = errno;
 		
-		update_read_cache_stats(handle, result > 0 ? result : 0, offset);
+		update_read_cache_stats(result > 0 ? handle : -1, result > 0 ? result : 0, result > 0 ? offset : -1);
 		
 		ret = (result == cache_read_size ? (int)size : (result > size ? (int)size : (int)result));
 		
@@ -781,7 +777,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		read_cache_resize(cache_read_size);
 		
 		size_t result = read(fd, buffer, cache_read_size);
-		update_read_cache_stats(handle, result > 0 ? result : 0, offset + size);
+		update_read_cache_stats(result > 0 ? handle : -1, result > 0 ? result : 0, result > 0 ? offset + size : -1);
 	}
 	
 	return 0;
