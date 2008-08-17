@@ -754,7 +754,7 @@ int _rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-inline int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
 	size_t cached_size = read_cache_have_data(fi->fh, offset);
@@ -989,8 +989,8 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 	uint32_t fsize = size;
 	uint32_t foffset = offset;
 	
-	unsigned overall_size = size + sizeof(fsize) + sizeof(foffset) + sizeof(handle);
-
+#define header_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
+	unsigned overall_size = header_size + size;
 	struct command cmd = { cmd_write, overall_size };
 	
 	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
@@ -998,21 +998,23 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 		return -EIO;
 	}
 	
-	char *buffer = get_buffer(cmd.data_len);
+	char buffer[header_size] = { 0 };
 	
-	pack(buf, size, buffer, 
 	pack_64(&handle, buffer, 
 	pack_32(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
-		))));
+		)));
 	
-	if (rfs_send_data(g_server_socket, buffer, cmd.data_len) == -1)
+	if (rfs_send_data(g_server_socket, buffer, header_size) == -1)
 	{
-		free_buffer(buffer);
 		return -EIO;
 	}
+#undef header_size
 	
-	free_buffer(buffer);
+	if (rfs_send_data(g_server_socket, get_write_cache_block(), size) == -1)
+	{
+		return -EIO;
+	}
 	
 	struct answer ans = { 0 };
 	
