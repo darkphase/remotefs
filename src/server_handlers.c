@@ -721,19 +721,21 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
-	size_t cached_read_size = get_new_cache_size(handle, size);
+	size_t cache_read_size = get_new_cache_size(handle, size);
 	
 	int ret = 0;
-	char *buffer = get_cache(handle, offset, size);
+	char *buffer = NULL;
+	unsigned cached_size = read_cache_have_data(handle, offset);
+	unsigned no_cache_left = (cached_size == 0 || cached_size == size ? 1 : 0);
 	
-	if (buffer != NULL)
+	if (cached_size >= size)
 	{
+		buffer = get_cache(handle, offset, size);
 		ret = size;
 	}
 	else
 	{
-		DEBUG("%s\n", "not hit");
-		buffer = read_cache_resize(cached_read_size);
+		buffer = read_cache_resize(cache_read_size);
 		
 		int fd = (int)handle;
 		
@@ -747,14 +749,14 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		if (size > 0)
 		{
 			errno = 0;
-			result = read(fd, buffer, cached_read_size);
+			result = read(fd, buffer, cache_read_size);
 		}
 		
 		int saved_errno = errno;
 		
 		update_read_cache_stats(handle, result > 0 ? result : 0, offset);
 		
-		ret = (result == cached_read_size ? (int)size : (result > size ? (int)size : (int)result));
+		ret = (result == cache_read_size ? (int)size : (result > size ? (int)size : (int)result));
 		
 		errno = saved_errno;
 	}
@@ -769,6 +771,17 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 	if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
 	{
 		return -1;
+	}
+	
+	if (no_cache_left != 0
+	&& cache_read_size > 0)
+	{
+		int fd = (int)handle;
+		
+		read_cache_resize(cache_read_size);
+		
+		size_t result = read(fd, buffer, cache_read_size);
+		update_read_cache_stats(handle, result > 0 ? result : 0, offset + size);
 	}
 	
 	return 0;
