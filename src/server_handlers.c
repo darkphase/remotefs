@@ -30,6 +30,7 @@
 #include "keep_alive_server.h"
 #include "crypt.h"
 #include "path.h"
+#include "read_cache.h"
 
 extern unsigned char directory_mounted;
 extern struct rfsd_config rfsd_config;
@@ -453,7 +454,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		unsigned entry_len = strlen(entry_name) + 1;
 		
 		int joined = path_join(full_path, path, entry_name);
-		if (joined != 0)
+		if (joined < 0)
 		{
 			closedir(dir);
 			free_buffer(path);
@@ -462,6 +463,8 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		}
 		
 		unsigned overall_size = stat_size + entry_len;
+		
+		DEBUG("%s\n", full_path);
 		
 		if (joined == 0)
 		{
@@ -589,7 +592,7 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 	
 	if (rfs_send_answer(client_socket, &ans) == -1)
 	{
-		return -1;
+	return -1;
 	}
 	
 	if (ans.ret != -1)
@@ -643,6 +646,49 @@ int _handle_truncate(const int client_socket, const struct sockaddr_in *client_a
 	return result == 0 ? 0 : 1;
 }
 
+char* get_cache(uint64_t handle, off_t offset, size_t size)
+{
+	size_t cached_size = read_cache_have_data(handle, offset);
+	
+	if (cached_size >= size)
+	{
+		const char *cached_data = read_cache_get_data(handle, size, offset);
+		if (cached_data == NULL)
+		{
+			destroy_read_cache();
+			return NULL;
+		}
+		DEBUG("%s\n", "hit!");
+		return (char *)cached_data;
+	}
+	
+	return NULL;
+}
+
+size_t get_new_cache_size(uint64_t handle, size_t requested_size)
+{
+	size_t cache_size = last_used_read_block(handle);
+	if (cache_size == 0)
+	{
+		cache_size = requested_size;
+	}
+	
+	if (requested_size < read_cache_max_size()
+	&& requested_size < cache_size * 2)
+	{
+		if (cache_size * 2 <= read_cache_max_size())
+		{
+			return cache_size * 2;
+		}
+		else
+		{
+			return read_cache_max_size();
+		}
+	}
+	
+	return requested_size;
+}
+
 int _handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
@@ -675,45 +721,55 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
-	int fd = (int)handle;
+	size_t cached_read_size = get_new_cache_size(handle, size);
 	
-	errno = 0;
-	if (lseek(fd, offset, SEEK_SET) != offset)
+	int ret = 0;
+	char *buffer = get_cache(handle, offset, size);
+	
+	if (buffer != NULL)
 	{
-		return reject_request(client_socket, cmd, errno) == 0 ? 1 : -1;
+		ret = size;
 	}
-
-	char *buffer = get_buffer(size);;
-	
-	if (buffer == NULL)
+	else
 	{
-		return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
-	}
-	
-	size_t result = 0;
-	if (size > 0)
-	{
+		DEBUG("%s\n", "not hit");
+		buffer = read_cache_resize(cached_read_size);
+		
+		int fd = (int)handle;
+		
 		errno = 0;
-		result = read(fd, buffer, size);
+		if (lseek(fd, offset, SEEK_SET) != offset)
+		{
+			return reject_request(client_socket, cmd, errno) == 0 ? 1 : -1;
+		}
+		
+		size_t result = 0;
+		if (size > 0)
+		{
+			errno = 0;
+			result = read(fd, buffer, cached_read_size);
+		}
+		
+		int saved_errno = errno;
+		
+		update_read_cache_stats(handle, result > 0 ? result : 0, offset);
+		
+		ret = (result == cached_read_size ? (int)size : (result > size ? (int)size : (int)result));
+		
+		errno = saved_errno;
 	}
 	
-	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno };
+	struct answer ans = { cmd_read, (uint32_t)ret, (int32_t)ret, errno };
 	
 	if (rfs_send_answer(client_socket, &ans) == -1)
 	{
-		free_buffer(buffer);
-		
 		return -1;
 	}
 
 	if (rfs_send_data(client_socket, buffer, ans.data_len) == -1)
 	{
-		free_buffer(buffer);
-		
 		return -1;
 	}
-	
-	free_buffer(buffer);
 	
 	return 0;
 }
@@ -1108,6 +1164,11 @@ int _handle_release(const int client_socket, const struct sockaddr_in *client_ad
 	unpack_64(&handle, buffer, 0);
 	
 	free_buffer(buffer);
+	
+	if (read_cache_is_for(handle))
+	{
+		destroy_read_cache();
+	}
 	
 	if (handle == (uint64_t)-1)
 	{
