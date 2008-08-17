@@ -14,7 +14,8 @@ exports.o \
 passwd.o \
 keep_alive_server.o \
 crypt.o \
-path.o
+path.o \
+read_cache.o
 
 RFSPASSWD_OBJS = rfspasswd.o \
 buffer.o \
