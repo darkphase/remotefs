@@ -38,6 +38,7 @@ src/passwd.o:src/config.h
 src/passwd.o:src/list.h
 src/passwd.o:src/buffer.h
 src/path.o:src/path.h
+src/path.o:src/config.h
 src/read_cache.o:src/read_cache.h
 src/read_cache.o:src/config.h
 src/read_cache.o:src/buffer.h
@@ -83,6 +84,7 @@ src/server_handlers.o:src/inet.h
 src/server_handlers.o:src/keep_alive_server.h
 src/server_handlers.o:src/crypt.h
 src/server_handlers.o:src/path.h
+src/server_handlers.o:src/read_cache.h
 src/server_handlers.o:src/server_handlers_sync.c
 src/signals.o:src/signals.h
 src/signals_client.o:src/signals_client.h

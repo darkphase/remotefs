@@ -25,8 +25,7 @@ rfs_OBJS =  src/rfs.o \
             src/signals_client.o \
             src/attr_cache.o \
             src/keep_alive_client.o \
-            src/write_cache.o \
-            src/read_cache.o 
+            src/write_cache.o
 
 # com1_OBJS also used by rfspasswd and rfsd
 com1_OBJS = src/crypt.o \
@@ -39,5 +38,6 @@ com1_OBJS = src/crypt.o \
 # com2_OBJS also used by rfsd
 com2_OBJS = src/sendrecv.o \
             src/command.o \
-            src/path.o
+            src/path.o \
+	    src/read_cache.o
 
