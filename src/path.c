@@ -8,9 +8,6 @@ int path_join(char full_path[NAME_MAX], const char *path, const char *filename)
 	unsigned path_len = strlen(path);
 	unsigned filename_len = strlen(filename);
 	
-	DEBUG("%s %d\n", path, path_len);
-	DEBUG("%s %d\n", filename, filename_len);
-	
 	if (path_len + filename_len + 1 > NAME_MAX)
 	{
 		return -1;
