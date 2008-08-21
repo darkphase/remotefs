@@ -17,6 +17,7 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/config.h \
 	../src/inet.h \
 	../src/path.h ../src/path.c \
+	../src/read_cache.h ../src/read_cache.c \
 	../LICENSE ../AUTHORS ../CHANGELOG"
 MAKEFILE="Makefile.rfsd"
 NAME="rfsd"
