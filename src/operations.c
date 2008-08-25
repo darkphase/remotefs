@@ -24,6 +24,7 @@
 #include "list.h"
 #include "read_cache.h"
 #include "crypt.h"
+#include "path.h"
 
 extern int g_server_socket;
 extern struct rfs_config rfs_config;

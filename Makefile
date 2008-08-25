@@ -36,26 +36,28 @@ all:
 # Rules for compiling, ...
 #######################################
 
-rfs:
+rfs: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
 		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs; \
 	else \
 		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs; \
 	fi
 
-rfsd:
+rfsd: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
 		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfsd; \
 	else \
 		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfsd; \
 	fi
 
-rfspasswd:
+rfspasswd: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
 		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfspasswd; \
 	else \
 		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfspasswd; \
 	fi
+
+dummy: 
 
 #######################################
 # Rules for cleaning,and dpendencied
