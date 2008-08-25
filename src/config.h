@@ -12,7 +12,7 @@ extern "C" {
 
 #define DEFAULT_SERVER_PORT 	5001
 #define KEEP_ALIVE_PERIOD 	60 * 5 /* secs */
-#define DEFAULT_RW_CACHE_SIZE 	1024 * 1024 /* bytes */
+#define DEFAULT_RW_CACHE_SIZE 	512 * 1024 /* bytes */
 #define CACHE_TTL 		20 /* secs */
 #define MAX_SALT_LEN 		3 + 8 /* "$1$" + 8 bytes of actual salt */
 #define EMPTY_SALT 		"$1$" /* use md5 */
@@ -61,17 +61,17 @@ enum
 /** flags for rfs_open() */
 enum rfs_open_flags
 {
-	RFS_APPEND 		= 1, 
-	RFS_ASYNC 		= 2,
-	RFS_CREAT 		= 4,
-	RFS_EXCL 		= 8,
-	RFS_NONBLOCK 		= 16,
-	RFS_NDELAY 		= 32,
-	RFS_SYNC 		= 64,
-	RFS_TRUNC 		= 128,
-	RFS_RDONLY		= 512,
-	RFS_WRONLY		= 1024,
-	RFS_RDWR		= 2048
+	RFS_APPEND     = 1, 
+	RFS_ASYNC      = 2,
+	RFS_CREAT      = 4,
+	RFS_EXCL       = 8,
+	RFS_NONBLOCK   = 16,
+	RFS_NDELAY     = 32,
+	RFS_SYNC       = 64,
+	RFS_TRUNC      = 128,
+	RFS_RDONLY     = 512,
+	RFS_WRONLY     = 1024,
+	RFS_RDWR       = 2048
 };
 
 #if defined (__cplusplus) || defined (c_plusplus)

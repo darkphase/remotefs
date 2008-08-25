@@ -24,7 +24,6 @@
 #include "list.h"
 #include "read_cache.h"
 #include "crypt.h"
-#include "path.h"
 
 extern int g_server_socket;
 extern struct rfs_config rfs_config;
@@ -37,7 +36,7 @@ struct fuse_operations rfs_operations = {
 	.init		= rfs_init,
 	.destroy	= rfs_destroy,
 	
-    	.getattr	= rfs_getattr,
+	.getattr	= rfs_getattr,
 	
 	.readdir	= rfs_readdir,
 	.mkdir		= rfs_mkdir,
