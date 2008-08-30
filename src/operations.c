@@ -456,6 +456,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	uint32_t atime = 0;
 	uint32_t mtime = 0;
 	uint32_t ctime = 0;
+	uint16_t stat_failed = 0;
 	
 	unsigned stat_size = sizeof(mode)
 	+ sizeof(uid)
@@ -463,7 +464,8 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	+ sizeof(size)
 	+ sizeof(atime)
 	+ sizeof(mtime)
-	+ sizeof(ctime);
+	+ sizeof(ctime)
+	+ sizeof(stat_failed);
 	
 	unsigned buffer_size = stat_size + NAME_MAX;
 	char *buffer = get_buffer(buffer_size);
@@ -523,6 +525,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 		dump(buffer, ans.data_len);
 		
 		char *entry_name = buffer + 
+		unpack_16(&stat_failed, buffer, 
 		unpack_32(&ctime, buffer, 
 		unpack_32(&mtime, buffer, 
 		unpack_32(&atime, buffer, 
@@ -530,30 +533,33 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 		unpack_32(&gid, buffer, 
 		unpack_32(&uid, buffer, 
 		unpack_32(&mode, buffer, 0 
-			)))))));
+		))))))));
 		
-		int joined = path_join(full_path, path, entry_name);
-		
-		if (joined < 0)
+		if (stat_failed == 0)
 		{
-			operation_failed = 1;
-			return -EIO;
-		}
-		
-		if (joined == 0)
-		{
-			stbuf.st_mode = mode;
-			stbuf.st_uid = getuid();
-			stbuf.st_gid = getgid();
-			stbuf.st_size = size;
-			stbuf.st_atime = atime;
-			stbuf.st_mtime = mtime;
-			stbuf.st_ctime = ctime;
+			int joined = path_join(full_path, path, entry_name);
 			
-			if (cache_file(full_path, &stbuf) == NULL)
+			if (joined < 0)
 			{
-				free_buffer(buffer);
+				operation_failed = 1;
 				return -EIO;
+			}
+			
+			if (joined == 0)
+			{
+				stbuf.st_mode = mode;
+				stbuf.st_uid = getuid();
+				stbuf.st_gid = getgid();
+				stbuf.st_size = size;
+				stbuf.st_atime = atime;
+				stbuf.st_mtime = mtime;
+				stbuf.st_ctime = ctime;
+				
+				if (cache_file(full_path, &stbuf) == NULL)
+				{
+					free_buffer(buffer);
+					return -EIO;
+				}
 			}
 		}
 		
@@ -891,7 +897,7 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 
 int _rfs_flush(const char *path, struct fuse_file_info *fi)
 {
-	if (rfs_config.use_read_cache != 0
+if (rfs_config.use_read_cache != 0
 	&& read_cache_size(fi->fh) > 0)
 	{
 		destroy_read_cache();

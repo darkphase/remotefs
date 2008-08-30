@@ -433,6 +433,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	uint32_t atime = 0;
 	uint32_t mtime = 0;
 	uint32_t ctime = 0;
+	uint16_t stat_failed = 0;
 	
 	unsigned stat_size = sizeof(mode)
 	+ sizeof(uid)
@@ -440,7 +441,8 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	+ sizeof(size)
 	+ sizeof(atime)
 	+ sizeof(mtime)
-	+ sizeof(ctime);
+	+ sizeof(ctime)
+	+ sizeof(stat_failed);
 	
 	buffer = get_buffer(stat_size + NAME_MAX);
 	char full_path[NAME_MAX] = { 0 };
@@ -452,13 +454,13 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		const char *entry_name = dir_entry->d_name;
 		unsigned entry_len = strlen(entry_name) + 1;
 		
+		stat_failed = 0;
+		memset(&stbuf, 0, sizeof(stbuf));
+		
 		int joined = path_join(full_path, path, entry_name);
 		if (joined < 0)
 		{
-			closedir(dir);
-			free_buffer(path);
-			free_buffer(buffer);
-			return reject_request(client_socket, cmd, EREMOTEIO) == 0 ? 1 : -1;
+			stat_failed = 1;
 		}
 		
 		unsigned overall_size = stat_size + entry_len;
@@ -470,13 +472,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 			errno = stat_file(full_path, &stbuf);
 			if (errno != 0)
 			{
-				int saved_errno = errno;
-				
-				closedir(dir);
-				free_buffer(path);
-				free_buffer(buffer);
-				
-				return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
+				stat_failed = 1;
 			}
 		}
 		
@@ -491,6 +487,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		struct answer ans = { cmd_readdir, overall_size };
 		
 		pack(entry_name, entry_len, buffer, 
+		pack_16(&stat_failed, buffer, 
 		pack_32(&ctime, buffer, 
 		pack_32(&mtime, buffer, 
 		pack_32(&atime, buffer, 
@@ -498,7 +495,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		pack_32(&gid, buffer, 
 		pack_32(&uid, buffer, 
 		pack_32(&mode, buffer, 0
-			))))))));
+			)))))))));
 		
 		dump(buffer, overall_size);
 		
