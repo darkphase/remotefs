@@ -469,8 +469,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		
 		if (joined == 0)
 		{
-			errno = stat_file(full_path, &stbuf);
-			if (errno != 0)
+			if (stat_file(full_path, &stbuf) != 0)
 			{
 				stat_failed = 1;
 			}
@@ -495,7 +494,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		pack_32(&gid, buffer, 
 		pack_32(&uid, buffer, 
 		pack_32(&mode, buffer, 0
-			)))))))));
+		)))))))));
 		
 		dump(buffer, overall_size);
 		
