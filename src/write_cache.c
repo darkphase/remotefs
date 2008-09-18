@@ -7,7 +7,7 @@
 #include "buffer.h"
 
 static char *cache_block = NULL;
-static const unsigned max_cache_size = DEFAULT_RW_CACHE_SIZE / 2;
+static const unsigned max_cache_size = DEFAULT_RW_CACHE_SIZE;
 static unsigned cache_size = 0;
 static uint64_t last_cached_desc = (uint64_t)-1;
 static off_t last_cached_offset = (off_t)-1;

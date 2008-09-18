@@ -3,6 +3,9 @@
 #if defined FREEBSD
 #       include <netinet/in.h>
 #endif
+#ifdef WITH_IPV6
+#       include <netdb.h>
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -11,6 +14,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <pwd.h>
+#include <grp.h>
 #include <time.h>
 
 #include "config.h"
@@ -19,11 +23,11 @@
 #include "sendrecv.h"
 #include "buffer.h"
 #include "server_handlers.h"
-#include "alloc.h"
 #include "list.h"
 #include "exports.h"
 #include "passwd.h"
 #include "keep_alive_server.h"
+#include "id_lookup.h"
 
 static int g_client_socket = -1;
 static int g_listen_socket = -1;
@@ -36,11 +40,17 @@ struct rfs_export *mounted_export = NULL;
 
 struct rfsd_config rfsd_config;
 
+static int daemonize = 1;
 void init_config()
 {
- 	rfsd_config.listen_address = "0.0.0.0";
+#ifndef WITH_IPV6
+	rfsd_config.listen_address = "0.0.0.0";
+#else
+	rfsd_config.listen_address = "::";
+#endif
 	rfsd_config.listen_port = DEFAULT_SERVER_PORT;
-	rfsd_config.worker_uid = getuid();
+	rfsd_config.worker_uid = geteuid();
+	rfsd_config.worker_gid = getegid();
 #ifdef RFS_DEBUG
 	rfsd_config.pid_file = "./rfsd.pid";
 #else
@@ -175,8 +185,9 @@ void server_close_connection(int socket)
 	{
 		free_buffer(mounted_export);
 	}
-
-	mp_force_free();
+	
+	destroy_uids_lookup();
+	destroy_gids_lookup();
 }
 
 int _reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
@@ -210,92 +221,116 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 		reject_request_with_cleanup(client_socket, cmd, EBADE);
 		return -1;
 	}
-	
+
 	update_keep_alive();
-	
+
 	switch (cmd->command)
 	{
 	case cmd_closeconnection:
 		return handle_closeconnection(client_socket, client_addr, cmd);
-		
+
 	case cmd_auth:
 		return handle_auth(client_socket, client_addr, cmd);
-		
+
 	case cmd_request_salt:
 		return handle_request_salt(client_socket, client_addr, cmd);
-	
+
 	case cmd_changepath:
 		return handle_changepath(client_socket, client_addr, cmd);
-	
+
 	case cmd_keepalive:
 		return handle_keepalive(client_socket, client_addr, cmd);
-	}
 	
+	case cmd_getexportopts:
+		return handle_getexportopts(client_socket, client_addr, cmd);
+	}
+
 	if (directory_mounted == 0)
 	{
 		reject_request_with_cleanup(client_socket, cmd, EACCES);
 		return -1;
 	}
-	
+
 	switch (cmd->command)
 	{
 	case cmd_readdir:
 		return handle_readdir(client_socket, client_addr, cmd);
-		
+	
 	case cmd_getattr:
 		return handle_getattr(client_socket, client_addr, cmd);
-	
+
 	case cmd_open:
 		return handle_open(client_socket, client_addr, cmd);
-	
+
 	case cmd_release:
 		return handle_release(client_socket, client_addr, cmd);
-		
+	
 	case cmd_read:
 		return handle_read(client_socket, client_addr, cmd);
-		
+	
 	case cmd_statfs:
 		return handle_statfs(client_socket, client_addr, cmd);
 	}
-	
+
 	if (mounted_export == NULL
 	|| (mounted_export->options & opt_ro) != 0)
 	{
 		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
 	}
-	
+
 	/* operation which are require write permissions */
 	switch (cmd->command)
 	{
 	case cmd_mknod:
 		return handle_mknod(client_socket, client_addr, cmd);
-		
+
 	case cmd_truncate:
 		return handle_truncate(client_socket, client_addr, cmd);
-		
+
 	case cmd_write:
 		return handle_write(client_socket, client_addr, cmd);
-		
+
 	case cmd_mkdir:
 		return handle_mkdir(client_socket, client_addr, cmd);
-		
+
 	case cmd_unlink:
 		return handle_unlink(client_socket, client_addr, cmd);
-		
+
 	case cmd_rmdir:
 		return handle_rmdir(client_socket, client_addr, cmd);
 		
 	case cmd_rename:
 		return handle_rename(client_socket, client_addr, cmd);
-		
+
 	case cmd_utime:
 		return handle_utime(client_socket, client_addr, cmd);
 	}
+
+	if (mounted_export == NULL
+	|| (mounted_export->options & opt_ugo) == 0)
+	{
+		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
+	}
+
+	/* operation which are require ugo set */
+	switch (cmd->command)
+	{
+	case cmd_chmod:
+		return handle_chmod(client_socket, client_addr, cmd);
+
+	case cmd_chown:
+		return handle_chown(client_socket, client_addr, cmd);
 	
+	}
+
 	return -1;
 }
 
+#ifndef WITH_IPV6
 int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
+#else
+int handle_connection(int client_socket, const struct sockaddr_storage *client_addr)
+#endif
 {
 	g_client_socket = client_socket;
 	
@@ -311,15 +346,33 @@ int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 		int done = rfs_receive_cmd(client_socket, &current_command);
 		if (done == -1 || done == 0)
 		{
+#ifndef WITH_IPV6
 			DEBUG("connection to %s is lost\n", inet_ntoa(client_addr->sin_addr));
+#else
+			if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
+			{
+				char straddr[INET6_ADDRSTRLEN];
+				inet_ntop(AF_INET, &((struct sockaddr_in*)&client_addr)->sin_addr, straddr,sizeof(straddr));
+				DEBUG("connection to %s is lost\n",straddr);
+			}
+			else
+			{
+				char straddr[INET6_ADDRSTRLEN];
+				inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr,sizeof(straddr));
+				DEBUG("connection to %s is lost\n",straddr);
+			}
+#endif
 			server_close_connection(client_socket);
 				
 			return 1;
 		}
 		
 		dump_command(&current_command);
-			
+#ifndef WITH_IPV6			
 		if (handle_command(client_socket, client_addr, &current_command) == -1)
+#else
+		if (handle_command(client_socket, (struct sockaddr_in*)client_addr, &current_command) == -1)
+#endif
 		{
 			DEBUG("command executed with internal error: %s\n", describe_command(current_command.command));
 			server_close_connection(client_socket);
@@ -333,50 +386,133 @@ int start_server(const char *address, const unsigned port)
 {
 	install_signal_handlers_server();
 
+#ifndef WITH_IPV6
 	g_listen_socket = socket(PF_INET, SOCK_STREAM, 0);
+
 	if (g_listen_socket == -1)
 	{
 		ERROR("Error creating socket: %s\n", strerror(errno));
 		return 1;
 	}
-	
+#endif
+
+#ifndef WITH_IPV6
 	struct sockaddr_in addr = { 0 };
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(address);
+#else
+	struct sockaddr_in *sa4;
+	struct sockaddr_in6 *sa6;
+	char straddr[INET6_ADDRSTRLEN];
+	struct addrinfo *res;
+	struct addrinfo hints;
+	int    result;
+
+	/* resolve name or address */
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family    = AF_UNSPEC;  /* Allow IPv4 or IPv6 */
+	hints.ai_socktype  = SOCK_STREAM;
+	hints.ai_flags     = AI_ADDRCONFIG; /* For wildcard IP address */
+
+	if ((result=getaddrinfo(address, "5001", &hints, &res)) != 0)
+	{
+		ERROR("Can't resolve address for %s : %s\n",address,gai_strerror(result));
+		return 1;
+	}
+	sa4 = (struct sockaddr_in*)res->ai_addr;
+	sa6 = (struct sockaddr_in6*)res->ai_addr;
+
+	if (res->ai_family == AF_INET)
+	{
+		((struct sockaddr_in*)(res->ai_addr))->sin_port = htons(port);
+	}
+	else
+	{
+		((struct sockaddr_in6*)(res->ai_addr))->sin6_port = htons(port);
+	}
+
+	g_listen_socket = socket(res->ai_family, SOCK_STREAM, 0);
+	if (g_listen_socket == -1)
+	{
+		freeaddrinfo(res);
+		ERROR("Error creating socket: %s\n", strerror(errno));
+		return 1;
+	}
+#endif
+
 	
 	int reuse = 1;
 	if (setsockopt(g_listen_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) != 0)
 	{
 		ERROR("Error setting proper option to socket: %s\n", strerror(errno));
+#ifdef WITH_IPV6
+		freeaddrinfo(res);
+#endif
 		return 1;
 	}
 	
+#ifndef WITH_IPV6
 	if (bind(g_listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
 	{
 		ERROR("Error binding: %s\n", strerror(errno));
 		return 1;
 	}
-	
+#else
+	if (res->ai_family == AF_INET)
+	{
+		inet_ntop(res->ai_family, &sa4->sin_addr, straddr,sizeof(straddr));
+	}
+	else
+	{
+		inet_ntop(res->ai_family, &sa6->sin6_addr, straddr,sizeof(straddr));
+	}
+
+	if (bind(g_listen_socket, res->ai_addr, res->ai_addrlen) == -1)
+	{
+		freeaddrinfo(res);
+		ERROR("Error binding: %s\n", strerror(errno));
+		return 1;
+	}
+#endif
+
 	if (listen(g_listen_socket, 10) == -1)
 	{
 		ERROR("Error listening: %s\n", strerror(errno));
+#ifdef WITH_IPV6
+		freeaddrinfo(res);
+#endif
 		return 1;
 	}
 	
+#ifndef WITH_IPV6
 	DEBUG("listening on %s (%d)\n", inet_ntoa(addr.sin_addr), port);
-	
+#else
+	DEBUG("listening on %s (%d)\n", straddr, port);
+#endif
+	/* the server should not apply it own mask while mknod
+	 * file or directory creation is called. These settings
+	 * are allready done by the client
+	*/
+//	umask(0);
+
 #ifndef RFS_DEBUG
 	chdir("/");
-	
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
+	if (daemonize)
+	{
+		fclose(stdin);
+		fclose(stdout);
+		fclose(stderr);
+	}
 #endif
 	
 	while (1)
 	{
+#ifndef WITH_IPV6
 		struct sockaddr_in client_addr;
+#else
+		struct sockaddr_storage client_addr;
+#endif
 		socklen_t addr_len = sizeof(client_addr);
 		int client_socket = accept(g_listen_socket, (struct sockaddr *)&client_addr, &addr_len);
 		if (client_socket == -1)
@@ -384,15 +520,32 @@ int start_server(const char *address, const unsigned port)
 			continue;
 		}
 		
+#ifndef WITH_IPV6
 		DEBUG("incoming connection from: %s\n", inet_ntoa(client_addr.sin_addr));
+#else
+		if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
+		{
+			DEBUG("incoming connection from: %s\n", inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
+		}
+		else
+		{
+			char straddr[INET6_ADDRSTRLEN];
+			inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr,sizeof(straddr));
+			DEBUG("incoming connection from: %s\n",straddr);
+		}
+#endif
 
 		if (fork() == 0) /* child */
 		{
 			return handle_connection(client_socket, &client_addr);
 		}
 	}
-	
+#if 0 /* never reached */
+#ifdef WITH_IPV6
+	freeaddrinfo(res);
+#endif
 	return 0;
+#endif
 }
 
 void stop_server()
@@ -429,6 +582,7 @@ void usage(const char *app_name)
 	"-a [address]\t\tlisten for connections on specified address\n"
 	"-p [port number]\tlisten for connections on specified port\n"
 	"-u [username]\t\tworker process be running with privileges of this user\n"
+	"-g [groupname]\t\tworker process be running with privileges of this group\n"
 	"-r [path]\t\tchange pidfile path from default to [path]\n"
 	"\n"
 	, app_name);
@@ -437,7 +591,7 @@ void usage(const char *app_name)
 int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "ha:p:u:r:")) != -1)
+	while ((opt = getopt(argc, argv, "ha:p:u:g:r:f")) != -1)
 	{
 		switch (opt)
 		{	
@@ -446,14 +600,24 @@ int parse_opts(int argc, char **argv)
 				exit(0);
 			case 'u':
 			{
-				struct passwd *pwd = NULL;
-				errno = 0;
-				if ((pwd = getpwnam(optarg)) == NULL)
+				struct passwd *pwd = getpwnam(optarg);
+				if (pwd == NULL)
 				{
 					ERROR("Can not get uid for user %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
 					return -1;
 				}
 				rfsd_config.worker_uid = pwd->pw_uid;
+				break;
+			}
+			case 'g':
+			{
+				struct group *grp = getgrnam(optarg);
+				if (grp == NULL)
+				{
+					ERROR("Can not get gid for group %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
+					return -1;
+				}
+				rfsd_config.worker_gid = grp->gr_gid;
 				break;
 			}
 			case 'a':
@@ -464,6 +628,9 @@ int parse_opts(int argc, char **argv)
 				break;
 			case 'r':
 				rfsd_config.pid_file = strdup(optarg);
+				break;
+			case 'f':
+				daemonize = 0;
 				break;
 			default:
 				return -1;
@@ -506,9 +673,10 @@ int main(int argc, char **argv)
 #endif
 
 #ifndef RFS_DEBUG
-	if (fork() != 0)
+	if (daemonize == 1 && fork() != 0)
 	{
-		return 0;	}
+		return 0;
+	}
 #endif 
 
 	if (create_pidfile(rfsd_config.pid_file) != 0)
@@ -521,7 +689,6 @@ int main(int argc, char **argv)
 	
 	release_exports();
 	release_passwords();
-	mp_force_free();
 	
 	return ret;
 }

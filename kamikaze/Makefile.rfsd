@@ -8,18 +8,17 @@ command.o \
 buffer.o \
 server_handlers.o \
 signals_server.o \
-alloc.o \
 list.o \
 exports.o \
 passwd.o \
 keep_alive_server.o \
 crypt.o \
 path.o \
-read_cache.o
+read_cache.o \
+id_lookup.o
 
 RFSPASSWD_OBJS = rfspasswd.o \
 buffer.o \
-alloc.o \
 list.o \
 passwd.o \
 crypt.o \

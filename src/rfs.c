@@ -15,9 +15,9 @@
 #include "sendrecv.h"
 #include "command.h"
 #include "buffer.h"
-#include "alloc.h"
 #include "passwd.h"
 #include "crypt.h"
+#include "id_lookup.h"
 
 struct rfs_config rfs_config = { 0 };
 
@@ -31,8 +31,9 @@ int test_connection()
 		int done = rfs_getattr("/", &ret);
 		DEBUG("getattr returned: %d\n", done);
 	}
-	
-	return 0;}
+
+	return 0;
+	}
 #endif /* RFS_DEBUG */
 
 #define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
@@ -40,6 +41,7 @@ int test_connection()
 struct fuse_opt rfs_opts[] = 
 {
 	FUSE_OPT_KEY("-h", KEY_HELP),
+	FUSE_OPT_KEY("-q", KEY_QUIET),
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
@@ -55,12 +57,17 @@ void usage(const char *program)
 {
 	printf(
 "usage: %s host:path mountpoint [options]\n"
+#ifdef WITH_IPV6
+"enclose IPv6 address with [] brackets\n"
+#endif
+"\n"
 "\n"
 "general options:\n"
 "    -o opt,[opt...]         mount options\n"
 "    -h   --help             print help\n"
 "\n"
 "RFS options:\n"
+"    -q                      suppress warnings\n"
 "    -o username=name        auth username\n"
 "    -o rd_cache=0           disable read cache\n"
 "    -o wr_cache=0           disable write cache\n"
@@ -78,6 +85,7 @@ void init_config()
 	rfs_config.use_read_cache = 1;
 	rfs_config.use_write_cache = 1;
 	rfs_config.use_read_write_cache = 1;
+	rfs_config.quiet = 0;
 }
 
 void rfs_fix_options()
@@ -98,6 +106,31 @@ int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 		&& rfs_config.path == NULL)
 		{
 			const char *delimiter = strchr(arg, ':');
+#ifdef WITH_IPV6
+			/* if we have an IPv6 address we enclose it within [ ] */
+			if ( *arg == '[' )
+			{
+				delimiter = strchr(arg, ']');
+				if (delimiter == NULL 
+				|| delimiter[1] != ':')
+				{
+					return 1;
+				}
+				
+				rfs_config.host = get_buffer(delimiter - arg);
+				memset(rfs_config.host, 0, delimiter - arg);
+				memcpy(rfs_config.host, arg + 1, delimiter - arg - 1);
+				
+				delimiter++;
+				rfs_config.path = get_buffer(strlen(arg) - (delimiter - arg));
+				memset(rfs_config.path, 0, strlen(arg) - (delimiter - arg));
+				memcpy(rfs_config.path, delimiter + 1, strlen(arg) - (delimiter - arg) - 1);
+				
+				return 0;
+			}
+			else
+			{
+#endif
 			if (delimiter != NULL)
 			{
 				rfs_config.host = get_buffer(delimiter - arg + 1);
@@ -110,6 +143,9 @@ int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 				
 				return 0;
 			}
+#ifdef WITH_IPV6
+			}
+#endif
 		}
 		return 1;
 	
@@ -118,6 +154,11 @@ int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 		fuse_opt_add_arg(outargs, "-ho");
 		fuse_main(outargs->argc, outargs->argv, (struct fuse_operations *)NULL);
 		exit(0);
+	
+	case KEY_QUIET:
+		rfs_config.quiet = 1;
+		
+		return 0;
 	}
 	
 	return 1;
@@ -135,6 +176,20 @@ int read_password()
 	if (fp == NULL)
 	{
 		return -errno;
+	}
+	
+	errno = 0;
+	struct stat stbuf = { 0 };
+	if (stat(rfs_config.auth_passwd_file, &stbuf) != 0)
+	{
+		fclose(fp);
+		return -errno;
+	}
+	
+	if ((unsigned)(stbuf.st_mode & S_IRWXG) != 0
+	|| (unsigned)(stbuf.st_mode & S_IRWXO) != 0)
+	{
+		WARN("WARNING: for security reasons you should change mode of your password file to readable/writeable by owner only (run \"chmod 600 %s\")\n", rfs_config.auth_passwd_file);
 	}
 	
 	errno = 0;
@@ -196,7 +251,7 @@ int read_password()
 int main(int argc, char **argv)
 {
 	init_config();
-	
+
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	if (fuse_opt_parse(&args, &rfs_config, rfs_opts, rfs_opt_proc) == -1)
@@ -264,7 +319,8 @@ int main(int argc, char **argv)
 		free(rfs_config.auth_passwd);
 	}
 	
-	mp_force_free();
+	destroy_uids_lookup();
+	destroy_gids_lookup();
 	
 	return ret;
 }

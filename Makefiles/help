@@ -29,3 +29,12 @@ make release ALT=SunGcc
 The following with cross compile for an arm processor:
 make release ALT=LS-GLv2
 
+Build remotefs with new features as for example IPv6 support:
+-------------------------------------------------------------
+
+In order to include non standard features, edit the file
+Makefiles/options.mk and uncomment the lines corresponding to
+the feature you want to include.
+If you want IPv6 support, remove the fisrt '#' from the line
+#OPT_1 -DWITH_IPV6 # allow use of IPv6
+

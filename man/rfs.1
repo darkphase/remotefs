@@ -1,0 +1,84 @@
+.TH "rfs" "1" "0.10" "remotefs" "remotefs"
+
+.SH "NAME"
+
+rfs \- remotefs client
+
+
+.SH "SYNOPSIS"
+
+\fBrfs\fR host:path mountpoint [options]
+
+
+.SH "DESCRIPTION"
+
+.TS
+l.
+general options:
+    \-o opt,[opt...]         mount options
+    \-h   \-\-help             print help
+
+RFS options:
+    \-q suppress warnings
+    \-o username=name        auth username
+    \-o rd_cache=0           disable read cache
+    \-o wr_cache=0           disable write cache
+    \-o rdwr_cache=0         disable read/write cache
+    \-o password=filename    filename with password for auth
+    \-o port=server_port     port which the server is listening to
+.TE
+
+Rfs is fuse based and the user don't need to be root in order to mount the
+remote resources.
+
+\fBhost:path\fP consist of the server name or it IP address and the path of
+the directory which is exported on the server. If the file /etc/rfs-exports
+contain the line: \fB/exports/alice alice ()\fP path must be /exports/alice
+
+\fB\-o username=user\fP user is the login name on the server.
+
+\fB\-o password=filename\fP the given file (filename) must contain the password
+for accessing the remote directory. If the password stored on the server is "secret"
+filename shall contain secret. On the server the password will not be stored as
+plain text but crypted.
+\fBNote that for security reason this file shall only be readable by it owner.\fP
+
+
+\fB\-o port\fP if the server listen on an other port as the given port you can
+set this herewith.
+
+The command line for mounting the remoteresource may look as:
+.br
+rfd -o username=alice,password=.pwd-home 192.168.1.2:/exports/alice ./mnt
+
+There are a lot of options which are offered by fuse. Fuse is build for many
+kind of file systems and all options are not correct while using a network
+file system. Some of the fuse option may result in errors or decrease the
+prefomance of remotefs.
+
+
+.SH "BUG"
+If the file /etc/passwd and /etc/group on the client and the server are not
+identical, the displayed name for unknown user and group will default to
+nobody (user name), nogroup or name of the promary group of the user on the
+client. Some files or directories will noz be accessed as suffested by the
+rights. 
+
+.SH "AUTHOR"
+
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.br
+with little contributions from
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
+
+.SH "REPORTING BUGS"
+See remotefs project on Sourceforge 
+
+.SH "COPYRIGHT"
+
+GNU General Public License (GPL) 
+
+.SH "SEE ALSO"
+
+remotefs(7) rfsd(8), rfspasswd(8) 

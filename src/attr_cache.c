@@ -9,7 +9,7 @@
 #include "buffer.h"
 
 static void *cache = NULL;
-static unsigned cache_ttl = 60; /* secs */
+static unsigned cache_ttl = ATTR_CACHE_TTL; /* secs */
 static time_t last_time_checked = (time_t)0;
 
 int any_node(const void *s1, const void *s2)
@@ -26,7 +26,6 @@ unsigned char cache_is_old()
 {
 	if (time(NULL) > last_time_checked + cache_ttl)
 	{
-		DEBUG("%s\n", "cache is old");
 		last_time_checked = time(NULL);
 		return 1;
 	}

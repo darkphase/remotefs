@@ -23,6 +23,7 @@ int rfs_mount(const char *path);
 int rfs_auth(const char *user, const char *passwd);
 int rfs_request_salt();
 int rfs_keep_alive();
+int rfs_getexportopts(enum rfs_export_opts *opts);
 
 /** This function is called to get the attributes of a specific file.
 @param A path to the file that we want information about. 

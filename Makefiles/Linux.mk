@@ -12,8 +12,8 @@ RM = rm
 ################################
 
 CFLAGS_O     =
-CFLAGS_DBG   = -g
-CFLAGS_OPT   = -O3 -s
+CFLAGS_DBG   = -g -Wall -Werror
+CFLAGS_OPT   = -g -O3 -s
 
 ###############################
 # Flags needed for Fuse

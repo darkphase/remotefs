@@ -32,12 +32,12 @@ com1_OBJS = src/crypt.o \
             src/passwd.o \
             src/list.o \
             src/buffer.o \
-            src/alloc.o \
             src/signals.o 
             
 # com2_OBJS also used by rfsd
 com2_OBJS = src/sendrecv.o \
             src/command.o \
             src/path.o \
-	    src/read_cache.o
+	    src/read_cache.o \
+	    src/id_lookup.o
 

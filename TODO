@@ -1,0 +1,5 @@
+sendrecv.c
+- error handling for rfs_send_cmd_data() and rfs_send_answer_data
+- if the fuse option direct_io is passed to fuse, there will be some
+  troubles, rfs shall test the fuse options aginst such options and
+  remove them.

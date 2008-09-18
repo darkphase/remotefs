@@ -1,182 +1,40 @@
 
 /* syncronized server handlers. will lock keep alive when it's needed */
 
-int handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_mknod(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
+#define DECLARE_AND_DECORATE(declare_func, decorate_func)          \
+int declare_func(const int client_socket,                          \
+	const struct sockaddr_in *client_addr,                     \
+	const struct command *cmd)                                 \
+{                                                                  \
+	if (keep_alive_lock() == 0)                                \
+	{                                                          \
+		int ret = decorate_func(client_socket, client_addr, cmd); \
+		return keep_alive_unlock() == 0 ? ret : -1;        \
+	}                                                          \
+	return -1;                                                 \
 }
 
-int handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_release(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
+DECLARE_AND_DECORATE(handle_changepath, _handle_changepath)
+DECLARE_AND_DECORATE(handle_closeconnection, _handle_closeconnection)
+DECLARE_AND_DECORATE(handle_request_salt, _handle_request_salt)
+DECLARE_AND_DECORATE(handle_auth, _handle_auth)
+DECLARE_AND_DECORATE(handle_getexportopts, _handle_getexportopts)
 
-int handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_statfs(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
+DECLARE_AND_DECORATE(handle_mknod, _handle_mknod)
+DECLARE_AND_DECORATE(handle_chmod, _handle_chmod)
+DECLARE_AND_DECORATE(handle_chown, _handle_chown)
+DECLARE_AND_DECORATE(handle_release, _handle_release)
+DECLARE_AND_DECORATE(handle_statfs, _handle_statfs)
+DECLARE_AND_DECORATE(handle_utime, _handle_utime)
+DECLARE_AND_DECORATE(handle_rename, _handle_rename)
+DECLARE_AND_DECORATE(handle_rmdir, _handle_rmdir)
+DECLARE_AND_DECORATE(handle_unlink, _handle_unlink)
+DECLARE_AND_DECORATE(handle_mkdir, _handle_mkdir)
+DECLARE_AND_DECORATE(handle_write, _handle_write)
+DECLARE_AND_DECORATE(handle_read, _handle_read)
+DECLARE_AND_DECORATE(handle_truncate, _handle_truncate)
+DECLARE_AND_DECORATE(handle_open, _handle_open)
+DECLARE_AND_DECORATE(handle_readdir, _handle_readdir)
+DECLARE_AND_DECORATE(handle_getattr, _handle_getattr)
 
-int handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_utime(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_rename(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_rmdir(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_unlink(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_mkdir(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_write(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_read(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_truncate(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_open(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_readdir(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_getattr(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_changepath(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_closeconnection(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_request_salt(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
-
-int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (keep_alive_lock() == 0)
-	{
-		int ret = _handle_auth(client_socket, client_addr, cmd);
-		return keep_alive_unlock() == 0 ? ret : -1;
-	}
-	return -1;
-}
+#undef DECLARE_AND_DECORATE

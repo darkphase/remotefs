@@ -1,0 +1,107 @@
+.TH "rfsd" "8" "0.10" "remotefs" "remotefs"
+
+.SH "NAME"
+
+rfsd \- remotefs daemon 
+
+.SH "SYNOPSIS"
+
+\fBrfsd\fR [\fIOPTION\fR]
+
+.SH "DESCRIPTION"
+
+Rfsd is the daemon which offer the remotefs file system to the clients.
+
+.TS
+l.
+\-h               show this help screen|
+\-a [address]     listen for connections on specified address
+\-p [port number] listen for connections on specified port
+\-u [username]    worker process be running with privileges of this user
+\-g [groupname]   worker process be running with privileges of this group
+\-r [path]        change pidfile path from default to [path]
+.TE
+
+Rfsd may work in two mode:
+
+The first mode remain compatible with the mode used for versions prior 0.10.
+Note that you still need the same version of rfsd and the rfs client.
+
+For this mode all user able to connect to rfsd use the same uid and gid
+(user and group identifier) for accessing the harddrive attached to rfsd.
+Normally the default user and group are the user "root" and the group "root".
+with the \-u and \-g the user and group can be set to an dedicated user and
+or group.
+
+The second and new mode is more powerfull, and allow some operations which
+was not possible with older versions. Don't use the \-u or \-b options if
+you want to use the new features.
+
+Rfsd need the configurations file /etc/rfs\-exports. This file contain
+the exported directory or directories as well as the user allowed to mount
+the resources and the mode flags. 
+
+
+\fB# file rfs\-exports
+.br
+/exports/alice alice (name=alice,group=alice)
+.br
+/exports/bob alice (name=bob,group=bob)
+.br
+/exports/chris chris, bob ()
+.br
+/exports/alice chris (ro)
+.br
+/exports/shared_dir alice, bob (ugo)
+\fP
+
+The directory /exports/alice can be mounted by the user alice. For this
+mount point, rfsd will run with the privilege of the user alice and the
+group alice. All files and directories must be owned by the user alice
+or the group in order to be accessed. The same apply to the second line.
+
+The directory /exports/chris can be mounted by the user chris or bob.
+The rfsd intance for this mount point will work with root privilege eg
+all files and directories are owned by root:root (no user an group given).
+chris and bob have the same rights!
+
+The line /exports/alice chris (ro) allow chris to mount the directory
+/exports/alice with read only rights,
+
+The last line /exports/shared_dir alice, bob (ugo) allow the newest feature
+of remotefs. Ugo stand for User Group Other the 3 entities for the right
+management, With this mode you can share a common directory for a lot a
+user. The right managment will be according to the normal access rules for
+UNIX systems. Changing the access right or the owner ship is possible, but
+this will only work well on systems which known the same users and groups
+(server and client).
+
+If alice mount here directory /exports/shared from the office PC, she may
+see a strange behaviour, the files are owned for example by the user nobody
+or root, but she will be able to modify some of then and not others. 
+
+.SH "BUG"
+
+Remotefs don't crypt the datas send over the network. Remotefs was 
+developped in order to have a fast, simole and lean network file system.
+Crypting can be done with extarnal tools (kernel based or user space
+based as stunnel or ssh).
+
+.SH "AUTHOR"
+
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.br
+with little contributions from
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
+
+.SH "REPORTING BUGS"
+See remotefs project on Sourceforge 
+
+.SH "COPYRIGHT"
+
+GNU General Public License (GPL) 
+
+.SH "SEE ALSO"
+
+rfs(1), remotefs(7), rfspasswd(8) 

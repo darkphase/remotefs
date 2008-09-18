@@ -29,12 +29,12 @@ size_t read_cache_size(uint64_t descriptor)
 
 size_t last_used_read_block(uint64_t descriptor)
 {
-	return descriptor == last_cached_desc ? last_cached_size : 0;
+	return (descriptor == last_cached_desc) ? last_cached_size : 0;
 }
 
 size_t read_cache_have_data(uint64_t descriptor, off_t offset)
 {
-if (cache == NULL 
+	if (cache == NULL 
 	|| descriptor != last_cached_desc 
 	|| offset >= last_cached_offset + last_cached_size
 	|| offset < last_cached_offset)
@@ -57,6 +57,7 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
 {
+	DEBUG("updating read cache stats: %llu, %u, %lu\n", descriptor, size, offset);
 	last_cached_desc = descriptor;
 	last_cached_size = size;
 	last_cached_offset = offset;
@@ -70,17 +71,13 @@ void destroy_read_cache()
 		
 		cache = NULL;
 	}
-	update_read_cache_stats(-1, -1, -1);
 }
 
 unsigned read_cache_is_for(uint64_t descriptor)
 {
-	if (cache != NULL)
+	if (last_cached_desc == descriptor)
 	{
-		if (last_cached_desc == descriptor)
-		{
-			return 1;
-		}
+		return 1;
 	}
 	
 	return 0;
@@ -88,12 +85,15 @@ unsigned read_cache_is_for(uint64_t descriptor)
 
 char* read_cache_resize(size_t size)
 {
-	if (last_cached_size != size
-	&& cache != NULL)
+	if (last_cached_size != size)
 	{
 		DEBUG("%s\n", "need to resize cache");
-		free_buffer(cache);
-		cache = NULL;	}
+		if (cache != NULL)
+		{
+			free_buffer(cache);
+			cache = NULL;
+		}
+	}
 	
 	if (cache == NULL)
 	{

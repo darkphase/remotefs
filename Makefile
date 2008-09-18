@@ -6,6 +6,7 @@ OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
 include Makefiles/$(OS)$(ALT).mk
+include Makefiles/options.mk
 
 #############################
 # The begin of the world
@@ -57,7 +58,7 @@ rfspasswd: dummy
 		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfspasswd; \
 	fi
 
-dummy: 
+dummy:
 
 #######################################
 # Rules for cleaning,and dpendencied

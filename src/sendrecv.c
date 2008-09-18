@@ -7,10 +7,10 @@
 #include <string.h>
 #include <netdb.h>
 #include <errno.h>
+#include <sys/uio.h>
 
 #include "config.h"
 #include "command.h"
-#include "alloc.h"
 #include "inet.h"
 
 int g_server_socket = -1;
@@ -26,14 +26,17 @@ int connection_lost = 0;
 
 int rfs_is_connection_lost()
 {
-	return connection_lost;}
+	return connection_lost;
+}
 
 void rfs_set_connection_restored()
 {
-	connection_lost = 0;}
+	connection_lost = 0;
+}
 
 int rfs_connect(const char *ip, const unsigned port)
 {
+#ifndef WITH_IPV6
 	errno = 0;
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
 	if (sock == -1)
@@ -59,24 +62,55 @@ int rfs_connect(const char *ip, const unsigned port)
 	{
 		return -errno;
 	}
-	
+#else
+	struct sockaddr_in *sa4;
+	struct sockaddr_in6 *sa6;
+	struct addrinfo *res;
+	struct addrinfo hints;
+	int    result;
+
+	/* resolve name or address */
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family    = AF_UNSPEC;   /* Allow IPv4 or IPv6 */
+	hints.ai_socktype  = SOCK_STREAM; 
+	hints.ai_flags     = AI_ADDRCONFIG;
+
+	if ((result=getaddrinfo(ip, NULL, &hints, &res)) != 0)
+	{
+		ERROR("Can't resolve address for %s : %s\n",ip,gai_strerror(result));
+		return -errno;
+	}
+
+	sa4 = (struct sockaddr_in*)res->ai_addr;
+	sa6 = (struct sockaddr_in6*)res->ai_addr;
+
+
+	int sock = socket(res->ai_family, SOCK_STREAM, 0);
+	if (sock == -1)
+	{
+		return -errno;
+	}
+
+	sa4 = (struct sockaddr_in*)res->ai_addr;
+	sa6 = (struct sockaddr_in6*)res->ai_addr;
+	if (res->ai_family == AF_INET)
+	{
+		sa4->sin_port = htons(port);
+	}
+	else
+	{
+		sa6->sin6_port = htons(port);
+	}
+
+	if (connect(sock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == -1)
+	{
+		freeaddrinfo(res);
+		return -errno;
+	}
+#endif
 	g_server_socket = sock;
 	
 	return sock;
-}
-
-void rfs_disconnect(int sock, int gently)
-{
-	if (gently != 0)
-	{
-		struct command cmd = { cmd_closeconnection, 0 };
-		rfs_send_cmd(sock, &cmd);
-	}
-	
-	close(sock);
-	shutdown(sock, SHUT_RDWR);
-	
-	mp_force_free();
 }
 
 size_t rfs_send_cmd(const int sock, const struct command *cmd)
@@ -91,7 +125,37 @@ size_t rfs_send_cmd(const int sock, const struct command *cmd)
 	{
 		connection_lost = 1;
 	}
+	
+	DEBUG("%s\n", "done");
+	
 	return ret;
+}
+
+size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *data, const size_t data_len)
+{
+	size_t size_sent = 0;
+	struct iovec iov[2];
+	struct command send_command = { 0 };
+	send_command.command = htonl(cmd->command);
+	send_command.data_len = htonl(cmd->data_len);
+	
+	iov[0].iov_base = (char*)&send_command;
+	iov[0].iov_len  = sizeof(send_command);
+	iov[1].iov_base = (void*)data;
+	iov[1].iov_len  = data_len;
+	
+	DEBUG("%s", "sending "); dump_command(cmd);
+	DEBUG("sending data: %u bytes\n", data_len);
+
+	size_sent = writev(sock, iov, 2);
+	if (size_sent < 0)
+	{
+		connection_lost = 1;
+	}
+	
+	DEBUG("%s\n", "done");
+	
+	return size_sent;
 }
 
 size_t rfs_send_answer(const int sock, const struct answer *ans)
@@ -108,7 +172,38 @@ size_t rfs_send_answer(const int sock, const struct answer *ans)
 	{
 		connection_lost = 1;
 	}
+	
+	DEBUG("%s\n", "done");
+	
 	return ret;
+}
+
+size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void *data, const size_t data_len)
+{
+	size_t size_sent = 0;
+	struct iovec iov[2];
+	struct answer send_answer = { 0 };
+	send_answer.command = htonl(ans->command);
+	send_answer.data_len = htonl(ans->data_len);
+	send_answer.ret = htonl(ans->ret);
+	send_answer.ret_errno = htons(ans->ret_errno);
+	
+	DEBUG("%s", "sending "); dump_answer(ans);
+	DEBUG("sending data: %u bytes\n", data_len);
+	iov[0].iov_base = (char*)&send_answer;
+	iov[0].iov_len  = sizeof(send_answer);
+	iov[1].iov_base = (void*)data;
+	iov[1].iov_len  = data_len;
+
+	size_sent = writev(sock, iov, 2);
+	if (size_sent < 0)
+	{
+		connection_lost = 1;
+	}
+	
+	DEBUG("%s\n", "done");
+	
+	return size_sent;
 }
 
 size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
@@ -132,11 +227,15 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 	++send_operations;
 #endif
 	
+	DEBUG("%s\n", "done");
+	
 	return size_sent;
 }
 
 size_t rfs_receive_answer(const int sock, struct answer *ans)
 {
+	DEBUG("%s\n", "receiving answer");
+	
 	struct answer recv_answer = { 0 };
 
 	size_t ret = rfs_receive_data(sock, &recv_answer, sizeof(recv_answer));
@@ -151,7 +250,7 @@ size_t rfs_receive_answer(const int sock, struct answer *ans)
 	{
 		connection_lost = 1;
 	}
-	
+
 	DEBUG("%s", "received "); dump_answer(ans);
 	
 	return ret;
@@ -159,6 +258,8 @@ size_t rfs_receive_answer(const int sock, struct answer *ans)
 
 size_t rfs_receive_cmd(const int sock, struct command *cmd)
 {
+	DEBUG("%s\n", "receiving command");
+
 	struct command recv_command = { 0 };
 	
 	size_t ret = rfs_receive_data(sock, &recv_command, sizeof(recv_command));
@@ -177,6 +278,8 @@ size_t rfs_receive_cmd(const int sock, struct command *cmd)
 
 size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 {
+	DEBUG("receiving %d bytes\n", data_len);
+
 	size_t size_received = 0;
 	while (size_received < data_len)
 	{
@@ -193,6 +296,8 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 	bytes_received += size_received;
 	++receive_operations;
 #endif
+
+	DEBUG("%s\n", "done");
 
 	return size_received;
 }

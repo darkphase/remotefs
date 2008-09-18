@@ -1,11 +1,13 @@
 #include "exports.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 
 #include "config.h"
@@ -92,7 +94,20 @@ const char* find_chr(const char *buffer, const char *border, const char *symbols
 
 unsigned is_ipaddr(const char *string)
 {
+#ifndef WITH_IPV6
 	return inet_addr(string) == INADDR_NONE ? 0 : 1;
+#else
+	if (strchr(string,':'))
+	{
+		/* may be an IPv6 address */
+		struct sockaddr_in6 addr;
+		return inet_pton(AF_INET6, string, &(addr.sin6_addr)) == -1 ? 0 : 1;
+	}
+	else
+	{
+		return inet_addr(string) == INADDR_NONE ? 0 : 1;
+	}
+#endif
 }
 
 int set_export_opts(struct rfs_export *opts_export, const struct list const *opts)
@@ -108,6 +123,10 @@ int set_export_opts(struct rfs_export *opts_export, const struct list const *opt
 			{
 				opts_export->options |= opt_ro;
 			}
+			else if (strcmp(opt_str, "ugo") == 0)
+			{
+			opts_export->options |= opt_ugo;
+			}
 			else if (strstr(opt_str, "user=") == opt_str)
 			{
 				if (opts_export->export_uid != (uid_t)-1)
@@ -115,7 +134,7 @@ int set_export_opts(struct rfs_export *opts_export, const struct list const *opt
 					ERROR("%s", "User option for export is set twice\n");
 					return -1;
 				}
-			
+				
 				const char *export_username = opt_str + strlen("user=");
 				
 				struct passwd *pwd = getpwnam(export_username);
@@ -126,6 +145,25 @@ int set_export_opts(struct rfs_export *opts_export, const struct list const *opt
 				}
 				
 				opts_export->export_uid = pwd->pw_uid;
+			}
+			else if (strstr(opt_str, "group=") == opt_str)
+			{
+				if (opts_export->export_gid != (gid_t)-1)
+				{
+					ERROR("%s", "Group option for export is set twice\n");
+					return -1;
+				}
+				
+				const char *export_groupname = opt_str + strlen("group=");
+				
+				struct group *grp = getgrnam(export_groupname);
+				if (grp == NULL)
+				{
+					ERROR("Group %s is not found in *system* group database\n", export_groupname);
+					return -1;
+				}
+				
+				opts_export->export_gid = grp->gr_gid;
 			}
 			else
 			{
@@ -234,7 +272,8 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	
 	if (users_end == NULL)
 	{
-		users_end = next_line;	}
+		users_end = next_line;
+	}
 	
 	if (users == NULL 
 	|| users >= border
@@ -286,6 +325,35 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	return next_line == NULL ? NULL : next_line + 1;
 }
 
+int validate_export(const struct rfs_export *line_export)
+{
+	if ((line_export->options & opt_ugo) != 0)
+	{
+		if ((line_export->options & opt_ro) != 0
+		|| line_export->export_uid != -1
+		|| line_export->export_gid != -1)
+		{
+			ERROR("%s\n", "Export validation error: you can't specify \"ro\", \"user=\" or \"group=\" options simultaneously with \"ugo\" option. \"ugo\" will handle all security related issues for this export.");
+			return -1;
+		}
+		
+		struct list *user_item = line_export->users;
+		while (user_item != NULL)
+		{
+			const char *user = (const char *)user_item->data;
+			if (is_ipaddr(user))
+			{
+				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for this export");
+				return -1;
+			}
+			
+			user_item = user_item->next;
+		}
+	}
+
+	return 0;
+}
+
 unsigned parse_exports()
 {
 	FILE *fd = fopen(exports_file, "rt");
@@ -331,6 +399,7 @@ unsigned parse_exports()
 		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
 		memset(line_export, 0, sizeof(*line_export));
 		line_export->export_uid = (uid_t)-1;
+		line_export->export_gid = (gid_t)-1;
 		
 		next_line = parse_line(buffer, (unsigned)((buffer + size) - next_line), next_line - buffer, line_export);
 		if (next_line == (char *)-1)
@@ -340,9 +409,23 @@ unsigned parse_exports()
 			return -1;
 		}
 		
+		/* must be called before setting uid/gid to default values
+		because those are to be checked */
+		if (validate_export(line_export) != 0)
+		{
+			free_buffer(line_export);
+			fclose(fd);
+			return -1;
+		}
+		
 		if (line_export->export_uid == (uid_t)-1)
 		{
 			line_export->export_uid = rfsd_config.worker_uid;
+		}
+		
+		if (line_export->export_gid == (gid_t)-1)
+		{
+			line_export->export_gid = rfsd_config.worker_gid;
 		}
 		
 		if (line_export->path != NULL 

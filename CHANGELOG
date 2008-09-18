@@ -1,12 +1,16 @@
-0.10
+0.10 testing
 
 rfsd:
+|+] chmod/chown may be conditionally included (#define CHXXX)
+|+] optimizations for writing of files and for network protocol
 [+] privileges lowering per export (user=[username]) option
 [-] fixed exports parsing if there is no line break at the end of the export line
 [+] reload() support in init script
 [+] pidfile path setting with -r option
 
 rfs:
+|+] chmod/chown may be conditionally included
+|+] optimizations for network protocol
 [+] auto reconnect support
 
 0.9
@@ -14,6 +18,7 @@ rfs:
 [*] new authentication mechanism
 
 rfs:
+|+] optimizations for network protocol
 [*] proper cache cleanup
 [+] new write cache
 [*] fixed bug in _rfs_write_cached() with wrong path passed to _rfs_flush()

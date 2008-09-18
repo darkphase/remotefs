@@ -1,0 +1,47 @@
+.TH "rfspasswd" "8" "0.10" "remotefs" "remotefs"
+
+.SH "NAME"
+
+rfspasswd \- create or modify the file /etc/rfs-passwd
+
+
+.SH "SYNOPSIS"
+
+\fBrfspasswd\fR [options] [LOGIN]
+
+
+.SH "DESCRIPTION"
+
+.TS
+l.
+-d      delete the password for the named account
+-h      display this help message and exit
+-l      lock the named account
+-u      unlock the named account
+.TE
+
+You need rpspasswd in order to create the password file needed by the
+servewr rfsd.
+
+Rfspasswd must be called with root privilege. If no name is given the
+the account name of the user is assumed to be created, modified or
+with the option -d deleted from the password file.
+
+.SH "AUTHOR"
+
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.br
+with little contributions from
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
+
+.SH "REPORTING BUGS"
+See remotefs project on Sourceforge 
+
+.SH "COPYRIGHT"
+
+GNU General Public License (GPL) 
+
+.SH "SEE ALSO"
+
+rfs(1), remotefs(7), rfsd(8)

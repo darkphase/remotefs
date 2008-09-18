@@ -144,7 +144,9 @@
 		<br/><br/>
 		
 		Mounting export: <code>rfs 10.0.0.1:/mnt/usb/store begemoth/</code>
-		
+		<br/><br/>
+		If you have compiled remotefs with IPv6 support and want to connect to an IPv6 address, the address is to be enclosed within '[' and ']':
+		<code>rfs [::1]:/mnt/usb/store begemoth/</code>
 		<br/><br/>
 		
 		It is NFS/sshfs like. If you are not familiar with it, here is its format: “rfs host:export_name mount_point”. Host is ip-address or host name, export name is the string from exports file, mount_point  has the same meaning as in the any other mount operation.

@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "signals.h"
-#include "alloc.h"
 #include "rfsd.h"
 
 void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontext_t_casted)

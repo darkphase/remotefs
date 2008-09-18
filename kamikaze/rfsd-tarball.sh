@@ -8,7 +8,6 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/server_handlers_sync.c \
 	../src/signals.h ../src/signals.c \
 	../src/signals_server.h ../src/signals_server.c \
-	../src/alloc.h ../src/alloc.c \
 	../src/list.h ../src/list.c \
 	../src/passwd.h ../src/passwd.c \
 	../src/exports.h ../src/exports.c \
@@ -18,6 +17,7 @@ SERVER_FILES="../src/rfsd.h ../src/rfsd.c \
 	../src/inet.h \
 	../src/path.h ../src/path.c \
 	../src/read_cache.h ../src/read_cache.c \
+	../src/id_lookup.h ../src/id_lookup.c \
 	../LICENSE ../AUTHORS ../CHANGELOG"
 MAKEFILE="Makefile.rfsd"
 NAME="rfsd"

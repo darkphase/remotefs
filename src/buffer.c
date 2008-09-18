@@ -4,75 +4,64 @@
 #include <ctype.h>
 
 #include "config.h"
-#include "alloc.h"
 #include "inet.h"
 
 char *get_buffer(const size_t size)
 {
-	char *ret = mp_alloc(size);
-	return ret;
+	return malloc(size);
 }
 
 void free_buffer(char *buffer)
 {
-	mp_free(buffer);}
+	free(buffer);
+}
 
-unsigned pack(const void *data, const size_t size, char *buffer, const off_t offset)
+off_t pack(const void *data, const size_t size, char *buffer, const off_t offset)
 {
 	memcpy(buffer + offset, data, size);
-	return offset + size;}
-
-unsigned pack_16(const uint16_t *data, void *buffer, const off_t offset)
-{
-	uint16_t pack_u = htons(*data);
-	return pack(&pack_u, sizeof(pack_u), buffer, offset);
+	return offset + size;
 }
 
-unsigned pack_32(const uint32_t *data, void *buffer, const off_t offset)
+off_t pack_16(const uint16_t *data, char *buffer, const off_t offset)
 {
-	uint32_t pack_u = htonl(*data);
-	return pack(&pack_u, sizeof(pack_u), buffer, offset);
+	*((uint16_t *)(buffer + offset)) = htons(*data);
+	return offset + sizeof(*data);
 }
 
-unsigned pack_64(const uint64_t *data, void *buffer, const off_t offset)
+off_t pack_32(const uint32_t *data, char *buffer, const off_t offset)
 {
-	uint64_t pack_u = htonll(*data);
-	return pack(&pack_u, sizeof(pack_u), buffer, offset);
+	*((uint32_t *)(buffer + offset)) = htonl(*data);
+	return offset + sizeof(*data);
 }
 
-unsigned unpack(void *data, const size_t size, const char *buffer, const off_t offset)
+off_t pack_64(const uint64_t *data, char *buffer, const off_t offset)
+{
+	*((uint64_t *)(buffer + offset)) = htonll(*data);
+	return offset + sizeof(*data);
+}
+
+off_t unpack(void *data, const size_t size, const char *buffer, const off_t offset)
 {
 	memcpy(data, buffer + offset, size);
-	return offset + size;}
-
-unsigned unpack_16(uint16_t *data, const void *buffer, const off_t offset)
-{
-	uint16_t unpack_u = 0;
-	
-	unsigned ret = unpack(&unpack_u, sizeof(unpack_u), buffer, offset);
-	*data = ntohs(unpack_u);
-	
-	return ret;
+	return offset + size;
 }
 
-unsigned unpack_32(uint32_t *data, const void *buffer, const off_t offset)
+off_t unpack_16(uint16_t *data, const char *buffer, const off_t offset)
 {
-	uint32_t unpack_u = 0;
-	
-	unsigned ret = unpack(&unpack_u, sizeof(unpack_u), buffer, offset);
-	*data = ntohl(unpack_u);
-	
-	return ret;
+	*data = ntohs(*((uint16_t *)(buffer + offset)));
+	return offset + sizeof(*data);
 }
 
-unsigned unpack_64(uint64_t *data, const void *buffer, const off_t offset)
+off_t unpack_32(uint32_t *data, const char *buffer, const off_t offset)
 {
-	uint64_t unpack_u = 0;
-	
-	unsigned ret = unpack(&unpack_u, sizeof(unpack_u), buffer, offset);
-	*data = ntohll(unpack_u);
-	
-	return ret;
+	*data = ntohl(*((uint32_t *)(buffer + offset)));
+	return offset + sizeof(*data);
+}
+
+off_t unpack_64(uint64_t *data, const char *buffer, const off_t offset)
+{
+	*data = ntohll(*((uint64_t *)(buffer + offset)));
+	return offset + sizeof(*data);
 }
 
 void dump(const void *data, const size_t data_len)

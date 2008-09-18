@@ -6,7 +6,6 @@
 #include "config.h"
 #include "sendrecv.h"
 #include "signals.h"
-#include "alloc.h"
 #include "operations.h"
 
 extern int g_server_socket;
@@ -20,7 +19,6 @@ void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 		{
 			rfs_destroy(NULL);
 		}
-		mp_force_free();
 		exit(0);
 	}
 }

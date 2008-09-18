@@ -21,6 +21,8 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len);
 size_t rfs_receive_cmd(const int sock, struct command *cmd);
 size_t rfs_receive_answer(const int sock, struct answer *ans);
 size_t rfs_receive_data(const int sock, void *data, const size_t data_len);
+size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *data, const size_t data_len);
+size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void *data, const size_t data_len);
 
 size_t rfs_ignore_incoming_data(const int sock, const size_t data_len);
 int rfs_is_connection_lost();

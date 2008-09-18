@@ -20,10 +20,8 @@ struct rfs_export
 	struct list *users;
 	unsigned options;
 	uid_t export_uid;
+	gid_t export_gid;
 };
-
-/** on/off export options */
-enum e_export_opts { opt_ro = 1 };
 
 /** parse exports files. data will be stored in static variable
 @see exports.c 

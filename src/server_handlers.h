@@ -15,6 +15,7 @@ int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, 
 int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_keepalive(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_getexportopts(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 
 int handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
@@ -30,6 +31,8 @@ int handle_rename(const int client_socket, const struct sockaddr_in *client_addr
 int handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_chmod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_chown(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

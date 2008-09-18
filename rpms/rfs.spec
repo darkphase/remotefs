@@ -1,7 +1,7 @@
 Name: rfs
 Summary:A fast remote file system, client
 Version:0.10
-Release:2
+Release:2P
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net
 Group: Applications/File

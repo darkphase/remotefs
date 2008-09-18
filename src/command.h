@@ -13,32 +13,32 @@ enum server_commands
 { 
 	cmd_first = 0, 
 	
-	cmd_auth,
+	/* rfs internal commands */
+	cmd_auth               = 10,
 	cmd_request_salt,
 	cmd_closeconnection,
 	cmd_changepath,
 	cmd_keepalive,
+	cmd_getexportopts,
 
-	cmd_readdir,
-	
+	/* fs commands */
+	cmd_readdir            = 50,
 	cmd_getattr,
-	
 	cmd_mknod,
 	cmd_open,
-	cmd_release,
+	cmd_release, 
 	cmd_truncate,
-	
 	cmd_read,
 	cmd_write,
-	
 	cmd_mkdir,
 	cmd_unlink,
 	cmd_rmdir,
 	cmd_rename,
-	
 	cmd_utime,
 	cmd_statfs,
-	
+	cmd_chmod, 
+	cmd_chown, 
+
 	cmd_last
 };
 
