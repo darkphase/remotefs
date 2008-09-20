@@ -2,14 +2,16 @@
 /* syncronized operations. will lock keep alive when it's needed */
 
 #define DECORATE(func, args...)                             \
-	if (keep_alive_lock() == 0                          \
-	&& check_connection() == 0)                         \
+	int ret = -EIO;                                     \
+	if (keep_alive_lock() == 0)                         \
 	{                                                   \
-		int ret = func(args);                       \
+		if(check_connection() == 0)                 \
+		{                                           \
+			ret = func(args);                   \
+		}                                           \
 		keep_alive_unlock();                        \
-		return ret;                                 \
 	}                                                   \
-	return -EIO;                                        \
+	return ret;
 
 int rfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
