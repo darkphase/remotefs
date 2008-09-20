@@ -1005,8 +1005,8 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 	}
 
 	uint64_t handle = fi->fh;
+	uint64_t foffset = offset;
 	uint32_t fsize = size;
-	uint32_t foffset = offset;
 
 #define overall_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
 	struct command cmd = { cmd_read, overall_size };
@@ -1015,7 +1015,7 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 #undef  overall_size
 
 	pack_64(&handle, buffer, 
-	pack_32(&foffset, buffer, 
+	pack_64(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
 		)));
 
@@ -1149,8 +1149,8 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 	}
 
 	uint64_t handle = fi->fh;
+	uint64_t foffset = offset;
 	uint32_t fsize = size;
-	uint32_t foffset = offset;
 
 #define header_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
 	unsigned overall_size = header_size + size;
@@ -1159,7 +1159,7 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 	char buffer[header_size] = { 0 };
 
 	pack_64(&handle, buffer, 
-	pack_32(&foffset, buffer, 
+	pack_64(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
 		)));
 

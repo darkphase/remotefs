@@ -1074,7 +1074,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 {
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
-	uint32_t offset = 0;
+	uint64_t offset = 0;
 	uint32_t size = 0;
 	
 	char read_buffer[overall_size] = { 0 };
@@ -1092,11 +1092,11 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 #undef  overall_size
 	
 	unpack_64(&handle, read_buffer, 
-	unpack_32(&offset, read_buffer, 
+	unpack_64(&offset, read_buffer, 
 	unpack_32(&size, read_buffer, 0
 		)));
 
-	DEBUG("handle: %llu, offset: %u, size: %u\n", handle, offset, size);
+	DEBUG("handle: %llu, offset: %llu, size: %u\n", handle, offset, size);
 	
 	if (handle == (uint64_t)-1)
 	{
@@ -1123,7 +1123,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 int _handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	uint64_t handle = (uint64_t)-1;
-	uint32_t offset = 0;
+	uint64_t offset = 0;
 	uint32_t size = 0;
 	
 #define header_size sizeof(handle) + sizeof(offset) + sizeof(size)
@@ -1135,7 +1135,7 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 #undef header_size
 	
 	unpack_64(&handle, buffer, 
-	unpack_32(&offset, buffer, 
+	unpack_64(&offset, buffer, 
 	unpack_32(&size, buffer, 0
 		)));
 	
