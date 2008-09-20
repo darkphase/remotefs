@@ -57,7 +57,7 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
 {
-	DEBUG("updating read cache stats: %llu, %u, %lu\n", descriptor, size, offset);
+	DEBUG("updating read cache stats: %llu, %u, %llu\n", descriptor, size, offset);
 	last_cached_desc = descriptor;
 	last_cached_size = size;
 	last_cached_offset = offset;
