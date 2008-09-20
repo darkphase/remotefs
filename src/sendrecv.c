@@ -162,6 +162,11 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 	
 	DEBUG("%s\n", "done");
 	
+#ifdef RFS_DEBUG
+	bytes_sent += size_sent;
+	++send_operations;
+#endif
+	
 	return size_sent;
 }
 
@@ -209,6 +214,11 @@ size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void
 	}
 	
 	DEBUG("%s\n", "done");
+	
+#ifdef RFS_DEBUG
+	bytes_sent += size_sent;
+	++send_operations;
+#endif
 	
 	return size_sent;
 }
