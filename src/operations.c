@@ -974,7 +974,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 		return ret;
 	}
 	
-	update_read_cache_stats(fi->fh, overall_size, offset + cached_size);
+	update_read_cache_stats(fi->fh, ret, offset + cached_size);
 
 	if (cached_size < size)
 	{
