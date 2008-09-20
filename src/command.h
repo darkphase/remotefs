@@ -1,3 +1,11 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
 #ifndef COMMAND_H
 #define COMMAND_H
 
@@ -20,6 +28,8 @@ enum server_commands
 	cmd_changepath,
 	cmd_keepalive,
 	cmd_getexportopts,
+	
+	/* reserved */
 
 	/* fs commands */
 	cmd_readdir            = 50,

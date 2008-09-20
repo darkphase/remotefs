@@ -1,4 +1,10 @@
-#include "operations.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <string.h>
 #include <sys/stat.h>
@@ -17,6 +23,7 @@
 #endif
 
 #include "config.h"
+#include "operations.h"
 #include "buffer.h"
 #include "command.h"
 #include "sendrecv.h"

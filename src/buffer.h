@@ -1,3 +1,11 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
 #ifndef BUFFER_H
 #define BUFFER_H
 
@@ -55,7 +63,7 @@ off_t unpack_32(uint32_t *data, const char *buffer, const off_t offset);
 off_t unpack_64(uint64_t *data, const char *buffer, const off_t offset);
 
 /** print buffer to output. debug only */
-void dump(const char *data, const size_t data_len);
+void dump(const void *data, const size_t data_len);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

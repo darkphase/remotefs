@@ -1,4 +1,10 @@
-#include "sendrecv.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -10,6 +16,7 @@
 #include <sys/uio.h>
 
 #include "config.h"
+#include "sendrecv.h"
 #include "command.h"
 #include "inet.h"
 

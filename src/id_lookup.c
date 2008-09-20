@@ -1,4 +1,10 @@
-#include "id_lookup.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <stdlib.h>
 #include <pwd.h>
@@ -6,6 +12,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "id_lookup.h"
 #include "buffer.h"
 #include "list.h"
 

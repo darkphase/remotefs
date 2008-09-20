@@ -1,8 +1,15 @@
-#include "keep_alive_server.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <time.h>
 
 #include "config.h"
+#include "keep_alive_server.h"
 
 static unsigned int lock = 0;
 static time_t last_keep_alive = 0;

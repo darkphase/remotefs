@@ -1,7 +1,15 @@
-#include "path.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <string.h>
+
 #include "config.h"
+#include "path.h"
 
 int path_join(char full_path[NAME_MAX], const char *path, const char *filename)
 {

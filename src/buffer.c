@@ -1,17 +1,25 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <ctype.h>
 
 #include "config.h"
+#include "buffer.h"
 #include "inet.h"
 
-char *get_buffer(const size_t size)
+void *get_buffer(const size_t size)
 {
 	return malloc(size);
 }
 
-void free_buffer(char *buffer)
+void free_buffer(void *buffer)
 {
 	free(buffer);
 }

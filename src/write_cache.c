@@ -1,9 +1,16 @@
-#include "write_cache.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <string.h>
 #include <stdlib.h>
 
 #include "config.h"
+#include "write_cache.h"
 #include "buffer.h"
 
 static char *cache_block = NULL;

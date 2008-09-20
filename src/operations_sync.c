@@ -1,3 +1,10 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 /* syncronized operations. will lock keep alive when it's needed */
 

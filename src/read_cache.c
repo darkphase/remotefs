@@ -1,8 +1,15 @@
-#include "read_cache.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <string.h>
 
 #include "config.h"
+#include "read_cache.h"
 #include "buffer.h"
 
 static size_t max_cache_size = DEFAULT_RW_CACHE_SIZE;

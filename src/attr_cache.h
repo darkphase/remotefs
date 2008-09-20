@@ -1,7 +1,15 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
 #ifndef CACHE_H
 #define CACHE_H
 
-/** attributes cache. used with rfs_getattr() */
+/** attributes cache. used with rfs_getattr() and rfs_readdir() */
 
 #include <sys/stat.h>
 #include <time.h>

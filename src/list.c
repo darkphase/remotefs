@@ -1,6 +1,13 @@
-#include "list.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include "config.h"
+#include "list.h"
 #include "buffer.h"
 
 struct list* add_to_list(struct list *head, void *data)

@@ -1,6 +1,14 @@
-#include "signals.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <string.h>
+
+#include "signals.h"
 
 void install_signal_handler(int sig, void (*signal_proc)(int , siginfo_t *, void *))
 {

@@ -1,4 +1,10 @@
-#include "exports.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +17,7 @@
 #include <errno.h>
 
 #include "config.h"
+#include "exports.h"
 #include "buffer.h"
 #include "list.h"
 
@@ -125,7 +132,7 @@ int set_export_opts(struct rfs_export *opts_export, const struct list const *opt
 			}
 			else if (strcmp(opt_str, "ugo") == 0)
 			{
-			opts_export->options |= opt_ugo;
+				opts_export->options |= opt_ugo;
 			}
 			else if (strstr(opt_str, "user=") == opt_str)
 			{

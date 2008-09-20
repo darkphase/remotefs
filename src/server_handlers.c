@@ -1,5 +1,11 @@
-#include "server_handlers.h"
-#define NEW
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
 #include <arpa/inet.h>
 #if defined FREEBSD
 #	include <netinet/in.h>
@@ -24,6 +30,7 @@
 #include <unistd.h>
 
 #include "config.h"
+#include "server_handlers.h"
 #include "command.h"
 #include "sendrecv.h"
 #include "buffer.h"
@@ -37,8 +44,6 @@
 #include "path.h"
 #include "read_cache.h"
 #include "id_lookup.h"
-
-#define RDWR_MAX_SIZE 32768
 
 extern unsigned char directory_mounted;
 extern struct rfsd_config rfsd_config;
@@ -73,9 +78,6 @@ int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 	}
 	return setegid(egid);
 }
-#else
-extern int setresuid(uid_t ruid, uid_t euid, uid_t suid);
-extern int setresgid(gid_t rgid, gid_t egid, gid_t sgid);
 #endif
 
 int stat_file(const char *path, struct stat *stbuf)

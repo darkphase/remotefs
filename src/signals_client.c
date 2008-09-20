@@ -1,9 +1,16 @@
-#include "signals_client.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <signal.h>
 #include <stdlib.h>
 
 #include "config.h"
+#include "signals_client.h"
 #include "sendrecv.h"
 #include "signals.h"
 #include "operations.h"

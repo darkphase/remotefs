@@ -1,9 +1,16 @@
-#include "crypt.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
 
 #include <crypt.h>
 #include <string.h>
 
 #include "config.h"
+#include "crypt.h"
 
 char *passwd_hash(const char *password, const char *salt)
 {
