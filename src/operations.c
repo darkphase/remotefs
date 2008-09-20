@@ -74,9 +74,6 @@ int check_connection()
 		return 0;
 	}
 	
-	destroy_uids_lookup();
-	destroy_gids_lookup();
-	
 	if (rfs_reconnect(0) == 0)
 	{
 		rfs_set_connection_restored();
