@@ -19,18 +19,16 @@ help:
 	@cat Makefiles/help
 
 debug:
-	echo $(DEBFLAG)
-	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
+	@DRF="$(DEBFLAG)" make -f Makefiles/base.mk rfs rfsd rfspasswd
 
 release:
-	echo $(DEBFLAG)
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
+	@DRF="$(RELFLAG)" make -f Makefiles/base.mk rfs rfsd rfspasswd
 
 all:
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -ss Makefiles/base.mk rfs rfsd rfspasswd; \
+		DRF="$(DEBFLAG)" make -f Makefiles/base.mk rfs rfsd rfspasswd; \
 	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
+		DRF="$(RELFLAG)" make -f Makefiles/base.mk rfs rfsd rfspasswd; \
 	fi
 
 #######################################
@@ -39,23 +37,23 @@ all:
 
 rfs: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs; \
+		DRF="$(DEBFLAG)" make -f Makefiles/base.mk rfs; \
 	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs; \
+		DRF="$(RELFLAG)" make -f Makefiles/base.mk rfs; \
 	fi
 
 rfsd: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfsd; \
+		DRF="$(DEBFLAG)" make -f Makefiles/base.mk rfsd; \
 	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfsd; \
+		DRF="$(RELFLAG)" make -f Makefiles/base.mk rfsd; \
 	fi
 
 rfspasswd: dummy
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfspasswd; \
+		DRF="$(DEBFLAG)" make -f Makefiles/base.mk rfspasswd; \
 	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfspasswd; \
+		DRF="$(RELFLAG)" make -f Makefiles/base.mk rfspasswd; \
 	fi
 
 dummy:
@@ -64,30 +62,30 @@ dummy:
 # Rules for cleaning,and dpendencied
 #######################################
 clean:
-	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk clean
+	@DRF="$(DEBFLAG)" make -f Makefiles/base.mk clean
 
 depends:
-	@make -sf Makefiles/base.mk depends
+	@make -f Makefiles/base.mk depends
 
 ########################################
 # Rules for packaging, ...
 ########################################
 
 rpm: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm
+	@DRF="$(RELFLAG)" make -f Makefiles/base.mk rpm
 rpm-rfs: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm-rfs
+	@DRF="$(RELFLAG)" make -f Makefiles/base.mk rpm-rfs
 rpm-rfsd: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm-rfsd
+	@DRF="$(RELFLAG)" make -f Makefiles/base.mk rpm-rfsd
 
 rfsdeb: clean
-	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk rfsdeb $(TGTARCH)
+	@DRF="$(RELFLAG)" $(MAKE) -f Makefiles/base.mk rfsdeb $(TGTARCH)
 rfsddeb: clean
-	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
+	@DRF="$(RELFLAG)" $(MAKE) -f Makefiles/base.mk rfsddeb $(TGTARCH)
 
 runtests: 
-	@$(MAKE) -sC tests run
-	@$(MAKE) -sC tests clean
+	@$(MAKE) -C tests run
+	@$(MAKE) -C tests clean
 
 #
 

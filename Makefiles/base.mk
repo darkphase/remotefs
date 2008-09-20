@@ -13,14 +13,6 @@ include Makefiles/$(OS)$(ALT).mk
 include Makefiles/options.mk
 
 #############################
-# Objects and targets
-#############################
-
-include Makefiles/rfs.mk
-include Makefiles/rfsd.mk
-include Makefiles/rfspasswd.mk
-
-#############################
 # Version for packages
 #############################
 include Makefiles/version.mk
@@ -33,43 +25,23 @@ include Makefiles/version.mk
 # compile rules for objects
 #############################
 
-$(com1_OBJS) $(com2_OBJS):
-	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfsd_CFLAGS) $(DRF) $(OPTS)
-
-$(rfs_OBJS):
-	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfs_CFLAGS) $(DRF) $(OPTS)
-
-$(rfsd_OBJS):
-	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfsd_CFLAGS) $(DRF) $(OPTS)
-
-$(rfspasswd_OBJS):
-	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfspasswd_CFLAGS) $(DRF) $(OPTS)
-
 #######################################
 # Rules for compiling programs
 #######################################
 
-rfs: rfs_flag $(rfs_OBJS) $(com1_OBJS) $(com2_OBJS)
-	@if [ "`pkg-config --cflags fuse 2> /dev/null`" != "" ]; then \
-	         echo Link $@; \
-	         $(CC) -o $@ $(rfs_OBJS) $(com1_OBJS) $(com2_OBJS) $($(@)_LDFLAGS) $($(@)_CFLAGS) $(OPTS); \
-	else \
-	        echo "!!! fuse not installed or not found, skip rfs !!!"; \
-	fi; \
-	echo
-
-rfsd: rfsd_flag $(rfsd_OBJS) $(com1_OBJS) $(com2_OBJS)
-	@echo Link $@
-	@$(CC) -o $@ $(rfsd_OBJS) $(com1_OBJS) $(com2_OBJS) $($(@)_LDFLAGS) $($(@)_CFLAGS) $(OPTS)
+rfs: dummy
+	@echo
+	@$(MAKE) -f Makefiles/rfs.mk build
 	@echo
 
-rfspasswd: rfspasswd_flag  $(rfspasswd_OBJS) $(com1_OBJS)
-	@echo Link $@;
-	@$(CC) -o $@ $(rfspasswd_OBJS) $(com1_OBJS) $($(@)_LDFLAGS) $($(@)_CFLAGS) $(OPTS)
+rfsd: dummy
+	@echo
+	@$(MAKE) -f Makefiles/rfsd.mk build
+	@echo
+
+rfspasswd: dummy
+	@echo
+	@$(MAKE) -f Makefiles/rfspasswd.mk build
 	@echo
 
 runtests: 
@@ -82,40 +54,18 @@ runtests:
 #############################
 
 clean:
-	@if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
-	@if ls *.deb >/dev/null 2>&1; then $(RM) -f *.deb; fi
-	@if [ -f rfs ]; then $(RM) -f rfs; fi
-	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
-	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
+	if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
+	if ls *.deb >/dev/null 2>&1; then $(RM) -f *.deb; fi
+	if [ -f rfs ]; then $(RM) -f rfs; fi
+	if [ -f rfsd ]; then $(RM) -f rfsd; fi
+	if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
 
 #############################
 # Rebuild dependency file
 #############################
 depends:
-	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
-	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
-
-#############################
-# Print out the flags we use
-#############################
-
-rfs_flag:
-	@echo Flags for rfs
-	echo CFLAGS = $(rfs_CFLAGS) $(DRF) $(OPTS)
-	@echo LDFLAGS = $(rfs_LDFLAGS)
-	@echo
-
-rfsd_flag:
-	@echo Flags for rfsd
-	echo CFLAGS = $(rfsd_CFLAGS) $(DRF) $(OPTS)
-	@echo LDFLAGS = $(rfsd_LDFLAGS)
-	@echo
-
-rfspasswd_flag:
-	@echo Flags for rfspasswd
-	echo CFLAGS = $(rfspasswd_CFLAGS) $(DRF) $(OPTS)
-	@echo LDFLAGS = $(rfspasswd_LDFLAGS)
-	@echo
+	grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
+	ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
 
 #######################################
 # Rules for packaging, ...
@@ -202,6 +152,7 @@ bldrpm: rpms/$(RPMNAME).spec
 	   exit 2; \
 	fi;\
 	
+dummy:
 
 #############################
 # Dependencies for all proj.
