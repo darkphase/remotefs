@@ -548,6 +548,10 @@ int start_server(const char *address, const unsigned port)
 		{
 			return handle_connection(client_socket, &client_addr);
 		}
+		else
+		{
+			close(client_socket);
+		}
 	}
 #if 0 /* never reached */
 #ifdef WITH_IPV6
@@ -559,12 +563,7 @@ int start_server(const char *address, const unsigned port)
 
 void stop_server()
 {
-	server_close_connection(g_client_socket);
-	if (g_listen_socket != -1)
-	{
-		shutdown(g_listen_socket, SHUT_RDWR);
-		close(g_listen_socket);
-	}
+	server_close_connection(g_listen_socket);
 	
 	unlink(rfsd_config.pid_file);
 	
@@ -576,7 +575,9 @@ void check_keep_alive()
 	if (keep_alive_locked() != 0
 	&& keep_alive_expired() == 0)
 	{
-		stop_server();
+		DEBUG("%s\n", "keep alive expired");
+		server_close_connection(g_client_socket);
+		exit(1);
 	}
 	
 	alarm(keep_alive_period());
