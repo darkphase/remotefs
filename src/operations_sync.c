@@ -8,6 +8,8 @@ See the file LICENSE.
 
 /* syncronized operations. will lock keep alive when it's needed */
 
+/* if connection lost after executing the operation
+and operation failed, then try it one more time */
 #define DECORATE(func, args...)                             \
 	int ret = -EIO;                                     \
 	if (keep_alive_lock() == 0)                         \
@@ -15,6 +17,12 @@ See the file LICENSE.
 		if(check_connection() == 0)                 \
 		{                                           \
 			ret = func(args);                   \
+			if (ret == -EIO                     \
+			&& rfs_is_connection_lost() != 0    \
+			&& check_connection() == 0)         \
+			{                                   \
+				ret = func(args);           \
+			}                                   \
 		}                                           \
 		keep_alive_unlock();                        \
 	}                                                   \
