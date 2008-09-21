@@ -688,8 +688,8 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	+ sizeof(ctime)
 	+ sizeof(stat_failed);
 	
-	buffer = get_buffer(stat_size + NAME_MAX);
-	char full_path[NAME_MAX] = { 0 };
+	char full_path[FILENAME_MAX] = { 0 };
+	buffer = get_buffer(stat_size + sizeof(full_path));
 	
 	{
 	
@@ -701,7 +701,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		stat_failed = 0;
 		memset(&stbuf, 0, sizeof(stbuf));
 		
-		int joined = path_join(full_path, path, entry_name);
+		int joined = path_join(full_path, sizeof(full_path), path, entry_name);
 		if (joined < 0)
 		{
 			stat_failed = 1;

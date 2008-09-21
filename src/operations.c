@@ -584,10 +584,10 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	+ sizeof(ctime)
 	+ sizeof(stat_failed);
 
-	unsigned buffer_size = stat_size + NAME_MAX;
+	char full_path[FILENAME_MAX] = { 0 };
+	unsigned buffer_size = stat_size + sizeof(full_path);
 	char *buffer = get_buffer(buffer_size);
-	char full_path[NAME_MAX] = { 0 };
-
+	
 	char operation_failed = 0;
 	do
 	{
@@ -690,7 +690,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 		
 		if (stat_failed == 0)
 		{
-			int joined = path_join(full_path, path, entry_name);
+		int joined = path_join(full_path, sizeof(full_path), path, entry_name);
 			
 			if (joined < 0)
 			{

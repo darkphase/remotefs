@@ -11,23 +11,23 @@ See the file LICENSE.
 #include "config.h"
 #include "path.h"
 
-int path_join(char full_path[NAME_MAX], const char *path, const char *filename)
+int path_join(char *full_path, size_t max_len, const char *path, const char *filename)
 {
 	unsigned path_len = strlen(path);
 	unsigned filename_len = strlen(filename);
-	
-	if (path_len + filename_len + 1 > NAME_MAX)
-	{
-		return -1;
-	}
-
-	memset(full_path, 0, NAME_MAX);
 	
 	const unsigned char copy_path = 
 	(strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0 )
 	? 0
 	: 1;
 	const unsigned char add_slash = ((copy_path == 1 && path[path_len - 1] == '/') ? 0 : 1);
+	
+	if (path_len + filename_len + add_slash + 1 > max_len)
+	{
+		return -1;
+	}
+
+	memset(full_path, 0, max_len);
 	
 	if (copy_path == 1)
 	{
