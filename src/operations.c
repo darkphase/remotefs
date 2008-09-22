@@ -80,7 +80,13 @@ int check_connection()
 	{
 		return 0;
 	}
-	
+
+	/* if we had a timeout close the connection */
+	if(g_server_socket!=-1)
+	{
+		rfs_disconnect(g_server_socket, 0);
+	}
+
 	if (rfs_reconnect(0) == 0)
 	{
 		rfs_set_connection_restored();

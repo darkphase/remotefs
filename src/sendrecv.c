@@ -50,6 +50,19 @@ int rfs_connect(const char *ip, const unsigned port)
 	{
 		return -errno;
 	}
+
+	struct timeval to = { 3, 0 };
+	int ret;
+	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
+#if RFS_DEBUG
+	if ( ret )
+		perror("setsockopt SO_RCVTIMEO");
+#endif
+	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
+#if RFS_DEBUG
+	if ( ret )
+		perror("setsockopt SO_SNSTIMEO");
+#endif
 	
 	errno = 0;
 	struct hostent *host_addr = gethostbyname(ip);
@@ -109,6 +122,19 @@ int rfs_connect(const char *ip, const unsigned port)
 		sa6->sin6_port = htons(port);
 	}
 
+	struct timeval to = { 3, 0 };
+	int ret;
+	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
+#if RFS_DEBUG
+	if ( ret )
+		perror("setsockopt SO_RCVTIMEO");
+#endif
+	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
+#if RFS_DEBUG
+	if ( ret )
+		perror("setsockopt SO_SNSTIMEO");
+#endif
+
 	if (connect(sock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == -1)
 	{
 		freeaddrinfo(res);
@@ -154,7 +180,9 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 	DEBUG("%s", "sending "); dump_command(cmd);
 	DEBUG("sending data: %u bytes\n", data_len);
 
+	errno=0;
 	size_sent = writev(sock, iov, 2);
+
 	if (size_sent < 0)
 	{
 		connection_lost = 1;
@@ -207,6 +235,7 @@ size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void
 	iov[1].iov_base = (void*)data;
 	iov[1].iov_len  = data_len;
 
+	errno=0;
 	size_sent = writev(sock, iov, 2);
 	if (size_sent < 0)
 	{
@@ -230,6 +259,7 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 	
 	while (size_sent < data_len)
 	{
+		errno=0;
 		int done = send(sock, (const char *)data + size_sent, data_len - size_sent, 0);
 		if (done < 1)
 		{
@@ -300,6 +330,7 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 	size_t size_received = 0;
 	while (size_received < data_len)
 	{
+		errno=0;
 		int done = recv(sock, (char *)data + size_received, data_len - size_received, 0);
 		if (done < 1)
 		{

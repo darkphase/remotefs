@@ -24,6 +24,7 @@ See the file LICENSE.
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "config.h"
 #include "rfsd.h"
@@ -353,6 +354,11 @@ int handle_connection(int client_socket, const struct sockaddr_storage *client_a
 	while (1)
 	{	
 		int done = rfs_receive_cmd(client_socket, &current_command);
+		if( done == -1 && errno == EAGAIN )
+		{
+			/* timeout ignore it */
+			continue;
+		}
 		if (done == -1 || done == 0)
 		{
 #ifndef WITH_IPV6
@@ -449,7 +455,6 @@ int start_server(const char *address, const unsigned port)
 		return 1;
 	}
 #endif
-
 	
 	int reuse = 1;
 	if (setsockopt(g_listen_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) != 0)
@@ -503,7 +508,7 @@ int start_server(const char *address, const unsigned port)
 	 * file or directory creation is called. These settings
 	 * are allready done by the client
 	*/
-//	umask(0);
+	umask(0);
 
 #ifndef RFS_DEBUG
 	chdir("/");
@@ -528,6 +533,19 @@ int start_server(const char *address, const unsigned port)
 		{
 			continue;
 		}
+
+		struct timeval one = { 3, 0 };
+		int ret;
+		ret=setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, &one,  sizeof(one));
+#ifdef RFS_DEBUG
+		if ( ret )
+			perror("setsockopt SO_RCVTIMEO");
+#endif
+		ret=setsockopt(client_socket, SOL_SOCKET, SO_SNDTIMEO, &one,  sizeof(one));
+#ifdef RFS_DEBUG
+		if ( ret )
+			perror("setsockopt SO_SNSTIMEO");
+#endif
 		
 #ifndef WITH_IPV6
 		DEBUG("incoming connection from: %s\n", inet_ntoa(client_addr.sin_addr));
