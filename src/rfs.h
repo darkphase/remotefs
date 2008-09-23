@@ -6,20 +6,19 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef SIGNALS_CLIENT_H
-#define SIGNALS_CLIENT_H
+#ifndef RFS_H
+#define RFS_H
 
-/** client signals installer */
+/** client interface, just config for now */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-/** install handlers for signals handled by client */
-void install_signal_handlers_client(void);
+extern struct rfs_config rfs_config;
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
-#endif /* SIGNALS_CLIENT_H */
+#endif // RFS_H

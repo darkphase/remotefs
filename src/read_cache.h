@@ -26,7 +26,7 @@ size_t read_cache_size(uint64_t descriptor);
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset);
 size_t last_used_read_block(uint64_t descriptor);
 unsigned read_cache_is_for(uint64_t descriptor);
-char* read_cache_resize(size_t);
+char* read_cache_resize(size_t size);
 void read_cache_force_max(size_t size);
 
 #if defined (__cplusplus) || defined (c_plusplus)

@@ -103,7 +103,6 @@ static int parse_opts(int argc, char **argv)
 	return 0;
 }
 
-#if 0 /* Not user at this time ! */
 static void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {
 	switch (signal)
@@ -130,7 +129,6 @@ static void install_signal_handlers()
 	install_signal_handler(SIGINT, signal_handler_passwd);
 	install_signal_handler(SIGQUIT, signal_handler_passwd);
 }
-#endif
 
 int main(int argc, char **argv)
 {
@@ -160,6 +158,8 @@ int main(int argc, char **argv)
 	}
 	
 	dump_passwords();
+	
+	install_signal_handlers();
 	
 	int ret = 0;
 	switch (operation)

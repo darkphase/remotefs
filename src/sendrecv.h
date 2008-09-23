@@ -41,7 +41,6 @@ void dump_sendrecv_stats();
 #endif
 
 extern int g_server_socket;
-extern struct rfs_config rfs_config;
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

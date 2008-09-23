@@ -580,7 +580,6 @@ static int start_server(const char *address, const unsigned port)
 void stop_server()
 {
 	server_close_connection(g_listen_socket);
-	
 	unlink(rfsd_config.pid_file);
 	
 	exit(0);

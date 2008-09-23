@@ -32,7 +32,7 @@ static struct list *exports = NULL;
 static void release_export(struct rfs_export *single_export);
 
 #ifdef RFS_DEBUG
-void dump_export(const struct rfs_export *single_export);
+static void dump_export(const struct rfs_export *single_export);
 #endif /* RFS_DEBUG */
 
 static const char* trim_left(const char *buffer, unsigned size)

@@ -6,8 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef RFSD_H
+#define RFSD_H
 
 /** server interface, basically for signals */
 
@@ -34,4 +34,4 @@ int reject_request_with_cleanup(const int client_socket, const struct command *c
 }
 #endif
 
-#endif // SERVER_H
+#endif // RFSD_H

@@ -6,7 +6,7 @@
 
 rfsd_TARGET = "rfsd"
 
-rfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
+rfsd_CFLAGS  =  \
 	$(CFLAGS_G) \
 	$(CFLAGS_O) 
 

@@ -11,7 +11,6 @@ See the file LICENSE.
 
 /** htonll() support */
 
-//#include <arpa/inet.h>
 #include <netinet/in.h>
 
 #if defined SOLARIS
@@ -51,4 +50,5 @@ extern "C" {
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
+
 #endif /* INET_H */

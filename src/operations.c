@@ -21,6 +21,7 @@ See the file LICENSE.
 #include <sys/socket.h>
 
 #include "config.h"
+#include "rfs.h"
 #include "operations.h"
 #include "buffer.h"
 #include "command.h"

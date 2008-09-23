@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "signals.h"
 #include "operations.h"
 
-void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
+static void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {
 	switch (signal)
 	{

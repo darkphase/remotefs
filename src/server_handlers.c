@@ -623,13 +623,12 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 	errno = 0;
 	DIR *dir = opendir(path);
 	
-	struct answer ans = { cmd_readdir, 0, dir == NULL ? -1 : 0, errno };
-
 	if (dir == NULL)
 	{
+		int saved_errno = errno;
+		
 		free_buffer(path);
-		rfs_send_answer(client_socket, &ans);
-		return 1;
+		return reject_request(client_socket, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 
 	struct dirent *dir_entry = NULL;
@@ -659,7 +658,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 	char full_path[FILENAME_MAX] = { 0 };
 	buffer = get_buffer(stat_size + sizeof(full_path));
 	
-	{
+	struct answer ans = { cmd_readdir, 0 };
 	
 	while ((dir_entry = readdir(dir)) != 0)
 	{	
@@ -714,7 +713,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 		
 		DEBUG("sending user: %s, group: %s\n", user, group);
 		
-		struct answer answ = { cmd_readdir, overall_size };
+		ans.data_len = overall_size;
 		
 		pack(group, group_len, buffer, 
 		pack(user, user_len, buffer, 
@@ -731,7 +730,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 		
 		dump(buffer, overall_size);
 
-		if (rfs_send_answer_data(client_socket, &answ, buffer, answ.data_len) == -1)
+		if (rfs_send_answer_data(client_socket, &ans, buffer, ans.data_len) == -1)
 		{
 			closedir(dir);
 			free_buffer(path);
@@ -748,8 +747,6 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 	if (rfs_send_answer(client_socket, &ans) == -1)
 	{
 		return -1;
-	}
-	
 	}
 	
 	return 0;
@@ -797,7 +794,7 @@ static int _handle_open(const int client_socket, const struct sockaddr_in *clien
 	int fd = open(path, flags);
 	uint64_t handle = htonll((uint64_t)fd);
 	
-	struct answer answ = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
+	struct answer ans = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
 	
 	free_buffer(buffer);
 	
@@ -810,16 +807,16 @@ static int _handle_open(const int client_socket, const struct sockaddr_in *clien
 		}
 	}
 
-	if (answ.ret == -1)
+	if (ans.ret == -1)
 	{
-		if (rfs_send_answer(client_socket, &answ) == -1)
+		if (rfs_send_answer(client_socket, &ans) == -1)
 		{
 			return -1;
 		}
 	}
 	else
 	{
-		if (rfs_send_answer_data(client_socket, &answ, &handle, sizeof(handle)) == -1)
+		if (rfs_send_answer_data(client_socket, &ans, &handle, sizeof(handle)) == -1)
 		{
 			return -1;
 		}

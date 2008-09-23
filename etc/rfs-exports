@@ -1,12 +1,25 @@
 # format:
-# [export path] [user/ip address,another user/another ip address] (options)
+# [export path] [user/ip address,another user/another ip address] (option,another option)
 #
 # supported option:
 #	ro - read-only export
-#	user=[username] - lower privileges to specified user (for this export only)
+#	user=[username] - setting worker process uid to specified user (for this export only)
+#	group=[groupname] - setting worker process gid to specified group (for this export only)
+#       ugo - enables UGO model for this export (see rfsd man page for details)
 #
-# example:
-# /tmp 	127.0.0.1, alex, 10.0.0.2
-# /tmp 	127.0.0.1, alex, 10.0.0.2 (ro)
-# /tmp 	127.0.0.1, alex, 10.0.0.2 (ro,user=alex)
+# examples:
+#
+# just fileserver:
+# /tmp 127.0.0.1, alex, 10.0.0.2
+# /tmp 127.0.0.1, alex, 10.0.0.2 (ro)
+#
+# privileges lowering:
+# /tmp 127.0.0.1, alex, 10.0.0.2 (ro,user=alex)
+# /tmp 127.0.0.1 (user=rfs,group=rfs)
+#
+# UGO model enabled:
+# /tmp alex (ugo)
+#
+# make note, that you can not authenticate user 
+# by IP-address if UGO is enabled
 

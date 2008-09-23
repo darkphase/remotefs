@@ -51,20 +51,24 @@ int rfs_connect(const char *ip, const unsigned port)
 		return -errno;
 	}
 
-	struct timeval to = { 3, 0 };
-	int ret;
-	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
 #ifdef WITH_SND_RCV_TIMEOUTS
-#	ifdef RFS_DEBUG
+	struct timeval timeout = { 3, 0 };
+	int ret;
+	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout,  sizeof(timeout));
+
+#ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_RCVTIMEO");
-#	endif
-	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
-#	ifdef RFS_DEBUG
+#endif /* RFS_DEBUG */
+
+	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout  sizeof(timeout));
+
+#ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_SNSTIMEO");
-#	endif
-#endif
+#endif /* RFS_DEBUG */
+
+#endif /* WITH_SND_RCV_TIMEOUTS */
 	
 	errno = 0;
 	struct hostent *host_addr = gethostbyname(ip);
@@ -124,20 +128,24 @@ int rfs_connect(const char *ip, const unsigned port)
 		sa6->sin6_port = htons(port);
 	}
 
-	struct timeval to = { 3, 0 };
-	int ret;
-	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
 #ifdef WITH_SND_RCV_TIMEOUTS
-#	ifdef RFS_DEBUG
+	struct timeval timeout = { 3, 0 };
+	int ret;
+	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout,  sizeof(timeout));
+
+#ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_RCVTIMEO");
-#	endif
-	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
-#	ifdef RFS_DEBUG
+#endif /* RFS_DEBUG */
+
+	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout,  sizeof(timeout));
+
+#ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_SNSTIMEO");
-#	endif
-#endif
+#endif /* RFS_DEBUG */
+
+#endif /* WITH_SND_RCV_TIMEOUTS */
 
 	if (connect(sock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == -1)
 	{
