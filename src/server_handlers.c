@@ -731,7 +731,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 		
 		dump(buffer, overall_size);
 
-		if (rfs_send_answer_data(client_socket, &ans, buffer, answ.data_len) == -1)
+		if (rfs_send_answer_data(client_socket, &answ, buffer, answ.data_len) == -1)
 		{
 			closedir(dir);
 			free_buffer(path);
