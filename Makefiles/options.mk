@@ -2,8 +2,6 @@
 # Build options for remotefs
 ############################################
 
-CFLAGS_G = -Wall -Werror
-
 #OPT_1 = -DWITH_IPV6
 OPT_2 = 
 OPT_3 = 

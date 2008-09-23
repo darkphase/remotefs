@@ -25,12 +25,12 @@ static struct termios stored_settings = { 0 };
 static unsigned need_to_restore_termio = 0;
 
 /* forward declarations */
-int change_password(const char *login);
-int delete_password(const char *login);
-int lock_password(const char *login);
-int unlock_password(const char *login);
+static int change_password(const char *login);
+static int delete_password(const char *login);
+static int lock_password(const char *login);
+static int unlock_password(const char *login);
 
-void usage(const char *app_name)
+static void usage(const char *app_name)
 {
 	printf("usage: %s [options] [LOGIN]\n"
 	"\n"
@@ -43,17 +43,19 @@ void usage(const char *app_name)
 	, app_name);
 }
 
-int check_opts()
+static int check_opts()
 {
 	if (login != NULL 
 	&& strchr(login, ':') != NULL)
 	{
 		ERROR("%s\n", "Username can not contain ':'");
-		return -1;	}
+		return -1;
+	}
 	
-	return 0;}
+	return 0;
+}
 
-int parse_opts(int argc, char **argv)
+static int parse_opts(int argc, char **argv)
 {
 	int opt;
 	while ((opt = getopt(argc, argv, "dhlu")) != -1)
@@ -101,7 +103,8 @@ int parse_opts(int argc, char **argv)
 	return 0;
 }
 
-void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
+#if 0 /* Not user at this time ! */
+static void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {
 	switch (signal)
 	{	
@@ -119,7 +122,7 @@ void signal_handler_passwd(int signal, siginfo_t *sig_info, void *ucontext_t_cas
 	}
 }
 
-void install_signal_handlers()
+static void install_signal_handlers()
 {
 	install_signal_handler(SIGTERM, signal_handler_passwd);
 	install_signal_handler(SIGPIPE, signal_handler_passwd);
@@ -127,6 +130,7 @@ void install_signal_handlers()
 	install_signal_handler(SIGINT, signal_handler_passwd);
 	install_signal_handler(SIGQUIT, signal_handler_passwd);
 }
+#endif
 
 int main(int argc, char **argv)
 {
@@ -208,7 +212,7 @@ int change_password(const char *login)
 	char password2[32] = { 0 };
 	
 	printf("Changing password for %s.\n", login);
-	printf("New password (%d characters max): ", sizeof(password1));
+	printf("New password (%ud characters max): ", sizeof(password1));
 	
 	tcgetattr(0, &stored_settings);
 	struct termios new_settings = stored_settings;

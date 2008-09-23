@@ -33,12 +33,15 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void *data, const size_t data_len);
 
 size_t rfs_ignore_incoming_data(const int sock, const size_t data_len);
-int rfs_is_connection_lost();
-void rfs_set_connection_restored();
+int rfs_is_connection_lost(void);
+void rfs_set_connection_restored(void);
 
 #ifdef RFS_DEBUG
 void dump_sendrecv_stats();
 #endif
+
+extern int g_server_socket;
+extern struct rfs_config rfs_config;
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

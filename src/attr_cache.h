@@ -37,15 +37,15 @@ void delete_from_cache(const char *path);
 struct tree_item* get_cache(const char *path);
 
 /** delete all cached data */
-void destroy_cache();
+void destroy_cache(void);
 
 /** check if cache is outdated
 @return not 0 if cache is old 
 */
-unsigned char cache_is_old();
+unsigned char cache_is_old(void);
 
 /** delete outdated files from cache */
-void clear_cache();
+void clear_cache(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

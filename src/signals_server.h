@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /** install handlers for signals handled by server */
-void install_signal_handlers_server();
+void install_signal_handlers_server(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

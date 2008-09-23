@@ -25,13 +25,13 @@ unsigned is_fit_to_write_cache(uint64_t descriptor, size_t size, off_t offset);
 int add_to_write_cache(uint64_t descriptor, const char *buffer, size_t size, off_t offset);
 
 /** get pointer to data in cache*/
-const char* get_write_cache_block();
+const char* get_write_cache_block(void);
 
 /** get cached data size */
-size_t get_write_cache_size();
+size_t get_write_cache_size(void);
 
 /** delete cache */
-void destroy_write_cache();
+void destroy_write_cache(void);
 
 /** check if data stored in cache is for file with specified descriptor */
 unsigned write_cache_is_for(uint64_t descriptor);
@@ -44,22 +44,22 @@ unsigned write_cache_is_for(uint64_t descriptor);
 int init_write_cache(const char *path, off_t offset, size_t size);
 
 /** reset inited cache */
-void uninit_write_cache();
+void uninit_write_cache(void);
 
 /** get size of last used cache block */
-size_t last_used_write_block();
+size_t last_used_write_block(void);
 
 /** get filename with which cache was inited */
-const char *write_cached_path();
+const char *write_cached_path(void);
 
 /** get max size of write cache */
-size_t write_cache_max_size();
+size_t write_cache_max_size(void);
 
 /** get offset with which cache was inited */
-off_t write_cached_offset();
+off_t write_cached_offset(void);
 
 /** get descriptor for which is data in cache */
-uint64_t write_cached_descriptor();
+uint64_t write_cached_descriptor(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

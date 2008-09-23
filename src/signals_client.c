@@ -15,8 +15,6 @@ See the file LICENSE.
 #include "signals.h"
 #include "operations.h"
 
-extern int g_server_socket;
-
 void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {
 	switch (signal)

@@ -151,7 +151,7 @@ int load_passwords()
 			if (ch != '\n' 
 			&& ch != EOF)
 			{
-				buffer[done] = ch;
+				buffer[done] = (char)ch;
 				++done;
 			}
 			else

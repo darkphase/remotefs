@@ -61,7 +61,7 @@ struct fuse_opt rfs_opts[] =
 	FUSE_OPT_END
 };
 
-void usage(const char *program)
+static void usage(const char *program)
 {
 	printf(
 "usage: %s host:path mountpoint [options]\n"
@@ -87,7 +87,7 @@ void usage(const char *program)
 	program);
 }
 
-void init_config()
+static void init_config()
 {
 	rfs_config.server_port = DEFAULT_SERVER_PORT;
 	rfs_config.use_read_cache = 1;
@@ -96,7 +96,7 @@ void init_config()
 	rfs_config.quiet = 0;
 }
 
-void rfs_fix_options()
+static void rfs_fix_options()
 {
 	if (rfs_config.use_read_write_cache == 0)
 	{
@@ -105,7 +105,7 @@ void rfs_fix_options()
 	}
 }
 
-int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
+static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
 {
 	switch (key)
 	{	
@@ -172,7 +172,7 @@ int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 	return 1;
 }
 
-int read_password()
+static int read_password()
 {
 	if (rfs_config.auth_passwd_file == NULL)
 	{

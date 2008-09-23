@@ -45,42 +45,12 @@ See the file LICENSE.
 #include "read_cache.h"
 #include "id_lookup.h"
 
-extern unsigned char directory_mounted;
-extern struct rfsd_config rfsd_config;
-extern struct rfs_export *mounted_export;
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 
 static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
 
-/* for FNU compatibility */
-int setresuid(uid_t ruid, uid_t euid, uid_t suid);
-int setresgid(gid_t rgid, gid_t egid, gid_t sgid);
-
-
-#if defined SOLARIS
-int setresuid(uid_t ruid, uid_t euid, uid_t suid)
-{
-	int res;
-	if ((res=setuid(ruid))!=0)
-	{
-		return res;
-	}
-	return seteuid(euid);
-}
-
-int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
-{
-	int res;
-	if ((res=setgid(rgid))!=0)
-	{
-		return res;
-	}
-	return setegid(egid);
-}
-#endif
-
-int stat_file(const char *path, struct stat *stbuf)
+static int stat_file(const char *path, struct stat *stbuf)
 {
 	errno = 0;
 	if (stat(path, stbuf) != 0)
@@ -99,7 +69,7 @@ int stat_file(const char *path, struct stat *stbuf)
 	return 0;
 }
 
-int check_password(const char *user, const char *passwd)
+static int check_password(const char *user, const char *passwd)
 {
 	const char *stored_passwd = get_auth_password(user);
 	
@@ -118,7 +88,7 @@ int check_password(const char *user, const char *passwd)
 	return -1;
 }
 
-int check_permissions(const struct rfs_export *export_info, const char *client_ip_addr)
+static int check_permissions(const struct rfs_export *export_info, const char *client_ip_addr)
 {
 	struct list *user_entry = export_info->users;
 	while (user_entry != NULL)
@@ -159,7 +129,7 @@ int check_permissions(const struct rfs_export *export_info, const char *client_i
 	return -1;
 }
 
-int generate_salt(char *salt, size_t max_size)
+static int generate_salt(char *salt, size_t max_size)
 {
 	const char al_set_begin = 'a';
 	const char al_set_end = 'z';
@@ -212,7 +182,7 @@ int generate_salt(char *salt, size_t max_size)
 	return 0;
 }
 
-int _handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	memset(auth_salt, 0, sizeof(auth_salt));
 	if (generate_salt(auth_salt, sizeof(auth_salt) - 1) != 0)
@@ -232,7 +202,7 @@ int _handle_request_salt(const int client_socket, const struct sockaddr_in *clie
 	return 0;
 }
 
-int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -277,7 +247,7 @@ int _handle_auth(const int client_socket, const struct sockaddr_in *client_addr,
 	return 0;
 }
 
-int _handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 #ifndef WITH_IPV6
 	DEBUG("connection to %s is closed\n", inet_ntoa(client_addr->sin_addr));
@@ -301,7 +271,7 @@ int _handle_closeconnection(const int client_socket, const struct sockaddr_in *c
 	exit(0);
 }
 
-int init_groups_for_ugo(gid_t user_gid)
+static int init_groups_for_ugo(gid_t user_gid)
 {
 	/* we have to init groups before chroot() */
 	DEBUG("initing groups for %s\n", auth_user);
@@ -328,7 +298,7 @@ int init_groups_for_ugo(gid_t user_gid)
 	return 0;
 }
 
-int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_t user_gid)
+static int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_t user_gid)
 {
 	/* always set gid first :)
 	*/
@@ -339,8 +309,8 @@ int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_
 		if (auth_user != NULL)
 		{
 			errno = 0;
-			if (setresgid(user_gid, user_gid, user_gid) != 0
-			|| setresuid(user_uid, user_uid, user_uid) != 0)
+			if (setregid(user_gid, user_gid) != 0
+			|| setreuid(user_uid, user_uid) != 0)
 			{
 				return -errno;
 			}
@@ -353,8 +323,7 @@ int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_
 		&& export_info->export_gid != (gid_t)(-1))
 		{
 			errno = 0;
-			if (setresgid(export_info->export_gid,
-			export_info->export_gid,
+			if (setregid(export_info->export_gid,
 			export_info->export_gid) != 0)
 			{
 				return -errno;
@@ -365,8 +334,7 @@ int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_
 		&& export_info->export_gid != (gid_t)(-1))
 		{
 			errno = 0;
-			if (setresuid(export_info->export_uid,
-			export_info->export_uid,
+			if (setreuid(export_info->export_uid,
 			export_info->export_uid) != 0)
 			{
 				return -errno;
@@ -377,7 +345,7 @@ int setup_export_opts(const struct rfs_export *export_info, uid_t user_uid, gid_
 	return 0;
 }
 
-int _handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -521,7 +489,7 @@ int _handle_changepath(const int client_socket, const struct sockaddr_in *client
 	return 0;
 }
 
-int _handle_getexportopts(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_getexportopts(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	struct answer ans = { cmd_getexportopts, 
 	0,
@@ -536,7 +504,7 @@ int _handle_getexportopts(const int client_socket, const struct sockaddr_in *cli
 	return mounted_export != NULL ? 0 : 1;
 }
 
-int _handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	
@@ -622,7 +590,7 @@ int _handle_getattr(const int client_socket, const struct sockaddr_in *client_ad
 	return 0;
 }
 
-int _handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	
@@ -746,7 +714,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		
 		DEBUG("sending user: %s, group: %s\n", user, group);
 		
-		struct answer ans = { cmd_readdir, overall_size };
+		struct answer answ = { cmd_readdir, overall_size };
 		
 		pack(group, group_len, buffer, 
 		pack(user, user_len, buffer, 
@@ -763,7 +731,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 		
 		dump(buffer, overall_size);
 
-		if (rfs_send_answer_data(client_socket, &ans, buffer, ans.data_len) == -1)
+		if (rfs_send_answer_data(client_socket, &ans, buffer, answ.data_len) == -1)
 		{
 			closedir(dir);
 			free_buffer(path);
@@ -787,7 +755,7 @@ int _handle_readdir(const int client_socket, const struct sockaddr_in *client_ad
 	return 0;
 }
 
-int _handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -829,7 +797,7 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 	int fd = open(path, flags);
 	uint64_t handle = htonll((uint64_t)fd);
 	
-	struct answer ans = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
+	struct answer answ = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
 	
 	free_buffer(buffer);
 	
@@ -842,16 +810,16 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 		}
 	}
 
-	if (ans.ret == -1)
+	if (answ.ret == -1)
 	{
-		if (rfs_send_answer(client_socket, &ans) == -1)
+		if (rfs_send_answer(client_socket, &answ) == -1)
 		{
 			return -1;
 		}
 	}
 	else
 	{
-		if (rfs_send_answer_data(client_socket, &ans, &handle, sizeof(handle)) == -1)
+		if (rfs_send_answer_data(client_socket, &answ, &handle, sizeof(handle)) == -1)
 		{
 			return -1;
 		}
@@ -860,7 +828,7 @@ int _handle_open(const int client_socket, const struct sockaddr_in *client_addr,
 	return 0;
 }
 
-int _handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -900,7 +868,7 @@ int _handle_truncate(const int client_socket, const struct sockaddr_in *client_a
 	return result == 0 ? 0 : 1;
 }
 
-char* get_cache(uint64_t handle, off_t offset, size_t size)
+static char* get_cache(uint64_t handle, off_t offset, size_t size)
 {
 	size_t cached_size = read_cache_have_data(handle, offset);
 	
@@ -919,7 +887,7 @@ char* get_cache(uint64_t handle, off_t offset, size_t size)
 	return NULL;
 }
 
-size_t get_new_cache_size(uint64_t handle, size_t requested_size)
+static size_t get_new_cache_size(uint64_t handle, size_t requested_size)
 {
 	size_t cache_size = last_used_read_block(handle);
 	
@@ -936,7 +904,7 @@ size_t get_new_cache_size(uint64_t handle, size_t requested_size)
 	return cache_size;
 }
 
-int read_as_always(const int client_socket, const struct command *cmd, uint64_t handle, off_t offset, size_t size, char *buffer, int send_data)
+static int read_as_always(const int client_socket, const struct command *cmd, uint64_t handle, off_t offset, size_t size, char *buffer, int send_data)
 {
 	int fd = (int)handle;
 	
@@ -995,7 +963,7 @@ int read_as_always(const int client_socket, const struct command *cmd, uint64_t 
 	return (int)done;
 }
 
-int read_with_caching(const int client_socket, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
+static int read_with_caching(const int client_socket, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	unsigned cached_size = read_cache_have_data(handle, offset);
 	unsigned no_cache_left = ((cached_size == 0 || cached_size == size) ? 1 : 0);
@@ -1047,7 +1015,7 @@ int read_with_caching(const int client_socket, const struct command *cmd, uint64
 	{
 		new_cache_size = get_new_cache_size(handle, new_cache_size);
 		
-		char *buffer = read_cache_resize(new_cache_size);
+		buffer = read_cache_resize(new_cache_size);
 		off_t new_offset = offset + ret;
 		
 		/* read, but don't send */
@@ -1070,7 +1038,7 @@ int read_with_caching(const int client_socket, const struct command *cmd, uint64
 	return 0;
 }
 
-int _handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
@@ -1120,7 +1088,7 @@ int _handle_read(const int client_socket, const struct sockaddr_in *client_addr,
 
 }
 
-int _handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	uint64_t handle = (uint64_t)-1;
 	uint64_t offset = 0;
@@ -1193,7 +1161,7 @@ int _handle_write(const int client_socket, const struct sockaddr_in *client_addr
 	return (done == (size_t)-1) ? 1 : 0;
 }
 
-int _handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1234,7 +1202,7 @@ int _handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr
 	return result != 0 ? 1 : 0;
 }
 
-int _handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1271,7 +1239,7 @@ int _handle_unlink(const int client_socket, const struct sockaddr_in *client_add
 	return result != 0 ? 1 : 0;
 }
 
-int _handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1308,7 +1276,7 @@ int _handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr
 	return result != 0 ? 1 : 0;
 }
 
-int _handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1351,7 +1319,7 @@ int _handle_rename(const int client_socket, const struct sockaddr_in *client_add
 	return result != 0 ? 1 : 0;
 }
 
-int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1412,7 +1380,7 @@ int _handle_utime(const int client_socket, const struct sockaddr_in *client_addr
 	return result != 0 ? 1 : 0;
 }
 
-int _handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1497,7 +1465,7 @@ int _handle_statfs(const int client_socket, const struct sockaddr_in *client_add
 	return 0;
 }
 
-int _handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1546,7 +1514,7 @@ int _handle_release(const int client_socket, const struct sockaddr_in *client_ad
 	return 0;
 }
 
-int _handle_chmod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_chmod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1585,7 +1553,7 @@ int _handle_chmod(const int client_socket, const struct sockaddr_in *client_addr
 	return 0;
 }
 
-int _handle_chown(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_chown(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -1637,7 +1605,7 @@ int _handle_chown(const int client_socket, const struct sockaddr_in *client_addr
 	return 0;
 }
 
-int _handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int _handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)

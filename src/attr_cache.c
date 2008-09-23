@@ -19,12 +19,12 @@ static void *cache = NULL;
 static unsigned cache_ttl = ATTR_CACHE_TTL; /* secs */
 static time_t last_time_checked = (time_t)0;
 
-int any_node(const void *s1, const void *s2)
+static int any_node(const void *s1, const void *s2)
 {
 	return 0; /* equal */
 }
 
-int compare_path(const void *s1, const void *s2)
+static int compare_path(const void *s1, const void *s2)
 {
 	return strcmp(((struct tree_item *)s1)->path, ((struct tree_item *)s2)->path);
 }
@@ -40,7 +40,7 @@ unsigned char cache_is_old()
 	return 0;
 }
 
-int compare_time(const void *s1, const void *s2)
+static int compare_time(const void *s1, const void *s2)
 {
 	return ((struct tree_item *)s1)->time > (((struct tree_item *)s2)->time + cache_ttl)
 	? 0
@@ -122,7 +122,7 @@ struct tree_item* get_cache(const char *path)
 	return NULL;
 }
 
-void release_cache(const void *nodep, const VISIT which, const int depth)
+static void release_cache(const void *nodep, const VISIT which, const int depth)
 {
 	if (which == endorder 
 	|| which == leaf)

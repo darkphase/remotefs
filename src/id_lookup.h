@@ -23,10 +23,10 @@ int put_to_gids(const char *name, const gid_t gid);
 gid_t get_gid(const char *name);
 const char* get_gid_name(gid_t gid);
 
-int create_uids_lookup();
-int create_gids_lookup();
-void destroy_uids_lookup();
-void destroy_gids_lookup();
+int create_uids_lookup(void);
+int create_gids_lookup(void);
+void destroy_uids_lookup(void);
+void destroy_gids_lookup(void);
 
 uid_t lookup_user(const char *name);
 /** will try to default group to name looked up in users if name not found in groups */

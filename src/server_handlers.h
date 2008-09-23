@@ -18,6 +18,9 @@ extern "C" {
 struct sockaddr_in;
 struct command;
 
+extern char *auth_user;
+extern char *auth_passwd;
+
 int handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);

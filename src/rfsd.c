@@ -42,8 +42,6 @@ See the file LICENSE.
 static int g_client_socket = -1;
 static int g_listen_socket = -1;
 unsigned char directory_mounted = 0;
-extern char *auth_user;
-extern char *auth_passwd;
 
 static struct list *open_files = NULL;
 struct rfs_export *mounted_export = NULL;
@@ -51,7 +49,7 @@ struct rfs_export *mounted_export = NULL;
 struct rfsd_config rfsd_config;
 
 static int daemonize = 1;
-void init_config()
+static void init_config()
 {
 #ifndef WITH_IPV6
 	rfsd_config.listen_address = "0.0.0.0";
@@ -68,7 +66,7 @@ void init_config()
 #endif /* RFS_DEBUG */
 }
 
-int create_pidfile(const char *pidfile)
+static int create_pidfile(const char *pidfile)
 {
 	FILE *fp = fopen(pidfile, "wt");
 	if (fp == NULL)
@@ -76,7 +74,7 @@ int create_pidfile(const char *pidfile)
 		return -1;
 	}
 	
-	if (fprintf(fp, "%u", getpid()) < 1)
+	if (fprintf(fp, "%d", getpid()) < 1)
 	{
 		fclose(fp);
 		return -1;
@@ -87,7 +85,7 @@ int create_pidfile(const char *pidfile)
 	return 0;
 }
 
-struct list* check_file_in_open_list(int file)
+static struct list* check_file_in_open_list(int file)
 {
 	struct list *item = open_files;
 	while (item != NULL)
@@ -200,7 +198,7 @@ void server_close_connection(int socket)
 	destroy_gids_lookup();
 }
 
-int _reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
+static int _reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
 	struct answer ans = { cmd->command, 0, -1, ret_errno };
 	
@@ -223,7 +221,7 @@ int reject_request_with_cleanup(const int client_socket, const struct command *c
 	return _reject_request(client_socket, cmd, ret_errno, 1);
 }
 
-int handle_command(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
+static int handle_command(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	if (cmd->command <= cmd_first
 	|| cmd->command >= cmd_last)
@@ -337,9 +335,9 @@ int handle_command(const int client_socket, const struct sockaddr_in *client_add
 }
 
 #ifndef WITH_IPV6
-int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
+static int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
 #else
-int handle_connection(int client_socket, const struct sockaddr_storage *client_addr)
+static int handle_connection(int client_socket, const struct sockaddr_storage *client_addr)
 #endif
 {
 	g_client_socket = client_socket;
@@ -397,7 +395,7 @@ int handle_connection(int client_socket, const struct sockaddr_storage *client_a
 	}
 }
 
-int start_server(const char *address, const unsigned port)
+static int start_server(const char *address, const unsigned port)
 {
 	install_signal_handlers_server();
 
@@ -601,7 +599,7 @@ void check_keep_alive()
 	alarm(keep_alive_period());
 }
 
-void usage(const char *app_name)
+static void usage(const char *app_name)
 {
 	printf("usage: %s [options]\n"
 	"\n"
@@ -616,7 +614,7 @@ void usage(const char *app_name)
 	, app_name);
 }
 
-int parse_opts(int argc, char **argv)
+static int parse_opts(int argc, char **argv)
 {
 	int opt;
 	while ((opt = getopt(argc, argv, "ha:p:u:g:r:f")) != -1)

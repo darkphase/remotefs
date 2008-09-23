@@ -16,24 +16,24 @@ extern "C" {
 #endif
 
 /** get period of keep alive packets sending */
-unsigned keep_alive_period();
+unsigned keep_alive_period(void);
 
 /** init keep alive data */
-int keep_alive_init();
+int keep_alive_init(void);
 
 /** destroy any previously allocated data for keep alive
 @see keep_alive_init
 */
-int keep_alive_destroy();
+int keep_alive_destroy(void);
 
 /** try lock keep alive mutex */
-int keep_alive_trylock();
+int keep_alive_trylock(void);
 
 /** lock keep alive mutex. will block process until lock is successful */
-int keep_alive_lock();
+int keep_alive_lock(void);
 
 /** unlock keep alive mutex */
-int keep_alive_unlock();
+int keep_alive_unlock(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

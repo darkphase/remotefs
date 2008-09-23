@@ -15,7 +15,13 @@ SUB=$(@F:%.o=%.c)
 ################################
 # OS / CC specifics flags
 ################################
-CFLAGS_O     = -I./src -DFREEBSD -DEBADE=EINVAL -DEREMOTEIO=ECANCELED -DNAME_MAX=255 
+CFLAGS_G     = -Wall -Werror
+CFLAGS_O     = -I./src \
+               -I/usr/local/include \
+               -DFREEBSD \
+               -DEBADE=EINVAL \
+               -DEREMOTEIO=ECANCELED \
+               -DNAME_MAX=255 
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3
 
@@ -23,8 +29,9 @@ CFLAGS_OPT   = -O3
 # Flags needed for Fuse
 ###############################
 
-CFLAGS_FUSE  = -I/usr/include/fuse -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=25
-LDFLAGS_FUSE = -lfuse
+CFLAGS_FUSE  = `pkg-config --cflags fuse`
+               -DFUSE_USE_VERSION=25
+LDFLAGS_FUSE = `pkg-config --libs fuse`
 
 ###############################
 # Flags for linking

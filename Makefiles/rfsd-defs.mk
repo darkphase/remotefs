@@ -35,4 +35,3 @@ rfsd_OBJS = src/rfsd.o \
 	src/path.o \
 	src/id_lookup.o \
 	src/read_cache.o
-	

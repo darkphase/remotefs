@@ -23,14 +23,14 @@ struct utimebuf;
 
 struct fuse_operations rfs_operations;
 
-void* rfs_init();
+void* rfs_init(void);
 void rfs_destroy(void *rfs_init_result);
 int rfs_reconnect(int show_errors);
 
 int rfs_mount(const char *path);
 int rfs_auth(const char *user, const char *passwd);
-int rfs_request_salt();
-int rfs_keep_alive();
+int rfs_request_salt(void);
+int rfs_keep_alive(void);
 int rfs_getexportopts(enum rfs_export_opts *opts);
 
 /** This function is called to get the attributes of a specific file.

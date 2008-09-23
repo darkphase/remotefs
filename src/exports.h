@@ -32,10 +32,10 @@ struct rfs_export
 /** parse exports files. data will be stored in static variable
 @see exports.c 
 */
-unsigned parse_exports();
+unsigned parse_exports(void);
 
 /** delete parsed exports info and free memory allocated for exports */
-void release_exports();
+void release_exports(void);
 
 /** get export info by path */
 const struct rfs_export* get_export(const char *path);
@@ -44,7 +44,7 @@ const struct rfs_export* get_export(const char *path);
 unsigned is_ipaddr(const char *string);
 
 /** write exports to output. debug only */
-void dump_exports();
+extern void dump_exports(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

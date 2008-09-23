@@ -54,14 +54,16 @@ int rfs_connect(const char *ip, const unsigned port)
 	struct timeval to = { 3, 0 };
 	int ret;
 	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
-#if RFS_DEBUG
+#ifdef WITH_SND_RCV_TIMEOUTS
+#	ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_RCVTIMEO");
-#endif
+#	endif
 	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
-#if RFS_DEBUG
+#	ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_SNSTIMEO");
+#	endif
 #endif
 	
 	errno = 0;
@@ -125,14 +127,16 @@ int rfs_connect(const char *ip, const unsigned port)
 	struct timeval to = { 3, 0 };
 	int ret;
 	ret=setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &to,  sizeof(to));
-#if RFS_DEBUG
+#ifdef WITH_SND_RCV_TIMEOUTS
+#	ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_RCVTIMEO");
-#endif
+#	endif
 	ret=setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &to,  sizeof(to));
-#if RFS_DEBUG
+#	ifdef RFS_DEBUG
 	if ( ret )
 		perror("setsockopt SO_SNSTIMEO");
+#	endif
 #endif
 
 	if (connect(sock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == -1)
@@ -166,7 +170,7 @@ size_t rfs_send_cmd(const int sock, const struct command *cmd)
 
 size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *data, const size_t data_len)
 {
-	size_t size_sent = 0;
+	ssize_t size_sent = 0;
 	struct iovec iov[2];
 	struct command send_command = { 0 };
 	send_command.command = htonl(cmd->command);
@@ -220,7 +224,7 @@ size_t rfs_send_answer(const int sock, const struct answer *ans)
 
 size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void *data, const size_t data_len)
 {
-	size_t size_sent = 0;
+	ssize_t size_sent = 0;
 	struct iovec iov[2];
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);

@@ -16,7 +16,8 @@ extern "C" {
 #endif
 
 /** install handlers for signals handled by client */
-void install_signal_handlers_client();
+void install_signal_handlers_client(void);
+void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -20,6 +20,7 @@ See the file LICENSE.
 #include "exports.h"
 #include "buffer.h"
 #include "list.h"
+#include "rfsd.h"
 
 #ifdef RFS_DEBUG
 static const char *exports_file = "./rfs-exports";
@@ -28,14 +29,13 @@ static const char *exports_file = "/etc/rfs-exports";
 #endif /* RFS_DEBUG */
 static struct list *exports = NULL;
 
-void release_export(struct rfs_export *single_export);
-extern struct rfsd_config rfsd_config;
+static void release_export(struct rfs_export *single_export);
 
 #ifdef RFS_DEBUG
 void dump_export(const struct rfs_export *single_export);
 #endif /* RFS_DEBUG */
 
-const char* trim_left(const char *buffer, unsigned size)
+static const char* trim_left(const char *buffer, unsigned size)
 {
 	const char *local_buffer = buffer;
 	unsigned skipped = 0;
@@ -54,7 +54,7 @@ const char* trim_left(const char *buffer, unsigned size)
 	return local_buffer;
 }
 
-const char* trim_right(const char *buffer, unsigned size)
+static const char* trim_right(const char *buffer, unsigned size)
 {
 	const char *local_buffer = buffer;
 	unsigned skipped = 0;
@@ -74,7 +74,7 @@ const char* trim_right(const char *buffer, unsigned size)
 	return local_buffer + 1;
 }
 
-const char* find_chr(const char *buffer, const char *border, const char *symbols)
+static const char* find_chr(const char *buffer, const char *border, const char *symbols)
 {
 	const char *min_ptr = NULL;
 	int i = 0; for (i = 0; i < strlen(symbols); ++i)
@@ -117,7 +117,7 @@ unsigned is_ipaddr(const char *string)
 #endif
 }
 
-int set_export_opts(struct rfs_export *opts_export, const struct list const *opts)
+static int set_export_opts(struct rfs_export *opts_export, const struct list *opts)
 {
 	const struct list *opt = opts;
 	while (opt)
@@ -185,7 +185,7 @@ int set_export_opts(struct rfs_export *opts_export, const struct list const *opt
 	return 0;
 }
 
-struct list* parse_list(const char *buffer, const char *border)
+static struct list* parse_list(const char *buffer, const char *border)
 {
 	struct list *ret = NULL;
 	
@@ -235,7 +235,7 @@ struct list* parse_list(const char *buffer, const char *border)
 	return ret;
 }
 
-char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_export *line_export)
+static char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_export *line_export)
 {
 	const char *local_buffer = buffer + start_from;
 	char *next_line = strchr(local_buffer, '\n');
@@ -332,7 +332,7 @@ char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_e
 	return next_line == NULL ? NULL : next_line + 1;
 }
 
-int validate_export(const struct rfs_export *line_export)
+static int validate_export(const struct rfs_export *line_export)
 {
 	if ((line_export->options & opt_ugo) != 0)
 	{
@@ -458,7 +458,7 @@ unsigned parse_exports()
 	return 0;
 }
 
-void release_export(struct rfs_export *single_export)
+static void release_export(struct rfs_export *single_export)
 {
 	free_buffer(single_export->path);
 	destroy_list(single_export->users);
@@ -495,9 +495,9 @@ const struct rfs_export* get_export(const char *path)
 	return NULL;
 }
 
-void dump_export(const struct rfs_export *single_export)
-{
 #ifdef RFS_DEBUG
+static void dump_export(const struct rfs_export *single_export)
+{
 	DEBUG("%s", "dumping export:\n");
 	DEBUG("path: '%s'\n", single_export->path);
 
@@ -517,8 +517,8 @@ void dump_export(const struct rfs_export *single_export)
 
 	DEBUG("options: %d\n", single_export->options);
 	DEBUG("export uid: %d\n", single_export->export_uid);
-#endif /* RFS_DEBUG */
 }
+#endif /* RFS_DEBUG */
 
 void dump_exports()
 {

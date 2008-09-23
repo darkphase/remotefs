@@ -18,24 +18,24 @@ extern "C" {
 /** check if connection is should be closed during lack of activity 
 (no operations and no keep alive packets) 
 */
-int keep_alive_expired();
+int keep_alive_expired(void);
 
 /** update last keep alive time with current time() value */
-void update_keep_alive();
+void update_keep_alive(void);
 
 /** check if process is in the middle of an operation */
-int keep_alive_locked();
+int keep_alive_locked(void);
 
 /** lock keep alive. not needed actually since it is implemented with SIGALRM.
 for future use
 */
-int keep_alive_lock();
+int keep_alive_lock(void);
 
 /** unlock keep alive */
-int keep_alive_unlock();
+int keep_alive_unlock(void);
 
 /** get keep alive checking period */
-unsigned keep_alive_period();
+unsigned keep_alive_period(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -54,18 +54,18 @@ runtests:
 #############################
 
 clean:
-	if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
-	if ls *.deb >/dev/null 2>&1; then $(RM) -f *.deb; fi
-	if [ -f rfs ]; then $(RM) -f rfs; fi
-	if [ -f rfsd ]; then $(RM) -f rfsd; fi
-	if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
+	@if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
+	@if ls *.deb >/dev/null 2>&1; then $(RM) -f *.deb; fi
+	@if [ -f rfs ]; then $(RM) -f rfs; fi
+	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
+	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
 
 #############################
 # Rebuild dependency file
 #############################
 depends:
-	grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
-	ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
+	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
+	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
 
 #######################################
 # Rules for packaging, ...

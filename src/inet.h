@@ -11,7 +11,9 @@ See the file LICENSE.
 
 /** htonll() support */
 
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
+#include <netinet/in.h>
+
 #if defined SOLARIS
 #	include <sys/byteorder.h>
 #elif defined FREEBSD
@@ -49,5 +51,4 @@ extern "C" {
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
-
 #endif /* INET_H */

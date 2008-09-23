@@ -26,13 +26,13 @@ struct auth_entry
 enum operations { OP_CHANGE = 0, OP_DEFAULT = OP_CHANGE, OP_DELETE, OP_HELP, OP_LOCK, OP_UNLOCK, OP_MAX };
 
 /** load records from passwd db */
-int load_passwords();
+int load_passwords(void);
 
 /** save in-memory records to db */
-int save_passwords();
+int save_passwords(void);
 
 /** free allocated memory */
-void release_passwords();
+void release_passwords(void);
 
 /** add or replace user with specified name */
 int add_or_replace_auth(const char *user, const char *passwd);
@@ -47,7 +47,7 @@ const char *get_auth_password(const char *user);
 int delete_auth(const char *user);
 
 /** write db to output. debug only */
-void dump_passwords();
+void dump_passwords(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

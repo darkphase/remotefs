@@ -18,9 +18,7 @@ See the file LICENSE.
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
-#ifdef FREEBSD
-#	include <sys/socket.h>
-#endif
+#include <sys/socket.h>
 
 #include "config.h"
 #include "operations.h"
@@ -36,9 +34,6 @@ See the file LICENSE.
 #include "crypt.h"
 #include "id_lookup.h"
 #include "path.h"
-
-extern int g_server_socket;
-extern struct rfs_config rfs_config;
 
 static const unsigned cache_ttl = 60 * 5; /* seconds */
 static pthread_t keep_alive_thread = 0;
@@ -70,11 +65,11 @@ struct fuse_operations rfs_operations = {
 	.chown		= rfs_chown,
 };
 
-int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
-int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
-int _rfs_flush(const char *path, struct fuse_file_info *fi);
+static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
+static int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
+static int _rfs_flush(const char *path, struct fuse_file_info *fi);
 
-int check_connection()
+static int check_connection()
 {
 	if (rfs_is_connection_lost() == 0)
 	{
@@ -96,7 +91,7 @@ int check_connection()
 	return -1;
 }
 
-void* maintenance(void *ignored)
+static void* maintenance(void *ignored)
 {
 	unsigned keep_alive_slept = 0;
 	unsigned attr_cache_slept = 0;
@@ -410,7 +405,7 @@ int rfs_getexportopts(enum rfs_export_opts *opts)
 	
 	if (ans.ret >= 0)
 	{
-		*opts = (unsigned)ans.ret;
+		*opts = (enum rfs_export_opts)ans.ret;
 		
 		DEBUG("export options: %d\n", *opts);
 	}
@@ -418,7 +413,7 @@ int rfs_getexportopts(enum rfs_export_opts *opts)
 	return ans.ret >= 0 ? 0 : -ans.ret_errno;
 }
 
-int _rfs_getattr(const char *path, struct stat *stbuf)
+static int _rfs_getattr(const char *path, struct stat *stbuf)
 {
 	if (g_server_socket == -1)
 	{
@@ -550,7 +545,7 @@ int _rfs_getattr(const char *path, struct stat *stbuf)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -748,7 +743,7 @@ int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_
 	return 0;
 }
 
-int _rfs_open(const char *path, struct fuse_file_info *fi)
+static int _rfs_open(const char *path, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -824,7 +819,7 @@ int _rfs_open(const char *path, struct fuse_file_info *fi)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_release(const char *path, struct fuse_file_info *fi)
+static int _rfs_release(const char *path, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -871,7 +866,7 @@ int _rfs_release(const char *path, struct fuse_file_info *fi)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_truncate(const char *path, off_t offset)
+static int _rfs_truncate(const char *path, off_t offset)
 {
 	if (g_server_socket == -1)
 	{
@@ -914,7 +909,7 @@ int _rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
 	size_t cached_size = read_cache_have_data(fi->fh, offset);
@@ -997,7 +992,7 @@ int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, str
 	}
 }
 
-int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -1058,7 +1053,7 @@ int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fus
 	return ans.data_len;
 }
 
-int _rfs_flush(const char *path, struct fuse_file_info *fi)
+static int _rfs_flush(const char *path, struct fuse_file_info *fi)
 {
 	if (rfs_config.use_read_cache != 0
 	&& read_cache_size(fi->fh) > 0)
@@ -1101,7 +1096,7 @@ int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	return ret == fsize ? 0 : ret;
 }
 
-int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (is_fit_to_write_cache(fi->fh, size, offset))
 	{
@@ -1141,7 +1136,7 @@ int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offs
 	}
 }
 
-int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	if (g_server_socket == -1)
 	{
@@ -1196,7 +1191,7 @@ int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, str
 	return ans.ret == -1 ? -ans.ret_errno : (int)ans.ret;
 }
 
-int _rfs_mkdir(const char *path, mode_t mode)
+static int _rfs_mkdir(const char *path, mode_t mode)
 {
 	if (g_server_socket == -1)
 	{
@@ -1240,7 +1235,7 @@ int _rfs_mkdir(const char *path, mode_t mode)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_unlink(const char *path)
+static int _rfs_unlink(const char *path)
 {
 	if (g_server_socket == -1)
 	{
@@ -1275,7 +1270,7 @@ int _rfs_unlink(const char *path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_rmdir(const char *path)
+static int _rfs_rmdir(const char *path)
 {
 	if (g_server_socket == -1)
 	{
@@ -1310,7 +1305,7 @@ int _rfs_rmdir(const char *path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_rename(const char *path, const char *new_path)
+static int _rfs_rename(const char *path, const char *new_path)
 {
 	if (g_server_socket == -1)
 	{
@@ -1360,7 +1355,7 @@ int _rfs_rename(const char *path, const char *new_path)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_utime(const char *path, struct utimbuf *buf)
+static int _rfs_utime(const char *path, struct utimbuf *buf)
 {
 	if (g_server_socket == -1)
 	{
@@ -1370,7 +1365,7 @@ int _rfs_utime(const char *path, struct utimbuf *buf)
 	unsigned path_len = strlen(path) + 1;
 	uint32_t actime = 0;
 	uint32_t modtime = 0;
-	uint16_t is_null = (buf == 0 ? 1 : 0);
+	uint16_t is_null = (uint16_t)(buf == 0 ? (uint16_t)1 : (uint16_t)0);
 
 	if (buf != 0)
 	{
@@ -1413,7 +1408,7 @@ int _rfs_utime(const char *path, struct utimbuf *buf)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int _rfs_statfs(const char *path, struct statvfs *buf)
+static int _rfs_statfs(const char *path, struct statvfs *buf)
 {
 	if (g_server_socket == -1)
 	{
@@ -1492,7 +1487,7 @@ int _rfs_statfs(const char *path, struct statvfs *buf)
 	return ans.ret;
 }
 
-int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
+static int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	if (g_server_socket == -1)
 	{
@@ -1535,7 +1530,7 @@ int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
 
-int _rfs_chmod(const char *path, mode_t mode)
+static int _rfs_chmod(const char *path, mode_t mode)
 {
 	if ((export_opts & opt_ugo) == 0)
 	{
@@ -1583,7 +1578,7 @@ int _rfs_chmod(const char *path, mode_t mode)
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
 
-int _rfs_chown(const char *path, uid_t uid, gid_t gid)
+static int _rfs_chown(const char *path, uid_t uid, gid_t gid)
 {
 	if ((export_opts & opt_ugo) == 0)
 	{
