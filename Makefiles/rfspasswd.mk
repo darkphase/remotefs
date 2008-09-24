@@ -9,3 +9,9 @@ $(rfspasswd_OBJS):
 build: $(rfspasswd_OBJS)
 	@echo Link $(rfspasswd_TARGET)
 	@$(CC) -o $(rfspasswd_TARGET) $(rfspasswd_OBJS) $(rfspasswd_LDFLAGS)
+
+flags:
+	@echo Build rfspasswd
+	@echo CFLAGS = $(rfspasswd_CFLAGS)
+	@echo LDFLAGS = $(rfspasswd_LDFLAGS)
+	@echo

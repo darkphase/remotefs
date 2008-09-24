@@ -11,7 +11,12 @@ RM = rm
 # OS / CC specifics flags
 ################################
 
-CFLAGS_G     = -Wall  -Wno-unused-variable -Wno-abi -std=gnu89 -w1
+CFLAGS_G     = -Wall \
+               -Werror \
+               -Wno-unused-variable \
+               -Wno-abi \
+               -std=gnu89 \
+               -w1
 CFLAGS_O     = 
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3 -s

@@ -21,21 +21,23 @@ help:
 debug:
 	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
 
-release:
+all release:
 	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
 
-all:
-	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
-	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
-	fi
+#all:
+#	@echo
+#	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
+#		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
+#	else \
+#		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
+#	fi
 
 #######################################
 # Rules for compiling, ...
 #######################################
 
 rfs: dummy
+	@echo
 	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
 		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs; \
 	else \

@@ -31,17 +31,17 @@ include Makefiles/version.mk
 
 rfs: dummy
 	@echo
-	@$(MAKE) -f Makefiles/rfs.mk build
+	@$(MAKE) -f Makefiles/rfs.mk flags build
 	@echo
 
 rfsd: dummy
 	@echo
-	@$(MAKE) -f Makefiles/rfsd.mk build
+	@$(MAKE) -sf Makefiles/rfsd.mk flags build
 	@echo
 
 rfspasswd: dummy
 	@echo
-	@$(MAKE) -f Makefiles/rfspasswd.mk build
+	@$(MAKE) -sf Makefiles/rfspasswd.mk flags build
 	@echo
 
 runtests: 
