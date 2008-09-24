@@ -57,11 +57,21 @@ file system. Some of the fuse option may result in errors or decrease the
 prefomance of remotefs.
 
 
+.SS "Remmarks"
+\fBSolaris:\fP In order to mount your resource you must have these rights, see
+user_attr(4). This can be done by setting the "FUSE File System Management"
+rights with the user and group administrations tools,
+
+\fBFreeBSD:\fP Mounting of Fuse based file system is allowed if vfs.usermount is
+set to 1 via the sysctl command. This can be configured within the file
+/etc/sysctl.conf (add the line "vfs.usermount=1"). You can unmount your private
+mountpoint with the umount command.
+
 .SH "BUG"
 If the file /etc/passwd and /etc/group on the client and the server are not
 identical, the displayed name for unknown user and group will default to
 nobody (user name), nogroup or name of the promary group of the user on the
-client. Some files or directories will noz be accessed as suffested by the
+client. Some files or directories will not be accessed as suggested by the
 rights. 
 
 .SH "AUTHOR"
