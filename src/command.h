@@ -69,7 +69,7 @@ struct answer
 };
 
 /** get description of command. debug only */
-const char* describe_command(const enum server_commands cmd);
+const char* describe_command(const uint32_t cmd);
 
 /** write command to output. debug only */
 void dump_command(const struct command *cmd);

@@ -37,7 +37,7 @@ int rfs_is_connection_lost(void);
 void rfs_set_connection_restored(void);
 
 #ifdef RFS_DEBUG
-void dump_sendrecv_stats();
+void dump_sendrecv_stats(void);
 #endif
 
 extern int g_server_socket;
