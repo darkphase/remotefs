@@ -11,7 +11,8 @@ RM = rm
 # OS / CC specifics flags
 ################################
 # SunStudio V 11 !
-CFLAGS_O     = -D"bswap_64(x)=(long long)((long long)htonl(x)<<32)|((long long)htonl((x)>>32))"
+CFLAGS_O     =  $(DRF) \
+                -D"bswap_64(x)=(long long)((long long)htonl(x)<<32)|((long long)htonl((x)>>32))"
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3
 

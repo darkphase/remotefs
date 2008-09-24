@@ -19,9 +19,7 @@ CFLAGS_G     = -Wall -Werror
 CFLAGS_O     = -I./src \
                -I/usr/local/include \
                -DFREEBSD \
-               -DEBADE=EINVAL \
-               -DEREMOTEIO=ECANCELED \
-               -DNAME_MAX=255 
+               $(DRF)
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3
 

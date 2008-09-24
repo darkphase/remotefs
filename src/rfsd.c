@@ -39,6 +39,10 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "id_lookup.h"
 
+#if defined FREEBSD
+#	define EBADE EINVAL
+#endif
+
 static int g_client_socket = -1;
 static int g_listen_socket = -1;
 unsigned char directory_mounted = 0;

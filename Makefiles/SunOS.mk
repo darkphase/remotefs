@@ -12,10 +12,8 @@ RM = rm
 ################################
 
 CFLAGS_O      = -DSOLARIS \
-                -DO_ASYNC=0 \
                 -D_REENTRANT \
-                -DNAME_MAX=255 \
-                -DEREMOTEIO=ECANCELED
+                $(DRF)
 CFLAGS_OPT    = -O3
 CFLAGS_DBG    = -g
 

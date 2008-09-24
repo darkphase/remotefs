@@ -12,7 +12,7 @@ RM = rm
 ################################
 
 CFLAGS_G     = -Wall -Werror
-CFLAGS_O     =
+CFLAGS_O     = $(DRF)
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3 -s
 

@@ -45,6 +45,21 @@ See the file LICENSE.
 #include "read_cache.h"
 #include "id_lookup.h"
 
+/* some error number defined for Linux
+ * are not defined on other systems.
+ * replace them with the following;
+ */
+#if defined FREEBSD
+#	define EREMOTEIO ECANCELED
+#	define EBADE EINVAL
+#elif defined SOLARIS
+#	define EREMOTEIO ECANCELED
+#endif
+
+#if ! defined O_ASYNC
+#	define O_ASYNC 0
+#endif
+
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 
@@ -614,7 +629,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 		return reject_request(client_socket, cmd, EBADE) == 0 ? 1 : -1;
 	}
 	
-	if (path_len > NAME_MAX)
+	if (path_len > FILENAME_MAX)
 	{
 		free_buffer(buffer);
 		return reject_request(client_socket, cmd, EINVAL) == 0 ? 1 : -1;

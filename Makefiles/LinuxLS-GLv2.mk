@@ -28,7 +28,7 @@ RM = rm
 # OS / CC specifics flags
 ################################
 
-CFLAGS_O     =
+CFLAGS_O     = $(DRF)
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3 -s
 

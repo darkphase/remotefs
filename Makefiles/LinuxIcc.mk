@@ -17,7 +17,7 @@ CFLAGS_G     = -Wall \
                -Wno-abi \
                -std=gnu89 \
                -w1
-CFLAGS_O     = 
+CFLAGS_O     = $(DRF)
 CFLAGS_DBG   = -g
 CFLAGS_OPT   = -O3 -s
 
