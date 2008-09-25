@@ -14,6 +14,8 @@ See the file LICENSE.
 #include <stdio.h>
 #include <sys/types.h>
 
+#include "compat.h"
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif

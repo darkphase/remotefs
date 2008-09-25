@@ -45,21 +45,6 @@ See the file LICENSE.
 #include "read_cache.h"
 #include "id_lookup.h"
 
-/* some error number defined for Linux
- * are not defined on other systems.
- * replace them with the following;
- */
-#if defined FREEBSD
-#	define EREMOTEIO ECANCELED
-#	define EBADE EINVAL
-#elif defined SOLARIS
-#	define EREMOTEIO ECANCELED
-#endif
-
-#if ! defined O_ASYNC
-#	define O_ASYNC 0
-#endif
-
 char *auth_user = NULL;
 char *auth_passwd = NULL;
 

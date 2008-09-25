@@ -36,10 +36,6 @@ See the file LICENSE.
 #include "id_lookup.h"
 #include "path.h"
 
-#if ! defined O_ASYNC
-#	define O_ASYNC 0
-#endif
-
 static const unsigned cache_ttl = 60 * 5; /* seconds */
 static pthread_t keep_alive_thread = 0;
 static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
