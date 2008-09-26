@@ -1,47 +1,46 @@
 .TH "rfspasswd" "8" "0.10" "remotefs" "remotefs"
-
 .SH "NAME"
-
-rfspasswd \- create or modify the file /etc/rfs-passwd
-
-
+rfspasswd \- manage passwords for rfsd
 .SH "SYNOPSIS"
-
-\fBrfspasswd\fR [options] [LOGIN]
-
-
-.SH "DESCRIPTION"
-
-.TS
-l.
--d      delete the password for the named account
--h      display this help message and exit
--l      lock the named account
--u      unlock the named account
-.TE
-
-You need rpspasswd in order to create the password file needed by the
-servewr rfsd.
-
-Rfspasswd must be called with root privilege. If no name is given the
-the account name of the user is assumed to be created, modified or
-with the option -d deleted from the password file.
-
-.SH "AUTHOR"
-
+\fBrfspasswd\fR [\fIoptions\fR] [\fILOGIN\fR]
+.SH "OPTIONS"
+.PP
+\fB-d\fR
+.RS 8
+delete the password for the named account
+.RE
+.PP
+\fB-h\fR
+.RS 8
+display help message and exit
+.RE
+.PP
+\fB-l\fR
+.RS 8
+lock the named account
+.RE
+.PP
+\fB-u\fR
+.RS 8
+unlock the named account
+.RE
+.PP
+\fBMake note, that you do not need to create system users with the same login names 
+until you not using "ugo" option for any of rfsd exports.\fR
+.PP
+\fBrfspasswd\fR must be called with privileges to access \fI/etc/rfs-passwd\fR. If 
+no name is given then the current user is assumed to be modified.
+.SH "AUTHORS"
+.PP
 Aleksey Tulinov: aleksey_t@users.sourceforge.net
 .br
-with little contributions from
-.br
 Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
-
 .SH "REPORTING BUGS"
-See remotefs project on Sourceforge 
-
-.SH "COPYRIGHT"
-
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+.PP
 GNU General Public License (GPL) 
-
 .SH "SEE ALSO"
-
-rfs(1), remotefs(7), rfsd(8)
+.PP
+\fBrfs\fR(1), \fBrfsd\fR(8)
