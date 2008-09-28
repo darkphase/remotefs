@@ -27,7 +27,8 @@
 		
 		<a href="#howitworks">How it works</a><br/>
 		<a href="#usecases">Typical use cases</a><br/>
-		<a href="#howto">How-to</a>
+		<a href="#howto">How-to</a><br/>
+		<a href="#man">HTML MAN pages</a>
 		
 		<br/><br/>
 		
@@ -51,7 +52,7 @@
 		<br/><br/>
 		
 		But if you need something more complex, like transferring a home directory from a remote host, you may define users on a per-export basis. 
-		After an export is mounted on the local host, remotefs will lower its privileges to specified user and gain this user’s privileges on the remote host. 
+		After an export is mounted on the local host, remotefs will lower its privileges to specified user (and/or group) and gain this user’s privileges on the remote host. 
 		Since home directory usually has its user's permissions, you should not have any permission problems with this translation.
 		
 		<br/><br/>
@@ -65,7 +66,7 @@
 		For example: rfsd -h 10.0.0.1 -u rfs. 
 		Right after chroot(), rfsd will lower its priveleges to user rfs. 
 		Keep in mind that rfsd process will (possibly) lower its filesystem access privileges as well. 
-		Main rfsd still needs to be run as root to do chroot() properly.
+		Main rfsd process still needs to be run as root to do chroot() properly.
 		
 		<br/><br/>
 		
@@ -99,7 +100,7 @@
 		<br/><br/><code>
 		
 		# export alex's home to user authenticated as alexatwork<br/>
-		# with access permissions of *local* user alex<br/>
+		# with access permissions of <b>server's</b> user alex<br/>
 		/home/alex		alexatwork (user=alex) 
 		
 		</code><br/><br/>
@@ -135,7 +136,8 @@
 		
 		The file is NFS-like, except there is no subnet mask for ip-addresses. 
 		Export example: <code>/tmp 127.0.0.1, alex, 10.0.0.2 (ro)</code><br/>
-		"ro" (read-only) is actually the only supported option for the export.
+		"ro" means "read-only". You could specify other options to exports by separating them with comma, like "(ro, user=alex)". 
+		Please refer to examples in /etc/rfs-exports for more options and they description.
 		
 		<br/><br/>
 		
@@ -181,7 +183,16 @@
 		
 		You may also specify other FUSE option(s). 
 		See <code>rfs -h</code> for details. 
-		(Make note that -s options is always on and can not be turned off)
+		(Make note that -s FUSE option is always on and can not be turned off).
+		<a href="/rfs.1.html">rfs man page</a> has an info about FUSE options which may increase transfer rate or lead to errors.
+		
+		<br/><br/>
+		
+		<a name="man"><h3>HTML MAN pages</h3></a>
+		
+		<a href="/rfs.1.html"><b>rfs</b></a>(1), 
+		<a href="/rfsd.8.html"><b>rfsd</b></a>(8), 
+		<a href="/rfspasswd.8.html"><b>rfspasswd</b></a>(8)
 		
 		<br/><br/>
 		
