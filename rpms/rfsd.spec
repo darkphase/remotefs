@@ -1,7 +1,7 @@
 Name: rfsd
 Summary:A fast remote file system, server
 Version:0.10
-Release:2P
+Release:1
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net
 Group: System Environment/Daemons
@@ -31,6 +31,9 @@ cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
 cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
 cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
+gzip -c < man/rfsd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfsd.8.gz
+gzip -c < man/rfspasswd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfspasswd.8.gz
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -45,6 +48,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755, root,root) %{_prefix}/bin/rfsd
 %attr(755, root,root) %{_prefix}/bin/rfspasswd
 %attr(755, root,root) /etc/rc.d/init.d/rfsd
+%attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
+%attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
 
 %post
 CHKCONFIGPARM="--add rfsd"
@@ -59,5 +64,5 @@ fi
 # -------------------------    changelog    --------------------------------
 %changelog
 * Mon Aug 11 2008 Jean-Jacques Sarton <jjsarton@users.sourceforge.net>
-  [0.10-2P]
+  [0.10-1]
 - Original package
