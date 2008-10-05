@@ -1,17 +1,23 @@
-0.10 testing
+0.10
+
+[+] ipv6 support in SVN
+[+] Solaris and FreeBSD support
+[*] performance optimizations
 
 rfsd:
-|+] chmod/chown may be conditionally included (#define CHXXX)
-|+] optimizations for writing of files and for network protocol
-[+] privileges lowering per export (user=[username]) option
-[-] fixed exports parsing if there is no line break at the end of the export line
+[+] privileges lowering per export (user=[username],group=[groupname]) options
+[*] fixed exports parsing if there is no line break at the end of the export line
 [+] reload() support in init script
 [+] pidfile path setting with -r option
+[*] fixed not closed socket
+[*] fixed pid-file wrong deletion
+[+] UGO-model support ("ugo" option for export)
+[*] fixed bug with cache clearing
 
 rfs:
 |+] chmod/chown may be conditionally included
-|+] optimizations for network protocol
 [+] auto reconnect support
+[+] -q option - suppress warnings
 
 0.9
 
