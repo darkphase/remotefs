@@ -914,6 +914,7 @@ static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offs
 {
 	size_t size_to_read = size;
 	size_t cached_size = read_cache_have_data(fi->fh, offset);
+
 	if (cached_size >= size)
 	{
 		DEBUG("hit (%d)\n", cached_size);
@@ -999,8 +1000,7 @@ static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, str
 	{
 		return -EIO;
 	}
-
-	if (rfs_config.use_read_cache          /* read_cache_max_size()/2 because we don't really need to cache */
+	if (rfs_config.use_read_cache         &&1<0 /* read_cache_max_size()/2 because we don't really need to cache */
 	&& size < read_cache_max_size() / 2)   /* exactly the same data which we just read - it is most likely */
 	{                                      /* will not be requested again */
 		return _rfs_read_cached(path, buf, size, offset, fi);
@@ -1050,7 +1050,6 @@ static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, str
 			return -EIO;
 		}
 	}
-
 	return ans.data_len;
 }
 

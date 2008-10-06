@@ -17,7 +17,7 @@ rfsdeb:    Create the debian package for the client
 rfsddeb:   Create the debian package for the server
 rpm:       Create the rpm packages for redhat/fedora
 rpm-rfs:   Create the rpm rfs package for redhat/fedora
-rpm-rfsd:   Create the rpm rfsd package for redhat/fedora
+rpm-rfsd:  Create the rpm rfsd package for redhat/fedora
 
 Creating binaries with an alternative compiler:
 -----------------------------------------------
@@ -25,6 +25,9 @@ Creating binaries with an alternative compiler:
 The following with compile with the Sun Studio Compiler
 suite under Linux:
 make release ALT=SunGcc
+If you want to use the Intel Compiler, make sure that icc
+is within your PATH and call;
+make release ALT=Icc
 
 The following with cross compile for an arm processor:
 make release ALT=LS-GLv2

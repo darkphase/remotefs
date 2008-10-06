@@ -1628,8 +1628,11 @@ static int _handle_mknod(const int client_socket, const struct sockaddr_in *clie
 	}
 	
 	errno = 0;
+#if defined SOLARIS || defined FREEBSD
+	int ret = create(path, mode & 07777);
+#else
 	int ret = mknod(path, mode, S_IFREG);
-	
+#endif
 	struct answer ans = { cmd_mknod, 0, ret, errno };
 	
 	free_buffer(buffer);
