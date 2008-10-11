@@ -1048,12 +1048,13 @@ static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, str
 		return -EIO;
 	}
 
-	if (ans.command != cmd_read)
+	if (ans.command != cmd_read || ans.data_len > size)
 	{
+		rfs_ignore_incoming_data(g_server_socket, ans.data_len);
 		return -EIO;
 	}
 
-	if (ans.ret == -1 || ans.data_len > size)
+	if (ans.ret == -1)
 	{
 		return -ans.ret_errno;
 	}

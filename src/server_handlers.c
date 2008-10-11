@@ -605,7 +605,7 @@ static int _handle_readdir(const int client_socket, const struct sockaddr_in *cl
 		return -1;
 	}
 
-	char *path = buffer;
+char *path = buffer;
 	unsigned path_len = strlen(path) + 1;
 	
 	if (path_len != cmd->data_len)
@@ -914,29 +914,28 @@ static int read_as_always(const int client_socket, const struct command *cmd, ui
 		}
 		else
 		{
-			return 1;
+			return -errno;
 		}
 	}
 	
-	errno = 0;
-	size_t done = 0;
-	
+	ssize_t done = 0;
 	while (done < size)
 	{
 		unsigned current_block_size = (size - done >= RFS_READ_BLOCK) ? RFS_READ_BLOCK : size - done;
 		
 		DEBUG("done: %u, size: %u, block size: %u\n", done, size, current_block_size);
 		
-		size_t result = read(fd, buffer + done, current_block_size);
+		errno = 0;
+		ssize_t result = read(fd, buffer + done, current_block_size);
 		
-		if (result == (size_t)-1)
+		if (result == -1)
 		{
 			if (send_data != 0)
 			{
 				return reject_request(client_socket, cmd, errno) == 0 ? 1 : -1;
 			}
 			
-			return -1;
+			return -errno;
 		}
 		
 		done += result;
@@ -957,7 +956,7 @@ static int read_as_always(const int client_socket, const struct command *cmd, ui
 		}
 	}
 	
-	return (int)done;
+	return (send_data != 0 ? 0 : (int)done);
 }
 
 static int read_with_caching(const int client_socket, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
@@ -969,7 +968,7 @@ static int read_with_caching(const int client_socket, const struct command *cmd,
 	int ret = 0;
 	int need_to_free_buffer = 0;
 	
-	if (cached_size >= size)
+	if (size > 0 && cached_size >= size)
 	{
 		buffer = get_cache(handle, offset, size);
 		if (buffer == NULL && size > 0)
@@ -986,6 +985,12 @@ static int read_with_caching(const int client_socket, const struct command *cmd,
 		buffer = get_buffer(size);
 		need_to_free_buffer = 1;
 		ret = read_as_always(-1, NULL, handle, offset, size, buffer, 0);
+		
+		if (ret < 0)
+		{
+			free_buffer(buffer);
+			return reject_request(client_socket, cmd, -ret) == 0 ? 1 : -1;
+		}
 	}
 	
 	struct answer ans = { cmd_read, (uint32_t)ret, (int32_t)ret, errno };
@@ -1027,7 +1032,6 @@ static int read_with_caching(const int client_socket, const struct command *cmd,
 		}
 		else
 		{
-			DEBUG("new cache offset: %u, size: %d\n", (unsigned)new_offset, cached_ret);
 			update_read_cache_stats(handle, cached_ret, new_offset);
 		}
 	}

@@ -351,13 +351,9 @@ static int handle_connection(int client_socket, const struct sockaddr_storage *c
 	
 	while (1)
 	{	
-		int done = rfs_receive_cmd(client_socket, &current_command);
-		if( done == -1 && errno == EAGAIN )
-		{
-			/* timeout ignore it */
-			continue;
-		}
-		if (done == -1 || done == 0)
+		rfs_receive_cmd(client_socket, &current_command);
+		
+		if (rfs_is_connection_lost() != 0)
 		{
 #ifndef WITH_IPV6
 			DEBUG("connection to %s is lost\n", inet_ntoa(client_addr->sin_addr));

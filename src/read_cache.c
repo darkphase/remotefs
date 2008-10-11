@@ -64,10 +64,10 @@ const char* read_cache_get_data(uint64_t descriptor, size_t size, off_t offset)
 
 void update_read_cache_stats(uint64_t descriptor, size_t size, off_t offset)
 {
-	DEBUG("updating read cache stats: %llu, %u, %llu\n", descriptor, size, offset);
-	last_cached_desc = descriptor;
-	last_cached_size = size;
-	last_cached_offset = offset;
+	last_cached_desc = size > 0 ? descriptor : -1;
+	last_cached_size = size > 0 ? size : -1;
+	last_cached_offset = size > 0 ? offset : -1;
+	DEBUG("updated read cache stats: %llu, %u, %llu\n", last_cached_desc, last_cached_size, last_cached_offset);
 }
 
 void destroy_read_cache()
@@ -92,14 +92,24 @@ unsigned read_cache_is_for(uint64_t descriptor)
 
 char* read_cache_resize(size_t size)
 {
+	if (size == 0)
+	{
+		return cache;
+	}
+
 	if (last_cached_size != size)
 	{
-		DEBUG("%s\n", "need to resize cache");
+		DEBUG("need to resize cache to %u\n", size);
 		if (cache != NULL)
 		{
 			free_buffer(cache);
 			cache = NULL;
 		}
+		
+		/* break cache stats after resize
+		but don't touch descriptor and size because it may be used
+		to determine next cache size for cached file */
+		last_cached_offset = (off_t)-1;
 	}
 	
 	if (cache == NULL)
