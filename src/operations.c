@@ -910,11 +910,58 @@ static int _rfs_truncate(const char *path, off_t offset)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int prefetch(const char *path, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	size_t size_to_read = size;
-	size_t cached_size = read_cache_have_data(fi->fh, offset);
+	size_t cached_read_size = last_used_read_block(fi->fh);
+	
+	if (cached_read_size == 0)
+	{
+		cached_read_size = size_to_read;
+	}
+	
+	if (cached_read_size >= size_to_read
+	&& size_to_read < read_cache_max_size() / 2)
+	{
+		if (cached_read_size * 2 <= read_cache_max_size())
+		{
+			size_to_read = cached_read_size * 2;
+		}
+		else
+		{
+			size_to_read = read_cache_max_size();
+		}
+	}
+	else
+	{
+		return 0; /* caching is not possible/meaningful */
+	}
+	
+	unsigned old_val = rfs_config.use_read_cache;
+	rfs_config.use_read_cache = 0;
 
+	char *buffer = read_cache_resize(size_to_read);
+	
+	int ret = _rfs_read(path, buffer, size_to_read, offset + size, fi);
+	rfs_config.use_read_cache = old_val;
+
+	if (ret < 0)
+	{
+		destroy_read_cache();
+		update_read_cache_stats(-1, -1, -1);
+		return ret;
+	}
+	
+	update_read_cache_stats(fi->fh, ret, offset + size);
+	
+	return ret;
+}
+
+static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+{
+	size_t cached_size = read_cache_have_data(fi->fh, offset);
+	
+	int ret = 0;
 	if (cached_size >= size)
 	{
 		DEBUG("hit (%d)\n", cached_size);
@@ -927,71 +974,39 @@ static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offs
 		}
 		
 		memcpy(buf, cached_data, size);
+		ret = size;
+		
 		if (cached_size > size)
 		{
-			return size;
+			return ret; /* no prefetch needed */
 		}
-		/* else proceed with next caching operation */
+	}
+	else /* we're missed cache, so whatever, read as always and try
+	to prefetch next cache block more precisely */
+	{
+		unsigned old_val = rfs_config.use_read_cache;
+		rfs_config.use_read_cache = 0;
+		ret = _rfs_read(path, buf, size, offset, fi);
+		rfs_config.use_read_cache = old_val;
 		
-		DEBUG("%s\n", "need more cache");
-	}
-	else
-	{
-		cached_size = 0;
-	}
-
-	size_t cached_read_size = last_used_read_block(fi->fh);
-	
-	if (cached_read_size > 0)
-	{
-		if (cached_read_size >= size_to_read
-		&& size_to_read < read_cache_max_size() / 2)
+		if (ret < 0)
 		{
-			if (cached_read_size * 2 <= read_cache_max_size())
-			{
-				size_to_read = cached_read_size * 2;
-			}
-			else
-			{
-				size_to_read = read_cache_max_size();
-			}
-		}
-	}
-	else
-	{
-		if (size_to_read * 2 < read_cache_max_size())
-		{
-			size_to_read = size_to_read * 2;
+			/* no prefetch on error */
+			return ret;
 		}
 	}
 	
-	unsigned overall_size = size_to_read;
-	unsigned old_val = rfs_config.use_read_cache;
-	rfs_config.use_read_cache = 0;
-
-	char *buffer = read_cache_resize(overall_size);
+	/* if we're here, then we missed cache and already have requested data
+	or cache become empty after current read, but we still have requested data
 	
-	int ret = _rfs_read(path, buffer, overall_size, offset + cached_size, fi);
-	rfs_config.use_read_cache = old_val;
-
-	if (ret < 0)
-	{
-		destroy_read_cache();
-		update_read_cache_stats(-1, -1, -1);
-		return ret;
-	}
+	now we need to read-ahead some more cache */
 	
-	update_read_cache_stats(fi->fh, ret, offset + cached_size);
-
-	if (cached_size < size)
-	{
-		memcpy(buf, buffer, ret < size ? ret : size);
-		return ret == overall_size ? size : (ret >= size ? size : ret);
-	}
-	else
-	{
-		return size; /* data were copied earlier */
-	}
+	prefetch(path, size, offset, fi); /* this call is should to be placed in separate thread in 0.11 */
+	
+	/* we actualy ignoring prefetch return value because it has nothing
+	to do with current read operation, which is already completed */
+	
+	return ret;
 }
 
 static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
