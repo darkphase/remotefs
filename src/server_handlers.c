@@ -386,7 +386,6 @@ static int _handle_changepath(const int client_socket, const struct sockaddr_in 
 #else
 	const struct sockaddr_in6 *sa6 = (struct sockaddr_in6*)client_addr;
 	char straddr[INET6_ADDRSTRLEN];
-	char straddr4;
 	if (client_addr->sin_family == AF_INET)
 	{
 		inet_ntop(AF_INET, &client_addr->sin_addr, straddr,sizeof(straddr));
