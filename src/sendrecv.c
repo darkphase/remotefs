@@ -312,6 +312,31 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 	return (size_t)ret;
 }
 
+size_t rfs_send_cmd_data2(const int sock, const struct command *cmd, const void *data, const size_t data_len, const void *data2, const size_t data_len2)
+{
+	struct command send_command = { 0 };
+	send_command.command = htonl(cmd->command);
+	send_command.data_len = htonl(cmd->data_len);
+	
+	struct iovec iov[3] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&send_command;
+	iov[0].iov_len  = sizeof(send_command);
+	iov[1].iov_base = (void*)data;
+	iov[1].iov_len  = data_len;
+	iov[2].iov_base = (void*)data2;
+	iov[2].iov_len  = data_len2;
+	
+	DEBUG("%s", "sending "); dump_command(cmd);
+	ssize_t ret = rfs_writev(sock, iov, 3);
+	if (ret < 0)
+	{
+		return -1;
+	}
+	DEBUG("%s\n", "done");
+	
+	return (size_t)ret;
+}
+
 size_t rfs_send_answer(const int sock, const struct answer *ans)
 {
 	struct answer send_answer = { 0 };

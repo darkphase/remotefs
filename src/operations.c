@@ -1179,18 +1179,12 @@ static int _rfs_write(const char *path, const char *buf, size_t size, off_t offs
 	pack_64(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
 		)));
-
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, header_size) == -1)
+	
+	if (rfs_send_cmd_data2(g_server_socket, &cmd, buffer, header_size, get_write_cache_block(), size) == -1)
 	{
 		return -EIO;
 	}
-
 #undef header_size
-
-	if (rfs_send_data(g_server_socket, get_write_cache_block(), size) == -1)
-	{
-		return -EIO;
-	}
 
 	struct answer ans = { 0 };
 
