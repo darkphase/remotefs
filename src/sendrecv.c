@@ -228,8 +228,53 @@ static ssize_t rfs_writev(const int sock, struct iovec *iov, unsigned count)
 	return size_sent;
 }
 
+static ssize_t rfs_recv(const int sock, char *buffer, size_t size)
+{
+	ssize_t size_recv = 0;
+	while (size_recv < size)
+	{
+		errno = 0;
+		int done = recv(sock, buffer + size_recv, size - size_recv, 0);
+		if (done < 0)
+		{
+			if (errno == EAGAIN || errno == EINTR)
+			{
+				continue;
+			}
+			
+			DEBUG("connection lost in rfs_recv, size_recv: %u, %s\n", size_recv, strerror(errno));
+			connection_lost = 1;
+			return -errno;
+		}
+		
+		size_recv += (size_t)done;
+	}
+	
+#ifdef RFS_DEBUG
+	bytes_received += size_recv;
+	++receive_operations;
+#endif
+	
+	return (size_t)size_recv;
+}
+
 static ssize_t rfs_readv(const int sock, struct iovec *iov, unsigned count)
 {
+	if (count == 1)
+	{
+		return rfs_recv(sock, iov[0].iov_base, iov[0].iov_len);
+	}
+	
+	/* readv is somewhat strange 
+	it's receiving data by chunks of 1460 bytes (wtf?) and sometimes hangs
+	not sure if hanging isn't remotefs fault 
+	
+	but it's better to use rfs_recv for now, since we're not using
+	scatter input anyway. yet */
+
+	return -1;
+
+#if 0 /* see comment above before removing #if 0 */
 	size_t overall_size = 0;
 	int i = 0; for (i = 0; i < count; ++i)
 	{
@@ -266,6 +311,7 @@ static ssize_t rfs_readv(const int sock, struct iovec *iov, unsigned count)
 #endif
 	
 	return (size_t)size_recv;
+#endif /* #if 0 */
 }
 
 size_t rfs_send_cmd(const int sock, const struct command *cmd)
