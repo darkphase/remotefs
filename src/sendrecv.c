@@ -120,48 +120,91 @@ int rfs_connect(const char *ip, const unsigned port)
 	return sock;
 }
 
-size_t rfs_send_cmd(const int sock, const struct command *cmd)
+#ifdef RFS_DEBUG
+static void dump_iov(struct iovec *iov, unsigned count)
 {
-	struct command send_command = { 0 };
-	send_command.command = htonl(cmd->command);
-	send_command.data_len = htonl(cmd->data_len);
-	
-	DEBUG("%s", "sending "); dump_command(cmd);
-	size_t ret = rfs_send_data(sock, &send_command, sizeof(send_command));
-	if (ret != sizeof(*cmd) && ret == (size_t)-1)
+	DEBUG("dumping %u io vectors:\n", count);
+	unsigned i = 0; for (i = 0; i < count; ++i)
 	{
-		DEBUG("connection lost in rfs_send_cmd, ret: %d, %s\n", ret, strerror(errno));
-		connection_lost = 1;
-		return -1;
+		DEBUG("%u: base: %p, len: %u\n", i, iov[i].iov_base, iov[i].iov_len);
+	}
+}
+#endif
+
+static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
+{
+	size_t overall_size = 0;
+	
+	{
+	int i = 0; for (i = 0; i < count; ++i)
+	{
+		overall_size += iov[i].iov_len;
+	}
 	}
 	
-	DEBUG("%s\n", "done");
+	if (size_left == overall_size)
+	{
+		return count;
+	}
+	
+	size_t diff = overall_size - size_left;
+	
+#ifdef RFS_DEBUG
+	DEBUG("size left: %u, diff: %u\n", size_left, diff);
+	dump_iov(iov, count);
+#endif
+	
+	int ret = count;
+	int i = 0; for (i = 0; i < count; )
+	{
+		if (iov[i].iov_len <= diff)
+		{
+			diff -= iov[i].iov_len;
+			if (i < count)
+			{
+				iov[i].iov_len = iov[i + 1].iov_len;
+				iov[i].iov_base = iov[i + 1].iov_base;
+				--ret;
+			}
+			else
+			{
+				iov[i].iov_len = 0;
+				--ret;
+				break;
+			}
+		}
+		else if (iov[i].iov_len > diff)
+		{
+			iov[i].iov_base += diff;
+			iov[i].iov_len -= diff;
+			break;
+		}
+	}
+	
+#ifdef RFS_DEBUG
+	dump_iov(iov, ret);
+#endif
 	
 	return ret;
 }
 
-size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *data, const size_t data_len)
+static ssize_t rfs_writev(const int sock, struct iovec *iov, unsigned count)
 {
-	struct iovec iov[2];
-	struct command send_command = { 0 };
-	send_command.command = htonl(cmd->command);
-	send_command.data_len = htonl(cmd->data_len);
+	size_t overall_size = 0;
+	int i = 0; for (i = 0; i < count; ++i)
+	{
+		overall_size += iov[i].iov_len;
+	}
 	
-	iov[0].iov_base = (char*)&send_command;
-	iov[0].iov_len  = sizeof(send_command);
-	iov[1].iov_base = (void*)data;
-	iov[1].iov_len  = data_len;
-	size_t overall_size = iov[0].iov_len + iov[1].iov_len;
+	DEBUG("sending data: %u bytes\n", overall_size);
 	
-	DEBUG("%s", "sending "); dump_command(cmd);
-	DEBUG("sending data: %u bytes\n", data_len);
-
-	size_t size_sent = 0;
-
+	ssize_t size_sent = 0;
 	while (size_sent < overall_size)
 	{
+		count = fix_iov(iov, count, overall_size - size_sent);
+		
 		errno = 0;
-		int done = writev(sock, iov, 2);
+		int done = writev(sock, iov, count);
 		if (done < 0)
 		{
 			if (errno == EAGAIN || errno == EINTR)
@@ -169,15 +212,13 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 				continue;
 			}
 			
-			DEBUG("connection lost in rfs_send_cmd_data, size_sent: %u, %s\n", size_sent, strerror(errno));
+			DEBUG("connection lost in rfs_writev, size_sent: %u, %s\n", size_sent, strerror(errno));
 			connection_lost = 1;
-			return -1;
+			return -errno;
 		}
 		
 		size_sent += done;
 	}
-	
-	DEBUG("%s\n", "done");
 	
 #ifdef RFS_DEBUG
 	bytes_sent += size_sent;
@@ -185,6 +226,90 @@ size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *
 #endif
 	
 	return size_sent;
+}
+
+static ssize_t rfs_readv(const int sock, struct iovec *iov, unsigned count)
+{
+	size_t overall_size = 0;
+	int i = 0; for (i = 0; i < count; ++i)
+	{
+		overall_size += iov[i].iov_len;
+	}
+	
+	DEBUG("receiving data: %u bytes\n", overall_size);
+	
+	ssize_t size_recv = 0;
+	while (size_recv < overall_size)
+	{
+		count = fix_iov(iov, count, overall_size - size_recv);
+		
+		errno = 0;
+		int done = readv(sock, iov, count);
+		if (done < 0)
+		{
+			if (errno == EAGAIN || errno == EINTR)
+			{
+				continue;
+			}
+			
+			DEBUG("connection lost in rfs_readv, size_recv: %u, %s\n", size_recv, strerror(errno));
+			connection_lost = 1;
+			return -errno;
+		}
+		
+		size_recv += (size_t)done;
+	}
+	
+#ifdef RFS_DEBUG
+	bytes_received += size_recv;
+	++receive_operations;
+#endif
+	
+	return (size_t)size_recv;
+}
+
+size_t rfs_send_cmd(const int sock, const struct command *cmd)
+{
+	struct command send_command = { 0 };
+	send_command.command = htonl(cmd->command);
+	send_command.data_len = htonl(cmd->data_len);
+	
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&send_command;
+	iov[0].iov_len  = sizeof(send_command);
+	
+	DEBUG("%s", "sending "); dump_command(cmd);
+	ssize_t ret = rfs_writev(sock, iov, 1);
+	if (ret < 0)
+	{
+		return -1;
+	}
+	DEBUG("%s\n", "done");
+	
+	return (size_t)ret;
+}
+
+size_t rfs_send_cmd_data(const int sock, const struct command *cmd, const void *data, const size_t data_len)
+{
+	struct command send_command = { 0 };
+	send_command.command = htonl(cmd->command);
+	send_command.data_len = htonl(cmd->data_len);
+	
+	struct iovec iov[2] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&send_command;
+	iov[0].iov_len  = sizeof(send_command);
+	iov[1].iov_base = (void*)data;
+	iov[1].iov_len  = data_len;
+	
+	DEBUG("%s", "sending "); dump_command(cmd);
+	ssize_t ret = rfs_writev(sock, iov, 2);
+	if (ret < 0)
+	{
+		return -1;
+	}
+	DEBUG("%s\n", "done");
+	
+	return (size_t)ret;
 }
 
 size_t rfs_send_answer(const int sock, const struct answer *ans)
@@ -195,66 +320,44 @@ size_t rfs_send_answer(const int sock, const struct answer *ans)
 	send_answer.ret = htonl(ans->ret);
 	send_answer.ret_errno = htons(ans->ret_errno);
 	
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&send_answer;
+	iov[0].iov_len  = sizeof(send_answer);
+	
 	DEBUG("%s", "sending "); dump_answer(ans);
-	size_t ret = rfs_send_data(sock, &send_answer, sizeof(send_answer));
-	if (ret != sizeof(*ans) && ret == (size_t)-1)
+	ssize_t ret = rfs_writev(sock, iov, 1);
+	if (ret < 0)
 	{
-		DEBUG("connection lost in rfs_send_answer, ret: %u, %s\n", ret, strerror(errno));
-		connection_lost = 1;
 		return -1;
 	}
-	
 	DEBUG("%s\n", "done");
 	
-	return ret;
+	return (size_t)ret;
 }
 
 size_t rfs_send_answer_data(const int sock, const struct answer *ans, const void *data, const size_t data_len)
 {
-	struct iovec iov[2];
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);
 	send_answer.data_len = htonl(ans->data_len);
 	send_answer.ret = htonl(ans->ret);
 	send_answer.ret_errno = htons(ans->ret_errno);
 	
-	DEBUG("%s", "sending "); dump_answer(ans);
-	DEBUG("sending data: %u bytes\n", data_len);
+	struct iovec iov[2] = { { 0, 0 } };
 	iov[0].iov_base = (char*)&send_answer;
 	iov[0].iov_len  = sizeof(send_answer);
 	iov[1].iov_base = (void*)data;
 	iov[1].iov_len  = data_len;
 	
-	size_t overall_size = iov[0].iov_len + iov[1].iov_len;
-
-	size_t size_sent = 0;
-	while (size_sent < overall_size)
+	DEBUG("%s", "sending "); dump_answer(ans);
+	ssize_t ret = rfs_writev(sock, iov, 2);
+	if (ret < 0)
 	{
-		errno = 0;
-		int done = writev(sock, iov, 2);
-		if (done < 0)
-		{
-			if (errno == EAGAIN || errno == EINTR)
-			{
-				continue;
-			}
-			
-			DEBUG("connection lost in rfs_send_answer_data, size_sent: %u, %s\n", size_sent, strerror(errno));
-			connection_lost = 1;
-			return -1;
-		}
-		
-		size_sent += done;
+		return -1;
 	}
-	
 	DEBUG("%s\n", "done");
 	
-#ifdef RFS_DEBUG
-	bytes_sent += size_sent;
-	++send_operations;
-#endif
-	
-	return size_sent;
+	return (size_t)ret;
 }
 
 size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
@@ -263,85 +366,65 @@ size_t rfs_send_data(const int sock, const void *data, const size_t data_len)
 	{
 		return 0;
 	}
-
-	DEBUG("sending data: %u bytes\n", data_len);
-	size_t size_sent = 0;
 	
-	while (size_sent < data_len)
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)data;
+	iov[0].iov_len  = data_len;
+
+	ssize_t ret = rfs_writev(sock, iov, 1);
+	if (ret < 0)
 	{
-		errno=0;
-		int done = send(sock, (const char *)data + size_sent, data_len - size_sent, 0);
-		if (done < 1)
-		{
-			if (errno == EAGAIN || errno == EINTR)
-			{
-				continue;
-			}
-			
-			DEBUG("connection lost in rfs_send_data, done: %d, %s\n", done, strerror(errno));
-			connection_lost = 1;
-			return -1;
-		}
-		size_sent += (size_t)done;
+		return -1;
 	}
-
-#ifdef RFS_DEBUG
-	bytes_sent += size_sent;
-	++send_operations;
-#endif
 	
-	DEBUG("%s\n", "done");
-	
-	return size_sent;
+	return (size_t)ret;
 }
 
 size_t rfs_receive_answer(const int sock, struct answer *ans)
 {
-	DEBUG("%s\n", "receiving answer");
-	
 	struct answer recv_answer = { 0 };
-
-	size_t ret = rfs_receive_data(sock, &recv_answer, sizeof(recv_answer));
-	if (ret == sizeof(*ans))
-	{
-		ans->command = ntohl(recv_answer.command);
-		ans->data_len = ntohl(recv_answer.data_len);
-		ans->ret = ntohl(recv_answer.ret);
-		ans->ret_errno = ntohs(recv_answer.ret_errno);
-		DEBUG("%s", "received "); dump_answer(ans);
-	}
 	
-	if (ret == (size_t)-1)
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&recv_answer;
+	iov[0].iov_len  = sizeof(recv_answer);
+
+	DEBUG("%s\n", "receiving answer");
+	ssize_t ret = rfs_readv(sock, iov, 1);
+	if (ret < 0)
 	{
-		connection_lost = 1;
 		return -1;
 	}
+
+	ans->command = ntohl(recv_answer.command);
+	ans->data_len = ntohl(recv_answer.data_len);
+	ans->ret = ntohl(recv_answer.ret);
+	ans->ret_errno = ntohs(recv_answer.ret_errno);
+	DEBUG("%s", "received "); dump_answer(ans);
 	
-	return (ret != sizeof(*ans) ? -1 : ret);
+	return (size_t)ret;
 }
 
 size_t rfs_receive_cmd(const int sock, struct command *cmd)
 {
-	DEBUG("%s\n", "receiving command");
-
 	struct command recv_command = { 0 };
 	
-	size_t ret = rfs_receive_data(sock, &recv_command, sizeof(recv_command));
-	if (ret == sizeof(*cmd))
-	{
-		cmd->command = ntohl(recv_command.command);
-		cmd->data_len = ntohl(recv_command.data_len);
-		DEBUG("%s", "received "); dump_command(cmd);
-	}
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&recv_command;
+	iov[0].iov_len  = sizeof(recv_command);
 	
-	if (ret == (size_t)-1)
+	DEBUG("%s\n", "receiving command");
+	ssize_t ret = rfs_readv(sock, iov, 1);
+	if (ret < 0)
 	{
-		DEBUG("connection lost in rfs_receive_cmd, ret: %u, %s\n", ret, strerror(errno));
-		connection_lost = 1;
 		return -1;
 	}
 	
-	return (ret != sizeof(*cmd) ? -1 : ret);
+	cmd->command = ntohl(recv_command.command);
+	cmd->data_len = ntohl(recv_command.data_len);
+	
+	DEBUG("%s", "received "); dump_command(cmd);
+	
+	return (size_t)ret;
 }
 
 size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
@@ -350,36 +433,18 @@ size_t rfs_receive_data(const int sock, void *data, const size_t data_len)
 	{
 		return 0;
 	}
+	
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = (char*)data;
+	iov[0].iov_len  = data_len;
 
-	DEBUG("receiving %d bytes\n", data_len);
-
-	size_t size_received = 0;
-	while (size_received < data_len)
+	ssize_t ret = rfs_readv(sock, iov, 1);
+	if (ret < 0)
 	{
-		errno=0;
-		int done = recv(sock, (char *)data + size_received, data_len - size_received, 0);
-		if (done < 1)
-		{
-			if (errno == EAGAIN || errno == EINTR)
-			{
-				continue;
-			}
-			
-			DEBUG("connection lost in rfs_receive_data, done: %d, %s\n", done, strerror(errno));
-			connection_lost = 1;
-			return -1;
-		}
-		size_received += (size_t)done;
+		return -1;
 	}
 	
-#ifdef RFS_DEBUG
-	bytes_received += size_received;
-	++receive_operations;
-#endif
-
-	DEBUG("%s\n", "done");
-
-	return size_received;
+	return (size_t)ret;
 }
 
 size_t rfs_ignore_incoming_data(const int sock, const size_t data_len)
@@ -387,22 +452,20 @@ size_t rfs_ignore_incoming_data(const int sock, const size_t data_len)
 	size_t size_ignored = 0;
 	char buffer[4096] = { 0 };
 	
+	struct iovec iov[1] = { { 0, 0 } };
+	iov[0].iov_base = buffer;
+	
 	while (size_ignored < data_len)
 	{
-		errno = 0;
-		int done = recv(sock, buffer, data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored, 0);
-		if (done < 1)
+		iov[0].iov_len = (data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored);
+		
+		ssize_t ret = rfs_readv(sock, iov, 1);
+		if (ret < 1)
 		{
-			if (errno == EAGAIN || errno == EINTR)
-			{
-				continue;
-			}
-			
-			DEBUG("connection lost in rfs_ignore_incoming_data, done: %d, %s\n", done, strerror(errno));
-			connection_lost = 1;
 			return -1;
 		}
-		size_ignored += (size_t)done;
+		
+		size_ignored += (size_t)ret;
 	}
 	
 	return size_ignored;
