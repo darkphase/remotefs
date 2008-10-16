@@ -812,7 +812,7 @@ static int _rfs_open(const char *path, struct fuse_file_info *fi)
 		fi->fh = ntohll(handle);
 	}
 
-	if (ans.ret != -1)
+	if (ans.ret == -1)
 	{
 		delete_from_cache(path);
 	}
