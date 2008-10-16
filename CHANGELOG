@@ -5,17 +5,17 @@
 [*] performance optimizations
 
 rfsd:
-[+] privileges lowering per export (user=[username],group=[groupname]) options
-[*] fixed exports parsing if there is no line break at the end of the export line
+[+] options to customize per export privileges (user=[username],group=[groupname])
+[*] fixed exports parsing for lines without a terminating linebreak
 [+] reload() support in init script
 [+] pidfile path setting with -r option
-[*] fixed not closed socket
-[*] fixed pid-file wrong deletion
+[*] fixed bug with socket not being closed
+[*] fixed bug with pid-file being inappropriately deleted
 [+] UGO-model support ("ugo" option for export)
 [*] fixed bug with cache clearing
 
 rfs:
-|+] chmod/chown may be conditionally included
+|+] chmod/chown support with UGO
 [+] auto reconnect support
 [+] -q option - suppress warnings
 
