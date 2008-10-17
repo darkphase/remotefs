@@ -32,8 +32,8 @@ cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
 cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
-gzip -c < man/rfsd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfsd.8.gz
-gzip -c < man/rfspasswd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfspasswd.8.gz
+gzip -c < ../man/rfsd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfsd.8.gz
+gzip -c < ../man/rfspasswd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfspasswd.8.gz
 
 # ------------------------     clean     -----------------------------------
 %clean

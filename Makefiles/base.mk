@@ -59,6 +59,7 @@ clean:
 	@if [ -f rfs ]; then $(RM) -f rfs; fi
 	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
 	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
+	@$(RM) -fr dpkg/ dpkg_man/
 
 #############################
 # Rebuild dependency file
@@ -80,30 +81,42 @@ rpm: rpm-rfsd rpm-rfs
 
 debrelease: rfsdeb rfsddeb
 
-rfsdeb: rfs
-	@CONTROL_TEMPLATE="debian/control.rfs" TARGET="$?" \
+rfsmanpages:
+	mkdir -p dpkg_man/man1/
+	gzip -c < ../man/rfs.1 > dpkg_man/man1/rfs.1.gz
+
+rfsdeb: rfs rfsmanpages 
+	@CONTROL_TEMPLATE="debian/control.rfs" TARGET="rfs" \
 	NAME=$< \
 	make -f Makefiles/base.mk builddeb
 
-rfsddeb: rfsd rfspasswd
-	@CONTROL_TEMPLATE="debian/control.rfsd" TARGET="$?" \
+rfsdmanpages:
+	mkdir -p dpkg_man/man8/
+	gzip -c < ../man/rfsd.8 > dpkg_man/man8/rfsd.8.gz
+	gzip -c < ../man/rfspasswd.8 > dpkg_man/man8/rfspasswd.8.gz
+
+rfsddeb: rfsd rfspasswd rfsdmanpages
+	@CONTROL_TEMPLATE="debian/control.rfsd" TARGET="rfsd rfspasswd" \
 	NAME=$< \
 	$(MAKE) -sf Makefiles/base.mk builddeb
 
 builddeb:
-	@rm -fr "$(NAME)-$(VERSION)-$(RELEASE)";\
-	mkdir "$(NAME)-$(VERSION)-$(RELEASE)";\
-	rm -fr dpkg;\
+	@rm -fr dpkg;\
 	mkdir -p "dpkg$(INSTALL_DIR)";\
+	mkdir -p "dpkg$(INSTALL_DIR)/bin";\
+	mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
 	mkdir -p "dpkg/DEBIAN";\
+	mv $(TARGET) "dpkg$(INSTALL_DIR)/bin/";\
+	mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/"
+	rm -fr dpkg_man
+	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;\
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" $(CONTROL_TEMPLATE) >dpkg/DEBIAN/control.1;\
-	SIZE=`cat $(TARGET)|wc -c`; sed -e "s/AND SIZE HERE/$$SIZE/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control;\
-	rm -f dpkg/DEBIAN/control.1;\
-	mv $(TARGET) "dpkg$(INSTALL_DIR)";\
+	sed -e "s/AND SIZE HERE/$$SIZE/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control.2;\
+	sed -e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" dpkg/DEBIAN/control.2 >dpkg/DEBIAN/control;\
+	rm -f dpkg/DEBIAN/control.1 dpkg/DEBIAN/control.2;\
 	echo "Building package $(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb";\
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;\
 	rm -fr dpkg;\
-	rm -fr "$(NAME)-$(VERSION)-$(RELEASE)"
 
 
 
