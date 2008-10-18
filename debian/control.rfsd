@@ -1,14 +1,14 @@
 Package: rfsd
-Version: *** VERSION GOES HERE ***
+Version: VERSION GOES HERE
 Section: utilities
 Priority: optional
-Architecture: *** INSERT ARCH HERE, PLEASE ***
+Architecture: INSERT ARCH HERE, PLEASE
 Essential: no
 Depends: libgcrypt11 (>=1.2.3)
 Pre-Depends: 
 Recommends: 
 Suggests: 
-Installed-Size: *** AND SIZE HERE ***
+Installed-Size: AND SIZE HERE
 Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
 Conflicts: 
 Replaces: 
