@@ -205,8 +205,9 @@ static ssize_t rfs_writev(const int sock, struct iovec *iov, unsigned count)
 		
 		errno = 0;
 		int done = writev(sock, iov, count);
-		if (done < 0)
+		if (done <= 0)
 		{
+			DEBUG("%s encountered\n", strerror(errno));
 			if (errno == EAGAIN || errno == EINTR)
 			{
 				continue;
@@ -235,8 +236,9 @@ static ssize_t rfs_recv(const int sock, char *buffer, size_t size)
 	{
 		errno = 0;
 		int done = recv(sock, buffer + size_recv, size - size_recv, 0);
-		if (done < 0)
+		if (done <= 0)
 		{
+			DEBUG("%s encountered\n", strerror(errno));
 			if (errno == EAGAIN || errno == EINTR)
 			{
 				continue;
