@@ -1,6 +1,6 @@
-VERSION="0.10"
+VERSION="0.9"
 RELEASE=1
 ARCH="i386"
-INSTALL_DIR="/usr/bin"
+INSTALL_DIR="/usr"
 CONTROL_TEMPLATE="debian/control.rfs"
 
