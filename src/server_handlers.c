@@ -1484,15 +1484,16 @@ static int _handle_release(const int client_socket, const struct sockaddr_in *cl
 	
 	free_buffer(buffer);
 	
-	if (read_cache_is_for(handle))
-	{
-		destroy_read_cache();
-		update_read_cache_stats(-1, -1, -1);
-	}
-	
 	if (handle == (uint64_t)-1)
 	{
 		return reject_request(client_socket, cmd, EBADF) == 0 ? 1 : -1;
+	}
+	
+	if (read_cache_is_for(handle)
+	|| read_cache_is_for((uint64_t)-1))
+	{
+		destroy_read_cache();
+		update_read_cache_stats(-1, -1, -1);
 	}
 	
 	int fd = (int)handle;
