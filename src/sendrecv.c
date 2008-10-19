@@ -175,7 +175,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 		}
 		else if (iov[i].iov_len > diff)
 		{
-			iov[i].iov_base += diff;
+			iov[i].iov_base = (char*)iov[i].iov_base + diff;
 			iov[i].iov_len -= diff;
 			break;
 		}
