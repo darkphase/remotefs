@@ -1,3 +1,7 @@
+0.10-2
+
+[*] fixed bug with attributes cache
+
 0.10
 
 [+] ipv6 support in SVN
