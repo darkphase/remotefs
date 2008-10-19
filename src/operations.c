@@ -842,6 +842,12 @@ static int _rfs_release(const char *path, struct fuse_file_info *fi)
 	{
 		uninit_write_cache();
 	}
+	
+	struct tree_item *cached_value = get_cache(path);
+	if (cached_value != NULL)
+	{
+		delete_from_cache(path);
+	}
 
 	uint64_t handle = htonll(fi->fh);
 
@@ -1105,10 +1111,16 @@ static int _rfs_flush(const char *path, struct fuse_file_info *fi)
 	tmp_fi.fh = handle;
 
 	int ret = _rfs_write(path, get_write_cache_block(), fsize, foffset, &tmp_fi);
+	rfs_config.use_write_cache = old_val;
 
 	destroy_write_cache();
-
-	rfs_config.use_write_cache = old_val;
+	
+	struct tree_item *cached_value = get_cache(path);
+	if (cached_value != NULL)
+	{
+		delete_from_cache(path);
+	}
+	
 	return ret == fsize ? 0 : ret;
 }
 
