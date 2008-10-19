@@ -148,7 +148,7 @@ bldrpm: rpms/$(RPMNAME).spec
 	   SDIR=`pwd`; \
 	   NM=$(RPMNAME)-$$VER; \
 	   mkdir /tmp/$$NM ;\
-	   cp -r * /tmp/$$NM; \
+	   cp -rH * /tmp/$$NM; \
 	   find /tmp/$$NM -name .svn -exec rm -fr {} \; 2>/dev/null; \
 	   cd /tmp ; \
 	   tar czf $$RPMD/SOURCES/$$NM.tar.gz $$NM ; \

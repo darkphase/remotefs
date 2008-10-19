@@ -28,7 +28,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
-gzip -c < ../man/rfs.1 > $RPM_BUILD_ROOT%{_prefix}/share/man/man1/rfs.1.gz
+gzip -c < man/rfs.1 > $RPM_BUILD_ROOT%{_prefix}/share/man/man1/rfs.1.gz
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -39,7 +39,7 @@ rm -rf $RPM_BUILD_ROOT
 #           %dir, %docdir, %attr(mode,user,group)
 %files
 %defattr(-, root, root)
-%doc homepage/* 
+#%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfs
 %attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
 
