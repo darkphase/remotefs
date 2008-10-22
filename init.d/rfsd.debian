@@ -38,12 +38,12 @@ case "$1" in
 		fi
 		;;
 	restart)
-		stop
-		start
+		$0 stop
+		$0 start
 		;;
 	reload)
 		kill -s HUP `cat ${PIDFILE}`
-		start
+		$0 start
 		;;
 	*)
 		echo "Usage: /etc/init.d/rfsd {start|stop|restart}"

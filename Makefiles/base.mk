@@ -85,30 +85,42 @@ rfsmanpages:
 	mkdir -p dpkg_man/man1/
 	gzip -c < ../man/rfs.1 > dpkg_man/man1/rfs.1.gz
 
-rfsdeb: rfs rfsmanpages 
-	@CONTROL_TEMPLATE="debian/control.rfs" TARGET="rfs" \
+rfsdeb: rfs rfsmanpages
+	CONTROL_TEMPLATE="debian/control.rfs" TARGET="rfs" \
 	NAME=$< \
-	make -f Makefiles/base.mk builddeb
+	$(MAKE) -sf Makefiles/base.mk builddeb
 
 rfsdmanpages:
 	mkdir -p dpkg_man/man8/
 	gzip -c < ../man/rfsd.8 > dpkg_man/man8/rfsd.8.gz
 	gzip -c < ../man/rfspasswd.8 > dpkg_man/man8/rfspasswd.8.gz
 
-rfsddeb: rfsd rfspasswd rfsdmanpages
-	@CONTROL_TEMPLATE="debian/control.rfsd" TARGET="rfsd rfspasswd" \
+rfsdetc:
+	mkdir -p "dpkg_etc/init.d/";\
+	cp etc/rfs-exports "dpkg_etc/";\
+	cp init.d/rfsd.debian "dpkg_etc/init.d/rfsd";\
+	chmod +x "dpkg_etc/init.d/rfsd"
+
+rfsddeb: rfsd rfspasswd rfsdmanpages rfsdetc
+	CONTROL_TEMPLATE="debian/control.rfsd" TARGET="rfsd rfspasswd" \
 	NAME=$< \
 	$(MAKE) -sf Makefiles/base.mk builddeb
 
 builddeb:
-	@rm -fr dpkg;\
+	rm -fr dpkg;\
 	mkdir -p "dpkg$(INSTALL_DIR)";\
 	mkdir -p "dpkg$(INSTALL_DIR)/bin";\
 	mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
 	mkdir -p "dpkg/DEBIAN";\
 	mv $(TARGET) "dpkg$(INSTALL_DIR)/bin/";\
-	mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/"
-	rm -fr dpkg_man
+	mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/";\
+	rm -fr dpkg_man;\
+	if [ -d dpkg_etc ];\
+	then\
+	    mkdir -p "dpkg/etc";\
+	    mv dpkg_etc/* "dpkg/etc/";\
+	    rm -fr dpkg_etc;\
+	fi;\
 	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;\
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" $(CONTROL_TEMPLATE) >dpkg/DEBIAN/control.1;\
 	sed -e "s/AND SIZE HERE/$$SIZE/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control.2;\
@@ -116,7 +128,7 @@ builddeb:
 	rm -f dpkg/DEBIAN/control.1 dpkg/DEBIAN/control.2;\
 	echo "Building package $(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb";\
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;\
-	rm -fr dpkg;\
+	rm -fr dpkg;
 
 
 
