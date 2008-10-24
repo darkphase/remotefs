@@ -59,7 +59,8 @@ clean:
 	@if [ -f rfs ]; then $(RM) -f rfs; fi
 	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
 	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
-	@$(RM) -fr dpkg/ dpkg_man/
+	@$(RM) -fr man/gz
+	@$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
 
 #############################
 # Rebuild dependency file
@@ -73,27 +74,73 @@ depends:
 #######################################
 
 #############################
+# Build man pages
+#############################
+
+man: dummy
+	@mkdir -p man/gz/man1
+	@mkdir -p man/gz/man8
+	@gzip -c < man/rfs.1 > man/gz/man1/rfs.1.gz
+	@gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
+	@gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
+
+#############################
+# Build tarball
+#############################
+
+tbz: man
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/src/"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/man/"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/Makefiles/"
+	@cp LICENSE "remotefs-$(VERSION)_$(RELEASE)/"
+	@cp AUTHORS "remotefs-$(VERSION)_$(RELEASE)/"
+	@cp CHANGELOG "remotefs-$(VERSION)_$(RELEASE)/"
+	@cp src/*.c src/*.h "remotefs-$(VERSION)_$(RELEASE)/src"
+	@cp man/*.1 man/*.8 "remotefs-$(VERSION)_$(RELEASE)/man/"
+	@cp Makefiles/* "remotefs-$(VERSION)_$(RELEASE)/Makefiles/"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/debian"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/rpms"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/etc"
+	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/init.d"
+	@cp debian/* "remotefs-$(VERSION)_$(RELEASE)/debian/"
+	@cp rpms/* "remotefs-$(VERSION)_$(RELEASE)/rpms/"
+	@cp etc/* "remotefs-$(VERSION)_$(RELEASE)/etc/"
+	@cp init.d/* "remotefs-$(VERSION)_$(RELEASE)/init.d/"
+	@cp Makefile "remotefs-$(VERSION)_$(RELEASE)/"
+	
+	@echo "Building remotefs-${VERSION}_${RELEASE}.tar.bz2"
+	@tar -cpjf "remotefs-${VERSION}_${RELEASE}.tar.bz2" "remotefs-$(VERSION)_$(RELEASE)/"
+
+install_man:
+	@INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
+	for GZ_FILE in "$$FILES"; \
+	do \
+		cp -r $$GZ_FILE $$INSTALL_DIR/share/man; \
+	done
+
+install: install_man
+	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfs.mk install_rfs
+	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfsd.mk install_rfsd
+
+#############################
 # Build deb packages
 #############################
 
-rpm: rpm-rfsd rpm-rfs
-
-
 debrelease: rfsdeb rfsddeb
 
-rfsmanpages:
+rfsmanpages: man
 	mkdir -p dpkg_man/man1/
-	gzip -c < ../man/rfs.1 > dpkg_man/man1/rfs.1.gz
+	cp man/gz/man1/rfs.1.gz dpkg_man/man1/
 
 rfsdeb: rfs rfsmanpages
 	CONTROL_TEMPLATE="debian/control.rfs" TARGET="rfs" \
 	NAME=$< \
 	$(MAKE) -sf Makefiles/base.mk builddeb
 
-rfsdmanpages:
+rfsdmanpages: man
 	mkdir -p dpkg_man/man8/
-	gzip -c < ../man/rfsd.8 > dpkg_man/man8/rfsd.8.gz
-	gzip -c < ../man/rfspasswd.8 > dpkg_man/man8/rfspasswd.8.gz
+	cp man/gz/man8/rfsd.8.gz dpkg_man/man8/
+	cp man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
 
 rfsdetc:
 	mkdir -p "dpkg_etc/init.d/";\
@@ -110,16 +157,19 @@ builddeb:
 	rm -fr dpkg;\
 	mkdir -p "dpkg$(INSTALL_DIR)";\
 	mkdir -p "dpkg$(INSTALL_DIR)/bin";\
-	mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
 	mkdir -p "dpkg/DEBIAN";\
 	mv $(TARGET) "dpkg$(INSTALL_DIR)/bin/";\
-	mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/";\
-	rm -fr dpkg_man;\
+	if [ -d dpkg_man ];\
+	then\
+		mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
+		mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/";\
+		rm -fr dpkg_man;\
+	fi;\
 	if [ -d dpkg_etc ];\
 	then\
-	    mkdir -p "dpkg/etc";\
-	    mv dpkg_etc/* "dpkg/etc/";\
-	    rm -fr dpkg_etc;\
+		mkdir -p "dpkg/etc";\
+		mv dpkg_etc/* "dpkg/etc/";\
+		rm -fr dpkg_etc;\
 	fi;\
 	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;\
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" $(CONTROL_TEMPLATE) >dpkg/DEBIAN/control.1;\

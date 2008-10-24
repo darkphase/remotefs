@@ -85,6 +85,12 @@ rfsdeb: clean
 rfsddeb: clean
 	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
 
+tbz: clean
+	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk tbz $(TGTARCH)
+
+install:
+	@$(MAKE) -sf Makefiles/base.mk install
+
 runtests: 
 	@$(MAKE) -C tests run
 	@$(MAKE) -C tests clean
