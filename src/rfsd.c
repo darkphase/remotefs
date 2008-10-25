@@ -358,16 +358,17 @@ static int handle_connection(int client_socket, const struct sockaddr_storage *c
 #ifndef WITH_IPV6
 			DEBUG("connection to %s is lost\n", inet_ntoa(client_addr->sin_addr));
 #else
+			char straddr[INET6_ADDRSTRLEN];
 			if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
 			{
-				char straddr[INET6_ADDRSTRLEN];
-				inet_ntop(AF_INET, &((struct sockaddr_in*)&client_addr)->sin_addr, straddr,sizeof(straddr));
+				struct sockaddr_in *sa = (struct sockaddr_in*) client_addr;
+				inet_ntop(AF_INET, &sa->sin_addr, straddr,sizeof(straddr));
 				DEBUG("connection to %s is lost\n",straddr);
 			}
 			else
 			{
-				char straddr[INET6_ADDRSTRLEN];
-				inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr,sizeof(straddr));
+				struct sockaddr_in6 *sa = (struct sockaddr_in6*) client_addr;
+				inet_ntop(AF_INET6, &sa->sin6_addr, straddr,sizeof(straddr));
 				DEBUG("connection to %s is lost\n",straddr);
 			}
 #endif

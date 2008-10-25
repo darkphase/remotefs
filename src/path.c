@@ -44,4 +44,5 @@ int path_join(char *full_path, size_t max_len, const char *path, const char *fil
 	filename, 
 	strlen(filename));
 	
-	return 0;}
+	return 0;
+}
