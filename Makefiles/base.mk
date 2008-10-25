@@ -59,7 +59,7 @@ clean:
 	@if [ -f rfs ]; then $(RM) -f rfs; fi
 	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
 	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
-	@if [ -f remotefs-${VERSION}_${RELEASE}.tar.bz2 ]; then $(RM) -f remotefs-${VERSION}_${RELEASE}.tar.bz2; fi
+	@if [ -f remotefs-${VERSION}-${RELEASE}.tar.bz2 ]; then $(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2; fi
 	@if [ -d man/fz ]; then $(RM) -fr man/gz; fi
 	@$(RM) -fr man/gz
 	@$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
@@ -91,28 +91,28 @@ man: dummy
 #############################
 
 tbz: clean
-	@echo "Building remotefs-${VERSION}_${RELEASE}.tar.bz2"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/src/"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/man/"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/Makefiles/"
-	@cp LICENSE "remotefs-$(VERSION)_$(RELEASE)/" 2> /dev/null
-	@cp AUTHORS "remotefs-$(VERSION)_$(RELEASE)/" 2> /dev/null
-	@cp CHANGELOG "remotefs-$(VERSION)_$(RELEASE)/" 2> /dev/null
-	@cp src/*.c src/*.h "remotefs-$(VERSION)_$(RELEASE)/src" 2> /dev/null
-	@cp man/*.1 man/*.8 "remotefs-$(VERSION)_$(RELEASE)/man/" 2> /dev/null
-	@cp Makefiles/* "remotefs-$(VERSION)_$(RELEASE)/Makefiles/" 2> /dev/null
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/debian"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/rpms"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/etc"
-	@mkdir -p "remotefs-$(VERSION)_$(RELEASE)/init.d"
-	@cp debian/* "remotefs-$(VERSION)_$(RELEASE)/debian/" 2> /dev/null
-	@cp rpms/* "remotefs-$(VERSION)_$(RELEASE)/rpms/" 2> /dev/null
-	@cp etc/* "remotefs-$(VERSION)_$(RELEASE)/etc/" 2> /dev/null
-	@cp init.d/* "remotefs-$(VERSION)_$(RELEASE)/init.d/" 2> /dev/null
-	@find remotefs-${VERSION}_${RELEASE} -name .svn -exec rm -fr {} \; 2>/dev/null;
-	@cp Makefile "remotefs-$(VERSION)_$(RELEASE)/"
-	tar cf - remotefs-${VERSION}_${RELEASE} | bzip2 -c > remotefs-${VERSION}_${RELEASE}.tar.bz2
-	rm -fr remotefs-${VERSION}_${RELEASE}
+	@echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
+	@cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
+	@cp AUTHORS "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
+	@cp CHANGELOG "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
+	@cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src" 2> /dev/null
+	@cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/" 2> /dev/null
+	@cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/" 2> /dev/null
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/rpms"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
+	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
+	@cp debian/* "remotefs-$(VERSION)-$(RELEASE)/debian/" 2> /dev/null
+	@cp rpms/* "remotefs-$(VERSION)-$(RELEASE)/rpms/" 2> /dev/null
+	@cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/" 2> /dev/null
+	@cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/" 2> /dev/null
+	@find remotefs-${VERSION}-${RELEASE} -name .svn -exec rm -fr {} \; 2>/dev/null;
+	@cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
+	tar cf - remotefs-${VERSION}-${RELEASE} | bzip2 -c > remotefs-${VERSION}-${RELEASE}.tar.bz2
+	rm -fr remotefs-${VERSION}-${RELEASE}
 
 install_man:
 	@INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
