@@ -16,7 +16,7 @@ DEBFLAG = $(CFLAGS_DBG) -DRFS_DEBUG
 RELFLAG = $(CFLAGS_OPT)
 
 help:
-	@cat Makefiles/help
+	@more Makefiles/help
 
 debug:
 	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd

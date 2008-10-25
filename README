@@ -1,0 +1,5 @@
+In order to build the remotefs binaries call "make", you will get more
+informations about the various possibilities.
+
+Note that we don't use the GNU configure utilities, the Makefiles detect
+themself the OS and set the compile flasg accordingly.
