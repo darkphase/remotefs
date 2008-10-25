@@ -60,7 +60,7 @@ clean:
 	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
 	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
 	@if [ -f remotefs-${VERSION}-${RELEASE}.tar.bz2 ]; then $(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2; fi
-	@if [ -d man/fz ]; then $(RM) -fr man/gz; fi
+	@if [ -d man/gz ]; then $(RM) -fr man/gz; fi
 	@$(RM) -fr man/gz
 	@$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
 
