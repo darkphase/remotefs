@@ -212,7 +212,7 @@ int change_password(const char *login)
 	char password2[32] = { 0 };
 	
 	printf("Changing password for %s.\n", login);
-	printf("New password (%ud characters max): ", (unsigned int)sizeof(password1));
+	printf("New password (%u characters max): ", (unsigned int)sizeof(password1));
 	
 	tcgetattr(0, &stored_settings);
 	struct termios new_settings = stored_settings;
