@@ -1,0 +1,96 @@
+.TH "rfs_nss" "1" "0.10" "remotefs" "remotefs"
+.SH "NAME"
+rfs_nss \- remotefs server for id-mapping
+.SH "SYNOPSIS"
+\fBrfs\fR [-l] [-f]
+
+.SH "OPTIONS"
+.PP
+\fB\-l\fR allow login on the terminal.
+.br
+\fB\-f\fR start in foreground.
+.RE
+
+.PP
+.SH "DESCRIPTION"
+rfs_nss is a little client which must run on the remotefs client.
+.PP
+On Unix systeme users and groups are identified by a uid or a gid.
+Remotefs use user name and group name in order to identify the user
+or group and not the uid or gid.
+.PP
+rfs_nss get queries for uid or gid and return, if the name is not
+known an id which value depend from the queried name.
+This happen if you mount a remotefs duerectory and if the user or group
+name is unknown.
+.PP
+This feature allow you, for example, to see the owner of a file, even
+if the user is not known on your system.
+.PP
+If you change the ownership of a file or directory you must
+be shure that the user or group is well knowm on the target system.
+.PP
+Tfs_nfs can run as a normal service or as an on demand service.
+The prefered way is to start it only if a rfs client is running
+and the imported directory id in \fBugo\fR mode.
+.PP
+At the start of the rfs client rfs check if there is allready
+a running rfs_nss instance. If this is not the case rfs_nss
+will be started.
+.PP
+After the termination of the last rfs client, rfs_nss will
+terminate.
+.PP
+The file /etc/nsswitch.conf must be modified in order to
+use this feature. The line beginning with \fBpasswd:\fR and
+\fBgroup:\fR must contain as last entry \fBrfs\fR.
+.SH "SECURITY"
+.PP
+If you are the user root and if you attempt to change for example
+the group ownership of a file, you may get unexpected results
+if you enter an unknown group name.
+.PP
+As normal user you may only modify the group if you are a member of
+the wanted group as well on the client as on the server.
+.PP
+If ACL is enabled on both client ans server, you will have the right
+to add any user and or to file or directory. For this case uncorrect
+name will result to unwanted entries, eg.
+.PP
+\fB$ setacl u:alic:rw file
+.br
+.br
+$ getfacl file
+.br
+# file: file
+.br
+# owner: bob
+.br
+# group: bob
+.br
+user::rwx
+.br
+user:nobody:rwx
+.br
+group::r-x
+.br
+mask::rwx
+.br
+other::r-x\fR
+.PP
+\fBalic\fR was entered instead of \fBalice\fR.
+
+
+.SH "AUTHORS"
+.PP
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.br
+Aleksey Tulinov: aleksey_t@users.sourceforge.net 
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfsd\fR(8), \fBrfspasswd\fR(8) \fBrfs\fR(1) \fBnsswitch.conf\fR(5)

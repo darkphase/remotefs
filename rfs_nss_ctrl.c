@@ -1,0 +1,78 @@
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <errno.h>
+#include <pwd.h>
+#include <grp.h>
+#include <sys/un.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
+#include "rfs_nss.h"
+
+int main(int argc, char **argv)
+{
+    int ret = RFS_NSS_OK;
+    int command = -1;
+
+    if ( argc > 1 )
+    {
+        if ( strcmp(argv[1], "-1") == 0 )
+        {
+            command = DEC_CONN;
+        }
+        else if ( strcmp(argv[1], "+1") == 0 )
+        {
+            command = INC_CONN;
+        }
+        else if ( strcmp(argv[1], "-c") == 0 )
+        {
+            command = CHECK_SERVER;
+        }
+    }
+
+    if ( command == -1 )
+    {
+        char *prog_name = strrchr(argv[0], '/');
+        if ( prog_name )
+        {
+            prog_name++;
+        }
+        else
+        {
+            prog_name = argv[0];
+        }
+        printf("Syntax: %s +1|-1\n",prog_name);
+        return 1;
+    }
+
+    if ( ret == 0 )
+    {
+        ret = control_rfs_nss(command);
+    }
+
+    switch(ret)
+    {
+        case RFS_NSS_OK:
+            printf("Command successed\n");
+        break;
+        case RFS_NSS_SYS_ERROR:
+            printf("System error\n");
+        break;
+        case RFS_NSS_NO_SERVER:
+             printf("Server not running\n");
+        break;
+    }
+    return ret;
+}
