@@ -54,7 +54,7 @@ int main(int argc, char **argv)
             prog_name = argv[0];
         }
         printf("Syntax: %s start|stop|check\n", prog_name);
-        return 1;
+        return 0;
     }
 
     if ( ret == 0 )
