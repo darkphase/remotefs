@@ -28,15 +28,15 @@ int main(int argc, char **argv)
 
     if ( argc > 1 )
     {
-        if ( strcmp(argv[1], "-1") == 0 )
+        if ( strcmp(argv[1], "stop") == 0 )
         {
             command = DEC_CONN;
         }
-        else if ( strcmp(argv[1], "+1") == 0 )
+        else if ( strcmp(argv[1], "start") == 0 )
         {
             command = INC_CONN;
         }
-        else if ( strcmp(argv[1], "-c") == 0 )
+        else if ( strcmp(argv[1], "check") == 0 )
         {
             command = CHECK_SERVER;
         }
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
         {
             prog_name = argv[0];
         }
-        printf("Syntax: %s +1|-1\n",prog_name);
+        printf("Syntax: %s start|stop|check\n", prog_name);
         return 1;
     }
 
@@ -65,13 +65,25 @@ int main(int argc, char **argv)
     switch(ret)
     {
         case RFS_NSS_OK:
-            printf("Command successed\n");
+            if ( command == INC_CONN )
+            {
+               printf("new client instance added\n");
+            }
+            else if ( command == INC_CONN )
+            {
+               printf("new client instance removed\n");
+            }
         break;
         case RFS_NSS_SYS_ERROR:
             printf("System error\n");
         break;
         case RFS_NSS_NO_SERVER:
              printf("Server not running\n");
+             if ( command == INC_CONN )
+             {
+                 printf("Start rfs_nss\n");
+                 system("rfs_nss");
+             }
         break;
     }
     return ret;

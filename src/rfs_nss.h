@@ -27,12 +27,28 @@ typedef enum cmd_e
    CHECK_SERVER
 } cmd_e;
 
+/* For Darwin from <sys/param.h> MAXLOGNAME	255
+ * <limits.h>
+ * #if !defined(_ANSI_SOURCE)    _POSIX_LOGIN_NAME_MAX   9
+ * 
+ * For Linux   <limits.h> LOGIN_NAME_MAX 256
+ *                              _POSIX_LOGIN_NAME_MAX	9
+ * For Solaris <limits.h> LOGNAME_MAX 8
+ *
+ * For FreeBsd <sys/param.h> MAXLOGNAME 17 (16 + '\0')
+ *                              _POSIX_LOGIN_NAME_MAX 9
+ + According to these differemt values we support only
+ * login name with 8 characters.
+ */
+ 
+#define RFS_LOGIN_NAME_MAX 9
+
 typedef struct cmd_s
 {
    cmd_e cmd;
    int found;
    uid_t id;
-   char  name[9];
+   char  name[RFS_LOGIN_NAME_MAX+1];
 } cmd_t;
 
 #define   RFS_NSS_OK         0
