@@ -38,10 +38,11 @@ typedef enum cmd_e
  * For FreeBsd <sys/param.h> MAXLOGNAME 17 (16 + '\0')
  *                              _POSIX_LOGIN_NAME_MAX 9
  + According to these differemt values we support only
- * login name with 8 characters.
+ * login name with 16 characters and hope that there is
+ * no problem on openSolaris
  */
  
-#define RFS_LOGIN_NAME_MAX 9
+#define RFS_LOGIN_NAME_MAX 16
 
 typedef struct cmd_s
 {

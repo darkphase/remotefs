@@ -18,6 +18,9 @@ See the file LICENSE.
 #include <string.h>
 #include <stdlib.h>
 
+/* the values an types used by nss are not the same on all OS
+ * so we must have defines and type common for all systems
+ */
 #if defined SOLARIS
 #    include <nss_common.h>
 #    include <nss_dbdefs.h>
@@ -43,6 +46,11 @@ See the file LICENSE.
 #    error "Your OS is not supported"
 #endif
 
+/* We must fill a passed eg a group structure and the pointer reference
+ + a location within a buffer, the pointer must start at correct addresses
+ * we calculate the referenced position within the buffer with this macro
+ */
+ 
 #define SETPOS(pos,len) { int modulo = ((len + sizeof(char*)) % sizeof(char*)); \
                           if ( modulo ) \
                               pos += len + sizeof(char*) - modulo; \
@@ -50,6 +58,18 @@ See the file LICENSE.
                               pos += len; \
                          }
 
+/**********************************************************
+ *
+ * query_server()
+ *
+ * Ask the server for the user/group name or the uid/gid
+ *
+ * If the server is not running we will return NSS_STATUS_UNAVAIL
+ * and NSS_STATUS_SUCCESS or NSS_STATUS_NOTFOUND according
+ * to the data returnrd by the server.
+ *
+ **********************************************************/
+ 
 static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
 {
     /* connect with the rfs clients */
@@ -85,8 +105,8 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
        {
            case GETPWNAM:
            case GETGRNAM:
-               strncpy(command.name, name, 8);
-               command.name[8] = '\0';
+               strncpy(command.name, name, RFS_LOGIN_NAME_MAX);
+               command.name[RFS_LOGIN_NAME_MAX] = '\0';
            break;
            case GETPWUID:
            case GETGRGID:
@@ -95,11 +115,13 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
            default:
                return NSS_STATUS_UNAVAIL;
        }
+
        ret = send(sock, &command, sizeof(command), 0);
        if ( ret == -1 )
        {
            *error = errno;
            perror("send");
+           nss_state = NSS_STATUS_UNAVAIL;
        }
        else
        {
@@ -123,8 +145,8 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
                    break;
                    case GETPWUID:
                    case GETGRGID:
-                       strncpy(name, command.name, 8);
-                       name[8] = '\0';
+                       strncpy(name, command.name, RFS_LOGIN_NAME_MAX);
+                       name[RFS_LOGIN_NAME_MAX] = '\0';
                    break;
                    default:
                        nss_state = NSS_STATUS_UNAVAIL;
@@ -137,11 +159,26 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     return nss_state;
 }
 
-static NSS_STATUS build_pwd(const char *pwnam, uid_t uid, struct passwd *result, char *buffer, size_t buflen, int *errnop)
+/**********************************************************
+ *
+ * build_pwd()
+ * Fill a passwd structur with the user name and it uid
+ * as well as some fake entries so that applications using
+ * passwd are lucky.
+ *
+ **********************************************************/
+ 
+static NSS_STATUS build_pwd(const char *pwnam,
+                            uid_t uid,
+                            struct passwd *result,
+                            char *buffer,
+                            size_t buflen,
+                            int *errnop)
 {
     size_t pos = 0;
     int len = strlen(pwnam);
-    if ( pos + len < buflen )
+
+    if ( pos + len + 1 < buflen )
     {
        result->pw_name = buffer;
        strcpy(buffer, pwnam);
@@ -167,13 +204,20 @@ static NSS_STATUS build_pwd(const char *pwnam, uid_t uid, struct passwd *result,
 
     result->pw_uid = uid;
 
+    /* normally the primary group, on Linux and openSolaris
+     * the promary group has mostly the same id as the
+     * user so we put the uid here.
+     * This may be wrong, but we will not allow a login
+     * with this identity so that problems shall normally
+     * not occurs.
+     */
     result->pw_gid = uid;
 
-    if ( pos + len  < buflen )
+    if ( pos + len + 1 < buflen )
     {
-       result->pw_gecos = buffer+pos;
-       strcpy(buffer+pos, pwnam);
-       SETPOS(pos,len+1);
+        result->pw_gecos = buffer+pos;
+        strcpy(buffer+pos, pwnam);
+        SETPOS(pos,len+1);
     }
     else
     {
@@ -183,8 +227,8 @@ static NSS_STATUS build_pwd(const char *pwnam, uid_t uid, struct passwd *result,
 
     if ( pos + 5 < buflen )
     {
-       result->pw_dir = buffer+pos;
-       strcpy(buffer+pos, "/tmp");
+        result->pw_dir = buffer+pos;
+        strcpy(buffer+pos, "/tmp");
         SETPOS(pos,5);
     }
     else
@@ -195,9 +239,9 @@ static NSS_STATUS build_pwd(const char *pwnam, uid_t uid, struct passwd *result,
 
     if ( pos + 10 < buflen )
     {
-       result->pw_shell = buffer+pos;
-       strcpy(buffer+pos, "/bin/false");
-       SETPOS(pos,10);
+        result->pw_shell = buffer+pos;
+        strcpy(buffer+pos, "/bin/false");
+        SETPOS(pos,10);
     }
     else
     {
@@ -208,6 +252,15 @@ static NSS_STATUS build_pwd(const char *pwnam, uid_t uid, struct passwd *result,
     return NSS_STATUS_SUCCESS;
 }
 
+/**********************************************************
+ *
+ * build_grp()
+ * Fill a group structur with the group name and it gid
+ * as well as some fake entries so that applications using
+ * passwd are lucky.
+ *
+ **********************************************************/
+ 
 static NSS_STATUS build_grp(const char *grnam,
                             gid_t gid,
                             struct group *result,
@@ -217,7 +270,7 @@ static NSS_STATUS build_grp(const char *grnam,
 {
     size_t pos = 0;
     int len = strlen(grnam);
-    if ( pos + len < buflen )
+    if ( pos + len + 1 < buflen )
     {
        result->gr_name = buffer;
        strcpy(buffer, grnam);
@@ -249,6 +302,13 @@ static NSS_STATUS build_grp(const char *grnam,
 
 }
 
+/**********************************************************
+ *
+ * _nss_rfs_getpwnam_r()
+ *
+ *
+ **********************************************************/
+ 
 NSS_STATUS _nss_rfs_getpwnam_r(const char *pwnam,
                                struct passwd *result,
                                char *buffer,
@@ -265,6 +325,13 @@ NSS_STATUS _nss_rfs_getpwnam_r(const char *pwnam,
     return ret;
 }
 
+/**********************************************************
+ *
+ * _nss_rfs_getpwuid_r()
+ *
+ *
+ **********************************************************/
+ 
 NSS_STATUS _nss_rfs_getpwuid_r(uid_t uid,
                                struct passwd *result,
                                char *buffer,
@@ -272,7 +339,7 @@ NSS_STATUS _nss_rfs_getpwuid_r(uid_t uid,
                                int *errnop)
 {
     NSS_STATUS ret = NSS_STATUS_UNAVAIL;
-    char pwnam[9];
+    char pwnam[RFS_LOGIN_NAME_MAX+1];
     ret = query_server(GETPWUID, pwnam, &uid, errnop);
     if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
     {
@@ -280,6 +347,13 @@ NSS_STATUS _nss_rfs_getpwuid_r(uid_t uid,
     }
     return ret;
 }
+
+/**********************************************************
+ *
+ * _nss_rfs_getgrnam_r()
+ *
+ *
+ **********************************************************/
 
 NSS_STATUS _nss_rfs_getgrnam_r(const char *grnam,
                               struct group *result,
@@ -298,6 +372,13 @@ NSS_STATUS _nss_rfs_getgrnam_r(const char *grnam,
 
 }
 
+/**********************************************************
+ *
+ * _nss_rfs_getgrgid_r()
+ *
+ *
+ **********************************************************/
+ 
 NSS_STATUS _nss_rfs_getgrgid_r(uid_t gid,
                                struct group *result,
                                char *buffer,
@@ -305,7 +386,7 @@ NSS_STATUS _nss_rfs_getgrgid_r(uid_t gid,
                                int *errnop)
 {
     NSS_STATUS ret = NSS_STATUS_UNAVAIL;
-    char grnam[9];
+    char grnam[RFS_LOGIN_NAME_MAX+1];
     ret = query_server(GETGRGID, grnam, &gid, errnop);
     if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
     {

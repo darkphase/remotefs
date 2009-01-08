@@ -30,7 +30,7 @@ See the file LICENSE.
 #include "rfs_nss.h"
 #include "dllist.h"
 
-typedef struct tfs_idmap_s
+typedef struct rfs_idmap_s
 {
     char *name;
     uid_t id;
@@ -38,8 +38,8 @@ typedef struct tfs_idmap_s
 
 static list_t *user_list = NULL;
 static list_t *group_list = NULL;
-static int log = 0;
-static int connections = 1;
+static int     log = 0;
+static int     connections = 1; /* number of rfs client */
 
 /***************************************
  *
@@ -342,6 +342,13 @@ static int add_to_list(list_t **root, rfs_idmap_t *data, uid_t id)
      return ret;
 }
 
+/***************************************
+ *
+ * main()
+ *
+ *
+ */
+
 int main(int argc,char **argv)
 {
     struct passwd *pwd;
@@ -400,6 +407,7 @@ int main(int argc,char **argv)
 
     if ( ret == 0 )
     {
+       /* no enough memory ? we have a big problem and terminate */
        exit(1);
     }
 
@@ -425,6 +433,7 @@ int main(int argc,char **argv)
 
     if ( ret == 0 )
     {
+       /* no enough memory ? we have a big problem and terminate */
        exit(1);
     }
 

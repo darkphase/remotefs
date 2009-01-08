@@ -12,14 +12,18 @@ NSS_STATUS _nss_rfs_default_destr(nss_backend_t *be, void *args);
 NSS_STATUS _nss_rfs_not_found (nss_backend_t *be, void *args);
 NSS_STATUS _nss_rfs_success(nss_backend_t *be, void *args);
 
+/* Wrappers which will call the _nss_rfs_getpwnam_r(), ...
+ * functions,
+ */
+ 
 NSS_STATUS _nss_rfs_sol_getpwnam_r(nss_backend_t *be, void *args)
 {
     NSS_STATUS status;
-    const char    *name    =  NSS_ARGS(args)->key.name;
-    struct passwd *result  =  NSS_ARGS(args)->buf.result;
-    char          *buffer  =  NSS_ARGS(args)->buf.buffer;
-    size_t         buflen  =  NSS_ARGS(args)->buf.buflen;
-    int           *errnop  = &NSS_ARGS(args)->erange;
+    const char    *name   =  NSS_ARGS(args)->key.name;
+    struct passwd *result =  NSS_ARGS(args)->buf.result;
+    char          *buffer =  NSS_ARGS(args)->buf.buffer;
+    size_t         buflen =  NSS_ARGS(args)->buf.buflen;
+    int           *errnop = &NSS_ARGS(args)->erange;
     status = _nss_rfs_getpwnam_r(name, result, buffer, buflen, errnop);
 
     if (status == NSS_SUCCESS)
@@ -72,6 +76,11 @@ NSS_STATUS _nss_rfs_sol_getgrgid_r(nss_backend_t *be, void *args)
     return status;
 }
 
+/* Structures passed to the initialization function _nss_rfs_*_constr().
+ * Some entries are set to default fuctions which will only return
+ * success or not found
+ */
+
 static nss_backend_op_t passwd_ops[] =
 {
     _nss_rfs_default_destr,       /* NSS_DBOP_DESTRUCTOR */
@@ -118,6 +127,9 @@ nss_backend_t *_nss_rfs_group_constr(const char *db_name,
     be->n_ops = sizeof (group_ops) / sizeof (nss_backend_op_t);
     return be;
 }
+
+/* Default functions for destroying an returnin some default values
+ */
 
 NSS_STATUS _nss_rfs_default_destr(nss_backend_t *be, void *args)
 {
