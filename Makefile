@@ -5,18 +5,18 @@
 OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
-include mk/$(OS)$(ALT).mk
+include $(NSSPATH)mk/$(OS)$(ALT).mk
 
 
 # define the object files we have
-LIB_OBJ  = src/rfs_nss_client.o
+LIB_OBJ  = $(NSSPATH)src/rfs_nss_client.o
 
-SVR_OBJ  = src/dllist.o \
-           src/rfs_nss_server.o \
-           src/rfs_nss_control.o
+SVR_OBJ  = $(NSSPATH)src/dllist.o \
+           $(NSSPATH)src/rfs_nss_server.o \
+           $(NSSPATH)src/rfs_nss_control.o
 
-CTRL_OBJ = src/rfs_nss_ctrl.o \
-           src/rfs_nss_control.o
+CTRL_OBJ = $(NSSPATH)src/rfs_nss_ctrl.o \
+           $(NSSPATH)src/rfs_nss_control.o
 
 
 all: $(LIBNAME) rfs_nss rfs_nss_ctrl
@@ -41,7 +41,7 @@ rfd_nss_test: test/rfs_nss_test.c $(LIB_OBJ)
 
 clean:
 	@echo clean
-	@if [ "`echo */*.o`" != "*/*.o" ]; then $(RM) */*.o; fi
+	@if [ "`echo $(NSSPATH)*/*.o`" != "$(NSSPATH)*/*.o" ]; then $(RM) $(NSSPATH)*/*.o; fi
 	@if [ -f $(LIBNAME)   ]; then $(RM) $(LIBNAME);   fi
 	@if [ -f rfs_nss      ]; then $(RM) rfs_nss;      fi
 	@if [ -f rfs_nss_ctrl ]; then $(RM) rfs_nss_ctrl; fi
