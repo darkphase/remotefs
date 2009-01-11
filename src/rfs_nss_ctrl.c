@@ -82,7 +82,7 @@ int main(int argc, char **argv)
              if ( command == INC_CONN )
              {
                  printf("Start rfs_nss\n");
-                 system("rfs_nss");
+                 return system("rfs_nss");
              }
         break;
     }

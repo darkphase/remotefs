@@ -34,8 +34,8 @@ rfs_nss_ctrl: $(CTRL_OBJ)
 	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS)
 
 # a simple test program
-test: rfd_nss_test
-rfd_nss_test: test/rfs_nss_test.c $(LIB_OBJ)
+test: rfs_nss_test
+rfs_nss_test: test/rfs_nss_test.c $(LIB_OBJ)
 	@echo link $@
 	@$(CC) -g -o rfs_nss_test $< $(SVR_LDFLAGS)
 
