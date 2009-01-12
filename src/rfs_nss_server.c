@@ -30,6 +30,7 @@ See the file LICENSE.
 #include "rfs_nss.h"
 #include "dllist.h"
 
+int rfs_put_name = 0;
 typedef struct rfs_idmap_s
 {
     char *name;
@@ -130,6 +131,7 @@ static int process_message(int sock)
 {
     cmd_t command;
     list_t *l = NULL;
+    int hashVal = 0;
     /* get message */
     int ret = recv(sock, &command, sizeof(command), 0);
     if ( ret == -1 )
@@ -144,22 +146,26 @@ static int process_message(int sock)
         case CHECK_SERVER:
              return 1;
         break;
+
         case DEC_CONN:
             connections--;
             if ( log ) printf("Number of rfs clients: %d\n", connections);
             return 1;
         break;
+
         case INC_CONN:
             connections++;
             if ( log ) printf("Number of rfs clients: %d\n", connections);
             return 1;
         break;
+
         case GETGRNAM:
         case GETPWNAM:
             if ( log ) printf("Message received: %s(%s)\n",
                               command.cmd == GETGRNAM
                                   ? "getgrnam" : "getpwnam",
                               command.name);
+
             command.id = 0;
             if ( command.cmd == GETGRNAM )
                 l = group_list;
@@ -171,23 +177,38 @@ static int process_message(int sock)
             {
                rfs_idmap_t *u = (rfs_idmap_t*)l->data;
 
-               if ( strncmp( u->name, command.name, 8) == 0 )
+               if ( strncmp( u->name, command.name, RFS_LOGIN_NAME_MAX) == 0 )
                {
-                   command.id = u->id;
+                   command.id    = u->id;
                    command.found = 1;
                    break;
                }
             }
 
+            if ( rfs_put_name )
+            {
+                 break;
+            }
+
+        case PUTGRNAM:
+        case PUTPWNAM:
+
             if (command.found == 0 )
             {
-                /* the name was noz found, calculate an id */
-                int hashVal = calculate_hash(command.name);
-                /* add entry */
-                if ( command.cmd == GETGRNAM )
+                if ( command.cmd == PUTGRNAM || command.cmd == GETGRNAM)
                     l = group_list;
-                else
+                else if ( command.cmd == PUTPWNAM || command.cmd == GETPWNAM )
                     l = user_list;
+
+                if ( rfs_put_name && log && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
+                {
+                     printf("Message received: %s(%s)\n",
+                            command.cmd == PUTGRNAM ? "putgrnam" : "putpwnam",
+                            command.name);
+                }
+
+                /* the name was not found, calculate an id */
+                hashVal = calculate_hash(command.name);
 
                 /* and insert this into our list */
                 while (l)
@@ -211,7 +232,7 @@ static int process_message(int sock)
                         }
 
                         command.found = 1;
-                        command.id = hashVal;
+                        command.id    = hashVal;
                         if ( list_insert(&l, map, NULL) == 0 )
                         {
                              if ( log ) perror("calloc");
@@ -227,7 +248,19 @@ static int process_message(int sock)
                     l = l->next;
                 }
             }
+
+            if ( rfs_put_name &&
+                 (
+                    command.cmd == PUTGRNAM ||
+                    command.cmd == PUTPWNAM
+                 )
+               )
+            {
+                if (log) printf("    Assigned %d, return  now\n",command.id);
+                return 1;
+            }
         break;
+
         case GETGRGID:
         case GETPWUID:
             if ( log ) printf("Message received: %s(%d)\n",
@@ -245,8 +278,8 @@ static int process_message(int sock)
                rfs_idmap_t *u = (rfs_idmap_t*)l->data;
                if ( u->id == command.id )
                {
-                   strncpy(command.name, u->name, 8);
-                   command.name[8] = 0;
+                   strncpy(command.name, u->name, RFS_LOGIN_NAME_MAX);
+                   command.name[RFS_LOGIN_NAME_MAX] = 0;
                    command.found   = 1;
                    break;
                }
@@ -359,13 +392,26 @@ int main(int argc,char **argv)
     int            ret  = 1;
     int            daemonize = 1;
     int            opt;
+    char           *prog_name = strrchr(argv[0],'/');
 
-    while ( (opt = getopt(argc, argv, "fl")) != -1 )
+    if ( prog_name == NULL )
+        prog_name = argv[0];
+    else
+        prog_name++;
+
+    while ( (opt = getopt(argc, argv, "flr")) != -1 )
     {
         switch(opt)
         {
              case 'f': daemonize = 0; break;
              case 'l': log = 1; break;
+             case 'r':  rfs_put_name = 1; break;
+             default:
+                printf("Syntax: %s [-f] [-l] [-r]\n", prog_name);
+                printf("      -f, start in foreground\n");
+                printf("      -l, print debug info.\n");
+                printf("      -r, name send from rfs\n");
+                return 0;
         }
     }
 
@@ -457,14 +503,6 @@ int main(int argc,char **argv)
      if (daemonize && fork() != 0)
      {
          return 0;
-     }
-
-     /* ceate pid file */
-     FILE *fp = fopen(PIDFILE, "w");
-     if ( fp )
-     {
-         fprintf(fp,"%d\n",getpid());
-         fclose(fp);
      }
 
      main_loop(sock);

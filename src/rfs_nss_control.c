@@ -14,7 +14,6 @@ See the file LICENSE.
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sys/un.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>

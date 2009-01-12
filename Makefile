@@ -23,21 +23,21 @@ all: $(LIBNAME) rfs_nss rfs_nss_ctrl
 
 $(LIBNAME): $(LIB_OBJ)
 	@echo link $@
-	@$(CC) -o $(LIBNAME) $(LIB_OBJ) $(LIB_LDFLAGS) $(LDFLAGS)
+	@$(CC) -o $(LIBNAME) $(LIB_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(CFLAGS)
 
 rfs_nss: $(SVR_OBJ)
 	@echo link $@
-	@$(CC) -o rfs_nss $(SVR_OBJ) $(SVR_LDFLAGS)
+	@$(CC) -o rfs_nss $(SVR_OBJ) $(SVR_LDFLAGS) $(CFLAGS)
 
 rfs_nss_ctrl: $(CTRL_OBJ)
 	@echo link $@
-	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS)
+	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS) $(CFLAGS)
 
 # a simple test program
 test: rfs_nss_test
 rfs_nss_test: test/rfs_nss_test.c $(LIB_OBJ)
 	@echo link $@
-	@$(CC) -g -o rfs_nss_test $< $(SVR_LDFLAGS)
+	@$(CC) -g -o rfs_nss_test $< $(SVR_LDFLAGS) $(CFLAGS)
 
 clean:
 	@echo clean

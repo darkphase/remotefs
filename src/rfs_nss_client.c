@@ -82,7 +82,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     if (sock == -1)
     {
          *error = errno;
+#if defined DEBUG
          perror("connect");
+#endif
          return NSS_STATUS_UNAVAIL;
     }
     struct sockaddr_un sock_address;
@@ -94,7 +96,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     if ( ret == -1 )
     {
          *error = errno;
+#if defined DEBUG
          perror("connect");
+#endif
          close(sock);
          return NSS_STATUS_UNAVAIL;
     }
@@ -120,7 +124,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
        if ( ret == -1 )
        {
            *error = errno;
+#if defined DEBUG
            perror("send");
+#endif
            nss_state = NSS_STATUS_UNAVAIL;
        }
        else
@@ -129,7 +135,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
            if ( ret == -1 )
            {
                *error = errno;
+#if defined DEBUG
                perror("recv");
+#endif
            }
            else if ( command.found == 0 )
            {

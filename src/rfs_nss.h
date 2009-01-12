@@ -24,7 +24,9 @@ typedef enum cmd_e
    GETGRGID,
    INC_CONN,
    DEC_CONN,
-   CHECK_SERVER
+   CHECK_SERVER,
+   PUTPWNAM,
+   PUTGRNAM,
 } cmd_e;
 
 /* For Darwin from <sys/param.h> MAXLOGNAME	255
@@ -39,10 +41,9 @@ typedef enum cmd_e
  *                              _POSIX_LOGIN_NAME_MAX 9
  + According to these differemt values we support only
  * login name with 16 characters and hope that there is
- * no problem on openSolaris
+ * no problem on openSolaris and furher more 256 characters for the server name
  */
- 
-#define RFS_LOGIN_NAME_MAX 16
+#define RFS_LOGIN_NAME_MAX 272
 
 typedef struct cmd_s
 {
