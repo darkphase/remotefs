@@ -18,6 +18,8 @@ See the file LICENSE.
 #include <string.h>
 #include <stdlib.h>
 
+/* #define DEBUG 1 */
+
 /* the values an types used by nss are not the same on all OS
  * so we must have defines and type common for all systems
  */
@@ -97,7 +99,7 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     {
          *error = errno;
 #if defined DEBUG
-         perror("connect");
+         perror("query_server connect");
 #endif
          close(sock);
          return NSS_STATUS_UNAVAIL;
@@ -117,6 +119,10 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
                command.id = *uid;
            break;
            default:
+#if defined DEBUG
+               fprintf(stderr,"query_server wrong message\n");
+#endif
+               close(sock);
                return NSS_STATUS_UNAVAIL;
        }
 
@@ -125,7 +131,7 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
        {
            *error = errno;
 #if defined DEBUG
-           perror("send");
+           perror("query_server send");
 #endif
            nss_state = NSS_STATUS_UNAVAIL;
        }
@@ -136,7 +142,7 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
            {
                *error = errno;
 #if defined DEBUG
-               perror("recv");
+               perror("query_server recv");
 #endif
            }
            else if ( command.found == 0 )
@@ -164,6 +170,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     }
 
     close(sock);
+#if defined DEBUG
+    fprintf(stderr,"query_server return %d\n",nss_state);
+#endif
     return nss_state;
 }
 

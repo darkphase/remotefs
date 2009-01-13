@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
     if ( ret == 0 )
     {
-        ret = control_rfs_nss(command);
+        ret = control_rfs_nss(command, NULL, NULL);
     }
 
     switch(ret)

@@ -20,14 +20,52 @@ See the file LICENSE.
 
 #include "rfs_nss.h"
 
-int control_rfs_nss(int cmd)
+/************************************************************
+ * control_rfs_nss
+ *
+ * Send a command to rfs_nss.
+ *
+ * int   cmd   - INC_CONN, DEC_CONN
+ *               tell rfs_nss that a cleint start/stop,
+ *             - CHECK_SERVER
+ *               check id server is running
+ *             - PUTPWNAM, PUTGRNAM
+ *               tell rfs_nss to store the user/group name
+ *               optionnaly for the given host
+ * char *name  user/group name
+ * char *host  host name or IP
+ *
+ * name and host are madatory for PUTPWNAM and PUTGRNAM and
+ * not used for the other commands.
+ *
+ * Return RFS_NSS_OKR, RFS_NSS_NO_SERVERR oer RFS_NSS_SYS_ERROR
+ *
+ * RFS_NSS_SYS_ERROR is return on parameter error or system call
+ * errors.
+ *
+ ***********************************************************/
+ 
+int control_rfs_nss(const int cmd, const char *name, const char *host)
 {
     /* connect with the rfs clients */
     int ret = RFS_NSS_OK;
     int sock;
     cmd_t command;
     struct stat status;
-    
+
+    /* check for parameters */
+    if ( cmd == PUTPWNAM || cmd == PUTGRNAM )
+    {
+        if ( name == NULL )
+        {
+            return RFS_NSS_SYS_ERROR;
+        }
+    }
+    else if ( !(cmd == CHECK_SERVER || cmd == INC_CONN || cmd == DEC_CONN) )
+    {
+        return RFS_NSS_SYS_ERROR;
+    }
+
     /* check if the socket exist */
     if ( (ret = stat(SOCKNAME, &status)) == -1 )
     {
@@ -55,13 +93,26 @@ int control_rfs_nss(int cmd)
     }
     else
     {
-       command.cmd = cmd;
-       ret = send(sock, &command, sizeof(command), 0);
-       if ( ret == -1 )
-       {
-           perror("send");
-           return RFS_NSS_SYS_ERROR;
-       }
+        command.cmd = cmd;
+        if ( cmd == PUTPWNAM || cmd == PUTGRNAM )
+        {
+            if ( host )
+            {
+                snprintf(command.name, sizeof(command.name),"%s@%s",name,host);
+            }
+            else
+            {
+                snprintf(command.name, sizeof(command.name),"%s",name);
+            }
+        }
+
+        ret = send(sock, &command, sizeof(command), 0);
+        if ( ret == -1 )
+        {
+            perror("send");
+            close(sock);
+            return RFS_NSS_SYS_ERROR;
+        }
     }
 
     close(sock);

@@ -35,9 +35,9 @@ rfs_nss_ctrl: $(CTRL_OBJ)
 
 # a simple test program
 test: rfs_nss_test
-rfs_nss_test: test/rfs_nss_test.c $(LIB_OBJ)
+rfs_nss_test: test/rfs_nss_test.c $(NSSPATH)src/rfs_nss_control.o
 	@echo link $@
-	@$(CC) -g -o rfs_nss_test $< $(SVR_LDFLAGS) $(CFLAGS)
+	@$(CC) -g -o rfs_nss_test $<  $(NSSPATH)src/rfs_nss_control.o $(SVR_LDFLAGS) $(CFLAGS)
 
 clean:
 	@echo clean

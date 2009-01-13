@@ -10,60 +10,8 @@ See the file LICENSE.
 #include <pwd.h>
 #include <grp.h>
 
-#include <sys/stat.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 #include "../src/rfs_nss.h"
 
-int rfs_nss_send(cmd_t *cmd)
-{
-    /* connect with the rfs clients */
-    int ret = RFS_NSS_OK;
-    int sock;
-    struct stat status;
-    
-    /* check if the socket exist */
-    if ( (ret = stat(SOCKNAME, &status)) == -1 )
-    {
-        printf("Server socket not present\n");
-        return RFS_NSS_NO_SERVER;
-    }
-
-    sock = socket(PF_UNIX, SOCK_STREAM, 0);
-    if ( sock == -1 )
-    {
-         perror("connect");
-         return RFS_NSS_SYS_ERROR;
-    }
-
-    struct sockaddr_un sock_address;
-    memset(&sock_address, 0, sizeof(struct sockaddr_un));
-    strcpy(sock_address.sun_path, SOCKNAME);
-    sock_address.sun_family = AF_UNIX;
-
-    ret = connect(sock, (struct sockaddr*)&sock_address, sizeof(struct sockaddr_un));
-    if ( ret == -1 )
-    {
-         perror("connect");
-         close(sock);
-         return RFS_NSS_NO_SERVER;
-    }
-    else
-    {
-       ret = send(sock, cmd, sizeof(cmd_t), 0);
-       if ( ret == -1 )
-       {
-           perror("send");
-           return RFS_NSS_SYS_ERROR;
-       }
-    }
-
-    close(sock);
-    return RFS_NSS_OK;
-}
 
 int main(int argc, char **argv)
 {
@@ -73,7 +21,7 @@ int main(int argc, char **argv)
     gid_t gid = -1;
     char *name = "alice";
     char *server_name = "example.net";
-
+    char  log_host_name[RFS_LOGIN_NAME_MAX];
     if ( argc > 1 )
     {
        name = argv[1];
@@ -89,12 +37,10 @@ int main(int argc, char **argv)
     
     if (pwd == NULL )
     {
-       cmd_t command = {0, };
-       snprintf(command.name, sizeof(command.name), "%s@%s",name,server_name);
-       printf("Check for user %s\n",command.name);
-       command.cmd  = PUTPWNAM;
-       rfs_nss_send(&command);
-       pwd = getpwnam(command.name);
+       snprintf(log_host_name, sizeof(log_host_name), "%s@%s", name, server_name);
+       printf("Check for user %s\n",log_host_name);
+       control_rfs_nss(PUTPWNAM, name, server_name);
+       pwd = getpwnam(log_host_name);
        if ( pwd )
        {
            printf("    Uid for user %s is %d\n",pwd->pw_name, pwd->pw_uid);
@@ -113,11 +59,11 @@ int main(int argc, char **argv)
 
     if ( argc > 2 )
     {
-       name = argv[2];
+        name = argv[2];
     }
     else
     {
-       name = "bob";
+        name = "bob";
     }
 
     printf("Check for group %s\n",name);
@@ -130,12 +76,10 @@ int main(int argc, char **argv)
 
     if (grp == NULL )
     {
-       cmd_t command = {0, };
-       snprintf(command.name, sizeof(command.name), "%s@%s",name,server_name);
-       printf("Check for group %s\n",command.name);
-       command.cmd  = PUTGRNAM;
-       rfs_nss_send(&command);
-       grp = getgrnam(command.name);
+       snprintf(log_host_name, sizeof(log_host_name), "%s@%s",name,server_name);
+       printf("Check for group %s\n",log_host_name);
+       control_rfs_nss(PUTGRNAM, name, server_name);
+       grp = getgrnam(log_host_name);
        if ( grp )
        {
            printf("    Gid for group %s is %d\n",grp->gr_name, grp->gr_gid);

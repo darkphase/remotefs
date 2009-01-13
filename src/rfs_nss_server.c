@@ -30,7 +30,13 @@ See the file LICENSE.
 #include "rfs_nss.h"
 #include "dllist.h"
 
-int rfs_put_name = 0;
+int rfs_put_name = 0; /* main working mode for the server
+                       * 0 = server generate entries on getXnam()
+                       *     request
+                       * 1 = client must send special command
+                       *     for generatimg of entries
+                       */
+
 typedef struct rfs_idmap_s
 {
     char *name;
@@ -118,22 +124,28 @@ static int open_socket(void)
     return sock;
 }
 
-/***************************************
+/**********************************************************
  *
  * process_message()
  *
  * get ans answer the messages from the resolver
  * library
  *
- */
+ * int sock the socked handle for comminication
+ *
+ * return 0 on error, 1 on succeess
+ *
+ ***********************************************************/
 
 static int process_message(int sock)
 {
     cmd_t command;
-    list_t *l = NULL;
+    list_t *list = NULL;
     int hashVal = 0;
+
     /* get message */
     int ret = recv(sock, &command, sizeof(command), 0);
+
     if ( ret == -1 )
     {
         return 0;
@@ -168,14 +180,15 @@ static int process_message(int sock)
 
             command.id = 0;
             if ( command.cmd == GETGRNAM )
-                l = group_list;
+                list = group_list;
             else
-                l = user_list;
+                list = user_list;
 
             /* search entry for given name */
-            while ( (l = list_iterate(user_list, &l)) )
+//            while ( (list = list_iterate(user_list, &list)) )
+            while ( list )
             {
-               rfs_idmap_t *u = (rfs_idmap_t*)l->data;
+               rfs_idmap_t *u = (rfs_idmap_t*)list->data;
 
                if ( strncmp( u->name, command.name, RFS_LOGIN_NAME_MAX) == 0 )
                {
@@ -183,6 +196,7 @@ static int process_message(int sock)
                    command.found = 1;
                    break;
                }
+               list = list->next;
             }
 
             if ( rfs_put_name )
@@ -196,9 +210,9 @@ static int process_message(int sock)
             if (command.found == 0 )
             {
                 if ( command.cmd == PUTGRNAM || command.cmd == GETGRNAM)
-                    l = group_list;
+                    list = group_list;
                 else if ( command.cmd == PUTPWNAM || command.cmd == GETPWNAM )
-                    l = user_list;
+                    list = user_list;
 
                 if ( rfs_put_name && log && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
                 {
@@ -211,16 +225,16 @@ static int process_message(int sock)
                 hashVal = calculate_hash(command.name);
 
                 /* and insert this into our list */
-                while (l)
+                while (list)
                 {
-                    if ( ((rfs_idmap_t*)(l->data))->id > hashVal )
+                    if ( ((rfs_idmap_t*)(list->data))->id > hashVal )
                     {
                         /* mo mame with this id, insert data */
                         rfs_idmap_t * map = calloc(sizeof(rfs_idmap_t),1);
                         if ( map == NULL )
                         {
                              if ( log ) perror("calloc");
-                             return 0;
+                             break;
                         }
 
                         map->id = hashVal;
@@ -228,33 +242,28 @@ static int process_message(int sock)
                         if ( map->name == NULL )
                         {
                              if ( log ) perror("calloc");
-                             return 0;
+                             break;
                         }
 
                         command.found = 1;
                         command.id    = hashVal;
-                        if ( list_insert(&l, map, NULL) == 0 )
+                        if ( list_insert(&list, map, NULL) == 0 )
                         {
                              if ( log ) perror("calloc");
-                             return 0;
+                             break;
                         }
                         break;
                     }
-                    else if ( ((rfs_idmap_t*)(l->data))->id == hashVal )
+                    else if ( ((rfs_idmap_t*)(list->data))->id == hashVal )
                     {
                        /* the id is allready used, increase (a new id) */
                        hashVal++;
                     }
-                    l = l->next;
+                    list = list->next;
                 }
             }
 
-            if ( rfs_put_name &&
-                 (
-                    command.cmd == PUTGRNAM ||
-                    command.cmd == PUTPWNAM
-                 )
-               )
+            if ( rfs_put_name && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
                 if (log) printf("    Assigned %d, return  now\n",command.id);
                 return 1;
@@ -269,13 +278,14 @@ static int process_message(int sock)
                               command.id);
             command.name[0] = '\0';
             if ( command.cmd == GETGRGID )
-                l = group_list;
+                list = group_list;
             else
-                l = user_list;
+                list = user_list;
+
             /* search only the corresponding entry */
-            while ( (l = list_iterate(user_list, &l)) )
+            while ( list )
             {
-               rfs_idmap_t *u = (rfs_idmap_t*)l->data;
+               rfs_idmap_t *u = (rfs_idmap_t*)list->data;
                if ( u->id == command.id )
                {
                    strncpy(command.name, u->name, RFS_LOGIN_NAME_MAX);
@@ -283,13 +293,17 @@ static int process_message(int sock)
                    command.found   = 1;
                    break;
                }
+               list = list->next;
             }
         break;
     }
 
-    if ( log ) printf("    Answer: name = %s, id = %d\n",
-                      command.name, command.id);
-
+    if ( log )
+    {
+        printf("    Answer: name = %s, id = %d found %d\n", command.name, command.id, command.found);
+    }
+    
+    /* answer queries from library */
     send(sock, &command, sizeof(command),0 );
     return 1; /* all was OK */
 }
@@ -357,8 +371,10 @@ static int add_to_list(list_t **root, rfs_idmap_t *data, uid_t id)
     }
     else
     {
-         list_t *elem = NULL;
-         while ( (elem = list_iterate(*root, &elem)) )
+//         list_t *elem = NULL;
+//         while ( (elem = list_iterate(*root, &elem)) )
+         list_t *elem = *root;
+         while ( elem  )
          {
             if( ((rfs_idmap_t*)(elem->data))->id > id)
             {
@@ -370,6 +386,7 @@ static int add_to_list(list_t **root, rfs_idmap_t *data, uid_t id)
                  ret =list_add(&elem, data, NULL);
                  break;
             }
+            elem = elem->next;
          }
      }
      return ret;
@@ -416,7 +433,7 @@ int main(int argc,char **argv)
     }
 
     /* check first for eunning server */
-    switch (control_rfs_nss(CHECK_SERVER))
+    switch (control_rfs_nss(CHECK_SERVER, NULL, NULL))
     {
         case RFS_NSS_OK:
             /* a server is running, don't start */
