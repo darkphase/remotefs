@@ -18,6 +18,7 @@ See the file LICENSE.
 #include <string.h>
 #include <stdlib.h>
 
+
 /* #define DEBUG 1 */
 
 /* the values an types used by nss are not the same on all OS
@@ -118,6 +119,17 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
            case GETGRGID:
                command.id = *uid;
            break;
+           case GETPWENT:
+           case GETGRENT:
+               command.id = *uid;
+           break;
+           case SETGRENT:
+           case SETPWENT:
+           case ENDPWENT:
+           case ENDGRENT:
+               command.id = *uid;
+               command.name[0] = '\0';
+           break;
            default:
 #if defined DEBUG
                fprintf(stderr,"query_server wrong message\n");
@@ -157,11 +169,28 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
                    case GETGRNAM:
                        *uid = command.id;
                    break;
+
                    case GETPWUID:
                    case GETGRGID:
                        strncpy(name, command.name, RFS_LOGIN_NAME_MAX);
                        name[RFS_LOGIN_NAME_MAX] = '\0';
                    break;
+
+                   case GETPWENT:
+                   case GETGRENT:
+                       strncpy(name, command.name, RFS_LOGIN_NAME_MAX);
+                       name[RFS_LOGIN_NAME_MAX] = '\0';
+                       *uid = command.id;
+                   break;
+
+                   case ENDPWENT:
+                   case ENDGRENT:
+                   case SETPWENT:
+                   case SETGRENT:
+                       command.name[0] = '\0';
+                       *uid = 0;
+                   break;
+
                    default:
                        nss_state = NSS_STATUS_UNAVAIL;
                }
@@ -411,6 +440,149 @@ NSS_STATUS _nss_rfs_getgrgid_r(uid_t gid,
     }
     return ret;
 
+}
+
+/**********************************************************
+ *
+ * _nss_rfs_setpwent()
+ *
+ * Tell rfs_nss that for this process the list of pw entries
+ * will be asked
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_setpwent(void)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_setpwent\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    int error = 0;
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(SETPWENT, name, (uid_t*)&pid, &error);
+    return ret;
+}
+
+/**********************************************************
+ *
+ * _nss_rfs_getpwent_r()
+ *
+ * Tell rfs_nss that this process want the next entry.
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_getpwent_r(struct passwd *result,
+                               char *buffer,
+                               size_t buflen, 
+                               int *errnop)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_getpwent_r\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(GETPWENT, name, (uid_t*)&pid, errnop);
+    if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+    {
+        ret = build_pwd(name, (uid_t)pid, result, buffer, buflen, errnop);
+    }
+    return ret;
+}
+
+/**********************************************************
+ *
+ * _nss_rfs_endwent()
+ *
+ * Tell rfs_nss that this process has finished it work.
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_endpwent(void)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_endpwent\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    int error = 0;
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(ENDPWENT, name, (uid_t*)&pid, &error);
+    return ret;
+}
+
+/**********************************************************
+ *
+ * _nss_rfs_setgrent()
+ *
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_setgrent(void)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_setgrent\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    int error = 0;
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(SETGRENT, name, (uid_t*)&pid, &error);
+    return ret;
+}
+
+/**********************************************************
+ *
+ * _nss_rfs_endgrent()
+ *
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_endgrent(void)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_endgrent\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    int error = 0;
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(ENDGRENT, name, (uid_t*)&pid, &error);
+    return ret;
+}
+
+
+/**********************************************************
+ *
+ * _nss_rfs_getgrent()
+ *
+ *
+ **********************************************************/
+
+NSS_STATUS _nss_rfs_getgrent_r(struct group *result,
+                               char *buffer,
+                               size_t buflen, 
+                               int *errnop)
+{
+#if defined DEBUG
+    fprintf(stderr,"_nss_rfs_getgrent_r\n");
+#endif
+    int ret = NSS_STATUS_UNAVAIL;
+    char name[RFS_LOGIN_NAME_MAX];
+    pid_t pid = getpid();
+    name[0] = '\0';
+    ret = query_server(GETGRENT, name, (uid_t*)&pid, errnop);
+    if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+    {
+        ret = build_grp(name, (uid_t)pid, result, buffer, buflen, errnop);
+    }
+    return ret;
 }
 
 /* The following included files contain the initialization and

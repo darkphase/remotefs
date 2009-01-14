@@ -276,7 +276,7 @@ int list_remove(list_t **root, list_t *list)
          next->prev = prev;
       }
       free(list);
-      list = prev;
+//      list = prev;
    }
    else
    {
@@ -287,7 +287,7 @@ int list_remove(list_t **root, list_t *list)
       }
       free(list);
       *root = next;
-      list = next;
+//      list = next;
      
    }
    return 1;

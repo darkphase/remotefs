@@ -27,6 +27,12 @@ typedef enum cmd_e
    CHECK_SERVER,
    PUTPWNAM,
    PUTGRNAM,
+   GETPWENT,
+   GETGRENT,
+   SETPWENT,
+   SETGRENT,
+   ENDPWENT,
+   ENDGRENT,
 } cmd_e;
 
 /* For Darwin from <sys/param.h> MAXLOGNAME	255
