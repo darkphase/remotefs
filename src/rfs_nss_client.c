@@ -19,7 +19,7 @@ See the file LICENSE.
 #include <stdlib.h>
 
 
-/* #define DEBUG 1 */
+/*#define DEBUG 1 */
 
 /* the values an types used by nss are not the same on all OS
  * so we must have defines and type common for all systems
@@ -201,6 +201,9 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     close(sock);
 #if defined DEBUG
     fprintf(stderr,"query_server return %d\n",nss_state);
+    fprintf(stderr,"   id    %d\n",command.id);
+    fprintf(stderr,"   found %d\n",command.found);
+    fprintf(stderr,"   name  %s\n",command.name);
 #endif
     return nss_state;
 }
@@ -315,7 +318,13 @@ static NSS_STATUS build_grp(const char *grnam,
                             int *errnop)
 {
     size_t pos = 0;
-    int len = strlen(grnam);
+    int len = 0;
+    if ( grnam == NULL )
+    {
+       return NSS_STATUS_NOTFOUND;
+    }
+    len = strlen(grnam);
+
     if ( pos + len + 1 < buflen )
     {
        result->gr_name = buffer;
@@ -341,8 +350,17 @@ static NSS_STATUS build_grp(const char *grnam,
     }
 
     result->gr_gid = gid;
-    
-    result->gr_mem = NULL;
+
+    if ( pos + sizeof(char*) < buflen )
+    {
+        result->gr_mem = (char**)buffer+pos;
+        *result->gr_mem = NULL;
+    }
+    else
+    {
+        *errnop = ERANGE;
+        return NSS_STATUS_TRYAGAIN;
+    }
 
     return NSS_STATUS_SUCCESS;
 
@@ -442,6 +460,19 @@ NSS_STATUS _nss_rfs_getgrgid_r(uid_t gid,
 
 }
 
+/* with this we can remember the state for the set/get/end Xent()
+ * functions and return the correct values
+ */
+ 
+typedef struct rfs_ent_stat_s
+{
+    uid_t last_id;
+    int   end;
+} rfs_ent_stat_t;
+
+static rfs_ent_stat_t rfs_pwent_stat = {0, 0};
+static rfs_ent_stat_t rfs_grent_stat = {0, 0};
+
 /**********************************************************
  *
  * _nss_rfs_setpwent()
@@ -456,13 +487,9 @@ NSS_STATUS _nss_rfs_setpwent(void)
 #if defined DEBUG
     fprintf(stderr,"_nss_rfs_setpwent\n");
 #endif
-    int ret = NSS_STATUS_UNAVAIL;
-    char name[RFS_LOGIN_NAME_MAX];
-    int error = 0;
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(SETPWENT, name, (uid_t*)&pid, &error);
-    return ret;
+    rfs_pwent_stat.end = 0;
+    rfs_pwent_stat.last_id = (uid_t)0;
+    return NSS_STATUS_SUCCESS;
 }
 
 /**********************************************************
@@ -483,12 +510,22 @@ NSS_STATUS _nss_rfs_getpwent_r(struct passwd *result,
 #endif
     int ret = NSS_STATUS_UNAVAIL;
     char name[RFS_LOGIN_NAME_MAX];
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(GETPWENT, name, (uid_t*)&pid, errnop);
-    if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+    if ( rfs_pwent_stat.end == 0 )
     {
-        ret = build_pwd(name, (uid_t)pid, result, buffer, buflen, errnop);
+        name[0] = '\0';
+        ret = query_server(GETPWENT, name, (uid_t*)&rfs_pwent_stat.last_id, errnop);
+        if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+        {
+            ret = build_pwd(name, rfs_pwent_stat.last_id, result, buffer, buflen, errnop);
+        }
+        else if ( ret == NSS_STATUS_NOTFOUND )
+        {
+            rfs_pwent_stat.end = 1;
+        }
+    }
+    else
+    {
+         ret = NSS_STATUS_NOTFOUND;
     }
     return ret;
 }
@@ -506,13 +543,7 @@ NSS_STATUS _nss_rfs_endpwent(void)
 #if defined DEBUG
     fprintf(stderr,"_nss_rfs_endpwent\n");
 #endif
-    int ret = NSS_STATUS_UNAVAIL;
-    char name[RFS_LOGIN_NAME_MAX];
-    int error = 0;
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(ENDPWENT, name, (uid_t*)&pid, &error);
-    return ret;
+    return NSS_STATUS_SUCCESS;
 }
 
 /**********************************************************
@@ -527,13 +558,9 @@ NSS_STATUS _nss_rfs_setgrent(void)
 #if defined DEBUG
     fprintf(stderr,"_nss_rfs_setgrent\n");
 #endif
-    int ret = NSS_STATUS_UNAVAIL;
-    char name[RFS_LOGIN_NAME_MAX];
-    int error = 0;
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(SETGRENT, name, (uid_t*)&pid, &error);
-    return ret;
+    rfs_grent_stat.end = 0;
+    rfs_grent_stat.last_id = (uid_t)0;
+    return NSS_STATUS_SUCCESS;
 }
 
 /**********************************************************
@@ -548,13 +575,7 @@ NSS_STATUS _nss_rfs_endgrent(void)
 #if defined DEBUG
     fprintf(stderr,"_nss_rfs_endgrent\n");
 #endif
-    int ret = NSS_STATUS_UNAVAIL;
-    char name[RFS_LOGIN_NAME_MAX];
-    int error = 0;
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(ENDGRENT, name, (uid_t*)&pid, &error);
-    return ret;
+    return NSS_STATUS_SUCCESS;
 }
 
 
@@ -575,12 +596,22 @@ NSS_STATUS _nss_rfs_getgrent_r(struct group *result,
 #endif
     int ret = NSS_STATUS_UNAVAIL;
     char name[RFS_LOGIN_NAME_MAX];
-    pid_t pid = getpid();
-    name[0] = '\0';
-    ret = query_server(GETGRENT, name, (uid_t*)&pid, errnop);
-    if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+    if ( rfs_grent_stat.end == 0 )
     {
-        ret = build_grp(name, (uid_t)pid, result, buffer, buflen, errnop);
+        name[0] = '\0';
+        ret = query_server(GETPWENT, name, (uid_t*)&rfs_grent_stat.last_id, errnop);
+        if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
+        {
+            ret = build_grp(name, rfs_grent_stat.last_id, result, buffer, buflen, errnop);
+        }
+        else if ( ret == NSS_STATUS_NOTFOUND )
+        {
+            rfs_grent_stat.end = 1;
+        }
+    }
+    else
+    {
+         ret = NSS_STATUS_NOTFOUND;
     }
     return ret;
 }

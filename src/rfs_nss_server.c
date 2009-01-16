@@ -50,17 +50,6 @@ static list_t *group_list = NULL;
 static int     log = 0;
 static int     connections = 1; /* number of rfs client */
 
-typedef struct pid_list_s
-{
-    pid_t   pid;
-    list_t *idmap_list;
-    time_t  time;
-} pid_list_t;
-
-static list_t *user_plist  = NULL;
-static list_t *group_plist = NULL;
-
-
 /***************************************
  *
  * signal_handler()
@@ -75,155 +64,6 @@ static void signal_handler(int code)
     unlink(SOCKNAME);
     exit(1);
 }
-
-int remove_pid_entry(pid_t pid, int command)
-{
-    list_t *list = NULL;
-    pid_list_t *pid_list = NULL;
-
-    /* Check which list and if no data
-     * return
-     */
-    if ( command == SETPWENT || command == ENDPWENT)
-    {
-        list = user_plist;
-    }
-    else
-    {
-        list = group_plist;
-    }
-
-    if ( list == NULL )
-    {
-        return 1;
-    }
-
-    while(list)
-    {
-         pid_list = (pid_list_t*)list->data;
-         if ( pid_list && pid_list->pid == pid )
-         {
-             /* found, remove it */
-             if ( list->data )
-                 free(list->data);
-             list_remove((command == SETPWENT || command == ENDPWENT) ?
-                            &user_plist :
-                            &group_plist,
-                         list);
-             break;
-         }
-         list = list->next;
-    }
-    return 1;
-}
-
-/***************************************
- *
- * get_pid_entry()
- *
- * Look for the given pid of a list is available
- * if no make one and return the root user/group element
- * if found return the next element
- *
- */
-
-int get_pid_entry(pid_t pid, int command, list_t **entry)
-{
-    list_t *list;
-    pid_list_t *pid_list = NULL;
-
-    *entry = (list_t *)NULL;
-
-    /* Check which list and if no data
-     * return
-     */
-    if ( command == GETPWENT )
-    {
-        if ( user_list == NULL )
-        {
-           return 0;
-        }
-        list = user_plist;
-    }
-    else
-    {
-        if ( group_list == NULL )
-        {
-           return 0;
-        }
-        list = group_plist;
-    }
-
-    /* for all process list elements */
-    list_t *id_list = NULL;
-    while(list)
-    {
-        pid_list = (pid_list_t*)list->data;
-        if ( pid_list->pid == pid )
-        {
-            /* the right process list is found */
-            /* set the next non sys idmap element */
-            id_list = pid_list->idmap_list;
-            while(id_list)
-            {
-                id_list = id_list->next;
-                if ( id_list == NULL )
-                {
-                    break;
-                }
-                rfs_idmap_t *idmap = (rfs_idmap_t *)id_list->data;
-                if ( idmap->sys == 0 )
-                {
-                    break;
-                }
-            }
-
-            if ( id_list )
-            {
-                *entry = pid_list->idmap_list = id_list;
-            }
-            else
-            {
-               /* no more element */
-               *entry = (list_t *)NULL;
-            }
-            return 1;
-        }
-        list = list->next;
-    }
-
-   /* at this stage we have not found  an entry for the given
-    * pid, generate one id we have no sys imap elements within it
-    */
-    list = command == GETPWENT ? user_list : group_list;
-
-    while ( list )
-    {
-         rfs_idmap_t *idmap = (rfs_idmap_t *)list->data;
-         if ( idmap->sys == 0 )
-         {
-             break;
-         }
-         list = list->next;
-    }
-    
-    if ( list )
-    {
-        pid_list = (pid_list_t*)calloc(sizeof(pid_list_t),1);
-        if ( pid_list == NULL )
-        {
-            if (log) perror("calloc");
-            return 0;
-        }
-        pid_list->time = time(NULL);
-        pid_list->pid  = pid;
-        *entry = pid_list->idmap_list = list;
-        list_insert(command == GETPWENT ? &user_plist : &group_plist,
-                    pid_list, NULL);
-    }
-    return 1;
-}
-
 
 /***************************************
  *
@@ -340,11 +180,17 @@ static int process_message(int sock)
                               command.cmd == GETPWENT
                                   ? "getpwent" : "getgrent");
 
-            /* check if we allready have an entry for this pocess */
-            pid_t pid  = (pid_t)command.id;
-            command.id = 0;
+            list = command.cmd == GETPWENT ? user_list: group_list;
             command.name[0] = '\0';
-            get_pid_entry(pid, command.cmd, &list);
+            while(list)
+            {
+               rfs_idmap_t *map = (rfs_idmap_t*)list->data;
+               if ( map->id > command.id && ! map->sys )
+               {
+                   break;
+               }
+               list = list->next;
+            }
 
             if ( list )
             {
@@ -355,41 +201,26 @@ static int process_message(int sock)
             }
         break;
 
-        case ENDPWENT:
-        case ENDGRENT:
-            if ( log ) printf("Message received: %s\n",
-                              command.cmd == ENDPWENT
-                                  ? "endpwent" : "endgrent");
-            pid  = (pid_t)command.id;
-            remove_pid_entry(pid, command.cmd);
-            command.id    = 0;
-            command.found = 1;
-        break;
-
-        case SETPWENT:
-        case SETGRENT:
-            if ( log ) printf("Message received: %s\n",
-                              command.cmd == SETPWENT
-                                  ? "setpwent" : "setgrent");
-            pid  = (pid_t)command.id;
-            remove_pid_entry(pid, command.cmd);
-            command.id    = 0;
-            command.found = 1;
-        break;
-
+        case PUTGRNAM:
+        case PUTPWNAM:
         case GETGRNAM:
         case GETPWNAM:
             if ( log ) printf("Message received: %s(%s)\n",
-                              command.cmd == GETGRNAM
-                                  ? "getgrnam" : "getpwnam",
+                                command.cmd == GETGRNAM
+                              ? "getgrnam"
+                              : command.cmd == GETPWNAM
+                              ? "getpwnam"
+                              : command.cmd == PUTPWNAM
+                              ? "putpwnam"
+                              : "putgrnam",
                               command.name);
 
             command.id = 0;
-            if ( command.cmd == GETGRNAM )
+            if ( command.cmd == GETGRNAM || command.cmd == PUTGRNAM)
                 list = group_list;
             else
                 list = user_list;
-
+ 
             /* search entry for given name */
             while ( list )
             {
@@ -404,13 +235,11 @@ static int process_message(int sock)
                list = list->next;
             }
 
-            if ( rfs_put_name )
+            if ( rfs_put_name && !(command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
+printf("get X nam break (send answer)\n");
                  break;
             }
-
-        case PUTGRNAM:
-        case PUTPWNAM:
 
             if (command.found == 0 )
             {
@@ -418,13 +247,6 @@ static int process_message(int sock)
                     list = group_list;
                 else if ( command.cmd == PUTPWNAM || command.cmd == GETPWNAM )
                     list = user_list;
-
-                if ( rfs_put_name && log && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
-                {
-                     printf("Message received: %s(%s)\n",
-                            command.cmd == PUTGRNAM ? "putgrnam" : "putpwnam",
-                            command.name);
-                }
 
                 /* the name was not found, calculate an id */
                 hashVal = calculate_hash(command.name);
@@ -466,13 +288,15 @@ static int process_message(int sock)
                     }
                     list = list->next;
                 }
-            }
+ printf("PUT X nam added\n");
+           }
 
             if ( rfs_put_name && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
                 if (log) printf("    Assigned %d, return  now\n",command.id);
                 return 1;
             }
+ printf("SEND result\n");
         break;
 
         case GETGRGID:
@@ -638,7 +462,7 @@ int main(int argc,char **argv)
         }
     }
 
-    /* check first for eunning server */
+    /* check first for running server */
     switch (control_rfs_nss(CHECK_SERVER, NULL, NULL))
     {
         case RFS_NSS_OK:

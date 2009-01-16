@@ -90,7 +90,10 @@ int main(int argc, char **argv)
     if (gid != -1 )
     {
         grp = getgrgid(gid);
-        printf("    Gid %d -> %s\n",grp->gr_gid, grp->gr_name);
+        if ( grp )
+        {
+            printf("    Gid %d -> %s\n",grp->gr_gid, grp->gr_name);
+        }
     }
 
     return 0;
