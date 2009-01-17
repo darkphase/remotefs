@@ -5,20 +5,21 @@
 
 rfspasswd_TARGET = "rfspasswd"
 
-rfspasswd_CFLAGS  = $(CFLAGS_G) \
-	$(CFLAGS_O)
+rfspasswd_CFLAGS  = $(CFLAGS_MAIN) \
+                    $(CFLAGS_OS) \
+                    $(CFLAGS_OPTS)
 
-rfspasswd_LDFLAGS = $(LDFLAGS_G) \
-	$(LDFLAGS_O) \
-	$(LDFLAGS_CRYPT)
+rfspasswd_LDFLAGS = $(LDFLAGS_MAIN) \
+                    -L. -lrfsd \
+                    $(LDFLAGS_OS) \
+                    $(LDFLAGS_NET) \
+                    $(LDFLAGS_OPTS)
+
+
+OS_LIBS = $(rfspasswd_LDFLAGS)
 
 #######################################
 # Define target and object files
 #######################################
 
-rfspasswd_OBJS =  src/rfspasswd.o \
-	src/crypt.o \
-	src/passwd.o \
-	src/list.o \
-	src/buffer.o \
-	src/signals.o
+rfspasswd_OBJS   = src/rfspasswd.o

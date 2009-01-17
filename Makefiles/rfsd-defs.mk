@@ -7,31 +7,21 @@
 rfsd_TARGET = "rfsd"
 
 rfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
-	$(CFLAGS_G) \
-	$(CFLAGS_O) 
+               $(CFLAGS_MAIN) \
+               $(CFLAGS_OS) \
+               $(CFLAGS_OPTS)
 
-rfsd_LDFLAGS = $(LDFLAGS_G) \
-	$(LDFLAGS_O) \
-	$(LDFLAGS_NET) \
-	$(LDFLAGS_PTHR) \
-	$(LDFLAGS_CRYPT)
+rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
+               -L. -lrfsd \
+               $(LDFLAGS_MAIN) \
+               $(LDFLAGS_OS) \
+               $(LDFLAGS_NET) \
+               $(LDFLAGS_OPTS)
 
 #######################################
 # Define target and object files
 #######################################
 
 rfsd_OBJS = src/rfsd.o \
-	src/server_handlers.o \
-	src/exports.o \
-	src/signals_server.o \
-	src/keep_alive_server.o \
-	src/crypt.o \
-	src/passwd.o \
-	src/list.o \
-	src/buffer.o \
-	src/signals.o \
-	src/sendrecv.o \
-	src/command.o \
-	src/path.o \
-	src/id_lookup.o \
-	src/read_cache.o
+            src/signals_server.o \
+            src/sug_server.o

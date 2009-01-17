@@ -1,10 +1,26 @@
-sendrecv.c
-- error handling for rfs_send_cmd_data() and rfs_send_answer_data
-- if the fuse option direct_io is passed to fuse, there will be some
-  troubles, rfs shall test the fuse options aginst such options and
-  remove them.
-
 0.11
-- lock
-- timeout for sockets send/recv
-- performance improvements
++ lock
++ timeout for sockets send/recv
++ performance improvements
+  + background read
+  + background write
++ locked files clearing on server
++ operations return values reviewed (with respect to POSIX.1)
+  + cleanup on client if EBADMSG encountered 
+    (if valid answer only, otherwise abort connection)
++ operations resuming on client
+  + operations resuming in background read/write
++ SSL support
+- suggestions
++ write operation should clear read cache for that file
++ read operation should flush that file before actual reading
++ server shouldn't use lookup_* funcs, but get_* instead
++ EREMOTEIO and EBADE should be eliminated from code
+
+bugs:
++ support of files >2Gb (uint64_t for size_t?)
++ proper clearing of attributes cache
+
+releases:
++ rpms reviewed (without root permissions)
+- gentoo ebuild and init.d script

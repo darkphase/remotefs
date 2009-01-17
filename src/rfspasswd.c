@@ -20,22 +20,23 @@ See the file LICENSE.
 #include "signals.h"
 
 static char *login = NULL;
-enum operations operation = OP_DEFAULT;
+static enum operations operation = OP_DEFAULT;
 static struct termios stored_settings = { 0 };
 static unsigned need_to_restore_termio = 0;
+static struct list *auths = NULL;
 
 /* forward declarations */
-static int change_password(const char *login);
-static int delete_password(const char *login);
-static int lock_password(const char *login);
-static int unlock_password(const char *login);
+int change_password(const char *login);
+int delete_password(const char *login);
+int lock_password(const char *login);
+int unlock_password(const char *login);
 
 static void usage(const char *app_name)
 {
 	printf("usage: %s [options] [LOGIN]\n"
 	"\n"
 	"Options:\n"
-	"-d\t\tdelete the password for the named account\n"
+	"-d\t\tdelete the named account\n"
 	"-h\t\tdisplay this help message and exit\n"
 	"-l\t\tlock the named account\n"
 	"-u\t\tunlock the named account\n"
@@ -150,14 +151,12 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
-	int load_ret = load_passwords();
+	int load_ret = load_passwords(&auths);
 	if (load_ret != 0)
 	{
 		ERROR("Error loading passwords: %s\n", strerror(-load_ret));
 		exit(1);
 	}
-	
-	dump_passwords();
 	
 	install_signal_handlers();
 	
@@ -193,7 +192,7 @@ int main(int argc, char **argv)
 	
 	if (ret == 0)
 	{
-		int save_ret = save_passwords();
+		int save_ret = save_passwords(auths);
 		if (save_ret != 0)
 		{
 			ERROR("Error saving passwords: %s\n", strerror(-save_ret));
@@ -201,7 +200,11 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	release_passwords();
+#ifdef RFS_DEBUG
+	dump_passwords(auths);
+#endif
+	
+	release_passwords(&auths);
 	
 	return ret;
 }
@@ -223,14 +226,23 @@ int change_password(const char *login)
 	
 	tcsetattr(0, TCSANOW, &new_settings);
 	
-	fgets(password1, sizeof(password1) - 1, stdin);
+	if (fgets(password1, sizeof(password1) - 1, stdin) == NULL)
+	{
+		memset(password1, 0, sizeof(password1));
+		return -1;
+	}
 
 	tcsetattr(0, TCSANOW, &stored_settings);
 	printf("\n");
 	printf("Repeat password: ");
 	tcsetattr(0, TCSANOW, &new_settings);
 	
-	fgets(password2, sizeof(password2) - 1, stdin);
+	if (fgets(password2, sizeof(password2) - 1, stdin) == NULL)
+	{
+		memset(password1, 0, sizeof(password1));
+		memset(password2, 0, sizeof(password2));
+		return -1;
+	}
 	
 	tcsetattr(0, TCSANOW, &stored_settings);
 	printf("\n");
@@ -256,7 +268,7 @@ int change_password(const char *login)
 	char *passwd = passwd_hash(password1, EMPTY_SALT);
 	memset(password1, 0, sizeof(password1));
 	
-	if (add_or_replace_auth(login, passwd) != 0)
+	if (add_or_replace_auth(&auths, login, passwd) != 0)
 	{
 		ERROR("%s\n", "Error adding item to passwords list");
 		
@@ -273,7 +285,7 @@ int change_password(const char *login)
 
 int lock_password(const char *login)
 {
-	const char *auth_passwd = get_auth_password(login);
+	const char *auth_passwd = get_auth_password(auths, login);
 	if (auth_passwd == NULL)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
@@ -297,7 +309,7 @@ int lock_password(const char *login)
 	passwd[0] = '*';
 	strcat(passwd, auth_passwd);
 	
-	if (change_auth_password(login, passwd) != 0)
+	if (change_auth_password(&auths, login, passwd) != 0)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
 		
@@ -314,7 +326,7 @@ int lock_password(const char *login)
 
 int unlock_password(const char *login)
 {
-	const char *auth_passwd = get_auth_password(login);
+	const char *auth_passwd = get_auth_password(auths, login);
 	if (auth_passwd == NULL)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
@@ -333,7 +345,7 @@ int unlock_password(const char *login)
 		return 1;
 	}
 	
-	if (change_auth_password(login, auth_passwd + 1) != 0)
+	if (change_auth_password(&auths, login, auth_passwd + 1) != 0)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
 		
@@ -347,14 +359,14 @@ int unlock_password(const char *login)
 
 int delete_password(const char *login)
 {
-	const char *auth_passwd = get_auth_password(login);
+	const char *auth_passwd = get_auth_password(auths, login);
 	if (auth_passwd == NULL)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
 		return 1;
 	}
 	
-	if (delete_auth(login) != 0)
+	if (delete_auth(&auths, login) != 0)
 	{
 		ERROR("%s\n", "Specified account isn't exist");
 		

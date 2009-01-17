@@ -7,16 +7,19 @@ See the file LICENSE.
 */
 
 #include <unistd.h>
+#if ! ( defined DARWIN || defined QNX )
 #include <crypt.h>
+#endif
 #include <string.h>
 
 #include "config.h"
 #include "crypt.h"
+#include "md5crypt/crypt_md5.h"
 
 char *passwd_hash(const char *password, const char *salt)
 {
-	char *passwd = crypt(password, salt);
-	
+	char *passwd = md5_crypt(password, salt);
+
 	if (passwd == NULL)
 	{
 		return 0;

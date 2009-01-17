@@ -15,7 +15,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** get hash of password */
+/** get md5-hash of password, don't forget to free() returned value */
 char *passwd_hash(const char *password, const char *salt);
 
 #if defined (__cplusplus) || defined (c_plusplus)

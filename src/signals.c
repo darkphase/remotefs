@@ -9,6 +9,9 @@ See the file LICENSE.
 #include <string.h>
 
 #include "signals.h"
+#if defined QNX
+#define SA_RESTART 0
+#endif
 
 void install_signal_handler(int sig, void (*signal_proc)(int , siginfo_t *, void *))
 {

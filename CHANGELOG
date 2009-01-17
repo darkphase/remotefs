@@ -1,7 +1,33 @@
+0.11
+
+[+] links support in SVN
+[+] support of files bigger than 2GB
+[+] SSL support in SVN
+[+] suggestions for client and server
+[+] server's exports listing in SVN
+[+] POSIX ACL support in SVN
+
+[*] added dependency against libc
+
+rfsd:
+
+[*] read-ahead is replaced with sendfile
+[*] no more dependency against libcrypt
+[*] improved reconnect support
+
+rfs:
+[+] FUSE API switched to 2.6 (2.5 support is still there)
+[+] better connection resume supports
+[+] background prefetch and write
+
+[*] fixed cache clearing after connection is lost  and restored
+[*] fixed memory leak in attributes cache
+
 0.10-3
 
-[*] fixed x86_64 compilation error
 [+] tarball package support
+
+[*] fixed x86_64 compilation error
 
 0.10-2
 

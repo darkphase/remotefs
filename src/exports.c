@@ -21,15 +21,13 @@ See the file LICENSE.
 #include "buffer.h"
 #include "list.h"
 #include "rfsd.h"
+#include "utils.h"
 
 #ifdef RFS_DEBUG
 static const char *exports_file = "./rfs-exports";
 #else
 static const char *exports_file = "/etc/rfs-exports";
 #endif /* RFS_DEBUG */
-static struct list *exports = NULL;
-
-static void release_export(struct rfs_export *single_export);
 
 #ifdef RFS_DEBUG
 static void dump_export(const struct rfs_export *single_export);
@@ -97,24 +95,6 @@ static const char* find_chr(const char *buffer, const char *border, const char *
 	}
 	
 	return min_ptr;
-}
-
-unsigned is_ipaddr(const char *string)
-{
-#ifndef WITH_IPV6
-	return inet_addr(string) == INADDR_NONE ? 0 : 1;
-#else
-	if (strchr(string,':'))
-	{
-		/* may be an IPv6 address */
-		struct sockaddr_in6 addr;
-		return inet_pton(AF_INET6, string, &(addr.sin6_addr)) == -1 ? 0 : 1;
-	}
-	else
-	{
-		return inet_addr(string) == INADDR_NONE ? 0 : 1;
-	}
-#endif
 }
 
 static int set_export_opts(struct rfs_export *opts_export, const struct list *opts)
@@ -209,18 +189,10 @@ static struct list* parse_list(const char *buffer, const char *border)
 		memcpy(item, local_buffer, len);
 		item[len] = 0;
 		
-		struct list *added = add_to_list(ret, item);
-		if (added == NULL)
+		if (add_to_list(&ret, item) == NULL)
 		{
-			destroy_list(ret);
+			destroy_list(&ret);
 			return NULL;
-		}
-		else
-		{
-			if (ret == NULL)
-			{
-				ret = added;
-			}
 		}
 		
 		if (delimiter == NULL)
@@ -306,21 +278,21 @@ static char* parse_line(const char *buffer, unsigned size, int start_from, struc
 			if (set_export_opts(line_export, this_line_options) != 0)
 			{
 				free_buffer(share);
-				destroy_list(this_line_users);
-				destroy_list(this_line_options);
+				destroy_list(&this_line_users);
+				destroy_list(&this_line_options);
 				return (char *)-1;
 			}
 			
 			if (this_line_options != NULL)
 			{
-				destroy_list(this_line_options);
+				destroy_list(&this_line_options);
 			}
 		}
 		else
 		{
 			free_buffer(share);
-			destroy_list(this_line_users);
-			destroy_list(this_line_options);
+			destroy_list(&this_line_users);
+			destroy_list(&this_line_options);
 			
 			return (char *)-1;
 		}
@@ -361,7 +333,7 @@ static int validate_export(const struct rfs_export *line_export)
 	return 0;
 }
 
-unsigned parse_exports()
+unsigned parse_exports(struct list **exports, uid_t worker_uid, gid_t worker_gid)
 {
 	FILE *fd = fopen(exports_file, "rt");
 	if (fd == 0)
@@ -427,24 +399,17 @@ unsigned parse_exports()
 		
 		if (line_export->export_uid == (uid_t)-1)
 		{
-			line_export->export_uid = rfsd_config.worker_uid;
+			line_export->export_uid = worker_uid;
 		}
 		
 		if (line_export->export_gid == (gid_t)-1)
 		{
-			line_export->export_gid = rfsd_config.worker_gid;
+			line_export->export_gid = worker_gid;
 		}
 		
-		if (line_export->path != NULL 
-		&& line_export->users != NULL)
-		{
-			struct list *added = add_to_list(exports, line_export);
-			if (exports == NULL)
-			{
-				exports = added;
-			}
-		}
-		else
+		if (line_export->path == NULL 
+		|| line_export->users == NULL
+		|| add_to_list(exports, line_export) == NULL)
 		{
 			free_buffer(line_export);
 		}
@@ -461,13 +426,13 @@ unsigned parse_exports()
 static void release_export(struct rfs_export *single_export)
 {
 	free_buffer(single_export->path);
-	destroy_list(single_export->users);
+	destroy_list(&(single_export->users));
 	single_export->users = NULL;
 }
 
-void release_exports()
+void release_exports(struct list **exports)
 {
-	struct list *single_export = exports;
+	struct list *single_export = *exports;
 	while (single_export != NULL)
 	{
 		struct list *next = single_export->next;
@@ -475,12 +440,11 @@ void release_exports()
 		single_export = next;
 	}
 	destroy_list(exports);
-	exports = NULL;
 }
 
-const struct rfs_export* get_export(const char *path)
+const struct rfs_export* get_export(const struct list *exports, const char *path)
 {
-	struct list *single_export = exports;
+	const struct list *single_export = exports;
 	while (single_export != NULL)
 	{
 		const struct rfs_export *export_data = (const struct rfs_export *)single_export->data;
@@ -493,6 +457,11 @@ const struct rfs_export* get_export(const char *path)
 	}
 	
 	return NULL;
+}
+
+const char* exports_filename()
+{
+	return exports_file;
 }
 
 #ifdef RFS_DEBUG
@@ -520,15 +489,15 @@ static void dump_export(const struct rfs_export *single_export)
 }
 #endif /* RFS_DEBUG */
 
-void dump_exports()
-{
 #ifdef RFS_DEBUG
+void dump_exports(const struct list *exports)
+{
 	DEBUG("%s", "dumping exports set:\n");
-	struct list *single_export = exports;
+	const struct list *single_export = exports;
 	while (single_export != NULL)
 	{
 		dump_export(single_export->data);
 		single_export = single_export->next;
 	}
-#endif /* RFS_DEBUG */
 }
+#endif /* RFS_DEBUG */

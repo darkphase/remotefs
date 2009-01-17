@@ -1,17 +1,17 @@
-Name: rfsd
-Summary:A fast remote file system, server
+Name: rfs
+Summary:A fast remote file system, client
 Version:0.10
-Release:1
+Release:2
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net
-Group: System Environment/Daemons
+Group: Applications/File
 URL: http://www.sourceforge.net/projects/remotefs
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-
+Requires: libfuse >= 2.6, libc6 >= 2.4
 
 %description
-rfsd is the server for the fast remote file system remotefs
+remotefs client
 
 
 # -------------------------    prep     -----------------------------------
@@ -20,20 +20,15 @@ rfsd is the server for the fast remote file system remotefs
 
 # -------------------------    build    -----------------------------------
 %build
-make rfsd
-make rfspasswd
+make rfs
 
 # ------------------------    install    -----------------------------------
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
-cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
-cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
-mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
-cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
-gzip -c < man/rfsd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfsd.8.gz
-gzip -c < man/rfspasswd.8 > $RPM_BUILD_ROOT%{_prefix}/share/man/man8/rfspasswd.8.gz
+cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
+cp man/man1/rfs.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -45,21 +40,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-, root, root)
 #%doc homepage/* 
-%attr(755, root,root) %{_prefix}/bin/rfsd
-%attr(755, root,root) %{_prefix}/bin/rfspasswd
-%attr(755, root,root) /etc/rc.d/init.d/rfsd
-%attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
-%attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
+%attr(755, root,root) %{_prefix}/bin/rfs
+%attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
 
 %post
-CHKCONFIGPARM="--add rfsd"
-if [ -x "/sbin/chkconfig" ]; then
-    "/sbin/chkconfig" $CHKCONFIGPARM
-elif [ -x "/usr/sbin/chkconfig" ]; then
-    "/usr/sbin/chkconfig" $CHKCONFIGPARM
-else
-    echo "No chkconfig found. Chkconfig skipped."
-fi
 
 # -------------------------    changelog    --------------------------------
 %changelog

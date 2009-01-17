@@ -2,13 +2,16 @@
 #define COMPAT_H
 
 #if defined FREEBSD
-#	define EREMOTEIO ECANCELED
-#	define EBADE EINVAL
 #endif /* FREEBSD */
 
+#if defined DARWIN
+#endif /* DARWIN */
+
 #if defined SOLARIS
-#	define EREMOTEIO ECANCELED
 #endif /* SOLARIS */
+
+#if defined QNX
+#endif /* QNX */
 
 #if ! defined O_ASYNC
 #	define O_ASYNC 0

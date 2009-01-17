@@ -6,32 +6,44 @@ MAKE = make
 CC = gcc
 AR = ar
 RM = rm
+LN = ln -sf
 
 ################################
 # OS / CC specifics flags
 ################################
 
-CFLAGS_O      = -DSOLARIS \
-                -D_REENTRANT \
-                 $(DRF)
+CFLAGS_OS      = -DSOLARIS \
+                 -D_XPG5 \
+                 -D_REENTRANT
 
-CFLAGS_OPT    = -O3
-
-CFLAGS_DBG    = -g -Wall
-
-LDFLAGS_O     = $(DRF)
+CFLAGS_RELEASE = -O3
+CFLAGS_DEBUG   = -g -Wall
 
 ###############################
 # Flags needed for Fuse
 ###############################
 
-CFLAGS_FUSE   = `pkg-config --cflags fuse`
-LDFLAGS_FUSE  = `pkg-config --libs fuse`
+CFLAGS_FUSE   = -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26 -I/usr/include/fuse
+LDFLAGS_FUSE  = -lfuse
 
 ###############################
 # Flags for linking
 ###############################
 
-LDFLAGS_NET   = -lsocket -lnsl
-#LDFLAGS_PTHR  = -lpthread
-LDFLAGS_CRYPT = -lcrypt
+LDFLAGS_NET   = -lsocket -lnsl -lsendfile
+LDFLAGS_PTHR  = -lpthread
+LDFLAGS_SSL   = -lssl -lcrypto
+
+###############################
+# Flags for dymamic libraries
+###############################
+
+LDFLAGS_SO   = -shared -Wl,-soname,$(@)
+SO_EXT       = so
+SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
+
+###############################
+# Optional OS dependent program
+###############################
+
+RFS_NSS = rfs_nss

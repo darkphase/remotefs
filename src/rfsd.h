@@ -11,24 +11,15 @@ See the file LICENSE.
 
 /** server interface, basically for signals */
 
-#include <stdint.h>
-
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-struct command;
-extern struct rfsd_config rfsd_config;
-extern unsigned char directory_mounted;
-extern struct rfs_export *mounted_export;
-
-int add_file_to_open_list(int file);
-int remove_file_from_open_list(int file);
-void server_close_connection(int socket);
+/** shutdown server */
 void stop_server(void);
+
+/** check if keep-alive has expired */
 void check_keep_alive(void);
-int reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno);
-int reject_request_with_cleanup(const int client_socket, const struct command *cmd, int32_t ret_errno);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

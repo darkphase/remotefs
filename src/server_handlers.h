@@ -17,33 +17,49 @@ extern "C" {
 
 struct sockaddr_in;
 struct command;
+struct rfsd_instance;
 
-extern char *auth_user;
-extern char *auth_passwd;
+int handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_closeconnection(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_keepalive(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_setsocktimeout(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_setsockbuffer(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#ifdef WITH_SSL
+int handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#endif
+#ifdef WITH_EXPORTS_LIST
+int handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#endif
 
-int handle_request_salt(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_auth(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_closeconnection(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_changepath(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_keepalive(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_getexportopts(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-
-int handle_getattr(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_readdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_mknod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_open(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_read(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_write(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_truncate(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_mkdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_unlink(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_rmdir(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_rename(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_utime(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_statfs(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_release(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_chmod(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_chown(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_open(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_truncate(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_unlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#if defined WITH_LINKS
+int handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#endif
+#if defined WITH_ACL
+int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

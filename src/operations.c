@@ -9,7 +9,6 @@ See the file LICENSE.
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 #include <errno.h>
 #include <dirent.h>
 #include <utime.h>
@@ -19,9 +18,9 @@ See the file LICENSE.
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
 #include "config.h"
-#include "rfs.h"
 #include "operations.h"
 #include "buffer.h"
 #include "command.h"
@@ -29,111 +28,113 @@ See the file LICENSE.
 #include "attr_cache.h"
 #include "inet.h"
 #include "keep_alive_client.h"
-#include "write_cache.h"
 #include "list.h"
-#include "read_cache.h"
 #include "crypt.h"
 #include "id_lookup.h"
 #include "path.h"
+#include "sockets.h"
+#include "resume.h"
+#include "data_cache.h"
+#include "utils.h"
+#include "instance.h"
+#ifdef WITH_SSL
+#include "ssl.h"
+#endif
 
-static const unsigned cache_ttl = 60 * 5; /* seconds */
-static pthread_t keep_alive_thread = 0;
-static char auth_salt[MAX_SALT_LEN + 1] = { 0 };
-static enum rfs_export_opts export_opts = opt_none;
-static uid_t my_uid = (uid_t)-1;
-static uid_t my_gid = (gid_t)-1;
+/* forward declarations */
+static int rfs_mount(struct rfs_instance *instance, const char *path);
+static int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd);
+static int rfs_request_salt(struct rfs_instance *instance);
+static int rfs_keep_alive(struct rfs_instance *instance);
+static int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts);
+static int rfs_setsocktimeout(struct rfs_instance *instance, const int timeout);
+static int rfs_setsockbuffer(struct rfs_instance *instance, const int size);
 
-struct fuse_operations rfs_operations = {
-	.init		= rfs_init,
-	.destroy	= rfs_destroy,
+static int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc);
+static int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc);
+static int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int lock_cmd, struct flock *fl);
+static int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc);
 
-	.getattr	= rfs_getattr,
-	.readdir	= rfs_readdir,
-	.mkdir		= rfs_mkdir,
-	.unlink		= rfs_unlink,
-	.rmdir		= rfs_rmdir,
-	.rename		= rfs_rename,
-	.utime		= rfs_utime,
-	.mknod		= rfs_mknod, /* regular files only */
-	.open 		= rfs_open,
-	.release	= rfs_release,
-	.read 		= rfs_read,
-	.write		= rfs_write,
-	.truncate	= rfs_truncate,
-	.flush		= rfs_flush,
-	.statfs		= rfs_statfs,
-	.chmod		= rfs_chmod,
-	.chown		= rfs_chown,
-};
+/* if connection lost after executing the operation
+and operation failed, then try it one more time 
 
-static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
-static int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
-static int _rfs_flush(const char *path, struct fuse_file_info *fi);
+pass ret (int) as return value of this macro */
+#define PARTIALY_DECORATE(ret, func, instance, args...)     \
+	if(check_connection((instance)) == 0)               \
+	{                                                   \
+		(ret) = (func)((instance), args);           \
+		if ((ret) == -ECONNABORTED                  \
+		&& check_connection((instance)) == 0)       \
+		{                                           \
+			(ret) = (func)((instance), args);   \
+		}                                           \
+	}
 
-static int check_connection()
+static int check_connection(struct rfs_instance *instance)
 {
-	if (rfs_is_connection_lost() == 0)
+	if (instance->sendrecv.connection_lost == 0)
 	{
 		return 0;
 	}
 
-	/* if we had a timeout close the connection */
-	if(g_server_socket!=-1)
+	if(instance->sendrecv.socket != -1)
 	{
-		rfs_disconnect(g_server_socket, 0);
+		rfs_disconnect(instance, 0);
 	}
 
-	if (rfs_reconnect(0) == 0)
+#ifdef RFS_DEBUG
+	if (rfs_reconnect(instance, 1, 1) == 0)
+#else
+	if (rfs_reconnect(instance, 0, 1) == 0)
+#endif
 	{
-		rfs_set_connection_restored();
 		return 0;
 	}
 
 	return -1;
 }
 
-static void* maintenance(void *ignored)
+static void* maintenance(void *void_instance)
 {
+	struct rfs_instance *instance = (struct rfs_instance *)(void_instance);
+	
 	unsigned keep_alive_slept = 0;
 	unsigned attr_cache_slept = 0;
 	unsigned shorter_sleep = 1; /* secs */
 
-	while (g_server_socket != -1)
+	while (instance->sendrecv.socket != -1
+	&& instance->sendrecv.connection_lost == 0)
 	{
 		sleep(shorter_sleep);
 		keep_alive_slept += shorter_sleep;
 		attr_cache_slept += shorter_sleep;
 		
-		if (g_server_socket == -1)
+		if (instance->client.maintenance_please_die != 0)
 		{
-			pthread_exit(NULL);
+			pthread_exit(0);
 		}
 		
 		if (keep_alive_slept >= keep_alive_period()
-		&& keep_alive_trylock() == 0)
+		&& keep_alive_trylock(instance) == 0)
 		{
-			if (check_connection() == 0)
+			if (check_connection(instance) == 0)
 			{
-				if (rfs_keep_alive() != 0)
-				{
-					keep_alive_unlock();
-					pthread_exit(NULL);
-				}
+				rfs_keep_alive(instance);
 			}
 			
-			keep_alive_unlock();
+			keep_alive_unlock(instance);
 			keep_alive_slept = 0;
 		}
 		
 		if (attr_cache_slept >= ATTR_CACHE_TTL
-		&& keep_alive_lock() == 0)
+		&& keep_alive_lock(instance) == 0)
 		{
-			if (cache_is_old() != 0)
+			if (cache_is_old(instance) != 0)
 			{
-				clear_cache();
+				clear_cache(instance);
 			}
 			
-			keep_alive_unlock();
+			keep_alive_unlock(instance);
 			attr_cache_slept = 0;
 		}
 	}
@@ -141,11 +142,234 @@ static void* maintenance(void *ignored)
 	return NULL;
 }
 
-int rfs_reconnect(int show_errors)
+static int resume_files(struct rfs_instance *instance)
 {
-	DEBUG("(re)connecting to %s:%d\n", rfs_config.host, rfs_config.server_port);
+	/* we're doing this inside of maintenance() call, 
+	so keep alive is locked */
 	
-	int sock = rfs_connect(rfs_config.host, rfs_config.server_port);
+	DEBUG("%s\n", "beginning to resume connection");
+	
+	int ret = 0; /* last error */
+	unsigned resume_failed = 0;
+	
+	/* reopen files */
+	const struct list *open_file = instance->resume.open_files;
+	while (open_file != NULL)
+	{
+		struct open_rec *data = (struct open_rec *)open_file->data;
+		uint64_t desc = (uint64_t)-1;
+		uint64_t prev_desc = data->desc;
+		
+		int open_ret = _rfs_open(instance, data->path, data->flags, &desc);
+		if (open_ret < 0)
+		{
+			ret = open_ret;
+			remove_file_from_open_list(instance, data->path);
+			remove_file_from_locked_list(instance, data->path);
+			
+			/* if even single file wasn't reopened, then
+			force whole operation fail to prevent descriptors
+			mixing and stuff */
+			
+			resume_failed = 1;
+			break;
+		}
+		
+		if (desc != prev_desc)
+		{
+			/* nope, we're not satisfied with another descriptor 
+			those descriptors will be used in read() and write() so 
+			files should be opened exactly with the same descriptors */
+			
+			resume_failed = 1;
+			break;
+		}
+		
+		if (open_ret == 0)
+		{
+			const struct lock_rec *lock_info = get_lock_info(instance, data->path);
+			if (lock_info != NULL)
+			{
+				struct flock fl = { 0 };
+				fl.l_type = lock_info->type;
+				fl.l_whence = lock_info->whence;
+				fl.l_start = lock_info->start;
+				fl.l_len = lock_info->len;
+				
+				int lock_ret = _rfs_lock(instance, data->path, desc, lock_info->cmd, &fl);
+				
+				if (lock_ret < 0)
+				{
+					ret = lock_ret;
+					remove_file_from_locked_list(instance, data->path);
+				}
+			}
+		}
+		
+		open_file = open_file->next;
+	}
+	
+	/* if resume failed, then close all files marked as open */
+	if (resume_failed != 0)
+	{
+		const struct list *open_file = instance->resume.open_files;
+		while (open_file != NULL)
+		{
+			struct open_rec *data = (struct open_rec *)open_file->data;
+			
+			_rfs_release(instance, data->path, data->desc);
+			
+			/* ignore the result and keep going */
+			
+			remove_file_from_open_list(instance, data->path);
+			remove_file_from_locked_list(instance, data->path);
+			
+			open_file = open_file->next;
+		}
+	}
+	
+	return ret; /* not real error. probably. but we've tried our best */
+}
+
+static int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
+{
+	DEBUG("%s\n", "cleaning bad msg");
+	
+	if (ans->command <= cmd_first
+	|| ans->command >= cmd_last)
+	{
+		DEBUG("%s\n", "disconnecting");
+		rfs_disconnect(instance, 0);
+		return -ECONNABORTED;
+	}
+	
+	if (rfs_ignore_incoming_data(&instance->sendrecv, ans->data_len) != ans->data_len)
+	{
+		DEBUG("%s\n", "disconnecting");
+		rfs_disconnect(instance, 0);
+		return -ECONNABORTED;
+	}
+	
+	return -EBADMSG;
+}
+
+#ifdef WITH_SSL
+int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors)
+{
+	DEBUG("key file: %s, cert file: %s\n", instance->config.ssl_key_file, instance->config.ssl_cert_file);
+	DEBUG("ciphers: %s\n", instance->config.ssl_ciphers);
+	
+	instance->sendrecv.ssl_socket = rfs_init_client_ssl(
+	&instance->ssl.ctx, 
+	instance->config.ssl_key_file, 
+	instance->config.ssl_cert_file, 
+	instance->config.ssl_ciphers);
+	
+	if (instance->sendrecv.ssl_socket == NULL)
+	{
+		if (show_errors != 0)
+		{
+			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
+			ERROR("Error initing SSL: %s\n", instance->ssl.last_error);
+			if (instance->ssl.last_error != NULL)
+			{
+				free(instance->ssl.last_error);
+				instance->ssl.last_error = NULL;
+			}
+		}
+		return -EIO;
+	}
+
+	struct command cmd = { cmd_enablessl, 0 };
+	
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error initing SSL: %s\n", strerror(EIO));
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -EIO;
+	}
+	
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error initing SSL: %s\n", strerror(EIO));
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -EIO;
+	}
+	
+	if (ans.command != cmd_enablessl)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error initing SSL: %s\n", strerror(EINVAL));
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -EBADMSG;
+	}
+	
+	if (ans.ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error initing SSL: %s\n", strerror(ans.ret_errno));
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -ans.ret_errno;
+	}
+	
+	if (rfs_attach_ssl(instance->sendrecv.ssl_socket, instance->sendrecv.socket) != 0)
+	{
+		if (show_errors != 0)
+		{
+			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
+			ERROR("SSL error: %s\n", instance->ssl.last_error);
+			if (instance->ssl.last_error != NULL)
+			{
+				free(instance->ssl.last_error);
+				instance->ssl.last_error = NULL;
+			}
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -EIO;
+	}
+	
+	if (rfs_connect_ssl(instance->sendrecv.ssl_socket) != 0)
+	{
+		if (show_errors != 0)
+		{
+			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
+			ERROR("Error connecting using SSL: %s\n", instance->ssl.last_error);
+			if (instance->ssl.last_error != NULL)
+			{
+				free(instance->ssl.last_error);
+				instance->ssl.last_error = NULL;
+			}
+		}
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		return -EIO;
+	}
+	
+	instance->sendrecv.ssl_enabled = 1;
+
+	return 0;
+}
+#endif
+
+#include "operations_write.c"
+#include "operations_read.c"
+
+int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsigned int change_path)
+{
+	DEBUG("(re)connecting to %s:%d\n", instance->config.host, instance->config.server_port);
+	
+	int sock = rfs_connect(&instance->sendrecv, instance->config.host, instance->config.server_port);
 	if (sock < 0)
 	{
 		if (show_errors != 0)
@@ -154,158 +378,326 @@ int rfs_reconnect(int show_errors)
 		}
 		return 1;
 	}
-
-	if (rfs_config.auth_user != NULL 
-	&& rfs_config.auth_passwd != NULL)
+	else
 	{
-		DEBUG("authenticating as %s with pwd %s\n", rfs_config.auth_user, rfs_config.auth_passwd);
+		instance->sendrecv.socket = sock;
+	}
 	
-		int req_ret = rfs_request_salt();
+#ifdef WITH_SSL
+	if (instance->config.enable_ssl != 0)
+	{
+		int ssl_ret = rfs_enablessl(instance, show_errors);
+		if (ssl_ret != 0)
+		{
+			#if 0
+			if (show_errors != 0)
+			{
+				/* errors should be handled in rfs_enablessl() */
+			}
+			#endif
+			
+			rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+			if (instance->ssl.last_error != NULL)
+			{
+				free(instance->ssl.last_error);
+				instance->ssl.last_error = NULL;
+			}
+			return ssl_ret;
+		}
+	}
+#endif
+	
+	int setpid_ret = setup_soket_pid(sock, getpid());
+	if (setpid_ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error setting socket owner: %s\n", strerror(-setpid_ret));
+		}
+		return -1;
+	}
+
+	if (instance->config.auth_user != NULL 
+	&& instance->config.auth_passwd != NULL)
+	{
+		DEBUG("authenticating as %s with pwd %s\n", instance->config.auth_user, instance->config.auth_passwd);
+	
+		int req_ret = rfs_request_salt(instance);
 		if (req_ret != 0)
 		{
 			if (show_errors != 0)
 			{
 				ERROR("Requesting salt for authentication error: %s\n", strerror(-req_ret));
 			}
-			rfs_disconnect(sock, 1);
+			rfs_disconnect(instance, 1);
 			return -1;
 		}
-	
-		int auth_ret = rfs_auth(rfs_config.auth_user, rfs_config.auth_passwd);
+		
+		int auth_ret = rfs_auth(instance, instance->config.auth_user, instance->config.auth_passwd);
 		if (auth_ret != 0)
 		{
 			if (show_errors != 0)
 			{
 				ERROR("Authentication error: %s\n", strerror(-auth_ret));
 			}
-			rfs_disconnect(sock, 1);
+			rfs_disconnect(instance, 1);
 			return -1;
 		}
 	}
-
-	DEBUG("mounting %s\n", rfs_config.path);
-
-	int mount_ret = rfs_mount(rfs_config.path);
-	if (mount_ret != 0)
+	
+	if (instance->config.socket_timeout != -1)
 	{
-		if (show_errors != 0)
+		
+		int server_settimeout_ret = rfs_setsocktimeout(instance, instance->config.socket_timeout);
+		if (server_settimeout_ret != 0)
 		{
-			ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
+			if (show_errors != 0)
+			{
+			ERROR("Error setting socket timeout on remote: %s\n", strerror(-server_settimeout_ret));
+			}
+			return -1;
 		}
-		rfs_disconnect(sock, 1);
-		return -1;
+		
+		int local_settimeout_ret = setup_socket_timeout(instance->sendrecv.socket, instance->config.socket_timeout);
+		if (local_settimeout_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Error setting socket timeout: %s\n", strerror(-local_settimeout_ret));
+			}
+			return -1;
+		}
 	}
 	
-	int getopts_ret = rfs_getexportopts(&export_opts);
-	if (getopts_ret != 0)
+	if (instance->config.socket_buffer != -1)
 	{
-		if (show_errors != 0)
+		int server_setbuf_ret = rfs_setsockbuffer(instance, instance->config.socket_buffer);
+		if (server_setbuf_ret != 0)
 		{
-			ERROR("Error getting export options from server: %s\n", strerror(-getopts_ret));
+			if (show_errors != 0)
+			{
+				ERROR("Error setting socket buffer on remote: %s\n", strerror(-server_setbuf_ret));
+			}
+			return -1;
 		}
-		rfs_disconnect(sock, 1);
-		return -1;
+		
+		int local_setbuf_ret = setup_socket_buffer(instance->sendrecv.socket, instance->config.socket_buffer);
+		if (local_setbuf_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Error setting socket buffer: %s\n", strerror(-local_setbuf_ret));
+			}
+			return -1;
+		}
+		
 	}
-	
-	if ((export_opts & opt_ugo) > 0)
+
+	if (change_path != 0)
 	{
-		create_uids_lookup();
-		create_gids_lookup();
+		DEBUG("mounting %s\n", instance->config.path);
+		
+		int mount_ret = rfs_mount(instance, instance->config.path);
+		if (mount_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
+			}
+			rfs_disconnect(instance, 1);
+			return -1;
+		}
+		
+		int getopts_ret = rfs_getexportopts(instance, &instance->client.export_opts);
+		if (getopts_ret != 0)
+		{
+			if (show_errors != 0)
+			{
+				ERROR("Error getting export options from server: %s\n", strerror(-getopts_ret));
+			}
+			rfs_disconnect(instance, 1);
+			return -1;
+		}
+		
+		if ((instance->client.export_opts & opt_ugo) > 0)
+		{
+			create_uids_lookup(&instance->id_lookup.uids);
+			create_gids_lookup(&instance->id_lookup.gids);
+		}
+		
+		int resume_ret = resume_files(instance);
+		if (resume_ret != 0)
+		{
+			/* we're not supposed to show error, since resume should happend
+			only on reconnect, when rfs is in background */
+			
+			if (show_errors != 0) /* oh, this is odd */
+			{
+#ifndef RFS_DEBUG
+				ERROR("Hello there!\n"
+				"Normally you should not be seeing this message.\n"
+				"Are you sure you are running the remotefs client you've downloaded from SourceForge? If that is the case, please notify the remotefs maintainer that you actually got this message.\n"
+				"You'll find his e-mail at http://remotefs.sourceforge.net . Thank you.\n"
+				"Anyway, here's the actual message:\n"
+#else
+				ERROR(
+#endif
+				"Error restoring remote files state after reconnect: %s\n",
+				strerror(-resume_ret));
+			}
+			
+			/* well, we have to count this error
+			but what if file is already deleted on remote side? 
+			so we'll be trapped inside of reconnect.
+			i think it's better to show (some) error message later 
+			than broken connection */
+		}
 	}
 
 	DEBUG("%s\n", "all ok");
 	return 0;
 }
 
-void* rfs_init()
+void* rfs_init(struct rfs_instance *instance)
 {
-	my_uid = getuid();
-	my_gid = getgid();
+	instance->client.my_uid = getuid();
+	instance->client.my_gid = getgid();
 	
-	keep_alive_init();
-	pthread_create(&keep_alive_thread, NULL, maintenance, NULL);
+	keep_alive_init(instance);
+	pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance);
+	
+	if (instance->config.use_read_cache != 0)
+	{
+		init_prefetch(instance);
+	}
+	
+	if (instance->config.use_write_cache != 0)
+	{
+		init_write_behind(instance);
+	}
 
 	return NULL;
 }
 
-void rfs_destroy(void *rfs_init_result)
+void rfs_destroy(struct rfs_instance *instance)
 {
-	keep_alive_lock();
-	rfs_disconnect(g_server_socket, 1);
-	g_server_socket = -1;
-	keep_alive_unlock();
+	keep_alive_lock(instance);
+	
+	rfs_disconnect(instance, 1);
 
-	pthread_join(keep_alive_thread, NULL);
-	keep_alive_destroy();
+	if (instance->config.use_read_cache != 0)
+	{
+		kill_prefetch(instance);
+	}
+	if (instance->config.use_write_cache != 0)
+	{
+		kill_write_behind(instance);
+	}
 	
-	destroy_cache();
+	keep_alive_unlock(instance);
 	
-//	destroy_uids_lookup();
-//	destroy_gids_lookup();
+	instance->client.maintenance_please_die = 1;
+
+	pthread_join(instance->client.maintenance_thread, NULL);
+	keep_alive_destroy(instance);
+	
+	destroy_cache(instance);
+	destroy_resume_lists(instance);
+	
+#ifdef WITH_SSL
+	if (instance->config.enable_ssl != 0)
+	{
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+	}
+#endif
+	
+#ifdef RFS_DEBUG
+	dump_attr_stats(instance);
+#endif
 }
 
-void rfs_disconnect(int sock, int gently)
+void rfs_disconnect(struct rfs_instance *instance, int gently)
 {
+	if (instance->sendrecv.socket == -1)
+	{
+		return;
+	}
+
 	if (gently != 0)
 	{
 		struct command cmd = { cmd_closeconnection, 0 };
-		rfs_send_cmd(sock, &cmd);
+		rfs_send_cmd(&instance->sendrecv, &cmd);
 	}
 	
-	close(sock);
-	shutdown(sock, SHUT_RDWR);
+	close(instance->sendrecv.socket);
+	shutdown(instance->sendrecv.socket, SHUT_RDWR);
+	
+	instance->sendrecv.connection_lost = 1;
+	instance->sendrecv.socket = -1;
+	
+#ifdef WITH_SSL
+	if (instance->config.enable_ssl != 0)
+	{
+		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
+		instance->sendrecv.ssl_enabled = 0;
+	}
+#endif
+
+#ifdef RFS_DEBUG
+	dump_sendrecv_stats(&instance->sendrecv);
+#endif
 }
 
-int rfs_request_salt()
+static int rfs_request_salt(struct rfs_instance *instance)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	memset(auth_salt, 0, sizeof(auth_salt));
+	memset(instance->client.auth_salt, 0, sizeof(instance->client.auth_salt));
 
 	struct command cmd = { cmd_request_salt, 0 };
 
-	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_request_salt
-	|| (ans.ret == 0 && (ans.data_len < 1 || ans.data_len > sizeof(auth_salt))))
+	|| (ans.ret == 0 && (ans.data_len < 1 || ans.data_len > sizeof(instance->client.auth_salt))))
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
 	{
-		if (rfs_receive_data(g_server_socket, auth_salt, ans.data_len) == -1)
+		if (rfs_receive_data(&instance->sendrecv, instance->client.auth_salt, ans.data_len) == -1)
 		{
-			return -EIO;
+			return -ECONNABORTED;
 		}
 	}
 
 	return -ans.ret;
 }
 
-int rfs_auth(const char *user, const char *passwd)
+static int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	char *crypted = passwd_hash(passwd, auth_salt);
+	char *crypted = passwd_hash(passwd, instance->client.auth_salt);
 
-	memset(auth_salt, 0, sizeof(auth_salt));
+	memset(instance->client.auth_salt, 0, sizeof(instance->client.auth_salt));
 
 	uint32_t crypted_len = strlen(crypted) + 1;
 	unsigned user_len = strlen(user) + 1;
@@ -321,11 +713,11 @@ int rfs_auth(const char *user, const char *passwd)
 	pack_32(&crypted_len, buffer, 0
 		)));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
 		free(crypted);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
@@ -333,75 +725,75 @@ int rfs_auth(const char *user, const char *passwd)
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_auth
 	|| ans.data_len > 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	return -ans.ret;
 }
 
-int rfs_mount(const char *path)
+static int rfs_mount(struct rfs_instance *instance, const char *path)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path);
 	struct command cmd = { cmd_changepath, path_len + 1};
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_changepath)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-int rfs_getexportopts(enum rfs_export_opts *opts)
+static int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	*opts = opt_none;
 	
 	struct command cmd = { cmd_getexportopts, 0 };
 	
-	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 	
 	struct answer ans = { 0 };
 	
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 	
 	if (ans.command != cmd_getexportopts)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 	
 	if (ans.ret >= 0)
@@ -414,16 +806,105 @@ int rfs_getexportopts(enum rfs_export_opts *opts)
 	return ans.ret >= 0 ? 0 : -ans.ret_errno;
 }
 
-static int _rfs_getattr(const char *path, struct stat *stbuf)
+static int rfs_setsocktimeout(struct rfs_instance *instance, const int timeout)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
+	}
+	
+	int32_t sock_timeout = (int32_t)timeout;
+#define overall_size sizeof(sock_timeout)
+	char buffer[overall_size] = { 0 };
+
+	pack_32_s(&sock_timeout, buffer, 0);
+	
+	struct command cmd = { cmd_setsocktimeout, overall_size };
+	
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	{
+		return -ECONNABORTED;
+	}
+#undef overall_size
+
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	if (ans.command != cmd_setsocktimeout)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+	
+	return ans.ret != 0 ? -ans.ret_errno : ans.ret;
+}
+
+static int rfs_setsockbuffer(struct rfs_instance *instance, const int size)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	int32_t buffer_size = (int32_t)size;
+#define overall_size sizeof(buffer_size)
+	char buffer[overall_size] = { 0 };
+
+	pack_32_s(&buffer_size, buffer, 0);
+	
+	struct command cmd = { cmd_setsockbuffer, overall_size };
+	
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	{
+		return -ECONNABORTED;
+	}
+#undef overall_size
+	
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	if (ans.command != cmd_setsockbuffer)
+	{
+		return cleanup_badmsg(instance, &ans);;
+	}
+	
+	return ans.ret < 0 ? -ans.ret_errno : ans.ret;
+}
+
+static int rfs_keep_alive(struct rfs_instance *instance)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
 	}
 
-	struct tree_item *cached_value = get_cache(path);
+	struct command cmd = { cmd_keepalive, 0 };
+
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	return 0;
+}
+
+static int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	const struct tree_item *cached_value = get_cache(instance, path);
 	if (cached_value != NULL 
-	&& (time(NULL) - cached_value->time) < cache_ttl )
+	&& (time(NULL) - cached_value->time) < ATTR_CACHE_TTL )
 	{
 		DEBUG("%s is cached\n", path);
 		memcpy(stbuf, &cached_value->data, sizeof(*stbuf));
@@ -433,20 +914,20 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_getattr, path_len };
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_getattr)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
 	if (ans.ret == -1)
@@ -456,10 +937,10 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 
 	char *buffer = get_buffer(ans.data_len);
 
-	if (rfs_receive_data(g_server_socket, buffer, ans.data_len) == -1)
+	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	uint32_t mode = 0;
@@ -467,16 +948,16 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 	const char *user = NULL;
 	uint32_t group_len = 0;
 	const char *group = NULL;
-	uint32_t size = 0;
-	uint32_t atime = 0;
-	uint32_t mtime = 0;
-	uint32_t ctime = 0;
+	uint64_t size = 0;
+	uint64_t atime = 0;
+	uint64_t mtime = 0;
+	uint64_t ctime = 0;
 
 	unsigned last_pos = 
-	unpack_32(&ctime, buffer, 
-	unpack_32(&mtime, buffer, 
-	unpack_32(&atime, buffer, 
-	unpack_32(&size, buffer, 
+	unpack_64(&ctime, buffer, 
+	unpack_64(&mtime, buffer, 
+	unpack_64(&atime, buffer, 
+	unpack_64(&size, buffer, 
 	unpack_32(&group_len, buffer, 
 	unpack_32(&user_len, buffer, 
 	unpack_32(&mode, buffer, 0 
@@ -489,16 +970,16 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 	|| strlen(group) + 1 != group_len)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -EBADMSG;
 	}
 	
 	uid_t uid = (uid_t)-1;
 	
-	if ((export_opts & opt_ugo) != 0
-	&& strcmp(rfs_config.auth_user, user) == 0)
+	if ((instance->client.export_opts & opt_ugo) != 0
+	&& strcmp(instance->config.auth_user, user) == 0)
 	{
-		uid = my_uid;
-		user = get_uid_name(my_uid);
+		uid = instance->client.my_uid;
+		user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
 		if (user == NULL)
 		{
 			free_buffer(buffer);
@@ -507,10 +988,10 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 	}
 	else
 	{
-		uid = lookup_user(user);
+		uid = lookup_user(instance->id_lookup.uids, user);
 	}
 	
-	gid_t gid = lookup_group(group, user);
+	gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
 	
 	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
 
@@ -520,10 +1001,10 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 
 	result.st_mode = mode;
 
-	if ((export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & opt_ugo) == 0)
 	{
-		result.st_uid = getuid();
-		result.st_gid = getgid();
+		result.st_uid = instance->client.my_uid;
+		result.st_gid = instance->client.my_gid;
 	}
 	else
 	{
@@ -531,14 +1012,14 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 		result.st_gid = gid;
 	}
 	
-	result.st_size = size;
-	result.st_atime = atime;
-	result.st_mtime = mtime;
-	result.st_ctime = ctime;
+	result.st_size = (off_t)size;
+	result.st_atime = (time_t)atime;
+	result.st_mtime = (time_t)mtime;
+	result.st_ctime = (time_t)ctime;
 
 	memcpy(stbuf, &result, sizeof(*stbuf));
 
-	if (cache_file(path, &result) == NULL)
+	if (cache_file(instance, path, &result) == NULL)
 	{
 		return -EIO;
 	}
@@ -546,20 +1027,20 @@ static int _rfs_getattr(const char *path, struct stat *stbuf)
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_readdir_callback_t callback, void *callback_data)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_readdir, path_len };
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
@@ -569,10 +1050,10 @@ static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t fille
 	const char *user = NULL;
 	uint32_t group_len = 0;
 	const char *group = NULL;
-	uint32_t size = 0;
-	uint32_t atime = 0;
-	uint32_t mtime = 0;
-	uint32_t ctime = 0;
+	uint64_t size = 0;
+	uint64_t atime = 0;
+	uint64_t mtime = 0;
+	uint64_t ctime = 0;
 	uint16_t stat_failed = 0;
 
 	unsigned stat_size = sizeof(mode)
@@ -593,63 +1074,63 @@ static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t fille
 	char operation_failed = 0;
 	do
 	{
-		if (rfs_receive_answer(g_server_socket, &ans) == -1)
+		if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 		{
 			if (buffer != NULL)
 			{
 				free_buffer(buffer);
 			}
-		
-			return -EIO;
+			
+			return -ECONNABORTED;
 		}
-	
+		
 		if (ans.command != cmd_readdir)
 		{
 			if (buffer != NULL)
 			{
 				free_buffer(buffer);
 			}
-		
-			return -EIO;
+			
+			return cleanup_badmsg(instance, &ans);
 		}
-	
+		
 		if (ans.ret == -1)
 		{
 			if (buffer != NULL)
 			{
 				free_buffer(buffer);
 			}
-		
+			
 			return -ans.ret_errno;
 		}
-	
+		
 		if (ans.data_len == 0)
 		{
 			break;
 		}
-	
+		
 		if (ans.data_len > buffer_size)
 		{
 			free_buffer(buffer);
 		}
-	
+		
 		memset(buffer, 0, buffer_size);
-	
-		if (rfs_receive_data(g_server_socket, buffer, ans.data_len) == -1)
+		
+		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 		{
 			free_buffer(buffer);
-		
-			return -EIO;
+			
+			return -ECONNABORTED;
 		}
-	
+		
 		dump(buffer, ans.data_len);
-	
+		
 		unsigned last_pos =
 		unpack_16(&stat_failed, buffer, 
-		unpack_32(&ctime, buffer, 
-		unpack_32(&mtime, buffer, 
-		unpack_32(&atime, buffer, 
-		unpack_32(&size, buffer, 
+		unpack_64(&ctime, buffer, 
+		unpack_64(&mtime, buffer, 
+		unpack_64(&atime, buffer, 
+		unpack_64(&size, buffer, 
 		unpack_32(&group_len, buffer, 
 		unpack_32(&user_len, buffer, 
 		unpack_32(&mode, buffer, 0 
@@ -665,28 +1146,28 @@ static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t fille
 		|| strlen(group) + 1 != group_len)
 		{
 			free_buffer(buffer);
-			return -EIO;
+			return -EBADMSG;
 		}
 		
 		uid_t uid = (uid_t)-1;
 		
-		if ((export_opts & opt_ugo) != 0
-		&& strcmp(rfs_config.auth_user, user) == 0)
+		if ((instance->client.export_opts & opt_ugo) != 0
+		&& strcmp(instance->config.auth_user, user) == 0)
 		{
-			uid = my_uid;
-			user = get_uid_name(my_uid);
+			uid = instance->client.my_uid;
+			user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
 			if (user == NULL)
 			{
 				free_buffer(buffer);
 				return -EINVAL;
 			}
-		}
+			}
 		else
 		{
-			uid = lookup_user(user);
+			uid = lookup_user(instance->id_lookup.uids, user);
 		}
 		
-		gid_t gid = lookup_group(group, user);
+		gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
 		
 		DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
 		
@@ -697,38 +1178,39 @@ static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t fille
 			if (joined < 0)
 			{
 				operation_failed = 1;
-				return -EIO;
+				return -EINVAL;
 			}
 			
 			if (joined == 0)
 			{
 				stbuf.st_mode = mode;
-				if ((export_opts & opt_ugo) == 0)
+				/* TODO: make func for this */
+				if ((instance->client.export_opts & opt_ugo) == 0)
 				{
-					stbuf.st_uid = getuid();
-					stbuf.st_gid = getgid();
+					stbuf.st_uid = instance->client.my_uid;
+					stbuf.st_gid = instance->client.my_gid;
 				}
 				else
 				{
 					stbuf.st_uid = uid;
 					stbuf.st_gid = gid;
 				}
-				stbuf.st_size = size;
-				stbuf.st_atime = atime;
-				stbuf.st_mtime = mtime;
-				stbuf.st_ctime = ctime;
+				stbuf.st_size = (off_t)size;
+				stbuf.st_atime = (time_t)atime;
+				stbuf.st_mtime = (time_t)mtime;
+				stbuf.st_ctime = (time_t)ctime;
 			
-				if (cache_file(full_path, &stbuf) == NULL)
+				if (cache_file(instance, full_path, &stbuf) == NULL)
 				{
 					free_buffer(buffer);
 					return -EIO;
 				}
 			}
 		}
-	
+		
 		if (operation_failed == 0)
 		{
-			if (filler(buf, entry_name, NULL, 0) != 0)
+			if (callback(entry_name, callback_data) != 0)
 			{
 				break;
 			}
@@ -744,27 +1226,35 @@ static int _rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t fille
 	return 0;
 }
 
-static int _rfs_open(const char *path, struct fuse_file_info *fi)
+static int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 	uint16_t fi_flags = 0;
-	if (fi->flags & O_APPEND) { fi_flags |= RFS_APPEND; }
-	if (fi->flags & O_ASYNC) { fi_flags |= RFS_ASYNC; }
-	if (fi->flags & O_CREAT) { fi_flags |= RFS_CREAT; }
-	if (fi->flags & O_EXCL) { fi_flags |= RFS_EXCL; }
-	if (fi->flags & O_NONBLOCK) { fi_flags |= RFS_NONBLOCK; }
-	if (fi->flags & O_NDELAY) { fi_flags |= RFS_NDELAY; }
-	if (fi->flags & O_SYNC) { fi_flags |= RFS_SYNC; }
-	if (fi->flags & O_TRUNC) { fi_flags |= RFS_TRUNC; }
-	if (fi->flags & O_RDONLY) { fi_flags |= RFS_RDONLY; }
-	if (fi->flags & O_WRONLY) { fi_flags |= RFS_WRONLY; }
-	if (fi->flags & O_RDWR) { fi_flags |= RFS_RDWR; }
-
+	if (flags & O_APPEND)       { fi_flags |= RFS_APPEND; }
+	if (flags & O_ASYNC)        { fi_flags |= RFS_ASYNC; }
+	if (flags & O_CREAT)        { fi_flags |= RFS_CREAT; }
+	if (flags & O_EXCL)         { fi_flags |= RFS_EXCL; }
+	if (flags & O_NONBLOCK)     { fi_flags |= RFS_NONBLOCK; }
+	if (flags & O_NDELAY)       { fi_flags |= RFS_NDELAY; }
+	if (flags & O_SYNC)         { fi_flags |= RFS_SYNC; }
+	if (flags & O_TRUNC)        { fi_flags |= RFS_TRUNC; }
+#if defined DARWIN /* is ok for linux too */
+	switch (flags & O_ACCMODE)
+	{
+		case O_RDONLY: fi_flags |= RFS_RDONLY; break;
+		case O_WRONLY: fi_flags |= RFS_WRONLY; break;
+		case O_RDWR:   fi_flags |= RFS_RDWR;   break;
+	}
+#else
+	if (flags & O_RDONLY)       { fi_flags |= RFS_RDONLY; }
+	if (flags & O_WRONLY)       { fi_flags |= RFS_WRONLY; }
+	if (flags & O_RDWR)         { fi_flags |= RFS_RDWR; }
+#endif
 	unsigned overall_size = sizeof(fi_flags) + path_len;
 
 	struct command cmd = { cmd_open, overall_size };
@@ -773,111 +1263,113 @@ static int _rfs_open(const char *path, struct fuse_file_info *fi)
 
 	pack(path, path_len, buffer, 
 	pack_16(&fi_flags, buffer, 0
-		));
+	));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_open)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
 	if (ans.ret != -1)
 	{
 		uint64_t handle = (uint64_t)-1;
-	
+		
 		if (ans.data_len != sizeof(handle))
 		{
-			return -EIO;
+			return cleanup_badmsg(instance, &ans);;
 		}
-	
-		if (rfs_receive_data(g_server_socket, &handle, ans.data_len) == -1)
+		
+		if (rfs_receive_data(&instance->sendrecv, &handle, ans.data_len) == -1)
 		{
-			return -EIO;
+			return -ECONNABORTED;
 		}
-	
-		fi->fh = ntohll(handle);
+		
+		*desc = ntohll(handle);
 	}
 
 	if (ans.ret == -1)
 	{
-		delete_from_cache(path);
+		if (ans.ret_errno == -ENOENT)
+		{
+			delete_from_cache(instance, path);
+		}
+	}
+	else
+	{
+		delete_from_cache(instance, path);
+		add_file_to_open_list(instance, path, flags, *desc);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_release(const char *path, struct fuse_file_info *fi)
+static int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
-	}
-
-	if (read_cache_is_for(fi->fh) != 0)
-	{
-		destroy_read_cache();
-		update_read_cache_stats(-1, -1, -1);
-	}
-
-	if (write_cache_is_for(fi->fh) != 0)
-	{
-		destroy_write_cache();
-	}
-
-	if (get_write_cache_size() == 0)
-	{
-		uninit_write_cache();
+		return -ECONNABORTED;
 	}
 	
-	struct tree_item *cached_value = get_cache(path);
-	if (cached_value != NULL)
+	int flush_ret = flush_write(instance, path, desc); /* make sure no data is buffered */
+	if (flush_ret < 0)
 	{
-		delete_from_cache(path);
+		return flush_ret;
 	}
 
-	uint64_t handle = htonll(fi->fh);
+	clear_cache_by_desc(&instance->read_cache.cache, desc);
+	clear_cache_by_desc(&instance->write_cache.cache, desc);
+	
+	uint64_t handle = htonll(desc);
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, &handle, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, &handle, cmd.data_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == 0)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == 0)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_release || ans.data_len != 0)
+	if (ans.command != cmd_release 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
+	}
+	
+	if (ans.ret == 0)
+	{
+		delete_from_cache(instance, path);
+		remove_file_from_open_list(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_truncate(const char *path, off_t offset)
+static int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
@@ -891,333 +1383,41 @@ static int _rfs_truncate(const char *path, off_t offset)
 
 	pack(path, path_len, buffer, 
 	pack_32(&foffset, buffer, 0
-		));
+	));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_truncate || ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if (ans.ret == 0)
+	{
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int prefetch(const char *path, size_t size, off_t offset, struct fuse_file_info *fi)
+static int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 {
-	size_t size_to_read = size;
-	size_t cached_read_size = last_used_read_block(fi->fh);
-	
-	if (cached_read_size == 0)
+	if (instance->sendrecv.socket == -1)
 	{
-		cached_read_size = size_to_read;
-	}
-	
-	if (cached_read_size >= size_to_read
-	&& size_to_read < read_cache_max_size() / 2)
-	{
-		if (cached_read_size * 2 <= read_cache_max_size())
-		{
-			size_to_read = cached_read_size * 2;
-		}
-		else
-		{
-			size_to_read = read_cache_max_size();
-		}
-	}
-	else
-	{
-		return 0; /* caching is not possible/meaningful */
-	}
-	
-	unsigned old_val = rfs_config.use_read_cache;
-	rfs_config.use_read_cache = 0;
-
-	char *buffer = read_cache_resize(size_to_read);
-	
-	int ret = _rfs_read(path, buffer, size_to_read, offset + size, fi);
-	rfs_config.use_read_cache = old_val;
-
-	if (ret < 0)
-	{
-		destroy_read_cache();
-		update_read_cache_stats(-1, -1, -1);
-		return ret;
-	}
-	
-	update_read_cache_stats(fi->fh, ret, offset + size);
-	
-	return ret;
-}
-
-static int _rfs_read_cached(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-	size_t cached_size = read_cache_have_data(fi->fh, offset);
-	
-	int ret = 0;
-	if (cached_size >= size)
-	{
-		DEBUG("hit (%d)\n", cached_size);
-		const char *cached_data = read_cache_get_data(fi->fh, size, offset);
-		if (cached_data == NULL)
-		{
-			destroy_read_cache();
-			update_read_cache_stats(-1, -1, -1);
-			return -EIO;
-		}
-		
-		memcpy(buf, cached_data, size);
-		ret = size;
-		
-		if (cached_size > size)
-		{
-			return ret; /* no prefetch needed */
-		}
-	}
-	else /* we're missed cache, so whatever, read as always and try
-	to prefetch next cache block more precisely */
-	{
-		unsigned old_val = rfs_config.use_read_cache;
-		rfs_config.use_read_cache = 0;
-		ret = _rfs_read(path, buf, size, offset, fi);
-		rfs_config.use_read_cache = old_val;
-		
-		if (ret < 0)
-		{
-			/* no prefetch on error */
-			return ret;
-		}
-	}
-	
-	/* if we're here, then we missed cache and already have requested data
-	or cache become empty after current read, but we still have requested data
-	
-	now we need to read-ahead some more cache */
-	
-	prefetch(path, size, offset, fi); /* this call is should to be placed in separate thread in 0.11 */
-	
-	/* we actualy ignoring prefetch return value because it has nothing
-	to do with current read operation, which is already completed */
-	
-	return ret;
-}
-
-static int _rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-	if (g_server_socket == -1)
-	{
-		return -EIO;
-	}
-	if (rfs_config.use_read_cache          /* read_cache_max_size()/2 because we don't really need to cache */
-	&& size < read_cache_max_size() / 2)   /* exactly the same data which we just read - it is most likely */
-	{                                      /* will not be requested again */
-		return _rfs_read_cached(path, buf, size, offset, fi);
-	}
-
-	uint64_t handle = fi->fh;
-	uint64_t foffset = offset;
-	uint32_t fsize = size;
-
-#define overall_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
-	struct command cmd = { cmd_read, overall_size };
-
-	char buffer[overall_size] = { 0 };
-#undef  overall_size
-
-	pack_64(&handle, buffer, 
-	pack_64(&foffset, buffer, 
-	pack_32(&fsize, buffer, 0
-		)));
-
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
-	{
-		return -EIO;
-	}
-
-	struct answer ans = { 0 };
-
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
-	{
-		return -EIO;
-	}
-
-	if (ans.command != cmd_read || ans.data_len > size)
-	{
-		rfs_ignore_incoming_data(g_server_socket, ans.data_len);
-		return -EIO;
-	}
-
-	if (ans.ret == -1)
-	{
-		return -ans.ret_errno;
-	}
-
-	if (ans.data_len > 0)
-	{
-		if (rfs_receive_data(g_server_socket, buf, ans.data_len) == -1)
-		{
-			return -EIO;
-		}
-	}
-	return ans.data_len;
-}
-
-static int _rfs_flush(const char *path, struct fuse_file_info *fi)
-{
-	if (rfs_config.use_read_cache != 0
-	&& read_cache_size(fi->fh) > 0)
-	{
-		destroy_read_cache();
-	}
-
-	if (rfs_config.use_write_cache == 0)
-	{
-		return 0;
-	}
-
-	if (get_write_cache_size() < 1)
-	{
-		return 0;
-	}
-
-	if (get_write_cache_block() == NULL)
-	{
-		return -EIO;
-	}
-
-	uint32_t fsize = get_write_cache_size();
-	uint32_t foffset = write_cached_offset();
-	uint64_t handle = write_cached_descriptor();
-
-	unsigned old_val = rfs_config.use_write_cache;
-	rfs_config.use_write_cache = 0;
-
-	struct fuse_file_info tmp_fi = { 0 }; 	/* take a look what _rfs_write is using 
-						from this struct. now it is only ->fh, 
-						but be warned */
-	tmp_fi.fh = handle;
-
-	int ret = _rfs_write(path, get_write_cache_block(), fsize, foffset, &tmp_fi);
-	rfs_config.use_write_cache = old_val;
-
-	destroy_write_cache();
-	
-	struct tree_item *cached_value = get_cache(path);
-	if (cached_value != NULL)
-	{
-		delete_from_cache(path);
-	}
-	
-	return ret == fsize ? 0 : ret;
-}
-
-static int _rfs_write_cached(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-	if (is_fit_to_write_cache(fi->fh, size, offset))
-	{
-		return (add_to_write_cache(fi->fh, buf, size, offset) != 0 ? -EIO : size);
-	}
-	else
-	{
-		int ret = _rfs_flush(write_cached_path(), fi);
-		if (ret < 0)
-		{
-			return ret;
-		}
-	
-		size_t reinit_size = last_used_write_block();
-		if (reinit_size == (size_t)-1
-		|| reinit_size < size)
-		{
-			reinit_size = size;
-		}
-	
-		if (reinit_size * 2 < write_cache_max_size())
-		{
-			if (init_write_cache(path, offset, reinit_size * 2) != 0)
-			{
-				return -EIO;
-			}
-		}
-		else
-		{
-			if (init_write_cache(path, offset, write_cache_max_size()) != 0)
-			{
-				return -EIO;
-			}
-		}
-	
-		return (add_to_write_cache(fi->fh, buf, size, offset) != 0 ? -EIO : size);
-	}
-}
-
-static int _rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-	if (g_server_socket == -1)
-	{
-		return -EIO;
-	}
-
-	if (rfs_config.use_write_cache != 0
-	&& size < write_cache_max_size())
-	{
-		return _rfs_write_cached(path, buf, size, offset, fi);
-	}
-
-	uint64_t handle = fi->fh;
-	uint64_t foffset = offset;
-	uint32_t fsize = size;
-
-#define header_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
-	unsigned overall_size = header_size + size;
-	struct command cmd = { cmd_write, overall_size };
-
-	char buffer[header_size] = { 0 };
-
-	pack_64(&handle, buffer, 
-	pack_64(&foffset, buffer, 
-	pack_32(&fsize, buffer, 0
-		)));
-	
-	if (rfs_send_cmd_data2(g_server_socket, &cmd, buffer, header_size, get_write_cache_block(), size) == -1)
-	{
-		return -EIO;
-	}
-#undef header_size
-
-	struct answer ans = { 0 };
-
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
-	{
-		return -EIO;
-	}
-
-	if (ans.command != cmd_write || ans.data_len != 0)
-	{
-		return -EIO;
-	}
-
-	return ans.ret == -1 ? -ans.ret_errno : (int)ans.ret;
-}
-
-static int _rfs_mkdir(const char *path, mode_t mode)
-{
-	if (g_server_socket == -1)
-	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
@@ -1232,106 +1432,114 @@ static int _rfs_mkdir(const char *path, mode_t mode)
 
 	pack(path, path_len, buffer, 
 	pack_32(&fmode, buffer, 0
-		));
+	));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_mkdir || ans.data_len != 0)
+	if (ans.command != cmd_mkdir 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
+	}
+
+	if (ans.ret == 0)
+	{
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_unlink(const char *path)
+static int _rfs_unlink(struct rfs_instance *instance, const char *path)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_unlink, path_len };
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_unlink || ans.data_len != 0)
+	if (ans.command != cmd_unlink 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(path);
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_rmdir(const char *path)
+static int _rfs_rmdir(struct rfs_instance *instance, const char *path)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_rmdir, path_len };
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_rmdir || ans.data_len != 0)
+	if (ans.command != cmd_rmdir 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(path);
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_rename(const char *path, const char *new_path)
+static int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
@@ -1347,41 +1555,42 @@ static int _rfs_rename(const char *path, const char *new_path)
 	pack(new_path, new_path_len, buffer,
 	pack(path, path_len, buffer,
 	pack_32(&len, buffer, 0
-		)));
+	)));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_rename || ans.data_len != 0)
+	if (ans.command != cmd_rename 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(path);
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_utime(const char *path, struct utimbuf *buf)
+static int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
@@ -1405,52 +1614,57 @@ static int _rfs_utime(const char *path, struct utimbuf *buf)
 	pack_32(&actime, buffer, 
 	pack_32(&modtime, buffer, 
 	pack_16(&is_null, buffer, 0
-		))));
+	))));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_utime || ans.data_len != 0)
+	if (ans.command != cmd_utime 
+	|| ans.data_len != 0)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
+	if (ans.ret==0)
+	{
+		delete_from_cache(instance, path);
+	}
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
-static int _rfs_statfs(const char *path, struct statvfs *buf)
+static int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs *buf)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_statfs, path_len };
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.ret == -1)
@@ -1474,17 +1688,18 @@ static int _rfs_statfs(const char *path, struct statvfs *buf)
 	+ sizeof(ffree)
 	+ sizeof(namemax);
 
-	if (ans.command != cmd_statfs || ans.data_len != overall_size)
+	if (ans.command != cmd_statfs 
+	|| ans.data_len != overall_size)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
 	char *buffer = get_buffer(ans.data_len);
 
-	if (rfs_receive_data(g_server_socket, buffer, ans.data_len) == -1)
+	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unpack_32(&namemax, buffer, 
@@ -1494,7 +1709,7 @@ static int _rfs_statfs(const char *path, struct statvfs *buf)
 	unpack_32(&bfree, buffer, 
 	unpack_32(&blocks, buffer, 
 	unpack_32(&bsize, buffer, 0
-		)))))));
+	)))))));
 	
 	free_buffer(buffer);
 
@@ -1509,16 +1724,19 @@ static int _rfs_statfs(const char *path, struct statvfs *buf)
 	return ans.ret;
 }
 
-static int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
+static int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev_t dev)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 	uint32_t fmode = mode;
-
+	if ((fmode & 0777) == 0)
+	{
+		fmode |= 0600;
+	}
 	unsigned overall_size = sizeof(fmode) + path_len;
 
 	struct command cmd = { cmd_mknod, overall_size };
@@ -1527,36 +1745,48 @@ static int _rfs_mknod(const char *path, mode_t mode, dev_t dev)
 
 	pack(path, path_len, buffer, 
 	pack_32(&fmode, buffer, 0
-		));
+	));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_mknod)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if ( ans.ret == 0 )
+	{
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
 
-static int _rfs_chmod(const char *path, mode_t mode)
+static int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 {
-	if ((export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & opt_ugo) == 0)
 	{
-		return 0;
+		/* actually dummy to keep some software happy. 
+		do not replace with -EACCES or something */
+		return 0; 
+	}
+	
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
@@ -1571,52 +1801,62 @@ static int _rfs_chmod(const char *path, mode_t mode)
 	pack_32(&fmode, buffer, 0
 		));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_chmod)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
-	struct tree_item *cached_value = get_cache(path);
-	if (cached_value != NULL)
+	if ( ans.ret_errno == 0 )
 	{
-		delete_from_cache(path);
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
 
-static int _rfs_chown(const char *path, uid_t uid, gid_t gid)
+static int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {
-	if ((export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & opt_ugo) == 0)
 	{
+		/* actually dummy to keep some software happy. 
+		do not replace with -EACCES or something */
 		return 0;
+	}
+	
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
 	}
 
 	unsigned path_len = strlen(path) + 1;
 	
 	const char *user = NULL;
-	if (my_uid == uid)
+	if (instance->client.my_uid == uid)
 	{
-		user = rfs_config.auth_user;
+		user = instance->config.auth_user;
+	}
+	else if ( uid == -1 )
+	{
+		user = "";
 	}
 	else
 	{
-		user = get_uid_name(uid);
+		user = get_uid_name(instance->id_lookup.uids, uid);
 		if (user == NULL)
 		{
 			return -EINVAL;
@@ -1624,13 +1864,17 @@ static int _rfs_chown(const char *path, uid_t uid, gid_t gid)
 	}
 	
 	const char *group = NULL;
-	if (my_gid == gid)
+	if (instance->client.my_gid == gid)
 	{
-		group = rfs_config.auth_user; /* yes, indeed, default group to auth_name */
+		group = instance->config.auth_user; /* yes, indeed, default group to auth_user */
+	}
+	else if ( gid == -1 )
+	{
+		group = "";
 	}
 	else
 	{
-		group = get_gid_name(gid);
+		group = get_gid_name(instance->id_lookup.gids, gid);
 		if (group == NULL)
 		{
 			return -EINVAL;
@@ -1640,8 +1884,11 @@ static int _rfs_chown(const char *path, uid_t uid, gid_t gid)
 	uint32_t user_len = strlen(user) + 1;
 	uint32_t group_len = strlen(group) + 1;
 
-	unsigned overall_size = sizeof(user_len) + sizeof(group_len) 
-	+ path_len + user_len + group_len;
+	unsigned overall_size = sizeof(user_len) 
+	+ sizeof(group_len) 
+	+ path_len 
+	+ user_len 
+	+ group_len;
 
 	struct command cmd = { cmd_chown, overall_size };
 
@@ -1651,52 +1898,397 @@ static int _rfs_chown(const char *path, uid_t uid, gid_t gid)
 	pack(path, path_len, buffer, 
 	pack_32(&group_len, buffer, 
 	pack_32(&user_len, buffer, 0
-		)))));
+	)))));
 
-	if (rfs_send_cmd_data(g_server_socket, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
 		free_buffer(buffer);
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	free_buffer(buffer);
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(g_server_socket, &ans) == -1)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
 
 	if (ans.command != cmd_chown)
 	{
-		return -EIO;
+		return cleanup_badmsg(instance, &ans);;
 	}
 
-	struct tree_item *cached_value = get_cache(path);
-	if (cached_value != NULL)
+	if ( ans.ret_errno == 0 )
 	{
-		delete_from_cache(path);
+		delete_from_cache(instance, path);
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
 
-int rfs_keep_alive()
+static int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int lock_cmd, struct flock *fl)
 {
-	if (g_server_socket == -1)
+	if (instance->sendrecv.socket == -1)
 	{
-		return -EIO;
+		return -ECONNABORTED;
 	}
-
-	struct command cmd = { cmd_keepalive, 0 };
-
-	if (rfs_send_cmd(g_server_socket, &cmd) == -1)
+	
+	uint16_t flags = 0;
+	
+	switch (lock_cmd)
 	{
-		return -EIO;
+	case F_GETLK:
+		flags = RFS_GETLK;
+		break;
+	case F_SETLK:
+		flags = RFS_SETLK;
+		break;
+	case F_SETLKW:
+		flags = RFS_SETLKW;
+		break;
+	default:
+		return -EINVAL;
 	}
+	
+	uint16_t type = 0;
+	switch (fl->l_type)
+	{
+	case F_UNLCK:
+		type = RFS_UNLCK;
+		break;
+	case F_RDLCK:
+		type = RFS_RDLCK;
+		break;
+	case F_WRLCK:
+		type = RFS_WRLCK;
+		break;
+	default:
+		return -EINVAL;
+	}
+	
+	uint16_t whence = fl->l_whence;
+	uint64_t start = fl->l_start;
+	uint64_t len = fl->l_len;
+	uint64_t fd = desc;
+	
+#define overall_size sizeof(fd) + sizeof(flags) + sizeof(type) + sizeof(whence) + sizeof(start) + sizeof(len)
+	char buffer[overall_size] = { 0 };
+	
+	pack_64(&len, buffer,
+	pack_64(&start, buffer,
+	pack_16(&whence, buffer, 
+	pack_16(&type, buffer,
+	pack_16(&flags, buffer,
+	pack_64(&fd, buffer, 0
+	))))));
+	
+	struct command cmd = { cmd_lock, overall_size };
+	
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	{
+		return -ECONNABORTED;
+	}
+#undef overall_size
 
-	return 0;
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	if (ans.command != cmd_lock 
+	|| ans.data_len != 0)
+	{
+		return cleanup_badmsg(instance, &ans);;
+	}
+	
+	if (ans.ret == 0)
+	{
+		if (lock_cmd == F_SETLK)
+		{
+			if (fl->l_type == F_UNLCK)
+			{
+				remove_file_from_locked_list(instance, path);
+			}
+			else
+			{
+				add_file_to_locked_list(instance, path, lock_cmd, fl->l_type, fl->l_whence, fl->l_start, fl->l_len);
+			}
+		}
+	}
+	
+	return ans.ret != 0 ? -ans.ret_errno : 0;
 }
 
+#if defined WITH_LINKS
+static int _rfs_link(struct rfs_instance *instance, const char *path, const char *target)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	unsigned path_len = strlen(path) + 1;
+	unsigned target_len = strlen(target) + 1;
+	uint32_t len = path_len;
+
+	unsigned overall_size = sizeof(len) + path_len + target_len;
+
+	struct command cmd = { cmd_link, overall_size };
+
+	char *buffer = get_buffer(cmd.data_len);
+
+	pack(target, target_len, buffer,
+	pack(path, path_len, buffer,
+	pack_32(&len, buffer, 0
+	)));
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (ans.command != cmd_link 
+	|| ans.data_len != 0)
+	{
+		return cleanup_badmsg(instance, &ans);;
+	}
+#if 1 /* TBD */
+	if (ans.ret == 0)
+	{
+		delete_from_cache(instance, path);
+	}
+#endif 
+	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
+}
+
+static int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *target)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	unsigned path_len = strlen(path) + 1;
+	unsigned target_len = strlen(target) + 1;
+	uint32_t len = path_len;
+
+	unsigned overall_size = sizeof(len) + path_len + target_len;
+
+	struct command cmd = { cmd_symlink, overall_size };
+
+	char *buffer = get_buffer(cmd.data_len);
+
+	pack(target, target_len, buffer,
+	pack(path, path_len, buffer,
+	pack_32(&len, buffer, 0
+	)));
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	if (ans.command != cmd_symlink 
+	|| ans.data_len != 0)
+	{
+		return cleanup_badmsg(instance, &ans);;
+	}
+
+	if (ans.ret == 0)
+	{
+	delete_from_cache(instance, path);
+	}
+
+	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
+}
+
+static int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_buffer, size_t size)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	unsigned path_len = strlen(path) + 1;
+	uint32_t bsize = size - 1; /* reserve place for ending \0 */
+	int overall_size = path_len + sizeof(bsize);
+	char *buffer = get_buffer(overall_size);
+
+	pack(path, path_len, buffer,
+	pack_32(&bsize, buffer, 0
+	));
+
+	struct command cmd = { cmd_readlink, overall_size };
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	{
+		free(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (ans.command != cmd_readlink)
+	{
+		return cleanup_badmsg(instance, &ans);;
+	}
+
+	/* if all was OK we will get the link info within our telegram */
+	buffer = get_buffer(ans.data_len);
+	memset(link_buffer, 0, ans.data_len);
+
+	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+	
+	if (ans.data_len >= size) /* >= to fit ending \0 into link_buffer */
+	{
+		return -EBADMSG;
+	}
+
+	strncpy(link_buffer, buffer, ans.data_len);
+	return 0;/* ans.ret;*/ /* This is not OKm readlink shall return the size of the link */
+}
+#endif /* WITH_LINKS */
+
+#if defined WITH_ACL
+#include "operations_acl.c"
+#endif
+
+#ifdef WITH_EXPORTS_LIST
+int rfs_list_exports(struct rfs_instance *instance)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	struct command cmd = { cmd_listexports, 0 };
+	
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) < 0)
+	{
+		return -ECONNABORTED;
+	}
+	
+	struct answer ans = { 0 };
+	unsigned header_printed = 0;
+	unsigned exports_count = 0;
+	
+	do
+	{
+		if (rfs_receive_answer(&instance->sendrecv, &ans) < 0)
+		{
+			return -ECONNABORTED;
+		}
+		
+		if (ans.command != cmd_listexports)
+		{
+			return cleanup_badmsg(instance, &ans);;
+		}
+		
+		if (ans.data_len == 0)
+		{
+			break;
+		}
+		
+		if (ans.ret != 0)
+		{
+			return -ans.ret_errno;
+		}
+		
+		++exports_count;
+		
+		char *buffer = get_buffer(ans.data_len);
+		
+		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) < 0)
+		{
+			free_buffer(buffer);
+			return -ECONNABORTED;
+		}
+		
+		uint32_t options = opt_none;
+		
+		const char *path = buffer + 
+		unpack_32(&options, buffer, 0);
+		
+		if (header_printed == 0)
+		{
+			INFO("%s\n\n", "Server provides the folowing export(s):");
+			header_printed = 1;
+		}
+		
+		INFO("%s", path);
+		
+		if (options != opt_none)
+		{
+			INFO("%s", " (");
+			if (((unsigned)options & opt_ro) > 0)
+			{
+				INFO("%s", describe_option(opt_ro));
+			}
+			else if (((unsigned)options & opt_ugo) > 0)
+			{
+				INFO("%s", describe_option(opt_ugo));
+			}
+			INFO("%s\n", ")");
+		}
+		else
+		{
+		INFO("%s\n", "");
+		}
+		
+		free_buffer(buffer);
+	}
+	while (ans.data_len != 0
+	&& ans.ret == 0
+	&& ans.ret_errno == 0);
+	
+	if (exports_count == 0)
+	{
+		INFO("%s\n", "Server provides no exports (this is odd)");
+	}
+	else
+	{
+		INFO("%s\n", "");
+	}
+	
+	return 0;
+}
+#endif /* WITH_EXPORTS_LIST */
+
 #include "operations_sync.c"
+
+#undef PARTIALY_DECORATE

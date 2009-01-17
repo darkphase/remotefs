@@ -17,38 +17,48 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+/** commands for remotefs server */
 enum server_commands
 { 
 	cmd_first = 0, 
 	
 	/* rfs internal commands */
-	cmd_auth               = 10,
-	cmd_request_salt,
-	cmd_closeconnection,
-	cmd_changepath,
-	cmd_keepalive,
-	cmd_getexportopts,
+	cmd_auth               = 10, /* 0a */
+	cmd_request_salt,            /* 0b */
+	cmd_closeconnection,         /* 0c */
+	cmd_changepath,              /* 0d */
+	cmd_keepalive,               /* 0e */
+	cmd_getexportopts,           /* 0f */
+	cmd_setsocktimeout,          /* 10 */
+	cmd_setsockbuffer,           /* 11 */
+	cmd_enablessl,               /* 12 */
+	cmd_listexports,             /* 13 */
 	
 	/* reserved */
 
 	/* fs commands */
-	cmd_readdir            = 50,
-	cmd_getattr,
-	cmd_mknod,
-	cmd_open,
-	cmd_release, 
-	cmd_truncate,
-	cmd_read,
-	cmd_write,
-	cmd_mkdir,
-	cmd_unlink,
-	cmd_rmdir,
-	cmd_rename,
-	cmd_utime,
-	cmd_statfs,
-	cmd_chmod, 
-	cmd_chown, 
-
+	cmd_readdir            = 50, /* 32 */
+	cmd_getattr,                 /* 33 */
+	cmd_mknod,                   /* 34 */
+	cmd_open,                    /* 35 */
+	cmd_release,                 /* 36 */
+	cmd_truncate,                /* 37 */
+	cmd_read,                    /* 38 */
+	cmd_write,                   /* 39 */
+	cmd_mkdir,                   /* 3A */
+	cmd_unlink,                  /* 3B */
+	cmd_rmdir,                   /* 3C */
+	cmd_rename,                  /* 3D */
+	cmd_utime,                   /* 3E */
+	cmd_statfs,                  /* 3F */
+	cmd_chmod,                   /* 40 */
+	cmd_chown,                   /* 41 */
+	cmd_lock,                    /* 42 */
+	cmd_symlink,                 /* 43 */
+	cmd_link,                    /* 44 */
+	cmd_readlink,                /* 45 */
+	cmd_getxattr,                /* 46 */
+	cmd_setxattr,                /* 47 */
 	cmd_last
 };
 
@@ -71,11 +81,13 @@ struct answer
 /** get description of command. debug only */
 const char* describe_command(const uint32_t cmd);
 
+#ifdef RFS_DEBUG
 /** write command to output. debug only */
 void dump_command(const struct command *cmd);
 
 /** write answer to output. debug only */
 void dump_answer(const struct answer *cmd);
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

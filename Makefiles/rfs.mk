@@ -4,7 +4,7 @@ include Makefiles/rfs-defs.mk
 
 $(rfs_OBJS):
 	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfs_CFLAGS) $(DRF) $(OPTS)
+	$(CC) -c -o $@ $*.c $(rfs_CFLAGS) $(OPTS)
 
 build: $(rfs_OBJS)
 	@echo Link $(rfs_TARGET)
@@ -15,7 +15,6 @@ install_rfs:
 
 flags:
 	@echo Build rfs
-	@echo CFLAGS = $(rfs_CFLAGS)
+	@echo CFLAGS = $(rfs_CFLAGS) $(OPTS)
 	@echo LDFLAGS = $(rfs_LDFLAGS)
 	@echo
-

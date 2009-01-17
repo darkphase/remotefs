@@ -10,33 +10,44 @@ See the file LICENSE.
 #include "list.h"
 #include "buffer.h"
 
-struct list* add_to_list(struct list *head, void *data)
+struct list* add_to_list(struct list **head, void *data)
 {
-	while (head != NULL && head->next != NULL)
+	struct list *tail = *head;
+	while (tail != NULL && tail->next != NULL)
 	{
-		head = head->next;
+		tail = tail->next;
 	}
 
-	struct list *new_item = get_buffer(sizeof(*head));
+	struct list *new_item = get_buffer(sizeof(*new_item));
 	if (new_item == NULL)
 	{
 		return NULL;
 	}
 
-	new_item->prev = head;
+	new_item->prev = tail;
 	new_item->next = NULL;
 	new_item->data = data;
 
-	if (head != NULL)
+	if (tail != NULL)
 	{
-		head->next = new_item;
+		tail->next = new_item;
+	}
+	
+	if (*head == NULL)
+	{
+		*head = new_item;
 	}
 	
 	return new_item;
 }
 
-struct list* remove_from_list(struct list *item)
+struct list* remove_from_list(struct list **head, struct list *item)
 {
+	if (item == *head)
+	{
+		*head = item->next;
+	}
+
 	if (item->prev != NULL)
 	{
 		item->prev->next = item->next;
@@ -48,6 +59,11 @@ struct list* remove_from_list(struct list *item)
 	}
 
 	struct list *ret = item->next;
+	
+	if (item == *head)
+	{
+		*head = ret;
+	}
 
 	free_buffer(item->data);
 	free_buffer(item);
@@ -55,25 +71,28 @@ struct list* remove_from_list(struct list *item)
 	return ret;
 }
 
-void destroy_list(struct list *head)
+void destroy_list(struct list **head)
 {
-	if (head == NULL)
+	if (*head == NULL)
 	{
 		return;
 	}
 
-	if (head->prev)
+	if ((*head)->prev)
 	{
-		head->prev->next = NULL;
+		(*head)->prev->next = NULL;
 	}
 
-	while (head != NULL)
+	struct list *item = *head;
+	while (item != NULL)
 	{
-		struct list *next = head->next;
-
-		free_buffer(head->data);
-		free_buffer(head);
-
-		head = next;
+		struct list *next = item->next;
+		
+		free_buffer(item->data);
+		free_buffer(item);
+		
+		item = next;
 	}
+	
+	*head = NULL;
 }

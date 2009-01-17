@@ -7,7 +7,7 @@ See the file LICENSE.
 */
 
 #include <signal.h>
-#if defined FREEBSD
+#if defined FREEBSD || defined DARWIN || defined QNX
 #       include <sys/wait.h>
 #else
 #       include <wait.h>

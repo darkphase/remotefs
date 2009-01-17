@@ -22,6 +22,10 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_changepath:                    return "changepath";
 	case cmd_keepalive:                     return "keepalive";
 	case cmd_getexportopts:                 return "getexportopts";
+	case cmd_setsocktimeout:                return "setsocktimeout";
+	case cmd_setsockbuffer:                 return "setsockbuffer";
+	case cmd_enablessl:                     return "enablessl";
+	case cmd_listexports:                   return "listexports";
 	
 	/* fs commands */
 	case cmd_readdir:                       return "readdir";
@@ -40,6 +44,14 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_statfs:                        return "statfs";
 	case cmd_chmod:                         return "chmod";
 	case cmd_chown:                         return "chown";
+	case cmd_lock:                          return "lock";
+	case cmd_symlink:                       return "symlink";
+	case cmd_link:                          return "link";
+	case cmd_readlink:                      return "readlink";
+	
+	/* ACL */
+	case cmd_setxattr:                      return "setxattr";
+	case cmd_getxattr:                      return "getxattr";
 
 	case cmd_first:                         return "first command in list. should be unused. if you see this line in the output, then we have a problem";
 	case cmd_last:                          return "last command in list. should be unused. if you see this line in the output, then we have another problem";
@@ -47,6 +59,7 @@ const char* describe_command(const uint32_t cmd)
 	}
 }
 
+#ifdef RFS_DEBUG
 void dump_command(const struct command *cmd)
 {
 	DEBUG("command: %s (%d), data length: %u\n", describe_command(cmd->command), cmd->command, cmd->data_len);
@@ -56,3 +69,4 @@ void dump_answer(const struct answer *ans)
 {
 	DEBUG("answer: %s (%d), data length: %u, ret: %d, errno: %s (%d)\n", describe_command(ans->command), ans->command, ans->data_len, ans->ret, strerror(ans->ret_errno), ans->ret_errno);
 }
+#endif

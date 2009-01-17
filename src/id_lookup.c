@@ -28,10 +28,7 @@ struct gid_look_ent
 	gid_t gid;
 };
 
-static struct list *uids_root = NULL;
-static struct list *gids_root = NULL;
-
-int put_to_uids(const char *name, const uid_t uid)
+static int put_to_uids(struct list **uids, const char *name, const uid_t uid)
 {
 	struct uid_look_ent *entry = get_buffer(sizeof(*entry));
 	if (entry == NULL)
@@ -49,9 +46,7 @@ int put_to_uids(const char *name, const uid_t uid)
 	entry->name = dup_name;
 	entry->uid = uid;
 	
-	struct list *added = add_to_list(uids_root, entry);
-	
-	if (added == NULL)
+	if (add_to_list(uids, entry) == NULL)
 	{
 		free((void*)entry->name);
 		free_buffer(entry);
@@ -59,21 +54,16 @@ int put_to_uids(const char *name, const uid_t uid)
 		return -1;
 	}
 	
-	if (uids_root == NULL)
-	{
-		uids_root = added;
-	}
-	
 	return 0;
 }
 
-uid_t get_uid(const char *name)
+uid_t get_uid(const struct list *uids, const char *name)
 {
-	struct list *entry = uids_root;
+	const struct list *entry = uids;
 	
 	while (entry != NULL)
 	{
-		struct uid_look_ent *item = (struct uid_look_ent *)entry->data;
+		const struct uid_look_ent *item = (const struct uid_look_ent *)entry->data;
 		if (strcmp(item->name, name) == 0)
 		{
 			return item->uid;
@@ -85,13 +75,13 @@ uid_t get_uid(const char *name)
 	return (uid_t)-1;
 }
 
-const char* get_uid_name(uid_t uid)
+const char* get_uid_name(const struct list *uids, uid_t uid)
 {
-	struct list *entry = uids_root;
+	const struct list *entry = uids;
 	
 	while (entry != NULL)
 	{
-		struct uid_look_ent *item = (struct uid_look_ent *)entry->data;
+		const struct uid_look_ent *item = (const struct uid_look_ent *)entry->data;
 		if (item->uid == uid)
 		{
 			return item->name;
@@ -103,7 +93,7 @@ const char* get_uid_name(uid_t uid)
 	return NULL;
 }
 
-int put_to_gids(const char *name, const gid_t gid)
+static int put_to_gids(struct list **gids, const char *name, const gid_t gid)
 {
 	struct gid_look_ent *entry = get_buffer(sizeof(*entry));
 	if (entry == NULL)
@@ -121,9 +111,7 @@ int put_to_gids(const char *name, const gid_t gid)
 	entry->name = dup_name;
 	entry->gid = gid;
 	
-	struct list *added = add_to_list(gids_root, entry);
-	
-	if (added == NULL)
+	if (add_to_list(gids, entry) == NULL)
 	{
 		free((void*)entry->name);
 		free_buffer(entry);
@@ -131,21 +119,16 @@ int put_to_gids(const char *name, const gid_t gid)
 		return -1;
 	}
 	
-	if (gids_root == NULL)
-	{
-		gids_root = added;
-	}
-	
 	return 0;
 }
 
-gid_t get_gid(const char *name)
+gid_t get_gid(const struct list *gids, const char *name)
 {
-	struct list *entry = gids_root;
+	const struct list *entry = gids;
 	
 	while (entry != NULL)
 	{
-		struct gid_look_ent *item = (struct gid_look_ent *)entry->data;
+		const struct gid_look_ent *item = (const struct gid_look_ent *)entry->data;
 		if (strcmp(item->name, name) == 0)
 		{
 			return item->gid;
@@ -157,13 +140,13 @@ gid_t get_gid(const char *name)
 	return (gid_t)-1;
 }
 
-const char* get_gid_name(gid_t gid)
+const char* get_gid_name(const struct list *gids, gid_t gid)
 {
-	struct list *entry = gids_root;
+	const struct list *entry = gids;
 	
 	while (entry != NULL)
 	{
-		struct gid_look_ent *item = (struct gid_look_ent *)entry->data;
+		const struct gid_look_ent *item = (const struct gid_look_ent *)entry->data;
 		if (item->gid == gid)
 		{
 			return item->name;
@@ -175,11 +158,14 @@ const char* get_gid_name(gid_t gid)
 	return NULL;
 }
 
-int create_uids_lookup()
+int create_uids_lookup(struct list **uids)
 {
 	DEBUG("%s\n", "creating uid lookup table");
 
 	struct passwd *pwd = NULL;
+#if defined FREEBSD
+	setpwent();
+#endif
 	do
 	{
 		pwd = getpwent();
@@ -188,21 +174,27 @@ int create_uids_lookup()
 			break;
 		}
 		
-		if (put_to_uids(pwd->pw_name, pwd->pw_uid) != 0)
+		if (put_to_uids(uids, pwd->pw_name, pwd->pw_uid) != 0)
 		{
 			return -1;
 		}
 	}
 	while (pwd != NULL);
 	
+#if defined FREEBSD
+	endpwent();
+#endif
 	return 0;
 }
 
-int create_gids_lookup()
+int create_gids_lookup(struct list **gids)
 {
 	DEBUG("%s\n", "creating gid lookup table");
 	
 	struct group *grp = NULL;
+#if defined FREEBSD
+	setgrent();
+#endif
 	do
 	{
 		grp = getgrent();
@@ -211,21 +203,24 @@ int create_gids_lookup()
 			break;
 		}
 		
-		if (put_to_gids(grp->gr_name, grp->gr_gid) != 0)
+		if (put_to_gids(gids, grp->gr_name, grp->gr_gid) != 0)
 		{
 			return -1;
 		}
 	}
 	while (grp != NULL);
 	
+#if defined FREEBSD
+	endgrent();
+#endif
 	return 0;
 }
 
-void destroy_uids_lookup()
+void destroy_uids_lookup(struct list **uids)
 {
 	DEBUG("%s\n", "destroying uid lookup table");
 	
-	struct list *entry = uids_root;
+	struct list *entry = *uids;
 	
 	while (entry != NULL)
 	{
@@ -236,15 +231,15 @@ void destroy_uids_lookup()
 		entry = entry->next;
 	}
 	
-	destroy_list(uids_root);
-	uids_root = NULL;
+	destroy_list(uids);
+	*uids = NULL;
 }
 
-void destroy_gids_lookup()
+void destroy_gids_lookup(struct list **gids)
 {
 	DEBUG("%s\n", "destroying gid lookup table");
 	
-	struct list *entry = gids_root;
+	struct list *entry = *gids;
 	
 	while (entry != NULL)
 	{
@@ -254,47 +249,47 @@ void destroy_gids_lookup()
 		entry = entry->next;
 	}
 	
-	destroy_list(gids_root);
-	gids_root = NULL;
+	destroy_list(gids);
+	*gids = NULL;
 }
 
-uid_t lookup_user(const char *name)
+uid_t lookup_user(const struct list *uids, const char *name)
 {
-	uid_t uid = get_uid(name);
+	uid_t uid = get_uid(uids, name);
 	if (uid == (uid_t)-1)
 	{
-		uid = get_uid("nobody");
+		uid = get_uid(uids, "nobody");
 	}
 	
 	return uid != (uid_t)-1 ? uid : 0;
 }
 
-gid_t lookup_group(const char *name, const char *user_name)
+gid_t lookup_group(const struct list *gids, const char *name, const char *user_name)
 {
-	gid_t gid = get_gid(name);
+	gid_t gid = get_gid(gids, name);
 	
 	if (gid == (gid_t)-1
 	&& user_name != NULL)
 	{
-		gid = get_gid(user_name);
+		gid = get_gid(gids, user_name);
 	}
 	
 	if (gid == (gid_t)-1)
 	{
-		gid = get_gid("nogroup");
+		gid = get_gid(gids, "nogroup");
 	}
 	
 	if (gid == (gid_t)-1)
 	{
-		gid = get_gid("nobody");
+		gid = get_gid(gids, "nobody");
 	}
 	
 	return gid != (gid_t)-1 ? gid : 0;
 }
 
-const char* lookup_uid(uid_t uid)
+const char* lookup_uid(const struct list *uids, uid_t uid)
 {
-	const char *user = get_uid_name(uid);
+	const char *user = get_uid_name(uids, uid);
 	if (user == NULL)
 	{
 		user = "nobody";
@@ -308,24 +303,24 @@ const char* lookup_uid(uid_t uid)
 	return user;
 }
 
-const char* lookup_gid(gid_t gid, uid_t uid)
+const char* lookup_gid(const struct list *gids, gid_t gid, const struct list *uids, uid_t uid)
 {
-	const char *group = get_gid_name(gid);
+	const char *group = get_gid_name(gids, gid);
 	if (group == NULL
-	&& get_gid("nogroup"))
+	&& get_gid(gids, "nogroup"))
 	{
 		group = "nogroup";
 	}
 	
 	if (group == NULL
-	&& get_gid("nobody"))
+	&& get_gid(gids, "nobody"))
 	{
 		group = "nobody";
 	}
 	
 	if (group == NULL)
 	{
-		group = get_uid_name(uid);
+		group = get_uid_name(uids, uid);
 	}
 	
 	if (group == NULL)

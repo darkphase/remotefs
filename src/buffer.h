@@ -37,6 +37,9 @@ off_t pack_16(const uint16_t *data, char *buffer, const off_t offset);
 */
 off_t pack_32(const uint32_t *data, char *buffer, const off_t offset);
 
+/** same as pack_32, but signed */
+off_t pack_32_s(const int32_t *data, char *buffer, const off_t offset);
+
 /** append (copy) uint64_t to buffer 
 @return offset after appended data
 */
@@ -56,6 +59,7 @@ off_t unpack_16(uint16_t *data, const char *buffer, const off_t offset);
 @return offset after copied data
 */
 off_t unpack_32(uint32_t *data, const char *buffer, const off_t offset);
+off_t unpack_32_s(int32_t *data, const char *buffer, const off_t offset);
 
 /** get (copy) uint64_t from buffer 
 @return offset after copied data

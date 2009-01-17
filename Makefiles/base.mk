@@ -5,70 +5,78 @@
 OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
+
 include Makefiles/$(OS)$(ALT).mk
-
-#############################
-# build options
-#############################
 include Makefiles/options.mk
-
-#############################
-# Version for packages
-#############################
 include Makefiles/version.mk
 
-#############################
-# The begin of the world
-#############################
+librfs: dummy
+	@echo
+	@$(MAKE) -f Makefiles/librfs.mk flags build
+	@echo
 
-#############################
-# compile rules for objects
-#############################
-
-#######################################
-# Rules for compiling programs
-#######################################
-
-rfs: dummy
+rfs: dummy librfs
 	@echo
 	@$(MAKE) -f Makefiles/rfs.mk flags build
 	@echo
 
-rfsd: dummy
+librfsd: dummy
 	@echo
-	@$(MAKE) -sf Makefiles/rfsd.mk flags build
-	@echo
-
-rfspasswd: dummy
-	@echo
-	@$(MAKE) -sf Makefiles/rfspasswd.mk flags build
+	@$(MAKE) -f Makefiles/librfsd.mk flags build
 	@echo
 
-runtests: 
-	@$(MAKE) -sC tests run
-	@$(MAKE) -sC tests clean
+rfsd: dummy librfsd
+	@echo
+	@$(MAKE) -f Makefiles/rfsd.mk flags build
+	@echo
 
+rfspasswd: dummy librfsd
+	@echo
+	@$(MAKE) -f Makefiles/rfspasswd.mk flags build
+	@echo
 
 #############################
 # remove all temporaries objects
 #############################
 
-clean:
-	@if ls src/*.o >/dev/null 2>&1; then $(RM) -f src/*.o; fi
-	@if ls *.deb >/dev/null 2>&1; then $(RM) -f *.deb; fi
-	@if [ -f rfs ]; then $(RM) -f rfs; fi
-	@if [ -f rfsd ]; then $(RM) -f rfsd; fi
-	@if [ -f rfspasswd ]; then $(RM) -f rfspasswd; fi
-	@if [ -f remotefs-${VERSION}-${RELEASE}.tar.bz2 ]; then $(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2; fi
-	@if [ -d man/gz ]; then $(RM) -fr man/gz; fi
-	@$(RM) -fr man/gz
-	@$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
+clean_build: dummy
+	$(RM) -f src/*.o
+	$(RM) -f src/md5crypt/*.o
+
+clean_bins: dummy
+	$(RM) -f rfs
+	$(RM) -f rfsd
+	$(RM) -f rfspasswd
+	$(RM) -f *.so*
+
+clean_packages_tmp: dummy
+	# debs
+	$(RM) -fr man/gz
+	$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
+	
+	# rpms
+	$(RM) -fr rpmbuild/
+	$(RM) -f .rpmmacros
+	$(RM) -fr rfsd-*/
+	$(RM) -fr rfs-*/
+	
+	# tbz
+	$(RM) -fr remotefs-*/
+	
+clean_tmp: dummy clean_packages_tmp clean_build
+
+clean_packages: dummy clean_packages_tmp
+	$(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2
+	$(RM) -f *.deb
+	$(RM) -f *.rpm
+
+clean: clean_build clean_bins clean_packages
 
 #############################
 # Rebuild dependency file
 #############################
 depends:
-	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
+	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/# *include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
 	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
 
 #######################################
@@ -80,39 +88,44 @@ depends:
 #############################
 
 man: dummy
-	@mkdir -p man/gz/man1
-	@mkdir -p man/gz/man8
-	@gzip -c < man/rfs.1 > man/gz/man1/rfs.1.gz
-	@gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
-	@gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
+	mkdir -p man/gz/man1
+	mkdir -p man/gz/man8
+	gzip -c < man/rfs.1 > man/gz/man1/rfs.1.gz
+	gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
+	gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
 
 #############################
 # Build tarball
 #############################
 
-tbz: clean
-	@echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
-	@cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
-	@cp AUTHORS "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
-	@cp CHANGELOG "remotefs-$(VERSION)-$(RELEASE)/" 2> /dev/null
-	@cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src" 2> /dev/null
-	@cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/" 2> /dev/null
-	@cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/" 2> /dev/null
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/rpms"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
-	@mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
-	@cp debian/* "remotefs-$(VERSION)-$(RELEASE)/debian/" 2> /dev/null
-	@cp rpms/* "remotefs-$(VERSION)-$(RELEASE)/rpms/" 2> /dev/null
-	@cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/" 2> /dev/null
-	@cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/" 2> /dev/null
-	@find remotefs-${VERSION}-${RELEASE} -name .svn -exec rm -fr {} \; 2>/dev/null;
-	@cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
+tbz: 	
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	
+	echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
+	cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/"
+	cp AUTHORS "remotefs-$(VERSION)-$(RELEASE)/"
+	cp CHANGELOG "remotefs-$(VERSION)-$(RELEASE)/"
+	cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src/"
+	cp src/md5crypt/*.c src/md5crypt/*.h "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	cp src/md5crypt/LSM src/md5crypt/ORIGIN src/md5crypt/README "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/"
+	cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/redhat"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
+	cp debian/* "remotefs-$(VERSION)-$(RELEASE)/debian/"
+	cp redhat/* "remotefs-$(VERSION)-$(RELEASE)/redhat/"
+	cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/"
+	cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/"
+	cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
+	chmod 700 remotefs-$(VERSION)-$(RELEASE)/init.d/*.*
 	tar cf - remotefs-${VERSION}-${RELEASE} | bzip2 -c > remotefs-${VERSION}-${RELEASE}.tar.bz2
-	rm -fr remotefs-${VERSION}-${RELEASE}
+	
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
 install_man:
 	@INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
@@ -131,37 +144,55 @@ install: install_man
 
 debrelease: rfsdeb rfsddeb
 
-rfsmanpages: man
+debbase:
+	mkdir -p "dpkg$(INSTALL_DIR)";
+	mkdir -p "dpkg$(INSTALL_DIR)/bin";
+	mkdir -p "dpkg$(INSTALL_DIR)/lib";
+	mkdir -p "dpkg/DEBIAN";
+
+rfsmanpages: dummy
+	$(MAKE) -sf Makefiles/base.mk man
 	mkdir -p dpkg_man/man1/
 	cp man/gz/man1/rfs.1.gz dpkg_man/man1/
 
-rfsdeb: rfs rfsmanpages
-	CONTROL_TEMPLATE="debian/control.rfs" TARGET="rfs" \
-	NAME=$< \
-	$(MAKE) -sf Makefiles/base.mk builddeb
+rfsdeb: dummy clean_tmp debbase rfsmanpages
+	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	$(MAKE) -f Makefiles/base.mk rfs >/dev/null
+	cp rfs "dpkg$(INSTALL_DIR)/bin/";
+	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
+	ln -sf "librfs.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfs.$(SO_EXT)"
+	CONTROL_TEMPLATE="debian/control.rfs" \
+	NAME="rfs" \
+	$(MAKE) -f Makefiles/base.mk builddeb
 
-rfsdmanpages: man
+rfsdmanpages: dummy
+	$(MAKE) -sf Makefiles/base.mk man
 	mkdir -p dpkg_man/man8/
 	cp man/gz/man8/rfsd.8.gz dpkg_man/man8/
 	cp man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
 
-rfsdetc:
+rfsdetc: dummy
 	mkdir -p "dpkg_etc/init.d/";\
 	cp etc/rfs-exports "dpkg_etc/";\
 	cp init.d/rfsd.debian "dpkg_etc/init.d/rfsd";\
 	chmod +x "dpkg_etc/init.d/rfsd"
 
-rfsddeb: rfsd rfspasswd rfsdmanpages rfsdetc
-	CONTROL_TEMPLATE="debian/control.rfsd" TARGET="rfsd rfspasswd" \
-	NAME=$< \
-	$(MAKE) -sf Makefiles/base.mk builddeb
+rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
+	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	$(MAKE) -f Makefiles/base.mk librfsd >/dev/null
+	$(MAKE) -f Makefiles/base.mk clean_build
+	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null
+	$(MAKE) -f Makefiles/base.mk clean_build
+	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null
+	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
+	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
+	cp librfsd.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
+	ln -sf "librfsd.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfsd.$(SO_EXT)"
+	CONTROL_TEMPLATE="debian/control.rfsd" \
+	NAME="rfsd" \
+	$(MAKE) -f Makefiles/base.mk builddeb
 
-builddeb:
-	rm -fr dpkg;\
-	mkdir -p "dpkg$(INSTALL_DIR)";\
-	mkdir -p "dpkg$(INSTALL_DIR)/bin";\
-	mkdir -p "dpkg/DEBIAN";\
-	mv $(TARGET) "dpkg$(INSTALL_DIR)/bin/";\
+builddeb: dummy
 	if [ -d dpkg_man ];\
 	then\
 		mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
@@ -174,16 +205,13 @@ builddeb:
 		mv dpkg_etc/* "dpkg/etc/";\
 		rm -fr dpkg_etc;\
 	fi;\
-	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;\
-	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" $(CONTROL_TEMPLATE) >dpkg/DEBIAN/control.1;\
-	sed -e "s/AND SIZE HERE/$$SIZE/" dpkg/DEBIAN/control.1 >dpkg/DEBIAN/control.2;\
-	sed -e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" dpkg/DEBIAN/control.2 >dpkg/DEBIAN/control;\
-	rm -f dpkg/DEBIAN/control.1 dpkg/DEBIAN/control.2;\
-	echo "Building package $(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb";\
-	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;\
-	rm -fr dpkg;
-
-
+	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;
+	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
+	-e "s/AND SIZE HERE/$(SIZE)/" \
+	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
+	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
+	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
 #############################
 # Build RPM
@@ -191,45 +219,48 @@ builddeb:
 
 rpm: rpm-rfsd rpm-rfs
 
-rpm-rfsd: clean
-	@RPMNAME=rfsd $(MAKE) -sf Makefiles/base.mk bldrpm
+rfsrpm: dummy
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk man
+	RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk buildrpm
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
 	
-rpm-rfs:  clean
-	@RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk bldrpm
+rfsdrpm: dummy
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk man
+	RPMNAME=rfsd $(MAKE) -f Makefiles/base.mk buildrpm
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
-rpms/%.spec: Makefiles/version.mk
-	@echo rebuild spec file
-	@sed -e "s/Version:.*/Version:$(VERSION)/"  \
-	    -e "s/Release:.*/Release:$(RELEASE)/" $@ \
-	    > rpms/tmp; mv rpms/tmp $@
+redhat/%.spec: dummy Makefiles/version.mk
+	sed -e "s/Version:.*/Version:$(VERSION)/"  \
+	-e "s/Release:.*/Release:$(RELEASE)/" $@ \
+	> rpmbuild/SPECS/$(RPMNAME).spec
 
+rpmbuild: dummy
+	PWD=`pwd`
+	mkdir -p rpmbuild/BUILD rpmbuild/SOURCES rpmbuild/RPMS rpmbuild/SPECS
+	echo '%_topdir %(echo $(PWD)/rpmbuild)' > rpmbuild/.rpmmacros
+	echo '%_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm' >> rpmbuild/.rpmmacros
+	echo '%debug_package %{nil}' >> rpmbuild/.rpmmacros
 
-bldrpm: rpms/$(RPMNAME).spec
-	@if [ "$(MACHINE)" = "" ] ; then MAC=$(ARCH); else MAC=$(MACHINE); fi ; \
-	RPMD=`rpm -q --eval=%{_topdir} --specfile rpms/$(RPMNAME).spec | grep -v $(RPMNAME)`; \
-	if [ -d "$$RPMD" -a -w "$$RPMD" ];\
-	then \
-	   VER=`sed -n 's/Version:\(.*\)/\1/p' rpms/$(RPMNAME).spec|tr -d ' '`; \
-	   SDIR=`pwd`; \
-	   NM=$(RPMNAME)-$$VER; \
-	   mkdir /tmp/$$NM ;\
-	   cp -rH * /tmp/$$NM; \
-	   find /tmp/$$NM -name .svn -exec rm -fr {} \; 2>/dev/null; \
-	   cd /tmp ; \
-	   tar czf $$RPMD/SOURCES/$$NM.tar.gz $$NM ; \
-	   cd $$SDIR ; \
-	   if [ -x /usr/bin/rpmbuild ]; \
-	   then \
-	      rpmbuild -ba --target $$MAC /tmp/$$NM/rpms/$(RPMNAME).spec; \
-	   else \
-	      rpm -ba $$NM/rpms/$(RPMNAME).spec; \
-	   fi; \
-	   rm -fr /tmp/$$NM 2>/dev/tty 1>/dev/tty; \
-	else \
-	   echo You must be root for this.; \
-	   exit 2; \
-	fi;\
-	
+buildrpm: rpmbuild redhat/$(RPMNAME).spec
+	mkdir -p $(RPMNAME)-$(VERSION)/src
+	mkdir -p $(RPMNAME)-$(VERSION)/Makefiles
+	mkdir -p $(RPMNAME)-$(VERSION)/init.d
+	mkdir -p $(RPMNAME)-$(VERSION)/etc
+	mkdir -p $(RPMNAME)-$(VERSION)/man
+	cp -r src/* $(RPMNAME)-$(VERSION)/src
+	cp Makefiles/* $(RPMNAME)-$(VERSION)/Makefiles/
+	cp init.d/* $(RPMNAME)-$(VERSION)/init.d/
+	cp etc/* $(RPMNAME)-$(VERSION)/etc/
+	cp -r man/gz/* $(RPMNAME)-$(VERSION)/man/
+	cp Makefile $(RPMNAME)-$(VERSION)/
+	chmod 700 $(RPMNAME)-$(VERSION)/init.d/*
+	tar -cpzf rpmbuild/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
+	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
+	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
+	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
+
 dummy:
 
 #############################

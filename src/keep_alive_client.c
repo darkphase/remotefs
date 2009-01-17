@@ -6,39 +6,36 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <pthread.h>
-
 #include "config.h"
 #include "keep_alive_client.h"
-
-static pthread_mutex_t keep_alive_mutex;
+#include "instance.h"
 
 unsigned keep_alive_period()
 {
 	return KEEP_ALIVE_PERIOD;
 }
 
-int keep_alive_init()
+int keep_alive_init(struct rfs_instance *instance)
 {
-	return pthread_mutex_init(&keep_alive_mutex, NULL);
+	return pthread_mutex_init(&instance->keep_alive.mutex, NULL);
 }
 
-int keep_alive_destroy()
+int keep_alive_destroy(struct rfs_instance *instance)
 {
-	return pthread_mutex_destroy(&keep_alive_mutex);
+	return pthread_mutex_destroy(&instance->keep_alive.mutex);
 }
 
-int keep_alive_trylock()
+int keep_alive_trylock(struct rfs_instance *instance)
 {
-	return pthread_mutex_trylock(&keep_alive_mutex);
+	return pthread_mutex_trylock(&instance->keep_alive.mutex);
 }
 
-int keep_alive_unlock()
+int keep_alive_unlock(struct rfs_instance *instance)
 {
-	return pthread_mutex_unlock(&keep_alive_mutex);
+	return pthread_mutex_unlock(&instance->keep_alive.mutex);
 }
 
-int keep_alive_lock()
+int keep_alive_lock(struct rfs_instance *instance)
 {
-	return pthread_mutex_lock(&keep_alive_mutex);
+	return pthread_mutex_lock(&instance->keep_alive.mutex);
 }

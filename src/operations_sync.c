@@ -6,111 +6,143 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-/* syncronized operations. will lock keep alive when it's needed */
+/** syncronized operations. will lock keep alive when it's needed */
 
-/* if connection lost after executing the operation
-and operation failed, then try it one more time */
-#define DECORATE(func, args...)                             \
-	int ret = -EIO;                                     \
-	if (keep_alive_lock() == 0)                         \
-	{                                                   \
-		if(check_connection() == 0)                 \
-		{                                           \
-			ret = func(args);                   \
-			if (ret == -EIO                     \
-			&& rfs_is_connection_lost() != 0    \
-			&& check_connection() == 0)         \
-			{                                   \
-				ret = func(args);           \
-			}                                   \
-		}                                           \
-		keep_alive_unlock();                        \
-	}                                                   \
+#define DECORATE(func, instance, args...)                           \
+	int ret = -ECONNABORTED;                                    \
+	if (keep_alive_lock((instance)) == 0)                       \
+	{                                                           \
+		PARTIALY_DECORATE(ret, (func), (instance), args)    \
+		keep_alive_unlock((instance));                      \
+	}                                                           \
+	else                                                        \
+	{                                                           \
+		ret = -EIO;                                         \
+	}                                                           \
 	return ret;
 
-int rfs_mknod(const char *path, mode_t mode, dev_t dev)
+int rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev_t dev)
 {
-	DECORATE(_rfs_mknod, path, mode, dev);
+	DECORATE(_rfs_mknod, instance, path, mode, dev);
 }
 
-int rfs_chmod(const char *path, mode_t mode)
+int rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 {
-	DECORATE(_rfs_chmod, path, mode);
+	DECORATE(_rfs_chmod, instance, path, mode);
 }
 
-int rfs_chown(const char *path, uid_t uid, gid_t gid)
+int rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {
-	DECORATE(_rfs_chown, path, uid, gid);
+	DECORATE(_rfs_chown, instance, path, uid, gid);
 }
 
-int rfs_statfs(const char *path, struct statvfs *buf)
+int rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs *buf)
 {
-	DECORATE(_rfs_statfs, path, buf);
+	DECORATE(_rfs_statfs, instance, path, buf);
 }
 
-int rfs_utime(const char *path, struct utimbuf *buf)
+int rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf)
 {
-	DECORATE(_rfs_utime, path, buf);
+	DECORATE(_rfs_utime, instance, path, buf);
 }
 
-int rfs_rename(const char *path, const char *new_path)
+int rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path)
 {
-	DECORATE(_rfs_rename, path, new_path);
+	DECORATE(_rfs_rename, instance, path, new_path);
 }
 
-int rfs_rmdir(const char *path)
+int rfs_rmdir(struct rfs_instance *instance, const char *path)
 {
-	DECORATE(_rfs_rmdir, path);
+	DECORATE(_rfs_rmdir, instance, path);
 }
 
-int rfs_unlink(const char *path)
+int rfs_unlink(struct rfs_instance *instance, const char *path)
 {
-	DECORATE(_rfs_unlink, path);
+	DECORATE(_rfs_unlink, instance, path);
 }
 
-int rfs_mkdir(const char *path, mode_t mode)
+int rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 {
-	DECORATE(_rfs_mkdir, path, mode);
+	DECORATE(_rfs_mkdir, instance, path, mode);
 }
 
-int rfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+int rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	DECORATE(_rfs_write, path, buf, size, offset, fi);
+	/* we have to manually handle keep alive in _rfs_read and _rfs_read_cached
+	for _rfs_read_cached to be able to add write block to cache
+	while write_behind() is sending data */
+	return _rfs_write(instance, path, buf, size, offset, desc);
 }
 
-int rfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+int rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	DECORATE(_rfs_read, path, buf, size, offset, fi);
+	/* see comments for rfs_write */
+	return _rfs_read(instance, path, buf, size, offset, desc);
 }
 
-int rfs_truncate(const char *path, off_t offset)
+int rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 {
-	DECORATE(_rfs_truncate, path, offset);
+	DECORATE(_rfs_truncate, instance, path, offset);
 }
 
-int rfs_release(const char *path, struct fuse_file_info *fi)
+int rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	DECORATE(_rfs_release, path, fi);
+	DECORATE(_rfs_release, instance, path, desc);
 }
 
-int rfs_open(const char *path, struct fuse_file_info *fi)
+int rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)
 {
-	DECORATE(_rfs_open, path, fi);
+	DECORATE(_rfs_open, instance, path, flags, desc);
 }
 
-int rfs_readdir(const char *path, void *buf, const fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+int rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_readdir_callback_t callback, void *callback_data)
 {
-	DECORATE(_rfs_readdir, path, buf, filler, offset, fi);
+	DECORATE(_rfs_readdir, instance, path, callback, callback_data);
 }
 
-int rfs_getattr(const char *path, struct stat *stbuf)
+int rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
-	DECORATE(_rfs_getattr, path, stbuf);
+	DECORATE(_rfs_getattr, instance, path, stbuf);
 }
 
-int rfs_flush(const char *path, struct fuse_file_info *fi)
+int rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	DECORATE(_rfs_flush, path, fi);
+	DECORATE(_rfs_flush, instance, path, desc);
 }
+
+int rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int cmd, struct flock *fl)
+{
+	DECORATE(_rfs_lock, instance, path, desc, cmd, fl);
+}
+
+#if defined WITH_LINKS
+int rfs_link(struct rfs_instance *instance, const char *path, const char *target)
+{
+	DECORATE(_rfs_link, instance, path, target);
+}
+
+int rfs_symlink(struct rfs_instance *instance, const char *path, const char *target)
+{
+	DECORATE(_rfs_symlink, instance, path, target);
+}
+
+int rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size)
+{
+	DECORATE(_rfs_readlink, instance, path, buffer, size);
+}
+
+#endif
+
+#if defined WITH_ACL
+int rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
+{
+	DECORATE(_rfs_getxattr, instance, path, name, value, size);
+}
+
+int rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags)
+{
+	DECORATE(_rfs_setxattr, instance, path, name, value, size, flags);
+}
+#endif
 
 #undef DECORATE

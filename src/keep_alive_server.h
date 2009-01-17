@@ -15,24 +15,24 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+struct rfsd_instance;
+
 /** check if connection is should be closed during lack of activity 
-(no operations and no keep alive packets) 
-*/
-int keep_alive_expired(void);
+(no operations and no keep alive packets) */
+int keep_alive_expired(struct rfsd_instance *instance);
 
 /** update last keep alive time with current time() value */
-void update_keep_alive(void);
+void update_keep_alive(struct rfsd_instance *instance);
 
 /** check if process is in the middle of an operation */
-int keep_alive_locked(void);
+int keep_alive_locked(struct rfsd_instance *instance);
 
 /** lock keep alive. not needed actually since it is implemented with SIGALRM.
-for future use
-*/
-int keep_alive_lock(void);
+for future use */
+int keep_alive_lock(struct rfsd_instance *instance);
 
 /** unlock keep alive */
-int keep_alive_unlock(void);
+int keep_alive_unlock(struct rfsd_instance *instance);
 
 /** get keep alive checking period */
 unsigned keep_alive_period(void);

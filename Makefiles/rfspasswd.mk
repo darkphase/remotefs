@@ -4,7 +4,7 @@ include Makefiles/rfspasswd-defs.mk
 
 $(rfspasswd_OBJS):
 	@echo Compile $@
-	@$(CC) -c -o $@ $*.c $(rfspasswd_CFLAGS) $(DRF) $(OPTS)
+	@$(CC) -c -o $@ $*.c $(rfspasswd_CFLAGS)
 
 build: $(rfspasswd_OBJS)
 	@echo Link $(rfspasswd_TARGET)

@@ -6,42 +6,168 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-/* syncronized server handlers. will lock keep alive when it's needed */
+/** syncronized server handlers. will lock keep alive when it's needed */
 
-#define DECLARE_AND_DECORATE(declare_func, decorate_func)          \
-int declare_func(const int client_socket,                          \
-	const struct sockaddr_in *client_addr,                     \
-	const struct command *cmd)                                 \
-{                                                                  \
-	if (keep_alive_lock() == 0)                                \
-	{                                                          \
-		int ret = decorate_func(client_socket, client_addr, cmd); \
-		return keep_alive_unlock() == 0 ? ret : -1;        \
-	}                                                          \
-	return -1;                                                 \
+/* need to define client_socket, client_addr and cmd before using this macro */
+#define DECORATE(decorate_func)                                                 \
+	if (keep_alive_lock(instance) == 0)                                     \
+	{                                                                       \
+		int ret = (decorate_func)(instance, client_addr, cmd);          \
+		return keep_alive_unlock(instance) == 0 ? ret : -1;             \
+	}                                                                       \
+	return -1;
+
+int handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_changepath)
 }
 
-DECLARE_AND_DECORATE(handle_changepath, _handle_changepath)
-DECLARE_AND_DECORATE(handle_closeconnection, _handle_closeconnection)
-DECLARE_AND_DECORATE(handle_request_salt, _handle_request_salt)
-DECLARE_AND_DECORATE(handle_auth, _handle_auth)
-DECLARE_AND_DECORATE(handle_getexportopts, _handle_getexportopts)
+int handle_closeconnection(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_closeconnection)
+}
 
-DECLARE_AND_DECORATE(handle_mknod, _handle_mknod)
-DECLARE_AND_DECORATE(handle_chmod, _handle_chmod)
-DECLARE_AND_DECORATE(handle_chown, _handle_chown)
-DECLARE_AND_DECORATE(handle_release, _handle_release)
-DECLARE_AND_DECORATE(handle_statfs, _handle_statfs)
-DECLARE_AND_DECORATE(handle_utime, _handle_utime)
-DECLARE_AND_DECORATE(handle_rename, _handle_rename)
-DECLARE_AND_DECORATE(handle_rmdir, _handle_rmdir)
-DECLARE_AND_DECORATE(handle_unlink, _handle_unlink)
-DECLARE_AND_DECORATE(handle_mkdir, _handle_mkdir)
-DECLARE_AND_DECORATE(handle_write, _handle_write)
-DECLARE_AND_DECORATE(handle_read, _handle_read)
-DECLARE_AND_DECORATE(handle_truncate, _handle_truncate)
-DECLARE_AND_DECORATE(handle_open, _handle_open)
-DECLARE_AND_DECORATE(handle_readdir, _handle_readdir)
-DECLARE_AND_DECORATE(handle_getattr, _handle_getattr)
+int handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_request_salt)
+}
 
-#undef DECLARE_AND_DECORATE
+int handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_auth)
+}
+
+int handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_getexportopts)
+}
+
+#ifdef WITH_SSL
+int handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_enablessl)
+}
+#endif
+
+#ifdef WITH_EXPORTS_LIST
+int handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_listexports)
+}
+#endif
+
+int handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_mknod)
+}
+
+int handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_chmod)
+}
+
+int handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_chown)
+}
+
+int handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_release)
+}
+
+int handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_statfs)
+}
+
+int handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_utime)
+}
+
+int handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_rename)
+}
+
+int handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_rmdir)
+}
+
+int handle_unlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_unlink)
+}
+
+int handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_mkdir)
+}
+
+int handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_write)
+}
+
+int handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_read)
+}
+
+int handle_truncate(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_truncate)
+}
+
+int handle_open(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_open)
+}
+
+int handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_readdir)
+}
+
+int handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_getattr)
+}
+
+int handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_lock)
+}
+
+#if defined WITH_LINKS
+int handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_symlink)
+}
+
+int handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_readlink)
+}
+
+int handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
+{
+	DECORATE(_handle_link)
+}
+#endif
+
+#if defined WITH_ACL
+int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_setxattr)
+}
+
+int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_getxattr)
+}
+#endif
+
+#undef DECORATE

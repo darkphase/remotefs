@@ -20,10 +20,7 @@ static void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontex
 	switch (signal)
 	{
 	case SIGTERM:
-		if (g_server_socket != -1)
-		{
-			rfs_destroy(NULL);
-		}
+		rfs_destroy(NULL);
 		exit(0);
 	}
 }

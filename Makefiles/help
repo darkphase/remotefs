@@ -1,29 +1,26 @@
-How to compile:
----------------
-Call make <tag> from a terminal. See bellow for tha available tags.
-
 The following tags are provided:
 --------------------------------
-help:      This, the default
-debug:     Create all binaries      with debug code
-release:   Create all binaries      without debug code
+rfsdeb:    Create client package for Debian
+rfsddeb:   Create server package for Debian
+rpm:       Create packages for Redhat/Fedora
+rpm-rfs:   Create client package for Redhat/Fedora
+rpm-rfsd:  Create server package for Redhat/Fedora
 
-all:       Create all binaries      with release code
+release:   Create all binaries
+all:       Create all binaries
 
-rfs:       Create the client        with release code
-rfsd:      Create the server daemon with release code
-rfspasswd: Create the utility for storing the passwords within rfs-passwd
+rfs:       Create the clien
+rfsd:      Create the server daemon
+rfspasswd: Create the utility for managing rfsd passwords
 
-tbz:       Create the versioned tarball remotefs.<VERSION>_<RELEASE>.tar.bz2
+tbz:       Create the versioned remotefs tarball
 
 clean:     Remove all temporary files
 depends:   Rebuild the dependency file Makefiles/depends.mk
 
-rfsdeb:    Create the debian package for the client
-rfsddeb:   Create the debian package for the server
-rpm:       Create the rpm packages for redhat/fedora
-rpm-rfs:   Create the rpm rfs package for redhat/fedora
-rpm-rfsd:  Create the rpm rfsd package for redhat/fedora
+help:      This, the default
+
+debug:     Create all binaries with debug code
 
 Creating binaries with an alternative compiler:
 -----------------------------------------------
@@ -46,4 +43,3 @@ Makefiles/options.mk and uncomment the lines corresponding to
 the feature you want to include.
 If you want IPv6 support, remove the fisrt '#' from the line
 #OPT_1 -DWITH_IPV6 # allow use of IPv6
-

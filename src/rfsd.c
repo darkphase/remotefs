@@ -8,7 +8,7 @@ See the file LICENSE.
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#if defined FREEBSD
+#if defined FREEBSD || defined QNX
 #       include <netinet/in.h>
 #endif
 #ifdef WITH_IPV6
@@ -16,55 +16,27 @@ See the file LICENSE.
 #endif
 #include <unistd.h>
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdlib.h>
-#include <sys/time.h>
 #include <pwd.h>
 #include <grp.h>
-#include <time.h>
 #include <sys/stat.h>
 
 #include "config.h"
 #include "rfsd.h"
-#include "command.h"
 #include "signals_server.h"
-#include "sendrecv.h"
-#include "buffer.h"
-#include "server_handlers.h"
-#include "list.h"
 #include "exports.h"
 #include "passwd.h"
 #include "keep_alive_server.h"
-#include "id_lookup.h"
-
-static int g_client_socket = -1;
-static int g_listen_socket = -1;
-unsigned char directory_mounted = 0;
-
-static struct list *open_files = NULL;
-struct rfs_export *mounted_export = NULL;
-
-struct rfsd_config rfsd_config;
+#include "sockets.h"
+#include "sug_server.h"
+#include "instance.h"
+#include "server.h"
 
 static int daemonize = 1;
-static void init_config()
-{
-#ifndef WITH_IPV6
-	rfsd_config.listen_address = "0.0.0.0";
-#else
-	rfsd_config.listen_address = "::";
-#endif
-	rfsd_config.listen_port = DEFAULT_SERVER_PORT;
-	rfsd_config.worker_uid = geteuid();
-	rfsd_config.worker_gid = getegid();
-#ifdef RFS_DEBUG
-	rfsd_config.pid_file = "./rfsd.pid";
-#else
-	rfsd_config.pid_file = "/var/run/rfsd.pid";
-#endif /* RFS_DEBUG */
-}
+static int listen_socket = -1;
+
+static DEFINE_RFSD_INSTANCE(rfsd_instance);
 
 static int create_pidfile(const char *pidfile)
 {
@@ -85,428 +57,110 @@ static int create_pidfile(const char *pidfile)
 	return 0;
 }
 
-static struct list* check_file_in_open_list(int file)
-{
-	struct list *item = open_files;
-	while (item != NULL)
-	{
-		if (*((int *)(item->data)) == file)
-		{
-			return item;
-		}
-		
-		item = item->next;
-	}
-	
-	return NULL;
-}
-
-int add_file_to_open_list(int file)
-{
-	struct list *exist = check_file_in_open_list(file);
-	if (exist != NULL)
-	{
-		return 0;
-	}
-
-	int *handle = get_buffer(sizeof(file));
-	if (handle == NULL)
-	{
-		return -1;
-	}
-	
-	*handle = file;
-	
-	struct list *added = add_to_list(open_files, handle);
-	if (added == NULL)
-	{
-		free_buffer(handle);
-		return -1;
-	}
-	
-	if (open_files == NULL)
-	{
-		open_files = added;
-	}
-	
-	return 0;
-}
-
-int remove_file_from_open_list(int file)
-{
-	struct list *exist = check_file_in_open_list(file);
-	if (exist == NULL)
-	{
-		return -1;
-	}
-	
-	unsigned reset_head = (exist == open_files ? 1 : 0);
-	struct list *next_file = remove_from_list(exist);
-	if (reset_head == 1)
-	{
-		open_files = next_file;
-	}
-	
-	return 0;
-}
-
-void server_close_connection(int socket)
-{
-	if (socket != -1)
-	{
-		shutdown(socket, SHUT_RDWR);
-		close(socket);
-	}
-	
-#ifdef RFS_DEBUG
-	dump_sendrecv_stats();
-#endif
-
-	if (open_files != NULL)
-	{
-		struct list *item = open_files;
-		while (item != 0)
-		{
-			DEBUG("closing still open handle: %d\n", *((int *)(item->data)));
-			
-			close(*((int *)(item->data)));
-			item = item->next;
-		}
-		
-		destroy_list(open_files);
-	}
-	
-	if (auth_user != 0)
-	{
-		free(auth_user);
-	}
-	
-	if (auth_passwd != 0)
-	{
-		free(auth_passwd);
-	}
-	
-	release_passwords();
-	release_exports();
-	
-	if (mounted_export != NULL)
-	{
-		free_buffer(mounted_export);
-	}
-	
-	destroy_uids_lookup();
-	destroy_gids_lookup();
-}
-
-static int _reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
-{
-	struct answer ans = { cmd->command, 0, -1, ret_errno };
-	
-	if (data_is_in_queue != 0 
-	&& rfs_ignore_incoming_data(client_socket, cmd->data_len) != cmd->data_len)
-	{
-		return -1;
-	}
-	
-	return rfs_send_answer(client_socket, &ans) != -1 ? 0 : -1;
-}
-
-int reject_request(const int client_socket, const struct command *cmd, int32_t ret_errno)
-{
-	return _reject_request(client_socket, cmd, ret_errno, 0);
-}
-
-int reject_request_with_cleanup(const int client_socket, const struct command *cmd, int32_t ret_errno)
-{
-	return _reject_request(client_socket, cmd, ret_errno, 1);
-}
-
-static int handle_command(const int client_socket, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	if (cmd->command <= cmd_first
-	|| cmd->command >= cmd_last)
-	{
-		reject_request_with_cleanup(client_socket, cmd, EBADE);
-		return -1;
-	}
-
-	update_keep_alive();
-
-	switch (cmd->command)
-	{
-	case cmd_closeconnection:
-		return handle_closeconnection(client_socket, client_addr, cmd);
-
-	case cmd_auth:
-		return handle_auth(client_socket, client_addr, cmd);
-
-	case cmd_request_salt:
-		return handle_request_salt(client_socket, client_addr, cmd);
-
-	case cmd_changepath:
-		return handle_changepath(client_socket, client_addr, cmd);
-
-	case cmd_keepalive:
-		return handle_keepalive(client_socket, client_addr, cmd);
-	
-	case cmd_getexportopts:
-		return handle_getexportopts(client_socket, client_addr, cmd);
-	}
-
-	if (directory_mounted == 0)
-	{
-		reject_request_with_cleanup(client_socket, cmd, EACCES);
-		return -1;
-	}
-
-	switch (cmd->command)
-	{
-	case cmd_readdir:
-		return handle_readdir(client_socket, client_addr, cmd);
-	
-	case cmd_getattr:
-		return handle_getattr(client_socket, client_addr, cmd);
-
-	case cmd_open:
-		return handle_open(client_socket, client_addr, cmd);
-
-	case cmd_release:
-		return handle_release(client_socket, client_addr, cmd);
-	
-	case cmd_read:
-		return handle_read(client_socket, client_addr, cmd);
-	
-	case cmd_statfs:
-		return handle_statfs(client_socket, client_addr, cmd);
-	}
-
-	if (mounted_export == NULL
-	|| (mounted_export->options & opt_ro) != 0)
-	{
-		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
-	}
-
-	/* operation which are require write permissions */
-	switch (cmd->command)
-	{
-	case cmd_mknod:
-		return handle_mknod(client_socket, client_addr, cmd);
-
-	case cmd_truncate:
-		return handle_truncate(client_socket, client_addr, cmd);
-
-	case cmd_write:
-		return handle_write(client_socket, client_addr, cmd);
-
-	case cmd_mkdir:
-		return handle_mkdir(client_socket, client_addr, cmd);
-
-	case cmd_unlink:
-		return handle_unlink(client_socket, client_addr, cmd);
-
-	case cmd_rmdir:
-		return handle_rmdir(client_socket, client_addr, cmd);
-		
-	case cmd_rename:
-		return handle_rename(client_socket, client_addr, cmd);
-
-	case cmd_utime:
-		return handle_utime(client_socket, client_addr, cmd);
-	}
-
-	if (mounted_export == NULL
-	|| (mounted_export->options & opt_ugo) == 0)
-	{
-		return reject_request_with_cleanup(client_socket, cmd, EACCES) == 0 ? 1 : -1;
-	}
-
-	/* operation which are require ugo set */
-	switch (cmd->command)
-	{
-	case cmd_chmod:
-		return handle_chmod(client_socket, client_addr, cmd);
-
-	case cmd_chown:
-		return handle_chown(client_socket, client_addr, cmd);
-	
-	}
-
-	return -1;
-}
-
-#ifndef WITH_IPV6
-static int handle_connection(int client_socket, const struct sockaddr_in *client_addr)
-#else
-static int handle_connection(int client_socket, const struct sockaddr_storage *client_addr)
-#endif
-{
-	g_client_socket = client_socket;
-	
-	srand(time(NULL));
-	
-	update_keep_alive();
-	alarm(keep_alive_period());
-	
-	struct command current_command = { 0 };
-	
-	while (1)
-	{	
-		rfs_receive_cmd(client_socket, &current_command);
-		
-		if (rfs_is_connection_lost() != 0)
-		{
-#ifndef WITH_IPV6
-			DEBUG("connection to %s is lost\n", inet_ntoa(client_addr->sin_addr));
-#else
-			char straddr[INET6_ADDRSTRLEN];
-			if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
-			{
-				struct sockaddr_in *sa = (struct sockaddr_in*) client_addr;
-				inet_ntop(AF_INET, &sa->sin_addr, straddr,sizeof(straddr));
-				DEBUG("connection to %s is lost\n",straddr);
-			}
-			else
-			{
-				struct sockaddr_in6 *sa = (struct sockaddr_in6*) client_addr;
-				inet_ntop(AF_INET6, &sa->sin6_addr, straddr,sizeof(straddr));
-				DEBUG("connection to %s is lost\n",straddr);
-			}
-#endif
-			server_close_connection(client_socket);
-				
-			return 1;
-		}
-		
-		dump_command(&current_command);
-#ifndef WITH_IPV6			
-		if (handle_command(client_socket, client_addr, &current_command) == -1)
-#else
-		if (handle_command(client_socket, (struct sockaddr_in*)client_addr, &current_command) == -1)
-#endif
-		{
-			DEBUG("command executed with internal error: %s\n", describe_command(current_command.command));
-			server_close_connection(client_socket);
-			
-			return 1;
-		}
-	}
-}
-
 static int start_server(const char *address, const unsigned port)
 {
 	install_signal_handlers_server();
-
-#ifndef WITH_IPV6
-	g_listen_socket = socket(PF_INET, SOCK_STREAM, 0);
-
-	if (g_listen_socket == -1)
-	{
-		ERROR("Error creating socket: %s\n", strerror(errno));
-		return 1;
-	}
-#endif
-
-#ifndef WITH_IPV6
+	
+	int listen_family = AF_INET;
+	
 	struct sockaddr_in addr = { 0 };
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = inet_addr(address);
-#else
-	struct sockaddr_in *sa4;
-	struct sockaddr_in6 *sa6;
-	char straddr[INET6_ADDRSTRLEN];
-	struct addrinfo *res;
-	struct addrinfo hints;
-	int    result;
+	inet_pton(AF_INET, address, &(addr.sin_addr));
+	
+#if defined WITH_IPV6
+	struct sockaddr_in6 addr6 = { 0 };
+	addr6.sin6_family = AF_INET6;
+	addr6.sin6_port = htons(port);
+	if (inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 1)
+	{
+		listen_family = AF_INET6;
+	}
 
 	/* resolve name or address */
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family    = AF_UNSPEC;  /* Allow IPv4 or IPv6 */
-	hints.ai_socktype  = SOCK_STREAM;
-	hints.ai_flags     = AI_ADDRCONFIG; /* For wildcard IP address */
-
-	if ((result=getaddrinfo(address, "5001", &hints, &res)) != 0)
+	/* [alex] why we need to resolve anything? it's listen address, not name */
+#endif
+	
+	errno = 0;
+	if (listen_family == AF_INET)
 	{
-		ERROR("Can't resolve address for %s : %s\n",address,gai_strerror(result));
-		return 1;
+		listen_socket = socket(PF_INET, SOCK_STREAM, 0);
 	}
-	sa4 = (struct sockaddr_in*)res->ai_addr;
-	sa6 = (struct sockaddr_in6*)res->ai_addr;
-
-	if (res->ai_family == AF_INET)
-	{
-		((struct sockaddr_in*)(res->ai_addr))->sin_port = htons(port);
-	}
+#if defined WITH_IPV6
 	else
 	{
-		((struct sockaddr_in6*)(res->ai_addr))->sin6_port = htons(port);
+		listen_socket = socket(PF_INET6, SOCK_STREAM, 0);
 	}
-
-	g_listen_socket = socket(res->ai_family, SOCK_STREAM, 0);
-	if (g_listen_socket == -1)
+#endif
+	if (listen_socket == -1)
 	{
-		freeaddrinfo(res);
 		ERROR("Error creating socket: %s\n", strerror(errno));
 		return 1;
 	}
-#endif
-	
-	int reuse = 1;
-	if (setsockopt(g_listen_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) != 0)
+
+	errno = 0;
+	if (setup_socket_reuse(listen_socket, 1) != 0)
 	{
 		ERROR("Error setting proper option to socket: %s\n", strerror(errno));
-#ifdef WITH_IPV6
-		freeaddrinfo(res);
-#endif
 		return 1;
 	}
 	
-#ifndef WITH_IPV6
-	if (bind(g_listen_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+	errno = 0;
+	if (listen_family == AF_INET)
 	{
-		ERROR("Error binding: %s\n", strerror(errno));
-		return 1;
+		if (bind(listen_socket, (struct sockaddr*)&addr, sizeof(addr)) == -1)
+		{
+			ERROR("Error binding: %s\n", strerror(errno));
+			return 1;
+		}
 	}
-#else
-	if (res->ai_family == AF_INET)
-	{
-		inet_ntop(res->ai_family, &sa4->sin_addr, straddr,sizeof(straddr));
-	}
+#ifdef WITH_IPV6
 	else
 	{
-		inet_ntop(res->ai_family, &sa6->sin6_addr, straddr,sizeof(straddr));
-	}
-
-	if (bind(g_listen_socket, res->ai_addr, res->ai_addrlen) == -1)
-	{
-		freeaddrinfo(res);
-		ERROR("Error binding: %s\n", strerror(errno));
-		return 1;
+		if (bind(listen_socket,(struct sockaddr*) &addr6, sizeof(addr6)) == -1)
+		{
+			ERROR("Error binding: %s\n", strerror(errno));
+			return 1;
+		}
 	}
 #endif
 
-	if (listen(g_listen_socket, 10) == -1)
+	if (listen(listen_socket, 10) == -1)
 	{
 		ERROR("Error listening: %s\n", strerror(errno));
-#ifdef WITH_IPV6
-		freeaddrinfo(res);
-#endif
 		return 1;
 	}
 	
-#ifndef WITH_IPV6
-	DEBUG("listening on %s (%d)\n", inet_ntoa(addr.sin_addr), port);
-#else
-	DEBUG("listening on %s (%d)\n", straddr, port);
+#ifdef RFS_DEBUG
+	if (listen_family == AF_INET)
+	{
+		char straddr[INET_ADDRSTRLEN + 1] = { 0 };
+		DEBUG("listening on %s (%d)\n", 
+		inet_ntop(AF_INET, &addr.sin_addr, straddr, sizeof(straddr)), 
+		port);
+	}
+#	ifdef WITH_IPV6
+	else
+	{
+		char straddr[INET6_ADDRSTRLEN + 1] = { 0 };
+		DEBUG("listening on %s (%d)\n", 
+		inet_ntop(AF_INET6, &addr6.sin6_addr, straddr, sizeof(straddr)), 
+		port);
+	}
+#	endif
 #endif
+	
 	/* the server should not apply it own mask while mknod
-	 * file or directory creation is called. These settings
-	 * are allready done by the client
-	*/
+	file or directory creation is called. These settings
+	are allready done by the client */
 	umask(0);
 
 #ifndef RFS_DEBUG
-	chdir("/");
+	if (chdir("/") != 0)
+	{
+		return 1;
+	}
+	
 	if (daemonize)
 	{
 		fclose(stdin);
@@ -523,72 +177,51 @@ static int start_server(const char *address, const unsigned port)
 		struct sockaddr_storage client_addr;
 #endif
 		socklen_t addr_len = sizeof(client_addr);
-		int client_socket = accept(g_listen_socket, (struct sockaddr *)&client_addr, &addr_len);
+		int client_socket = accept(listen_socket, (struct sockaddr *)&client_addr, &addr_len);
 		if (client_socket == -1)
 		{
 			continue;
 		}
-
-		struct timeval one = { 3, 0 };
-		int ret;
-		ret=setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, &one,  sizeof(one));
-#ifdef RFS_DEBUG
-		if ( ret )
-			perror("setsockopt SO_RCVTIMEO");
-#endif
-		ret=setsockopt(client_socket, SOL_SOCKET, SO_SNDTIMEO, &one,  sizeof(one));
-#ifdef RFS_DEBUG
-		if ( ret )
-			perror("setsockopt SO_SNSTIMEO");
-#endif
 		
-#ifndef WITH_IPV6
-		DEBUG("incoming connection from: %s\n", inet_ntoa(client_addr.sin_addr));
-#else
-		if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
+		if (((struct sockaddr_in *)&client_addr)->sin_family == AF_INET)
 		{
-			DEBUG("incoming connection from: %s\n", inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
+			DEBUG("incoming connection from %s\n", inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
 		}
+#ifdef WITH_IPV6
 		else
 		{
-			char straddr[INET6_ADDRSTRLEN];
-			inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr,sizeof(straddr));
-			DEBUG("incoming connection from: %s\n",straddr);
+			char straddr[INET6_ADDRSTRLEN + 1] = { 0 };
+			inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr, sizeof(straddr));
+			DEBUG("incoming connection from %s\n",straddr);
 		}
 #endif
 
 		if (fork() == 0) /* child */
 		{
-			return handle_connection(client_socket, &client_addr);
+			return handle_connection(&rfsd_instance, client_socket, &client_addr);
 		}
 		else
 		{
 			close(client_socket);
 		}
 	}
-#if 0 /* never reached */
-#ifdef WITH_IPV6
-	freeaddrinfo(res);
-#endif
-	return 0;
-#endif
 }
 
 void stop_server()
 {
-	server_close_connection(g_listen_socket);
-	unlink(rfsd_config.pid_file);
+	server_close_connection(&rfsd_instance);
+	unlink(rfsd_instance.config.pid_file);
 	
 	exit(0);
 }
 
 void check_keep_alive()
 {
-	if (keep_alive_locked() != 0
-	&& keep_alive_expired() == 0)
+	if (keep_alive_locked(&rfsd_instance) != 0
+	&& keep_alive_expired(&rfsd_instance) == 0)
 	{
 		DEBUG("%s\n", "keep alive expired");
-		server_close_connection(g_client_socket);
+		server_close_connection(&rfsd_instance);
 		exit(1);
 	}
 	
@@ -601,11 +234,14 @@ static void usage(const char *app_name)
 	"\n"
 	"Options:\n"
 	"-h \t\t\tshow this help screen\n"
-	"-a [address]\t\tlisten for connections on specified address\n"
-	"-p [port number]\tlisten for connections on specified port\n"
-	"-u [username]\t\tworker process be running with privileges of this user\n"
-	"-g [groupname]\t\tworker process be running with privileges of this group\n"
+	"-a [address]\t\tlisten to connections on [address]\n"
+	"-p [port number]\tlisten to connections on [port number]\n"
+	"-u [username]\t\trun worker process with privileges of [username]\n"
+	"-g [groupname]\t\trun worker process with privileges of [groupname]\n"
 	"-r [path]\t\tchange pidfile path from default to [path]\n"
+	"-f \t\t\tstay foreground\n"
+	"-q \t\t\tquite mode - supress warnings\n"
+	"\t\t\t(and don't treat them as errors)\n"
 	"\n"
 	, app_name);
 }
@@ -613,13 +249,16 @@ static void usage(const char *app_name)
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "ha:p:u:g:r:f")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:f")) != -1)
 	{
 		switch (opt)
 		{	
 			case 'h':
 				usage(argv[0]);
 				exit(0);
+			case 'q':
+				rfsd_instance.config.quiet = 1;
+				break;
 			case 'u':
 			{
 				struct passwd *pwd = getpwnam(optarg);
@@ -628,7 +267,7 @@ static int parse_opts(int argc, char **argv)
 					ERROR("Can not get uid for user %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
 					return -1;
 				}
-				rfsd_config.worker_uid = pwd->pw_uid;
+				rfsd_instance.config.worker_uid = pwd->pw_uid;
 				break;
 			}
 			case 'g':
@@ -639,17 +278,17 @@ static int parse_opts(int argc, char **argv)
 					ERROR("Can not get gid for group %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
 					return -1;
 				}
-				rfsd_config.worker_gid = grp->gr_gid;
+				rfsd_instance.config.worker_gid = grp->gr_gid;
 				break;
 			}
 			case 'a':
-				rfsd_config.listen_address = strdup(optarg);
+				rfsd_instance.config.listen_address = strdup(optarg);
 				break;
 			case 'p':
-				rfsd_config.listen_port = atoi(optarg);
+				rfsd_instance.config.listen_port = atoi(optarg);
 				break;
 			case 'r':
-				rfsd_config.pid_file = strdup(optarg);
+				rfsd_instance.config.pid_file = strdup(optarg);
 				break;
 			case 'f':
 				daemonize = 0;
@@ -664,53 +303,67 @@ static int parse_opts(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	init_config();
+	init_rfsd_instance(&rfsd_instance);
+	
+	DEBUG("2: %p\n", rfsd_instance.exports.list);
 
 	if (parse_opts(argc, argv) != 0)
 	{
 		exit(1);
 	}
-	
-	DEBUG("worker's uid: %u\n", rfsd_config.worker_uid);
 
-	if (parse_exports() != 0)
+	DEBUG("3: %p\n", rfsd_instance.exports.list);
+
+	if (parse_exports(&rfsd_instance.exports.list, 
+	rfsd_instance.config.worker_uid, 
+	rfsd_instance.config.worker_gid) != 0)
 	{
 		ERROR("%s\n", "Error parsing exports file");
 		return 1;
 	}
 
 #ifdef RFS_DEBUG
-	dump_exports();
+	dump_exports(rfsd_instance.exports.list);
 #endif
 	
-	if (load_passwords() != 0)
+	if (load_passwords(&rfsd_instance.passwd.auths) != 0)
 	{
 		ERROR("%s\n", "Error loading passwords");
-		release_exports();
+		release_exports(&rfsd_instance.exports.list);
 		return 1;
 	}
 	
 #ifdef RFS_DEBUG
-	dump_passwords();
+	dump_passwords(rfsd_instance.passwd.auths);
 #endif
 
+	if (rfsd_instance.config.quiet == 0) /* don't do checks, 
+	since they won't be displayed anyway */
+	{
+		if (suggest_server(&rfsd_instance) != 0)
+		{
+			ERROR("%s\n", "ERROR: Warning considered as error, exiting. (use -q to disable this)");
+			return 1;
+		}
+	}
+
 #ifndef RFS_DEBUG
-	if (daemonize == 1 && fork() != 0)
+	if (daemonize != 0 && fork() != 0)
 	{
 		return 0;
 	}
 #endif 
 
-	if (create_pidfile(rfsd_config.pid_file) != 0)
+	if (create_pidfile(rfsd_instance.config.pid_file) != 0)
 	{
-		ERROR("Error creating pidfile: %s\n", rfsd_config.pid_file);
+		ERROR("Error creating pidfile: %s\n", rfsd_instance.config.pid_file);
 		return 1;
 	}
 
-	int ret = start_server(rfsd_config.listen_address, rfsd_config.listen_port);
+	int ret = start_server(rfsd_instance.config.listen_address, rfsd_instance.config.listen_port);
 	
-	release_exports();
-	release_passwords();
+	release_exports(&rfsd_instance.exports.list);
+	release_passwords(&rfsd_instance.passwd.auths);
 	
 	return ret;
 }

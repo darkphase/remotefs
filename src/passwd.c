@@ -21,11 +21,10 @@ static const char *passwd_file = "./rfs-passwd";
 #else
 static const char *passwd_file = "/etc/rfs-passwd";
 #endif /* RFS_DEBUG */
-static struct list *auths = NULL;
 
-int add_or_replace_auth(const char *user, const char *passwd)
+int add_or_replace_auth(struct list **auths, const char *user, const char *passwd)
 {
-	struct list *item = auths;
+	struct list *item = *auths;
 	struct auth_entry *exists = NULL;
 	
 	while (item != 0)
@@ -52,27 +51,21 @@ int add_or_replace_auth(const char *user, const char *passwd)
 		auth->user = strdup(user);
 		auth->passwd = strdup(passwd);
 		
-		struct list *added = add_to_list(auths, auth);
-		if (added == NULL)
+		if (add_to_list(auths, auth) == NULL)
 		{
 			free(auth->user);
 			free(auth->passwd);
 			
 			return -1;
 		}
-		
-		if (auths == NULL)
-		{
-			auths = added;
-		}
 	}
 	
 	return 0;
 }
 
-int change_auth_password(const char *user, const char *passwd)
+int change_auth_password(struct list **auths, const char *user, const char *passwd)
 {
-	struct list *item = auths;
+	struct list *item = *auths;
 	struct auth_entry *exists = NULL;
 	
 	while (item != 0)
@@ -101,13 +94,13 @@ int change_auth_password(const char *user, const char *passwd)
 	return 0;
 }
 
-const char *get_auth_password(const char *user)
+const char *get_auth_password(const struct list *auths, const char *user)
 {
-	struct list *item = auths;
+	const struct list *item = auths;
 
 	while (item != NULL)
 	{
-		struct auth_entry *auth = (struct auth_entry *)(item->data);
+		const struct auth_entry *auth = (const struct auth_entry *)(item->data);
 		if (strcmp(auth->user, user) == 0)
 		{
 			return auth->passwd;
@@ -119,7 +112,7 @@ const char *get_auth_password(const char *user)
 	return NULL;
 }
 
-int load_passwords()
+int load_passwords(struct list **auths)
 {
 	FILE *fp = fopen(passwd_file, "rt");
 	if (!fp)
@@ -180,7 +173,7 @@ int load_passwords()
 			const char *user = buffer;
 			const char *passwd = delim + 1;
 			
-			add_or_replace_auth(user, passwd);
+			add_or_replace_auth(auths, user, passwd);
 		}
 	}
 	while (eof == 0);
@@ -190,7 +183,7 @@ int load_passwords()
 	return 0;
 }
 
-int save_passwords()
+int save_passwords(const struct list *auths)
 {
 	FILE *fp = fopen(passwd_file, "wt");
 	if (fp == NULL)
@@ -198,7 +191,7 @@ int save_passwords()
 		return -errno;
 	}
 
-	struct list *item = auths;
+	const struct list *item = auths;
 	
 	while (item != NULL)
 	{
@@ -223,9 +216,9 @@ int save_passwords()
 	return 0;
 }
 
-void release_passwords()
+void release_passwords(struct list **auths)
 {
-	struct list *item = auths;
+	struct list *item = *auths;
 
 	while (item != NULL)
 	{
@@ -237,12 +230,12 @@ void release_passwords()
 	}
 	
 	destroy_list(auths);
-	auths = NULL;
+	*auths = NULL;
 }
 
-int delete_auth(const char *user)
+int delete_auth(struct list **auths, const char *user)
 {
-	struct list *item = auths;
+	struct list *item = *auths;
 
 	while (item != NULL)
 	{
@@ -252,11 +245,7 @@ int delete_auth(const char *user)
 			free(auth->user);
 			free(auth->passwd);
 			
-			struct list *next = remove_from_list(item);
-			if (item == auths)
-			{
-				auths = next;
-			}
+			remove_from_list(auths, item);
 			
 			return 0;
 		}
@@ -267,11 +256,16 @@ int delete_auth(const char *user)
 	return -1;
 }
 
-void dump_passwords()
+const char* passwd_filename()
 {
+	return passwd_file;
+}
+
 #ifdef RFS_DEBUG
+void dump_passwords(const struct list *auths)
+{
 	DEBUG("%s\n", "dumping passwords");
-	struct list *item = auths;
+	const struct list *item = auths;
 	while (item != NULL)
 	{
 		struct auth_entry *auth = (struct auth_entry *)item->data;
@@ -280,5 +274,5 @@ void dump_passwords()
 		
 		item = item->next;
 	}
-#endif /* RFS_DEBUG */
 }
+#endif /* RFS_DEBUG */

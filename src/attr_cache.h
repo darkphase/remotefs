@@ -18,6 +18,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+struct rfs_instance;
+
 /** tree_item is data type stored in cache 
 which is balanced tree with filename as key */
 struct tree_item
@@ -28,24 +30,29 @@ struct tree_item
 };
 
 /** add file to cache */
-void* cache_file(const char *path, struct stat *stbuf);
+void* cache_file(struct rfs_instance *instance, const char *path, struct stat *stbuf);
 
 /** delete file from cache */
-void delete_from_cache(const char *path);
+void delete_from_cache(struct rfs_instance *instance, const char *path);
 
 /** get cached value for file */
-struct tree_item* get_cache(const char *path);
+const struct tree_item* get_cache(struct rfs_instance *instance, const char *path);
 
 /** delete all cached data */
-void destroy_cache(void);
+void destroy_cache(struct rfs_instance *instance);
 
 /** check if cache is outdated
 @return not 0 if cache is old 
 */
-unsigned char cache_is_old(void);
+unsigned char cache_is_old(struct rfs_instance *instance);
 
 /** delete outdated files from cache */
-void clear_cache(void);
+void clear_cache(struct rfs_instance *instance);
+
+#ifdef RFS_DEBUG
+/** print hits/misses */
+void dump_attr_stats(struct rfs_instance *instance);
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

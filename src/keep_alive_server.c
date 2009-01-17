@@ -10,43 +10,41 @@ See the file LICENSE.
 
 #include "config.h"
 #include "keep_alive_server.h"
-
-static unsigned int lock = 0;
-static time_t last_keep_alive = 0;
+#include "instance.h"
 
 unsigned keep_alive_period()
 {
 	return KEEP_ALIVE_PERIOD * 2;
 }
 
-int keep_alive_expired()
+int keep_alive_expired(struct rfsd_instance *instance)
 {
-	return ((time(NULL) - last_keep_alive) >= KEEP_ALIVE_PERIOD * 2) ? 0 : -1;
+	return ((time(NULL) - instance->keep_alive.last_keep_alive) >= KEEP_ALIVE_PERIOD * 2) ? 0 : -1;
 }
 
-void update_keep_alive()
+void update_keep_alive(struct rfsd_instance *instance)
 {
-	time(&last_keep_alive);
+	time(&instance->keep_alive.last_keep_alive);
 }
 
-int keep_alive_locked()
+int keep_alive_locked(struct rfsd_instance *instance)
 {
-	return lock == 1 ? 0 : -1;
+	return instance->keep_alive.lock == 1 ? 0 : -1;
 }
 
-int keep_alive_lock()
+int keep_alive_lock(struct rfsd_instance *instance)
 {
-	if (lock == 0)
+	if (instance->keep_alive.lock == 0)
 	{
-		lock = 1;
+		instance->keep_alive.lock = 1;
 		return 0;
 	}
 	
 	return -1;
 }
 
-int keep_alive_unlock()
+int keep_alive_unlock(struct rfsd_instance *instance)
 {
-	lock = 0;
+	instance->keep_alive.lock = 0;
 	return 0;
 }

@@ -23,14 +23,14 @@ struct list
 	void *data;
 };
 
-/** add data to list. will NOT update head */
-struct list* add_to_list(struct list *head, void *data);
+/** add data to list */
+struct list* add_to_list(struct list **head, void *data);
 
-/** remove node from list. will NOT update head */
-struct list* remove_from_list(struct list *item);
+/** remove node from list */
+struct list* remove_from_list(struct list **head, struct list *item);
 
-/** delete whole list. will NOT update head */
-void destroy_list(struct list *head);
+/** delete whole list */
+void destroy_list(struct list **head);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

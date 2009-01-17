@@ -1,0 +1,69 @@
+Tests for transfer speed
+------------------------
+
+The application perf don't reflect exactly the performance of
+the transfer of file.
+
+Perf create a local file copy it to the server and copy it
+back.
+
+For filesystems which made an intensive use of caching the speed
+will seem to be very big and this is not what you will reach if
+you load the file on the server for the first time.
+
+In order go get more valueable data you must make sure that
+no file datas are cached on the client.
+In order to do so, you should unmount and mount again the
+file system.
+The utility remount is a very simplistic application which
+must be run as root, This can be do as follow:
+
+$ make remount
+$ sudo -s
+# chown root:root remount
+# chmod 5755 remount
+# exit
+
+You may also use su on systems for which su is not disabled.
+
+The command passed to remount may be a script which could look
+as follow
+
+------------------------------
+# File nfs
+# Purpose umount and mount again nfs
+umount /mnt/nfs
+mount /mnt/nfs
+------------------------------
+
+You can pass the following argument to perf in order to remount
+the filesystem at place which are important:
+
+-r "./remount ./nsf"
+
+Don't forgot to make the script executable.
+
+WARNING: remount is only for test and shall be removed after the
+tests are completed. Anyone may become root while using remount!
+
+Use of perf:
+------------
+
+- Copy one 9 MBytes file to the server and back to the client
+
+perf copy -d testdir -M 8m
+
+- Copy  files with size of 1, 2, 3 and 4 MNytes to the server and back to the client
+
+perf copy -d testdir -m 0 -s 1M -M 4M
+
+- Copy files from client to server and back beginning with a size of 1 KBytes.
+  incresase size by 2 after each copy and copy back. Limit the maximum number
+  of files to 1024 and the maximun size for all files to 256 MBytes
+
+perf copy -d testdir -m 1k -s 2x -M 256M -f 1024 -t 256M
+
+
+- Copy files as previous example but perform n copy in parallel.
+
+perf copy -d testdir -m 1k -s 2x -M 256M -f 1024 -t 256M -n 2

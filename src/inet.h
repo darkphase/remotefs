@@ -18,74 +18,78 @@ extern "C" {
 #include <netinet/in.h>
 
 #if defined SOLARIS
-#	include <sys/byteorder.h>
-#	ifndef htonll
-#		if defined(_BIG_ENDIAN)
-#			define htonll(x) (x)
-#		elif defined(_LITTLE_ENDIAN)
-#			define htonll(x) BSWAP_64(x)
-#		else
-#			error "unsupported BYTE_ORDER"
-#		endif /* __BYTE_ORDER */
-#	endif /* htonll */
-
-#	ifndef ntohll
-#		if defined(_BIG_ENDIAN)
-#			define ntohll(x) (x)
-#		elif defined(_LITTLE_ENDIAN)
-#			define ntohll(x) BSWAP_64(x)
-#		else
-#			error "unsupported BYTE_ORDER"
-#		endif /* __BYTE_ORDER */
-#	endif /* ntohll */
+#        include <sys/byteorder.h>
+#        define RFS_BSWAP_FUNC BSWAP_64
+#
+#        if defined _BIG_ENDIAN
+#                define RFS_BIG_ENDIAN
+#        elif defined _LITTLE_ENDIAN
+#                define RFS_LITTLE_ENDIAN
+#        endif
 
 #elif defined FREEBSD
-#	include <sys/endian.h>
-#	ifndef htonll
-#		if _BYTE_ORDER == _BIG_ENDIAN
-#			define htonll(x) (x)
-#		elif _BYTE_ORDER == _LITTLE_ENDIAN
-#			define htonll(x) bswap64(x)
-#		else
-#			error "unsupported _BYTE_ORDER"
-#		endif /* _BYTE_ORDER */
-#	endif /* htonll */
+#        include <sys/endian.h>
+#        define RFS_BSWAP_FUNC bswap64
+#
+#        if _BYTE_ORDER == _BIG_ENDIAN
+#                define RFS_BIG_ENDIAN
+#        elif _BYTE_ORDER == _LITTLE_ENDIAN
+#                define RFS_LITTLE_ENDIAN
+#        endif
 
-#	ifndef ntohll
-#		if _BYTE_ORDER == _BIG_ENDIAN
-#			define ntohll(x) (x)
-#		elif _BYTE_ORDER == _LITTLE_ENDIAN
-#			define ntohll(x) bswap64(x)
-#		else
-#			error "unsupported _BYTE_ORDER"
-#		endif /* _BYTE_ORDER */
-#	endif /* ntohll */
-#else /* Linux, ... */
-#	include <endian.h>
+#elif defined DARWIN
+#        include <machine/endian.h>
+#        define RFS_BSWAP_FUNC OSSwapConstInt64
+#
+#        if __DARWIN_BYTE_ORDER == __DARWIN_BIG_ENDIAN
+#                define RFS_BIG_ENDIAN
+#        elif __DARWIN_BYTE_ORDER == __DARWIN_LITTLE_ENDIAN
+#                define RFS_LITTLE_ENDIAN
+#        endif
 
+#elif defined QNX
+#       include <gulliver.h>
+#       include <arpa/inet.h>
+#       if defined __LITTLEENDIAN__
+#               define RFS_LITTLE_ENDIAN
+#       else
+#               define RFS_BIG_ENDIAN
+#       endif
+#       define RFS_BSWAP_FUNC ENDIAN_RET64
 
-#	ifndef htonll
-#		if __BYTE_ORDER == __BIG_ENDIAN
-#			define htonll(x) (x)
-#		elif __BYTE_ORDER == __LITTLE_ENDIAN
-#			include <byteswap.h>
-#			define htonll(x) bswap_64(x)
-#		else
-#			error "unsupported __BYTE_ORDER"
-#		endif /* __BYTE_ORDER */
-#	endif /* htonll */
+#else /* Linux */
+#        include <endian.h>
+#        include <byteswap.h>
+#        define RFS_BSWAP_FUNC bswap_64
+#
+#        if __BYTE_ORDER == __BIG_ENDIAN
+#                define RFS_BIG_ENDIAN
+#        elif __BYTE_ORDER == __LITTLE_ENDIAN
+#                define RFS_LITTLE_ENDIAN
+#        endif
+#endif
 
-#	ifndef ntohll
-#		if __BYTE_ORDER == __BIG_ENDIAN
-#			define ntohll(x) (x)
-#		elif __BYTE_ORDER == __LITTLE_ENDIAN
-#			include <byteswap.h>
-#			define ntohll(x) bswap_64(x)
-#		else
-#			error "unsupported __BYTE_ORDER"
-#		endif /* __BYTE_ORDER */
-#	endif /* ntohll */
-#endif /* Linux, ... */
+/* actual htonll support */
+
+#ifndef htonll
+#	if defined RFS_BIG_ENDIAN
+#		define htonll(x) (x)
+#	elif defined RFS_LITTLE_ENDIAN
+#		define htonll(x) RFS_BSWAP_FUNC(x)
+#	else
+#		error "unsupported BYTE_ORDER"
+#	endif
+#endif /* htonll */
+
+#ifndef ntohll
+#	if defined RFS_BIG_ENDIAN
+#		define ntohll(x) (x)
+#	elif defined RFS_LITTLE_ENDIAN
+#		define ntohll(x) RFS_BSWAP_FUNC(x)
+#	else
+#		error "unsupported BYTE_ORDER"
+#	endif
+#endif /* ntohll */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

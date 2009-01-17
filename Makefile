@@ -12,51 +12,46 @@ include Makefiles/options.mk
 # The begin of the world
 #############################
 
-DEBFLAG = $(CFLAGS_DBG) -DRFS_DEBUG
-RELFLAG = $(CFLAGS_OPT)
+CFLAGS_MAIN_DEBUG    = "$(CFLAGS_DEBUG) -DRFS_DEBUG"
+CFLAGS_MAIN_RELEASE  = "$(CFLAGS_RELEASE)"
+LDFLAGS_MAIN_DEBUG   = "$(LDFLAGS_DEBUG)"
+LDFLAGS_MAIN_RELEASE = "$(LDFLAGS_RELEASE)"
 
 help:
 	@more Makefiles/help
 
 debug:
-	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf Makefiles/base.mk rfsd rfspasswd rfs
 
-all release:
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd
+all release: server client
 
-#all:
-#	@echo
-#	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-#		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
-#	else \
-#		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs rfsd rfspasswd; \
-#	fi
+server: rfsd rfspasswd
 
-#######################################
-# Rules for compiling, ...
-#######################################
+client: rfs rfs_nss
 
 rfs: dummy
-	@echo
-	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfs; \
-	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfs; \
-	fi
+	@$(MAKE) -sf Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfs
+	@$(MAKE) -sf Makefiles/base.mk clean_build
+
+librfsd: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk librfsd
+	
+librfs: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk librfs
 
 rfsd: dummy
-	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfsd; \
-	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfsd; \
-	fi
+	@$(MAKE) -sf Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsd
+	@$(MAKE) -sf Makefiles/base.mk clean_build
 
 rfspasswd: dummy
-	@if [ "$DRF" = "" -a "$$DRF" = "" ] ; then \
-		DRF="$(DEBFLAG)" make -sf Makefiles/base.mk rfspasswd; \
-	else \
-		DRF="$(RELFLAG)" make -sf Makefiles/base.mk rfspasswd; \
-	fi
+	@$(MAKE) -sf Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfspasswd
+	@$(MAKE) -sf Makefiles/base.mk clean_build
+
+rfs_nss: dummy
+	@$(MAKE) -sf nss/Makefile NSSPATH=nss/
 
 dummy:
 
@@ -64,36 +59,38 @@ dummy:
 # Rules for cleaning,and dpendencied
 #######################################
 clean:
-	@DRF="$(DEBFLAG)" make -sf Makefiles/base.mk clean
+	@$(MAKE) -sf Makefiles/base.mk clean
+
+clea-rfs_nss:
+	@$(MAKE) -sf nss/Makefile NSSPATH=nss/ clean
 
 depends:
-	@make -f Makefiles/base.mk depends
+	@$(MAKE) -f Makefiles/base.mk depends
 
 ########################################
 # Rules for packaging, ...
 ########################################
 
-rpm: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm
-rpm-rfs: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm-rfs
-rpm-rfsd: clean
-	@DRF="$(RELFLAG)" make -sf Makefiles/base.mk rpm-rfsd
+rfsrpm: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsrpm
+rfsdrpm: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdrpm
+rpms: rfsrpm rfsdrpm
 
-rfsdeb: clean
-	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk rfsdeb $(TGTARCH)
-rfsddeb: clean
-	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
+rfsdeb: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdeb $(TGTARCH)
+rfsddeb: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
+debs: rfsdeb rfsddeb
 
-tbz: clean
-	@DRF="$(RELFLAG)" $(MAKE) -sf Makefiles/base.mk tbz $(TGTARCH)
+tbz: dummy
+	@$(MAKE) -sf Makefiles/base.mk tbz
+	
+packages: debs rpms tbz 
+	@$(MAKE) -sf Makefiles/base.mk clean_bins
 
-install:
+install: install-rfs_nss
 	@$(MAKE) -sf Makefiles/base.mk install
 
-runtests: 
-	@$(MAKE) -C tests run
-	@$(MAKE) -C tests clean
-
-#
-
+install-rfs_nss:
+	@$(MAKE) -sf nss/Makefile NSSPATH=nss/ install
