@@ -45,7 +45,7 @@ See the file LICENSE.
  *
  ***********************************************************/
  
-int control_rfs_nss(const int cmd, const char *name, const char *host)
+int control_rfs_nss(const int cmd, const char *name, const char *host, uid_t *id)
 {
     /* connect with the rfs clients */
     int ret = RFS_NSS_OK;
@@ -113,6 +113,14 @@ int control_rfs_nss(const int cmd, const char *name, const char *host)
             close(sock);
             return RFS_NSS_SYS_ERROR;
         }
+    }
+
+    /* get the uid/gid for the given name */
+    if ( cmd == PUTPWNAM || cmd == PUTGRNAM )
+    {
+       *id = 0;
+       recv(sock, &command, sizeof(command), 0);
+       *id = command.id;
     }
 
     close(sock);

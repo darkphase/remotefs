@@ -67,7 +67,7 @@ typedef struct cmd_s
 
 #define PIDFILE "/var/run/rfs_nss.pid"
 
-int control_rfs_nss(const int cmd, const char *name, const char *host);
+int control_rfs_nss(const int cmd, const char *name, const char *host, uid_t *id);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

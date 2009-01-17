@@ -39,11 +39,16 @@ int main(int argc, char **argv)
     {
        snprintf(log_host_name, sizeof(log_host_name), "%s@%s", name, server_name);
        printf("Check for user %s\n",log_host_name);
-       control_rfs_nss(PUTPWNAM, name, server_name);
+       control_rfs_nss(PUTPWNAM, name, server_name, &uid);
+       if ( uid )
+       {
+           printf("    Uid for user %s is %d (putpwnam)\n",log_host_name, uid);
+       }
+       uid = (uid_t)-1;
        pwd = getpwnam(log_host_name);
        if ( pwd )
        {
-           printf("    Uid for user %s is %d\n",pwd->pw_name, pwd->pw_uid);
+           printf("    Uid for user %s is %d (getpwnam)\n",pwd->pw_name, pwd->pw_uid);
            uid = pwd->pw_uid;
        }
     }
@@ -78,7 +83,7 @@ int main(int argc, char **argv)
     {
        snprintf(log_host_name, sizeof(log_host_name), "%s@%s",name,server_name);
        printf("Check for group %s\n",log_host_name);
-       control_rfs_nss(PUTGRNAM, name, server_name);
+       control_rfs_nss(PUTGRNAM, name, server_name, (uid_t*)&gid);
        grp = getgrnam(log_host_name);
        if ( grp )
        {

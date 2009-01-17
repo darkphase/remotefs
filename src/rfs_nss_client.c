@@ -599,7 +599,7 @@ NSS_STATUS _nss_rfs_getgrent_r(struct group *result,
     if ( rfs_grent_stat.end == 0 )
     {
         name[0] = '\0';
-        ret = query_server(GETPWENT, name, (uid_t*)&rfs_grent_stat.last_id, errnop);
+        ret = query_server(GETGRENT, name, (uid_t*)&rfs_grent_stat.last_id, errnop);
         if ( *errnop == 0 && ret == NSS_STATUS_SUCCESS )
         {
             ret = build_grp(name, rfs_grent_stat.last_id, result, buffer, buflen, errnop);

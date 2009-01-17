@@ -128,6 +128,67 @@ static int open_socket(void)
 
 /**********************************************************
  *
+ * search_name()
+ *
+ * get ans answer the messages from the resolver
+ * library
+ *
+ * int sock the socked handle for comminication
+ *
+ * return 0 on error, 1 on succeess
+ *
+ ***********************************************************/
+
+static inline list_t *search_name(cmd_t *command, list_t *list)
+{
+    while ( list )
+    {
+       rfs_idmap_t *idmap = (rfs_idmap_t*)list->data;
+
+       if ( ! idmap->sys &&
+            strncmp( idmap->name, command->name, RFS_LOGIN_NAME_MAX) == 0 )
+       {
+           command->id    = idmap->id;
+           command->found = 1;
+           break;
+       }
+       list = list->next;
+    }
+    return list;
+
+}
+/**********************************************************
+ *
+ * search_id()
+ *
+ * get ans answer the messages from the resolver
+ * library
+ *
+ * int sock the socked handle for comminication
+ *
+ * return 0 on error, 1 on succeess
+ *
+ ***********************************************************/
+
+static inline list_t *search_id(cmd_t *command, list_t *list)
+{
+    while ( list )
+    {
+       rfs_idmap_t *idmap = (rfs_idmap_t*)list->data;
+       if ( ! idmap->sys && idmap->id == command->id )
+       {
+           strncpy(command->name, idmap->name, RFS_LOGIN_NAME_MAX);
+           command->name[RFS_LOGIN_NAME_MAX] = 0;
+           command->found   = 1;
+           break;
+       }
+       list = list->next;
+    }
+    return list;
+}
+
+/**********************************************************
+ *
  * process_message()
  *
  * get ans answer the messages from the resolver
@@ -181,6 +242,7 @@ static int process_message(int sock)
                                   ? "getpwent" : "getgrent");
 
             list = command.cmd == GETPWENT ? user_list: group_list;
+printf("c %d l %p u %p g %p\n",command.cmd, list, user_list, group_list);
             command.name[0] = '\0';
             while(list)
             {
@@ -199,6 +261,7 @@ static int process_message(int sock)
                 strncpy(command.name, ((rfs_idmap_t*)(list->data))->name,
                         sizeof(command.name));
             }
+
         break;
 
         case PUTGRNAM:
@@ -220,24 +283,12 @@ static int process_message(int sock)
                 list = group_list;
             else
                 list = user_list;
- 
-            /* search entry for given name */
-            while ( list )
-            {
-               rfs_idmap_t *u = (rfs_idmap_t*)list->data;
 
-               if ( strncmp( u->name, command.name, RFS_LOGIN_NAME_MAX) == 0 )
-               {
-                   command.id    = u->id;
-                   command.found = 1;
-                   break;
-               }
-               list = list->next;
-            }
+            /* search for given name */
+            list = search_name(&command, list);
 
             if ( rfs_put_name && !(command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
-printf("get X nam break (send answer)\n");
                  break;
             }
 
@@ -288,15 +339,7 @@ printf("get X nam break (send answer)\n");
                     }
                     list = list->next;
                 }
- printf("PUT X nam added\n");
            }
-
-            if ( rfs_put_name && (command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
-            {
-                if (log) printf("    Assigned %d, return  now\n",command.id);
-                return 1;
-            }
- printf("SEND result\n");
         break;
 
         case GETGRGID:
@@ -310,20 +353,8 @@ printf("get X nam break (send answer)\n");
                 list = group_list;
             else
                 list = user_list;
-
             /* search only the corresponding entry */
-            while ( list )
-            {
-               rfs_idmap_t *u = (rfs_idmap_t*)list->data;
-               if ( u->id == command.id )
-               {
-                   strncpy(command.name, u->name, RFS_LOGIN_NAME_MAX);
-                   command.name[RFS_LOGIN_NAME_MAX] = 0;
-                   command.found   = 1;
-                   break;
-               }
-               list = list->next;
-            }
+            search_id(&command, list);
         break;
         default:
            printf("Command %d ?\n",command.cmd);
@@ -463,7 +494,7 @@ int main(int argc,char **argv)
     }
 
     /* check first for running server */
-    switch (control_rfs_nss(CHECK_SERVER, NULL, NULL))
+    switch (control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL))
     {
         case RFS_NSS_OK:
             /* a server is running, don't start */
