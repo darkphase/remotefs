@@ -9,14 +9,17 @@ librfs_TARGET = librfs
 librfs_CFLAGS  = $(CFLAGS_FUSE) \
                  $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
+                 $(CFLAGS_SO) \
                  $(CFLAGS_OPTS)
 
 librfs_LDFLAGS = $(LDFLAGS_MAIN) \
+                 $(LDFLAGS_SO) \
                  $(LDFLAGS_OS) \
                  $(LDFLAGS_FUSE) \
                  $(LDFLAGS_NET) \
                  $(LDFLAGS_PTHR) \
-                 $(LDFLAGS_OPTS)
+                 $(LDFLAGS_OPTS) \
+                 $(OS_LIBS)
 
 #######################################
 # Define target and object files

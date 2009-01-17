@@ -10,7 +10,7 @@ build: $(SO_NAME)
 
 $(SO_NAME): $(librfs_OBJS)
 	@echo Link $(librfs_TARGET)
-	$(CC) -o $(SO_NAME) $(librfs_OBJS) $(LDFLAGS_SO) $(librfs_LDFLAGS) $(OS_LIBS)
+	$(CC) -o $(SO_NAME) $(librfs_OBJS) $(librfs_LDFLAGS)
 	$(LN) $(SO_NAME) $(librfs_TARGET).$(SO_EXT)
 
 install_rfs:
@@ -20,5 +20,5 @@ install_rfs:
 flags:
 	@echo Build librfs
 	@echo CFLAGS = $(librfs_CFLAGS) $(OPTS)
-	@echo LDFLAGS = $(librfs_LDFLAGS) $(LDFLAGS_SO) $(OS_LIBS)
+	@echo LDFLAGS = $(librfs_LDFLAGS)
 	@echo

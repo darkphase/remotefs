@@ -9,12 +9,15 @@ librfsd_TARGET = librfsd
 librfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
                   $(CFLAGS_MAIN) \
                   $(CFLAGS_OS) \
+                  $(CFLAGS_SO) \
                   $(CFLAGS_OPTS)
 
 librfsd_LDFLAGS = $(LDFLAGS_MAIN) \
+                  $(LDFLAGS_SO) \
                   $(LDFLAGS_OS) \
                   $(LDFLAGS_NET) \
-                  $(LDFLAGS_OPTS)
+                  $(LDFLAGS_OPTS) \
+                  $(OS_LIBS)
 
 #######################################
 # Define target and object files

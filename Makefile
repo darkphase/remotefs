@@ -27,7 +27,7 @@ all release: server client
 
 server: rfsd rfspasswd
 
-client: rfs rfs_nss
+client: rfs
 
 rfs: dummy
 	@$(MAKE) -sf Makefiles/base.mk clean_build

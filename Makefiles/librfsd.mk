@@ -10,7 +10,7 @@ build: $(SO_NAME)
 
 $(SO_NAME): $(librfsd_OBJS)
 	@echo Link $(@)
-	$(CC) $(LDFLAGS_SO) -o $(SO_NAME) $(librfsd_OBJS) $(OS_LIBS) $(librfsd_LDFLAGS)
+	$(CC) -o $(SO_NAME) $(librfsd_OBJS) $(librfsd_LDFLAGS)
 	$(LN) $(@) $(librfsd_TARGET).$(SO_EXT)
 
 install_librfsd:
@@ -20,5 +20,5 @@ install_librfsd:
 flags:
 	@echo Build librfsd
 	@echo CFLAGS = $(librfsd_CFLAGS) $(OPTS)
-	@echo LDFLAGS = $(librfsd_LDFLAGS) $(LDFLAGS_SO) $(OS_LIBS)
+	@echo LDFLAGS = $(librfsd_LDFLAGS)
 	@echo

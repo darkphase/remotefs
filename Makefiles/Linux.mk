@@ -35,6 +35,7 @@ LDFLAGS_SSL     = -lssl
 # Flags for dymamic libraries
 ###############################
 
+CFLAGS_SO    = -fPIC
 LDFLAGS_SO   = -shared -Wl,-soname,$(SO_NAME)
 SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
