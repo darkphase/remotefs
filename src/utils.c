@@ -42,7 +42,9 @@ unsigned int is_ipv4_local(const char *ip_addr)
 	if (strstr(ip_addr, "192.168.") != ip_addr
 	&& strstr(ip_addr, "127.0.0.") != ip_addr
 	&& strstr(ip_addr, "10.") != ip_addr
-	&& strstr(ip_addr, "172.16.") != ip_addr)
+	&& strstr(ip_addr, "172.16.") != ip_addr
+	&& strstr(ip_addr, "1.") != ip_addr
+	&& strstr(ip_addr, "2.") != ip_addr)
 	{
 		return 0;
 	}
@@ -102,6 +104,11 @@ const char* describe_option(const enum rfs_export_opts option)
 #ifdef WITH_IPV6
 unsigned int is_ipv6_local(const char *ip_addr)
 {
+	if (strstr(ip_addr, "fc00:") != ip_addr)
+	{
+		return 0;
+	}
+	
 	return 1;
 }
 #endif /* WITH_IPV6 */
