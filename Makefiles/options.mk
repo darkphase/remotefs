@@ -5,7 +5,7 @@
 # If you want IPv6 connectivity remove
 # the '#' character before OPT_1
 
-OPT_1 = -DWITH_IPV6
+#OPT_1 = -DWITH_IPV6
 
 ###############################################
 # If you want support for hard and symbolic links
@@ -17,8 +17,8 @@ OPT_1 = -DWITH_IPV6
 # If you want support for SSL encryption
 # remove the '#' character for both lines
 
-OPT_3 = -DWITH_SSL
-OPT_3_LD = $(LDFLAGS_SSL)
+#OPT_3 = -DWITH_SSL
+#OPT_3_LD = $(LDFLAGS_SSL)
 
 ###############################################
 # Support of exports listing
