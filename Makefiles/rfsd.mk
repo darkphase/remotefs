@@ -4,7 +4,7 @@ include Makefiles/rfsd-defs.mk
 
 $(rfsd_OBJS):
 	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(rfsd_CFLAGS) $(OPTS)
+	$(CC) -c -o $@ $*.c $(rfsd_CFLAGS)
 
 build: $(rfsd_OBJS)
 	@echo Link $(rfsd_TARGET)
@@ -15,6 +15,6 @@ install_rfsd:
 
 flags:
 	@echo Build rfsd
-	@echo CFLAGS = $(rfsd_CFLAGS) $(OPTS)
+	@echo CFLAGS = $(rfsd_CFLAGS)
 	@echo LDFLAGS = $(rfsd_LDFLAGS)
 	@echo

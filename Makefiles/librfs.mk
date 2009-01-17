@@ -4,7 +4,7 @@ include Makefiles/librfs-defs.mk
 
 $(librfs_OBJS):
 	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(librfs_CFLAGS) $(OPTS)
+	$(CC) -c -o $@ $*.c $(librfs_CFLAGS)
 
 build: $(SO_NAME)
 
@@ -19,6 +19,6 @@ install_rfs:
 
 flags:
 	@echo Build librfs
-	@echo CFLAGS = $(librfs_CFLAGS) $(OPTS)
+	@echo CFLAGS = $(librfs_CFLAGS)
 	@echo LDFLAGS = $(librfs_LDFLAGS)
 	@echo

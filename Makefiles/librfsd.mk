@@ -4,7 +4,7 @@ include Makefiles/librfsd-defs.mk
 
 $(librfsd_OBJS):
 	@echo Compile $@
-	$(CC) -c -o $@ $*.c $(librfsd_CFLAGS) $(OPTS)
+	$(CC) -c -o $@ $*.c $(librfsd_CFLAGS)
 
 build: $(SO_NAME)
 
@@ -19,6 +19,6 @@ install_librfsd:
 
 flags:
 	@echo Build librfsd
-	@echo CFLAGS = $(librfsd_CFLAGS) $(OPTS)
+	@echo CFLAGS = $(librfsd_CFLAGS)
 	@echo LDFLAGS = $(librfsd_LDFLAGS)
 	@echo

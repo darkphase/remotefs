@@ -9,7 +9,8 @@ rfs_TARGET = "rfs"
 rfs_CFLAGS  = $(CFLAGS_FUSE) \
               $(CFLAGS_MAIN) \
               $(CFLAGS_OS) \
-              $(CFLAGS_OPTS)
+              $(CFLAGS_OPTS) \
+              $(OPTS)
 
 rfs_LDFLAGS = $(LDFLAGS_MAIN) \
               -L. -lrfs \

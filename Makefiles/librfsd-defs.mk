@@ -11,6 +11,7 @@ librfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
                   $(CFLAGS_OS) \
                   $(CFLAGS_SO) \
                   $(CFLAGS_OPTS)
+                  $(OPTS)
 
 librfsd_LDFLAGS = $(LDFLAGS_MAIN) \
                   $(LDFLAGS_SO) \

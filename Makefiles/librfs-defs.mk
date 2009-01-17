@@ -10,7 +10,8 @@ librfs_CFLAGS  = $(CFLAGS_FUSE) \
                  $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
                  $(CFLAGS_SO) \
-                 $(CFLAGS_OPTS)
+                 $(CFLAGS_OPTS) \
+                 $(OPTS)
 
 librfs_LDFLAGS = $(LDFLAGS_MAIN) \
                  $(LDFLAGS_SO) \
