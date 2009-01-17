@@ -21,9 +21,7 @@ See the file LICENSE.
 
 unsigned int is_ipaddr(const char *string)
 {
-#ifndef WITH_IPV6
-	return inet_addr(string) == INADDR_NONE ? 0 : 1;
-#else
+#ifdef WITH_IPV6
 	if (strchr(string,':'))
 	{
 		/* may be an IPv6 address */
@@ -32,7 +30,9 @@ unsigned int is_ipaddr(const char *string)
 	}
 	else
 	{
+#endif
 		return inet_addr(string) == INADDR_NONE ? 0 : 1;
+#ifdef WITH_IPV6
 	}
 #endif
 }
@@ -50,21 +50,33 @@ unsigned int is_ipv4_local(const char *ip_addr)
 	return 1;
 }
 
-char* resolve_ipv4(const char *host)
+char* host_ip(const char *host, int *resolved_address_family)
 {
 	char *result = NULL;
+	*resolved_address_family = AF_UNSPEC;
+	
+	struct addrinfo *addr_info = NULL;
+	struct addrinfo hints = { 0 };
 
-	struct hostent *host_ent = gethostbyname(host);
-	if (host_ent != NULL)
+	/* resolve name or address */
+	hints.ai_family    = AF_UNSPEC;
+	hints.ai_socktype  = SOCK_STREAM; 
+	hints.ai_flags     = AI_ADDRCONFIG;
+	
+	int resolve_ret = getaddrinfo(host, NULL, &hints, &addr_info);
+	if (resolve_ret == 0)
 	{
+		*resolved_address_family = addr_info->ai_family;
 		
 		unsigned max_len = 255;
 		result = malloc(max_len);
 		
-		inet_ntop(host_ent->h_addrtype, 
-		host_ent->h_addr_list[0],
+		inet_ntop(addr_info->ai_family, 
+		&((struct sockaddr_in *)addr_info->ai_addr)->sin_addr,
 		result,
 		max_len - 1);
+		
+		freeaddrinfo(addr_info);
 		
 		DEBUG("real host: %s\n", result);
 	}
@@ -92,9 +104,4 @@ unsigned int is_ipv6_local(const char *ip_addr)
 {
 	return 1;
 }
-
-char* resolve_ipv6(const char *host)
-{
-	return NULL;
-}
-#endif
+#endif /* WITH_IPV6 */

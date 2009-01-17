@@ -18,14 +18,12 @@ unsigned int is_ipaddr(const char *string);
 unsigned int is_ipv4_local(const char *ip_addr);
 
 /** don't forget to free() returned value */
-char* resolve_ipv4(const char *host);
+char* host_ip(const char *host, int *resolved_address_family);
 
 #ifdef WITH_IPV6
 /** is IPv6 address belongs to private network */
 unsigned int is_ipv6_local(const char *ip_addr);
 
-/** don't forget to free() returned value */
-char* resolve_ipv6(const char *host);
 #endif
 
 /** describe rfs option (do NOT free() result) */

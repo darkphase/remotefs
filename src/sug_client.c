@@ -19,35 +19,40 @@ See the file LICENSE.
 #ifdef WITH_SSL
 static void check_ssl(const char *host)
 {
-	char *check_host = strdup(host);
+	int addr_family = AF_UNSPEC;
+	char *real_host = host_ip(host, &addr_family);
 	
-	DEBUG("checking SSL against host: %s\n", check_host);
-	if (is_ipaddr(check_host) == 0)
+	DEBUG("checking SSL against host: %s\n", real_host);
+	
+	if (real_host == NULL)
 	{
-		free(check_host);
-#ifdef WITH_IPV6
-		check_host = resolve_ipv6(check_host);
-#else
-		check_host = resolve_ipv4(check_host);
-#endif
+		return; /* don't make check on resolving error */
 	}
 	
-	if (check_host == NULL)
+	unsigned is_local_addr = 0;
+	
+	switch (addr_family)
 	{
-		return; /* don't make check on error */
+	case AF_INET:
+		is_local_addr = is_ipv4_local(real_host);
+		break;
+#ifdef WITH_IPV6
+	case AF_INET6:
+		is_local_addr = is_ipv6_local(real_host);
+		break;
+#endif
+	default:
+		free(real_host);
+		return; /* don't make check on resolving error */
 	}
 	
-	if (
-#ifdef WITH_IPV6
-	is_ipv6_local(check_host) == 0 &&
-#endif
-	is_ipv4_local(check_host) == 0)
+	free(real_host);
+	
+	if (is_local_addr == 0)
 	{
 		WARN("%s\n", "WARNING: Looks like you have specified address outside of private network, but SSL isn't enabled (`rfs ... -o ssl`)");
 		WARN("%s\n", "WARNING: BTW, check out SECURITY NOTES section in rfs man page (`man rfs`) for default security policy of remotefs");
 	}
-	
-	free(check_host);
 }
 #endif
 
