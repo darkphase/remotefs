@@ -242,7 +242,6 @@ static int process_message(int sock)
                                   ? "getpwent" : "getgrent");
 
             list = command.cmd == GETPWENT ? user_list: group_list;
-printf("c %d l %p u %p g %p\n",command.cmd, list, user_list, group_list);
             command.name[0] = '\0';
             while(list)
             {
