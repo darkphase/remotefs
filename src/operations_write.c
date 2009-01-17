@@ -136,12 +136,9 @@ static void* write_behind(void *void_instance)
 	write_behind_request->block->offset,
 	write_behind_request->block->descriptor);
 	
-	if (write_behind_request->last_ret >= 0)
-	{
-		delete_block_from_cache(&instance->write_cache.cache, write_behind_request->block);
-		free(write_behind_request->path);
-		write_behind_request->path = NULL;
-	}
+	delete_block_from_cache(&instance->write_cache.cache, write_behind_request->block);
+	free(write_behind_request->path);
+	write_behind_request->path = NULL;
 	
 	DEBUG("%s\n", "*** write behind finished");
 	
@@ -179,6 +176,7 @@ static int flush_write(struct rfs_instance *instance, const char *path, uint64_t
 				return ret;
 			}
 			
+			delete_block_from_cache(&instance->write_cache.cache, block);
 		}
 		
 		cache_item = cache_item->next;
@@ -254,9 +252,26 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	}
 	
 	if (block == NULL  
-	|| block->used == block->allocated
+	|| block->used >= block->allocated
 	|| offset != block->offset + block->used) /* no suitable block exist yet */
 	{
+		if (block != NULL) /* block is found, but offset doesn't match required */
+		{
+			if (keep_alive_lock(instance) != 0)
+			{
+				return -EIO;
+			}
+			
+			int flush_ret = flush_write(instance, path, desc);
+			if (flush_ret < 0)
+			{
+				keep_alive_unlock(instance);
+				return flush_ret;
+			}
+			
+			keep_alive_unlock(instance);
+		}
+		
 		/* try to reserve new block */
 		block = NULL;
 		block = reserve_cache_block(&instance->write_cache.cache, 
@@ -271,7 +286,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	
 	if (free_space >= size)
 	{
-		DEBUG("%s\n", "*** writing data to cache");
+		DEBUG("*** writing data to cache (%p)\n", block);
 		memcpy(block->data + block->used, buf, size);
 		block->used += size;
 		
@@ -290,12 +305,6 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 				write_behind_request->path = NULL;
 				if (write_behind_request->last_ret < 0)
 				{
-					if (write_behind_request->block != NULL)
-					{
-						delete_block_from_cache(&instance->write_cache.cache, 
-						write_behind_request->block);
-					}
-					
 					keep_alive_unlock(instance);
 					return write_behind_request->last_ret;
 				}
@@ -359,6 +368,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	{
 		int ret = write_behind_request->last_ret;
 		
+		delete_from_cache(instance, path);
 		reset_write_behind(instance);
 		return ret;
 	}
