@@ -118,11 +118,24 @@ int control_rfs_nss(const int cmd, const char *name, const char *host, uid_t *id
     /* get the uid/gid for the given name */
     if ( cmd == PUTPWNAM || cmd == PUTGRNAM )
     {
-       *id = 0;
        recv(sock, &command, sizeof(command), 0);
        *id = command.id;
     }
 
     close(sock);
     return RFS_NSS_OK;
+}
+
+uid_t rfs_putpwnam(char *user, char *host)
+{
+    uid_t uid = 0;
+    control_rfs_nss(PUTPWNAM, user, host, &uid);
+    return uid;
+}
+
+gid_t rfs_putgrnam(char *group, char *host)
+{
+    gid_t gid = 0;
+    control_rfs_nss(PUTGRNAM, group, host, (uid_t*)&gid);
+    return gid;
 }

@@ -1,15 +1,53 @@
 Resolver utility for remotefs:
 ------------------------------
 
-This consist, according to the operating system, of a library
-libnss_rfs.so.2 or nss_rfs.so.1 and a little server rfs_nss which
-provide an uid or a gid for user or groups which are not known
-on the workstation. The server can be started at boot time  or
-on demand. For the last case a file rfs_nss_ctrl is provided,
-it check if a server is already running and if the passed
-argument is start and the server don't run start it. The server
-will stop if rfs_nss_ctrl is called with the parameter stop and
-if no more remotefs clients are running. 
+Remotefs is a fast remote file system which work well on
+device as Home NAS server or Home router with an interface
+for external USB drive.
+
+Remotefs transmit the name of the user and group and id the
+names transmitetd by the server are known on the client, there
+are displayed correctly on the client.
+
+This mean that the files /etc/passwd and /etc/group have to
+contain all name present on noth systems (client and server)
+On some case this is not possible or the user is not able to
+synchronize both client and server.
+
+Rfs_nss try to "repair" such inconsistents.
+
+Rfs_nss consist od a module libnss_rfs.so.2 or nss_rfs.so.1
+according to the target OS and a server which store the
+unknown user and group ans provide a uid/gid form them so
+that tools as ls, getfacl and so on are able to resolve the
+ownership for the object of the mounted file system.
+
+Rfs_nss must get knowledge from the foreign name and offer
+some possiblities,
+1) There is no supplemental service or programs involved,
+   if rfs (the remotefs client) ask for uid/gid correspoding
+   to an user or group name, the name is tahem from rfs_nss
+   and the uid/gid is automatically generated.
+2) The name are stored within the file ~/.rfs_nss and are
+   loaded at the start of rfs_nss so that the name contained
+   within this file can be resolved.
+3) Before of starting rfs, the program rfs_nss_get must be
+   started. If the server rfs_nss_rem is working on the
+   remotefs server, the name of all user and group are
+   send to rfs_nss and the name send by rfsd can then been
+   resolved by rfs.
+
+Rfs_nss is particular usefull if the user share data on
+an common directory and the acces to the files and directories
+is governed by POSIX ACL.
+
+Note that the recommande way is to have the /etc/passwd and
+/etc/group files with the same user and groups. The uid/gid
+must not be the same, rfs and rfsd transmit only names.
+
+
+Configuration:
+--------------
 
 The file /etc/nsswitch.conf must be modified for this.
 The lines beginning with passwd: or group: must contain as
@@ -23,52 +61,10 @@ group:      files winbind rfs
 
 It is important that rfs is the last entry within these lines.
 
-How this work:
---------------
-
-Remotefs transmit user and group name and not the uid and gid as
-a regular file system. This is use full in order to map the owner
-and group correctly.
-
-If an application want to know the uid for the user bob the
-function getpwnam() or getpwnam_r() is called ftom the application.
-The resolver consult then the file /etc/nsswitch.conf and call
-the corresponding functions for each of the given module until
-the queried value was found,
-
-The last module is rfs and we can be sure that the user was not
-found. With this knowledge we can assign an unused uid for the
-user name and return it.
-
-The same occur for groups.
-
-On further calls of the resolver module the informations
-about the user or group are returned.
-
-In order to have enough security the library and the server nss_rfs
-communicate via an unix socket so that only local components
-on the server can use them.
-
-The uid and gid are calculated with a hash function and will begin
-with 10000. With this approach, the chance that id´s will be,
-regardless the order of the queries, the same is relatively high.
-
-Please note that these components ts was developed for the use
-within a small network as used into your home network.
-
-Using these components will allow you to use systems with
-not synchronized passwd and group files and to access the remote
-files, modify them as far as the server (typically a NAS) know the
-user and groups.
-
-Test programs:
---------------
-
-The program rfs_nss_test shall show if the name/id resolution work as
-expected.
 
 Supported Operating systems:
 ----------------------------
+
 At this time Linux, FreeBSD and openSolaris are supported. rfs_nss and
 the library are only use full if the exported remotefs file system
 tell the clients the real name of the users (ugo mode, see the rfsd
@@ -99,3 +95,30 @@ FreeBSD:
    with for example "passwd: files rfs". According to the FreeBSD
    man page, id compat is stated within the passwd or group line,
    no further libraries are allowed.
+
+Compiling:
+----------
+
+In order to build the components for the client type:
+make client; sudo -c make install
+
+On the server type
+make server; sudo -c make install
+
+The generated file are:
+  Client:
+    - rfs_nss
+    - libnss_rfs.so.2 or nss_rfs.so.1
+    - rfs_nss_get
+
+  Server:
+    - rfs_nss_rem
+
+You can also produce some other files for the client:
+- rfs_nss_add
+- rfs_nss_ctrl
+which shall be used if the rfs_nss server read the user and group
+name from a file (~/.rfs_nss or, id rfs_nss is started as root,
+/var/rfs_nss/rfs_nss).
+In order to pproduce and install them type:
+make others; sudo -c make install

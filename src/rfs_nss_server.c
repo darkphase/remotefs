@@ -50,13 +50,13 @@ static list_t *group_list = NULL;
 static int     log = 0;
 static int     connections = 1; /* number of rfs client */
 
-/***************************************
+/**********************************************************
  *
  * signal_handler()
  *
  * handle termination
  *
- */
+ ***********************************************************/
 
 static void signal_handler(int code)
 {
@@ -65,14 +65,14 @@ static void signal_handler(int code)
     exit(1);
 }
 
-/***************************************
+/**********************************************************
  *
  * calculate_hash()
  *
  * calculate a hash value with a value between
  * 10000 and 19999
  *
- */
+ ***********************************************************/
 
 static int calculate_hash(const char *buf)
 {
@@ -90,13 +90,15 @@ static int calculate_hash(const char *buf)
     return (((s2 << 16) | s1)%10000)+10000;
 }
 
-/***************************************
+/**********************************************************
  *
  * open_socket()
  *
  * open the socket we will use for listening
  *
- */
+ * Return socket handle or -1
+ *
+ ***********************************************************/
 
 static int open_socket(void)
 {
@@ -145,8 +147,7 @@ static inline list_t *search_name(cmd_t *command, list_t *list)
     {
        rfs_idmap_t *idmap = (rfs_idmap_t*)list->data;
 
-       if ( ! idmap->sys &&
-            strncmp( idmap->name, command->name, RFS_LOGIN_NAME_MAX) == 0 )
+       if ( strncmp( idmap->name, command->name, RFS_LOGIN_NAME_MAX) == 0 )
        {
            command->id    = idmap->id;
            command->found = 1;
@@ -157,6 +158,7 @@ static inline list_t *search_name(cmd_t *command, list_t *list)
     return list;
 
 }
+
 /**********************************************************
  *
  * search_id()
@@ -189,6 +191,72 @@ static inline list_t *search_id(cmd_t *command, list_t *list)
 
 /**********************************************************
  *
+ * insert_new_idmap()
+ *
+ * list_t **root   pointer to the user or group list
+ * cmd_t  *command the name member shall contain the user
+ *                 or group name
+ *
+ * If all is OK command.id contain the assigned id and
+ * command.found is to be set to 1
+ *
+ * return 1 if all is ok else 0 (value of command.found)
+ * 
+ ************************************************************/
+
+static int insert_new_idmap(list_t **root, cmd_t *command)
+{
+    /* the name was not found, calculate an id */
+    int hashVal = 0;
+    list_t *list = *root;
+
+    command->found = 0; /* preset to not inserted */
+    /* calculate an id */
+    hashVal = calculate_hash(command->name);
+    
+    /* and insert this into our list */
+    while (list)
+    {
+        if ( ((rfs_idmap_t*)(list->data))->id > hashVal )
+        {
+            /* no mame with this id, insert data */
+            rfs_idmap_t * map = calloc(sizeof(rfs_idmap_t),1);
+            if ( map == NULL )
+            {
+                 if ( log ) perror("calloc");
+                 break;
+            }
+
+            map->id = hashVal;
+            map->name = strdup(command->name);
+            if ( map->name == NULL )
+            {
+                 if ( log ) perror("calloc");
+                 break;
+            }
+
+            command->found = 1;
+            command->id    = hashVal;
+            if ( list_insert(&list, map, NULL) == 0 )
+            {
+                 if ( log ) perror("calloc");
+                 break;
+            }
+            break;
+        }
+        else if ( ((rfs_idmap_t*)(list->data))->id == hashVal )
+        {
+           /* the id is allready used, increase (a new id) */
+           hashVal++;
+        }
+        list = list->next;
+    }
+    return command->found;
+}
+
+
+/**********************************************************
+ *
  * process_message()
  *
  * get ans answer the messages from the resolver
@@ -204,7 +272,6 @@ static int process_message(int sock)
 {
     cmd_t command;
     list_t *list = NULL;
-    int hashVal = 0;
 
     /* get message */
     int ret = recv(sock, &command, sizeof(command), 0);
@@ -277,7 +344,8 @@ static int process_message(int sock)
                               : "putgrnam",
                               command.name);
 
-            command.id = 0;
+            command.id    = 0;
+            command.found = 0;
             if ( command.cmd == GETGRNAM || command.cmd == PUTGRNAM)
                 list = group_list;
             else
@@ -291,54 +359,16 @@ static int process_message(int sock)
                  break;
             }
 
-            if (command.found == 0 )
+            if (list == NULL )
             {
                 if ( command.cmd == PUTGRNAM || command.cmd == GETGRNAM)
                     list = group_list;
                 else if ( command.cmd == PUTPWNAM || command.cmd == GETPWNAM )
                     list = user_list;
 
-                /* the name was not found, calculate an id */
-                hashVal = calculate_hash(command.name);
-
-                /* and insert this into our list */
-                while (list)
-                {
-                    if ( ((rfs_idmap_t*)(list->data))->id > hashVal )
-                    {
-                        /* mo mame with this id, insert data */
-                        rfs_idmap_t * map = calloc(sizeof(rfs_idmap_t),1);
-                        if ( map == NULL )
-                        {
-                             if ( log ) perror("calloc");
-                             break;
-                        }
-
-                        map->id = hashVal;
-                        map->name = strdup(command.name);
-                        if ( map->name == NULL )
-                        {
-                             if ( log ) perror("calloc");
-                             break;
-                        }
-
-                        command.found = 1;
-                        command.id    = hashVal;
-                        if ( list_insert(&list, map, NULL) == 0 )
-                        {
-                             if ( log ) perror("calloc");
-                             break;
-                        }
-                        break;
-                    }
-                    else if ( ((rfs_idmap_t*)(list->data))->id == hashVal )
-                    {
-                       /* the id is allready used, increase (a new id) */
-                       hashVal++;
-                    }
-                    list = list->next;
-                }
-           }
+                /* the name was not found, insert it to the global list */
+                insert_new_idmap(&list, &command);
+            }
         break;
 
         case GETGRGID:
@@ -355,6 +385,7 @@ static int process_message(int sock)
             /* search only the corresponding entry */
             search_id(&command, list);
         break;
+
         default:
            printf("Command %d ?\n",command.cmd);
            return 0;
@@ -370,14 +401,15 @@ static int process_message(int sock)
     return 1; /* all was OK */
 }
 
-/***************************************
+/**********************************************************
  *
  * main_loop()
  *
  * wait for message from the resolver library
  * and process them
  *
- */
+ *
+ *********************************************************/
 
 static void main_loop(int sock)
 {
@@ -415,74 +447,155 @@ static void main_loop(int sock)
     if ( log ) printf("No more rfs clients, terminate\n");
 }
 
-/***************************************
+/***************************************************
  *
  * add_to_list()
  *
- * add the given data so that we have a
- * sorted list
+ * add the given data so that we have a sorted list
  *
- */
+ * list_t  **root   the root for our global list
+ * char     *name   user or group name
+ * uid_t     uid    or gif of user/group
+ * int       is_sys tell if this is rom passed (1)
+ *                  or was created by rfs_nss
+ *
+ * Return 0 on error else 1
+ *
+ ***************************************************/
 
-static int add_to_list(list_t **root, rfs_idmap_t *data, uid_t id)
+static int add_to_list(list_t **root, char *name, uid_t id, int is_sys)
 {
     int ret = 1;
+    rfs_idmap_t *data = (rfs_idmap_t*) calloc(sizeof(rfs_idmap_t),1);
+    if ( data == NULL )
+    {
+         if ( log ) perror("calloc");
+         return 0;
+    }
+
+    data->id =  id;
+    data->sys  = is_sys;
+    data->name = strdup(name);
+    if ( data->name == NULL )
+    {
+         if ( log ) perror("strdup");
+        return 0;
+    }
+
     if ( *root == NULL )
     {
        ret = list_insert(root, data, NULL);
     }
     else
     {
-         list_t *elem = *root;
-         while ( elem  )
-         {
-            if( ((rfs_idmap_t*)(elem->data))->id > id)
-            {
-                 ret = list_insert(&elem, data, NULL);
-                 break;
-            }
-            else if ( elem->next == NULL )
-            {
-                 ret = list_add(&elem, data, NULL);
-                 break;
-            }
-            elem = elem->next;
-         }
-     }
-     return ret;
+        list_t *elem = *root;
+        while ( elem  )
+        {
+           if( ((rfs_idmap_t*)(elem->data))->id > id)
+           {
+                ret = list_insert(&elem, data, NULL);
+                break;
+           }
+           else if ( elem->next == NULL )
+           {
+                ret = list_add(&elem, data, NULL);
+                break;
+           }
+           elem = elem->next;
+        }
+    }
+    return ret;
 }
+
+/***************************************************
+ *
+ * open_file()
+ *
+ * Open a file for saving or reding of the entries
+ * created by rfs_nss
+ * char *mode "r" for read, "w" for write
+ *
+ * Return a FILE poiunter or NULL
+ *
+ ***************************************************/
+
+FILE *open_file(char *mode)
+{
+    char *db_file = ".rfs_nss";
+    char *dir = NULL;
+    char *path = NULL;
+    uid_t uid = getuid();
+    FILE *fp = NULL;
+    
+    if ( uid != 0 )
+    {
+        struct passwd *pwd = getpwuid(uid);
+        if ( pwd != NULL && pwd->pw_dir != NULL )
+        {
+            dir = pwd->pw_dir;
+        }
+    }
+    else
+    {
+        dir = "/var/rfs_nss";
+        db_file = "rfs_nss";
+        if ( access(dir, W_OK) == -1 )
+        {
+           mkdir(dir, 0700);
+        }
+    }
+
+    if ( dir )
+    {
+        path = (char*)calloc(strlen(db_file)+strlen(dir)+2,1);
+        if ( path == NULL )
+        {
+            perror("calloc");
+            return NULL;
+        }
+        sprintf(path, "%s/%s", dir, db_file);
+        fp = fopen(path,mode);
+        free(path);
+    }
+    return fp;
+}
+
 
 /***************************************
  *
  * main()
  *
  *
- */
+ **************************************/
 
 int main(int argc,char **argv)
 {
     struct passwd *pwd;
     struct group  *grp;
-    rfs_idmap_t   *user_map;
-    rfs_idmap_t   *group_map;
     int            sock = -1;
     int            ret  = 1;
     int            daemonize = 1;
     int            opt;
     char           *prog_name = strrchr(argv[0],'/');
+    int             save = 0;
+    FILE           *fp = NULL;
+    list_t         *list = NULL;
+    list_t         *root = NULL;
 
+    /* parse arguments */
     if ( prog_name == NULL )
         prog_name = argv[0];
     else
         prog_name++;
 
-    while ( (opt = getopt(argc, argv, "flr")) != -1 )
+    while ( (opt = getopt(argc, argv, "flrs")) != -1 )
     {
         switch(opt)
         {
-             case 'f': daemonize = 0; break;
-             case 'l': log = 1; break;
-             case 'r':  rfs_put_name = 1; break;
+             case 'f': daemonize    = 0; break;
+             case 'l': log          = 1; break;
+             case 'r': rfs_put_name = 1; break;
+             case 's': save         = 1; break;
              default:
                 printf("Syntax: %s [-f] [-l] [-r]\n", prog_name);
                 printf("      -f, start in foreground\n");
@@ -507,25 +620,12 @@ int main(int argc,char **argv)
         break;
     }
     
-    /* collect the known user and groups */
+    /* collect the known users */
     setpwent();
-    while( (pwd = getpwent()) && ret )
+    ret = 1;
+    while( ret &&(pwd = getpwent()) && ret )
     {
-       user_map = (rfs_idmap_t*) calloc(sizeof(rfs_idmap_t),1);
-       if ( user_map == NULL )
-       {
-            if ( log ) perror("calloc");
-            exit(1);
-       }
-       user_map->name = strdup(pwd->pw_name);
-       if ( user_map->name == NULL )
-       {
-            if ( log ) perror("strdup");
-            exit(1);
-       }
-       user_map->id = pwd->pw_uid;
-       user_map->sys = 1;
-       ret = add_to_list(&user_list, user_map, (uid_t)pwd->pw_uid);
+       ret = add_to_list(&user_list, pwd->pw_name, (uid_t)pwd->pw_uid, 1);
     }
     endpwent();
 
@@ -535,24 +635,12 @@ int main(int argc,char **argv)
        exit(1);
     }
 
+    /* collect the known gtoups */
     setgrent();
-    while((grp = getgrent()))
+    ret = 1;
+    while(ret && (grp = getgrent()))
     {
-       group_map = (rfs_idmap_t*) calloc(sizeof(rfs_idmap_t),1);
-       if ( group_map == NULL )
-       {
-            if ( log ) perror("calloc");
-            exit(1);
-       }
-       group_map->name = strdup(grp->gr_name);
-       if ( group_map->name == NULL )
-       {
-            if ( log ) perror("strdup");
-            exit(1);
-       }
-       group_map->id   = grp->gr_gid;
-       group_map->sys = 1;
-       ret = add_to_list(&group_list, group_map, (uid_t)grp->gr_gid);
+       ret = add_to_list(&group_list, grp->gr_name, (uid_t)grp->gr_gid, 1);
     }
     endgrent();
 
@@ -560,6 +648,54 @@ int main(int argc,char **argv)
     {
        /* no enough memory ? we have a big problem and terminate */
        exit(1);
+    }
+
+    if ( save )
+    {
+        cmd_t command;
+        fp = open_file("r");
+        if ( fp != NULL )
+        {
+            char line[1024];
+            char name[1024];
+            char type;
+            uid_t id = 0;
+            int   ok = 1;
+            while (ok && fgets(line, sizeof(line),fp) )
+            {
+                if ( sscanf(line, "%c:%[^:]:%d", &type, name, &id) == 3 )
+                {
+                    if ( id < 10000 || id > 20000 )
+                    {
+                       ok = 0;
+                    }
+                    strncpy(command.name, name, sizeof(command.name));
+                    command.name[sizeof(command.name)-1] = '\0';
+                    switch(type)
+                    {
+                        case 'u': root = user_list; break;
+                        case 'g': root = group_list; break;
+                        default:  ok = 0; break;
+                    }
+                    if ( ok && (list = search_name(&command, root)) == NULL )
+                    {
+                        ok = insert_new_idmap(&root, &command);
+                    }
+                    if ( log && ok && id != command.id )
+                    {
+                        printf("%s ID old %d new %d\n",
+                               name,
+                               id,
+                               command.id);
+                    }
+                }
+            }
+            fclose(fp);
+            if (!ok && log)
+            {
+               printf("wrong line %s\n",line);
+            }
+        }
     }
 
     /* at this stage we have collected all id known for
@@ -590,5 +726,40 @@ int main(int argc,char **argv)
      unlink(SOCKNAME);
      unlink(PIDFILE);
 
+    if ( save )
+    {
+        fp = open_file("w");
+        if ( fp != NULL )
+        {
+            list_t *list = user_list;
+            while (list)
+            {
+                rfs_idmap_t *idmap;
+                idmap = (rfs_idmap_t*)list->data;
+                if ( idmap->sys == 0 )
+                {
+                    fprintf(fp,"u:%s:%d\n", idmap->name, idmap->id);
+                }
+                list = list->next;
+            }
+
+            list = group_list;
+            while (list)
+            {
+                rfs_idmap_t *idmap;
+                idmap = (rfs_idmap_t*)list->data;
+                if ( idmap->sys == 0 )
+                {
+                    fprintf(fp, "g:%s:%d\n", idmap->name, idmap->id);
+                }
+                list = list->next;
+            }
+            fclose(fp);
+        }
+        else
+        {
+             perror("fopen");
+        }
+    }
     return 0;
 }
