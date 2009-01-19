@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Werror -DFREEBSD
+OS_CFLAGS = -Wall -Werror -DFREEBSD
 
 CC = cc
 RM = rm
@@ -6,6 +6,7 @@ CP = cp
 
 LIBNAME=nss_rfs.so.1
 LIB_LDFLAGS= -shared -Wl,-soname,$(LIBNAME)
+LDLFLAG = 
 
 NSS_LIB_DIR = /usr/local/lib
 NSS_BIN_DIR = /usr/bin

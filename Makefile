@@ -34,34 +34,34 @@ server: rfs_nss_rem
 
 $(LIBNAME): $(LIB_OBJ)
 	@echo link $@
-	@$(CC) -o $(LIBNAME) $(LIB_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(CFLAGS)
+	@$(CC) -o $(LIBNAME) $(LIB_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
 
 rfs_nss: $(SVR_OBJ)
 	@echo link $@
-	@$(CC) -o rfs_nss $(SVR_OBJ) $(SVR_LDFLAGS) $(CFLAGS)
+	@$(CC) -o rfs_nss $(SVR_OBJ) $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
 
 rfs_nss_get: src/rfs_nss_get.o $(LIBRFS_OBJ)
 	@echo link $@
-	@$(CC) -o $@ $< $(LIBRFS_OBJ) $(CFLAGS) $(LDFLAGS)
+	@$(CC) -o $@ src/rfs_nss_get.o $(LIBRFS_OBJ) $(CFLAGS) $(OS_CFLAGS) $(LDFLAGS) $(SVR_LDFLAGS)
 
 rfs_nss_rem: src/rfs_nss_rem.o
 	@echo link $@
-	@$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+	@$(CC) -o $@ src/rfs_nss_rem.o $(CFLAGS) $(LDFLAGS) $(SVR_LDFLAGS)
 
 # The following is not required normally
-other: rfs_nss_add rfs_nss_ctrl librfs_nss.so
+other: librfs_nss.so rfs_nss_add rfs_nss_ctrl
 
 rfs_nss_add: src/rfs_nss_add.o $(LIBRFS_OBJ)
 	@echo link $@
-	@$(CC) -o rfs_nss_add src/rfs_nss_add.o -ldl $(CFLAGS)
+	@$(CC) -o rfs_nss_add src/rfs_nss_add.o $(LDLFLAG) $(OS_CFLAGS) $(CFLAGS)
 
 rfs_nss_ctrl: $(CTRL_OBJ)
 	@echo link $@
-	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS) $(CFLAGS)
+	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
 
 librfs_nss.so: $(LIBRFS_OBJ)
 	@echo link $@
-	@$(CC) -o librfs_nss.so $(LIBRFS_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(CFLAGS)
+	@$(CC) -o librfs_nss.so $(LIBRFS_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
 
 
 # a simple test program
@@ -69,7 +69,7 @@ test: rfs_nss_test
 
 rfs_nss_test: test/rfs_nss_test.c src/rfs_nss_control.o
 	@echo link $@
-	@$(CC) -g -o rfs_nss_test $<  src/rfs_nss_control.o $(SVR_LDFLAGS) $(CFLAGS)
+	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
 
 clean:
 	@echo clean
@@ -103,7 +103,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@cc -c -o $@ $< $(CFLAGS) $(IPV6)
+	@cc -c -o $@ $< $(OS_CFLAGS) $(CFLAGS) $(IPV6)
 
 # Dependencies
 

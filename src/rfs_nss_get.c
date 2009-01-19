@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#if defined FREEBSD
+#include <netinet/in.h>
+#endif
 
 #include "rfs_nss.h"
 
@@ -166,7 +169,6 @@ int main(int argc, char **argv)
     int   port = RFS_REM_PORT;
     int   opt;
     int   sock = -1;
-    int   is_ipv6 = 0;
     int   add_host = 0;
     char  host[NI_MAXHOST];
 

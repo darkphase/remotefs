@@ -17,8 +17,8 @@ int main(int argc, char **argv)
 {
     struct passwd *pwd;
     struct group *grp;
-    uid_t uid = -1;
-    gid_t gid = -1;
+    uid_t uid = (uid_t)-1;
+    gid_t gid = (uid_t)-1;
     char *name = "alice";
     char *server_name = "example.net";
     char  log_host_name[RFS_LOGIN_NAME_MAX];

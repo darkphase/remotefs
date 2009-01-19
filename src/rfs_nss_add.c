@@ -41,13 +41,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if ( (putpwnam = dlsym(dl_hdl,"rfs_putpwnam")) == NULL )
+    if ( (putpwnam = (uid_t (*)(char*, char*))dlsym(dl_hdl,"rfs_putpwnam")) == NULL )
     {
         dlerror();
         return 1;
     }
 
-    if ( (putgrnam = dlsym(dl_hdl, "rfs_putgrnam")) == NULL )
+    if ( (putgrnam = (gid_t (*)(char*, char*))dlsym(dl_hdl, "rfs_putgrnam")) == NULL )
     {
         dlerror();
         return 1;
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
     if ( group )
     {
-       uid_t uid = -1;
+       uid_t uid = (uid_t)-1;
        uid = putgrnam(group, host);
        if ( uid == 0 )
        {

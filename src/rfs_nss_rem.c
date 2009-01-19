@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#if defined FREEBSD
+#include <netinet/in.h>
+#endif
 #include <pwd.h>
 #include <grp.h>
 
@@ -95,7 +98,6 @@ static int main_loop(char *listen_on, int port)
     struct addrinfo *addr_info = NULL;
     struct addrinfo hints = { 0 };
     int sock = -1;
-    struct timeval socket_timeout = { 10, 0 }; // TBD timeout from configuration
     int accpt;
 #ifdef WITH_IPV6
     socklen_t sock_len = sizeof(struct sockaddr_in6);
@@ -152,10 +154,12 @@ static int main_loop(char *listen_on, int port)
         sock = socket(AF_INET6, SOCK_STREAM, 0);
         sock_len = sizeof(struct sockaddr_in6);
         sock_address.sin6_port = htons(port);
+        sock_address.sin6_family = AF_INET6;
 #else
         sock = socket(AF_INET, SOCK_STREAM, 0);
         sock_len = sizeof(struct sockaddr_in);
         sock_address.sin_port = htons(port);
+        sock_address.sin_family = AF_INET;
 #endif
         if ( sock != -1 )
         {
