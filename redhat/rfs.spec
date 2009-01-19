@@ -8,7 +8,7 @@ Group: Applications/File
 URL: http://www.sourceforge.net/projects/remotefs
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-Requires: libfuse >= 2.6, libc6 >= 2.4
+Requires: fuse-libs >= 2.6, glibc >= 2.4
 
 %description
 remotefs client
@@ -29,6 +29,8 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
 cp man/man1/rfs.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
+cp librfs.so.0.11 $RPM_BUILD_ROOT%{_prefix}/lib
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -42,6 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 #%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfs
 %attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
+%attr(655, root,root) %{_prefix}/lib/librfs.so.0.11
 
 %post
 
