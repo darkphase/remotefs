@@ -128,15 +128,18 @@ tbz:
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
 install_man:
-	@INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
+	@-INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
 	for GZ_FILE in "$$FILES"; \
 	do \
 		cp -r $$GZ_FILE $$INSTALL_DIR/share/man; \
 	done
 
 install: install_man
+	@TARGET_DIR=$(INSTALL_DIR)/lib $(MAKE) -sf Makefiles/librfs.mk install_librfs
 	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfs.mk install_rfs
+	@TARGET_DIR=$(INSTALL_DIR)/lib $(MAKE) -sf Makefiles/librfsd.mk install_librfsd
 	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfsd.mk install_rfsd
+	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfspasswd.mk install_rfspasswd
 
 #############################
 # Build deb packages

@@ -52,3 +52,4 @@ librfsd_OBJS = src/buffer.o \
 #######################################
 
 TARGET  = $(librfsd_TARGET)
+TARGET_DIR = /usr/lib

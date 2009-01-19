@@ -14,8 +14,8 @@ $(SO_NAME): $(librfsd_OBJS)
 	$(LN) $(@) $(librfsd_TARGET).$(SO_EXT)
 
 install_librfsd:
-	@if [ -f $(librfsd_TARGET) ]; then cp $(librfsd_TARGET) $(TARGET_DIR); fi
-	$(LN) $(SO_NAME) $(librfsd_TARGET).so
+	@if [ -f $(SO_NAME) ]; then cp $(SO_NAME) $(TARGET_DIR); fi
+	@( cd $(TARGET_DIR); $(LN) -sf $(SO_NAME) $(librfsd_TARGET).$(SO_EXT) )
 
 flags:
 	@echo Build librfsd

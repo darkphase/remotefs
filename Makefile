@@ -50,9 +50,6 @@ rfspasswd: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfspasswd
 	@$(MAKE) -sf Makefiles/base.mk clean_build
 
-rfs_nss: dummy
-	@$(MAKE) -sf nss/Makefile NSSPATH=nss/
-
 dummy:
 
 #######################################
@@ -60,9 +57,6 @@ dummy:
 #######################################
 clean:
 	@$(MAKE) -sf Makefiles/base.mk clean
-
-clea-rfs_nss:
-	@$(MAKE) -sf nss/Makefile NSSPATH=nss/ clean
 
 depends:
 	@$(MAKE) -f Makefiles/base.mk depends
@@ -89,8 +83,6 @@ tbz: dummy
 packages: debs rpms tbz 
 	@$(MAKE) -sf Makefiles/base.mk clean_bins
 
-install: install-rfs_nss
+install:
 	@$(MAKE) -sf Makefiles/base.mk install
 
-install-rfs_nss:
-	@$(MAKE) -sf nss/Makefile NSSPATH=nss/ install

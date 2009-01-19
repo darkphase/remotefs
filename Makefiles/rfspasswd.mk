@@ -10,6 +10,10 @@ build: $(rfspasswd_OBJS)
 	@echo Link $(rfspasswd_TARGET)
 	@$(CC) -o $(rfspasswd_TARGET) $(rfspasswd_OBJS) $(rfspasswd_LDFLAGS)
 
+install_rfspasswd:
+	@if [ -f $(rfspasswd_TARGET) ]; then cp $(rfspasswd_TARGET) $(TARGET_DIR); fi
+
+
 flags:
 	@echo Build rfspasswd
 	@echo CFLAGS = $(rfspasswd_CFLAGS)
