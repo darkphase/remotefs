@@ -1,13 +1,52 @@
-OS_CFLAGS = -Wall -Werror -O2
+###########################################
+# The executables
+###########################################
 
 CC = cc
 RM = rm
 CP = cp
 
+###########################################
+# CFLAGS for debuging or optimization
+# CFLAGS for OS specific includes, ...
+###########################################
 
-LIBNAME=libnss_rfs.so.2
-LIB_LDFLAGS= -shared -Wl,-soname,$(LIBNAME)
-LDLFLAG = -ldl
+CFLAGS_OPT  = -O2
+OS_CFLAGS   = -Wall -Werror
+# we use this within the main Makefile
+CFLAGS_GLOB = $(OS_CFLAGS) $(CFLAGS_OPT)
+
+###########################################
+# LDFLAGS 
+###########################################
+
+LDFLAGS_SHARED = -shared -Wl,-soname,$(LIBNAME)
+LDFLAGS_NET    = 
+LDLFLAG_DYNLD  = -ldl
+
+###########################################
+# NAME for nss module, OS specific
+###########################################
+
+NSSMODULE = libnss_rfs.so.2
+
+###########################################
+# NAME for librfs_nss
+###########################################
+
+LIBNAME = librfs_nss.so
+
+###########################################
+# Where to install, OS specific
+###########################################
 
 NSS_LIB_DIR = /lib
 NSS_BIN_DIR = /usr/bin
+
+##########################################
+# What we can compile
+##########################################
+
+CLIENT  = $(NSSMODULE) rfs_nss rfs_nss_get
+SERVER  = rfs_nss_rem
+OTHER   = $(LIBNAME) rfs_nss_add rfs_nss_ctrl

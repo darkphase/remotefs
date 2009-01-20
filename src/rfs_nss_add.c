@@ -3,7 +3,7 @@
 #include <string.h>
  #include <dlfcn.h>
 
-#include "rfs_nss.h"
+#include <rfs_nsslib.h>
 
 static void syntax(char *prog_name)
 {

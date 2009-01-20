@@ -13,6 +13,9 @@
 #if defined FREEBSD
 #include <netinet/in.h>
 #endif
+#if defined QNX
+#include <arpa/inet.h>
+#endif
 #include <pwd.h>
 #include <grp.h>
 
@@ -111,12 +114,16 @@ static int main_loop(char *listen_on, int port)
     
     if ( listen_on )
     {
+        int result = 0;
         /* resolve IP for this name (may be a address */
         /* resolve name or address */
         hints.ai_family    = AF_UNSPEC;
         hints.ai_socktype  = SOCK_STREAM;
         hints.ai_flags     = AI_ADDRCONFIG;
-        int result = getaddrinfo(listen_on, NULL, &hints, &addr_info);
+#if defined QNX
+        hints.ai_flags     = 0;
+#endif
+        result = getaddrinfo(listen_on, NULL, &hints, &addr_info);
         if (result != 0)
         {
              fprintf(stderr,"Can't resolve address: %s\n", gai_strerror(result));
@@ -143,6 +150,7 @@ static int main_loop(char *listen_on, int port)
         {
             if ( bind(sock, (struct sockaddr*)addr_info->ai_addr, sock_len) == -1 )
             {
+                 perror("bind");
                  close(sock);
                  return 0;
             }
@@ -165,6 +173,7 @@ static int main_loop(char *listen_on, int port)
         {
             if ( bind(sock, (struct sockaddr*)&sock_address, sock_len) == -1 )
             {
+                 perror("bind");
                  close(sock);
                  return 0;
             }
@@ -179,6 +188,8 @@ static int main_loop(char *listen_on, int port)
             accpt = accept(sock, (struct sockaddr*)&sock_address, &sock_len);
             if ( accpt == -1 )
             {
+                perror("accept");
+                close(sock);
                 return 0;
             }
             else
@@ -186,6 +197,11 @@ static int main_loop(char *listen_on, int port)
                 process_message(accpt);
                 close(accpt);
             }
+        }
+        else
+        {
+             perror("listen");
+             close(sock);
         }
     }
 }

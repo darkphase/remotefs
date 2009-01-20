@@ -601,6 +601,7 @@ int main(int argc,char **argv)
                 printf("      -f, start in foreground\n");
                 printf("      -l, print debug info.\n");
                 printf("      -r, name send from rfs\n");
+                printf("      -s, store db in a file\n");
                 return 0;
         }
     }

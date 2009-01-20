@@ -1,0 +1,8 @@
+The main Makefile include OS specific makefiles which contain
+the CFLAGS, LDFLAGS , install path and the name of the nss module
+
+The name of the include OS specific makefiles is the concatenation
+of the result of thze command uname and ".mk"
+
+All compiler and link flags are to be placed within these files,
+The main makefile shall not contain OS specific variables.

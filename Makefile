@@ -13,6 +13,10 @@ CFLAGS = -g
 # if you don't want IPv6 support comment in
 IPV6 = -DWITH_IPV6
 
+# for programs which use the library
+# librfs_nss.so
+
+TOP_INC = `pwd`/include
 
 # define the object files we have
 LIB_OBJ  = src/rfs_nss_client.o
@@ -27,41 +31,41 @@ CTRL_OBJ = src/rfs_nss_ctrl.o \
 LIBRFS_OBJ = src/rfs_nss_control.o
 
 
-all: $(LIBNAME) rfs_nss rfs_nss_get rfs_nss_rem
+all: server client
 
-client: rfs_nss rfs_nss_get $(LIBNAME)
-server: rfs_nss_rem
+client: $(CLIENT)
+server: $(SERVER)
 
-$(LIBNAME): $(LIB_OBJ)
+$(NSSMODULE): $(LIB_OBJ)
 	@echo link $@
-	@$(CC) -o $(LIBNAME) $(LIB_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -o $(NSSMODULE) $(LIB_OBJ) $(LDFLAGS_SHARED) $(LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
 
 rfs_nss: $(SVR_OBJ)
 	@echo link $@
-	@$(CC) -o rfs_nss $(SVR_OBJ) $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -o rfs_nss $(SVR_OBJ) $(LDFLAGS_NET) $(CFLAGS_GLOB) $(CFLAGS)
 
 rfs_nss_get: src/rfs_nss_get.o $(LIBRFS_OBJ)
 	@echo link $@
-	@$(CC) -o $@ src/rfs_nss_get.o $(LIBRFS_OBJ) $(CFLAGS) $(OS_CFLAGS) $(LDFLAGS) $(SVR_LDFLAGS)
+	@$(CC) -o $@ src/rfs_nss_get.o $(LIBRFS_OBJ) $(CFLAGS_GLOB) $(LDFLAGS_NET) $(CFLAGS)
 
 rfs_nss_rem: src/rfs_nss_rem.o
 	@echo link $@
-	@$(CC) -o $@ src/rfs_nss_rem.o $(CFLAGS) $(LDFLAGS) $(SVR_LDFLAGS)
+	@$(CC) -o $@ src/rfs_nss_rem.o $(CFLAGS) $(LDLFLAG_NET) $(LDFLAGS_NET)
 
 # The following is not required normally
-other: librfs_nss.so rfs_nss_add rfs_nss_ctrl
+other: $(OTHER)
 
-rfs_nss_add: src/rfs_nss_add.o $(LIBRFS_OBJ)
+rfs_nss_add: src/rfs_nss_add.o $(LIBNAME)
 	@echo link $@
-	@$(CC) -o rfs_nss_add src/rfs_nss_add.o $(LDLFLAG) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -o rfs_nss_add src/rfs_nss_add.o $(LDLFLAG_DYNLD) $(CFLAGS_GLOB) $(CFLAGS)
 
 rfs_nss_ctrl: $(CTRL_OBJ)
 	@echo link $@
-	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
+	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(LDFLAGS_NET) $(OS_CFLAGS) $(CFLAGS)
 
-librfs_nss.so: $(LIBRFS_OBJ)
+$(LIBNAME): $(LIBRFS_OBJ)
 	@echo link $@
-	@$(CC) -o librfs_nss.so $(LIBRFS_OBJ) $(LIB_LDFLAGS) $(LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -o $(LIBNAME) $(LIBRFS_OBJ) $(LDFLAGS_SHARED) $(LDFLAGS_NET) $(LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
 
 
 # a simple test program
@@ -69,13 +73,13 @@ test: rfs_nss_test
 
 rfs_nss_test: test/rfs_nss_test.c src/rfs_nss_control.o
 	@echo link $@
-	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o $(SVR_LDFLAGS) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o $(SVR_LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
 
 clean:
 	@echo clean
 	@if [ "`echo */*.o`" != "*/*.o" ]; then $(RM) */*.o; fi
 	@if [ -f $(LIBNAME)    ]; then $(RM) $(LIBNAME);    fi
-	@if [ -f librfs_nss.so ]; then $(RM) librfs_nss.so; fi
+	@if [ -f $(NSSMODULE)  ]; then $(RM) $(NSSMODULE);  fi
 	@if [ -f rfs_nss       ]; then $(RM) rfs_nss;       fi
 	@if [ -f rfs_nss_add   ]; then $(RM) rfs_nss_add;   fi
 	@if [ -f rfs_nss_ctrl  ]; then $(RM) rfs_nss_ctrl;  fi
@@ -85,17 +89,21 @@ clean:
 
 install:
 	@echo install
-	@if [ -f rfs_nss     ]; then $(CP) rfs_nss     $(NSS_BIN_DIR); fi
-	@if [ -f rfs_nss_get ]; then $(CP) rfs_nss_get $(NSS_BIN_DIR); fi
-	@if [ -f rfs_nss_rem ]; then $(CP) rfs_nss_rem $(NSS_BIN_DIR); fi
-	@if [ -f $(LIBNAME)  ]; then $(CP) $(LIBNAME) $(NSS_LIB_DIR);  fi
+	@if [ -f rfs_nss      ]; then $(CP) rfs_nss      $(NSS_BIN_DIR); fi
+	@if [ -f rfs_nss_get  ]; then $(CP) rfs_nss_get  $(NSS_BIN_DIR); fi
+	@if [ -f rfs_nss_rem  ]; then $(CP) rfs_nss_rem  $(NSS_BIN_DIR); fi
+	@if [ -f rfs_nss_add  ]; then $(CP) rfs_nss_add  $(NSS_BIN_DIR); fi
+	@if [ -f $(NSSMODULE) ]; then $(CP) $(NSSMODULE) $(NSS_LIB_DIR); fi
+	@if [ -f $(LIBNAME)   ]; then $(CP) $(NSSMODULE) $(NSS_LIB_DIR); fi
 
 uninstall:
 	@echo uninstall
-	@if [ -f $(NSS_LIB_DIR)/$(LIBNAME) ]; then $(NSS_LIB_DIR)/$(LIBNAME); fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss     ]; then$(CP) rfs_nss     $(NSS_BIN_DIR)/rfs_nss; fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss_get ]; then$(CP) rfs_nss_get $(NSS_BIN_DIR)/rfs_nss_get; fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss_rem ]; then$(CP) rfs_nss_rem $(NSS_BIN_DIR)/rfs_nss_rem; fi
+	@if [ -f $(NSS_LIB_DIR)/$(NSSMODULE) ]; then $(NSS_LIB_DIR)/$(NSSMODULE); fi
+	@if [ -f $(NSS_LIB_DIR)/$(LIBNAME)   ]; then $(NSS_LIB_DIR)/$(LIBNAME); fi
+	@if [ -f $(NSS_BIN_DIR)rfs_nss       ]; then$(CP) rfs_nss     $(NSS_BIN_DIR)/rfs_nss; fi
+	@if [ -f $(NSS_BIN_DIR)rfs_nss_get   ]; then$(CP) rfs_nss_get $(NSS_BIN_DIR)/rfs_nss_get; fi
+	@if [ -f $(NSS_BIN_DIR)rfs_nss_rem   ]; then$(CP) rfs_nss_rem $(NSS_BIN_DIR)/rfs_nss_rem; fi
+	@if [ -f $(NSS_BIN_DIR)rfs_nss_add   ]; then$(CP) rfs_nss_add $(NSS_BIN_DIR)/rfs_nss_rem; fi
 
 tgz: clean
 	@echo build tar gz archive
@@ -103,7 +111,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@cc -c -o $@ $< $(OS_CFLAGS) $(CFLAGS) $(IPV6)
+	@cc -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) -I$(TOP_INC) $(CFLAGS) 
 
 # Dependencies
 

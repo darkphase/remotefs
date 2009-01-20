@@ -1,0 +1,35 @@
+.TH "rfs_nss_rem" "1" "0.10" "remotefs" "remotefs"
+.SH "NAME"
+rfs_nss_rem \- remotefs server for id-mapping has to run on the remote server
+.SH "SYNOPSIS"
+\fBrfs\fR [-l] [-p port] [-a address]
+
+.SH "OPTIONS"
+.PP
+\fB\-f\fR start in foreground.
+.br
+\fB\-p\fR port to use for communication, default 5004.
+.br
+\fB\-a\fR IP address where we listen
+.RE
+
+.PP
+.SH "DESCRIPTION"
+rfs_nss_rem is a little server which send the list of user or group.
+to the client rfs_nss_get.
+.PP
+You will be able to "synchronize" the remotefs client with the
+remotefs server,
+
+.SH "AUTHORS"
+.PP
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfsd\fR(8), \fBrfspasswd\fR(8) \fBrfs\fR(1) \fBnsswitch.conf\fR(5) \fBrfs_nss\fr(1).
+\fBrfs_nss_get\fr(1)

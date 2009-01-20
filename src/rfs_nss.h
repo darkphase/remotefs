@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #if ! defined _RFS_NSS_H_
+#define _RFS_NSS_H_
 
 #include <pwd.h>
 #include <grp.h>

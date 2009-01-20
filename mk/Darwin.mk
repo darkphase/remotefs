@@ -12,44 +12,41 @@ CP = cp
 ###########################################
 
 CFLAGS_OPT  = -O2
-OS_CFLAGS   = -DSOLARIS
+OS_CFLAGS   = -Wall -Werror -DDARWIN
 # we use this within the main Makefile
 CFLAGS_GLOB = $(OS_CFLAGS) $(CFLAGS_OPT)
-
 
 ###########################################
 # LDFLAGS 
 ###########################################
 
-LDFLAGS_SHARED = -shared -Wl,-soname,$(LIBNAME)
-LDFLAGS_NET    = -lnsl -lsocket -lintl
+LDFLAGS_SHARED = -dynamiclib -Wl,-single_module,-flat_namespace,-undefined,dynamic_lookup
+LDFLAGS_NET    = 
 LDLFLAG_DYNLD  = -ldl
-
-#LDFLAGS = -lresolv
 
 ###########################################
 # NAME for nss module, OS specific
 ###########################################
 
-NSSMODULE = nss_rfs.so.1
+NSSMODULE = 
 
 ###########################################
 # NAME for librfs_nss
 ###########################################
 
-LIBNAME = librfs_nss.so
+LIBNAME = librfs_nss.dly
 
 ###########################################
 # Where to install, OS specific
 ###########################################
 
-NSS_LIB_DIR = /usr/lib
+NSS_LIB_DIR = /lib
 NSS_BIN_DIR = /usr/bin
 
 ##########################################
 # What we can compile
 ##########################################
 
-CLIENT  = $(NSSMODULE) rfs_nss rfs_nss_get
+CLIENT  = 
 SERVER  = rfs_nss_rem
-OTHER   = $(LIBNAME) rfs_nss_add rfs_nss_ctrl
+OTHER   = 
