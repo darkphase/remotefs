@@ -37,7 +37,8 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
 cp man/man8/rfsd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
 cp man/man8/rfspasswd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
-cp librfsd.so.0.11 $RPM_BUILD_ROOT%{_prefix}/lib
+cp librfsd.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib
+ln -s librfsd.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/librfsd.so
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -55,12 +56,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(600, root,root) /etc/rfs-exports
 %attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
 %attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
-%attr(655, root,root) %{_prefix}/lib/librfsd.so.0.11
+%attr(655, root,root) %{_prefix}/lib/librfsd.so.%{version}
+%attr(777, root,root) %{_prefix}/lib/librfsd.so
+%config(noreplace) /etc/rc.d/init.d/rfsd
+%config(noreplace) /etc/rfs-exports
 
-%pre
-if [ -f /etc/rfs-exports ]; then
-    mv /etc/rfs-exports /etc/rfs-exports-pre-rpm
-fi
 
 %post
 CHKCONFIGPARM="--add rfsd"
@@ -71,24 +71,12 @@ elif [ -x "/usr/sbin/chkconfig" ]; then
 else
     echo "No chkconfig found. Chkconfig skipped."
 fi
-if [ -f /etc/rfs-exports-pre-rpm ]; then
-    mv /etc/rfs-exports /etc/rfs-exports.newrpm
-    mv /etc/rfs-exports-pre-rpm /etc/rfs-exports
-fi
-
-%preun
-if [ -f /etc/rfs-exports.newrpm ]; then
-    mv /etc/rfs-exports /etc/rfs-exports-old
-    mv /etc/rfs-exports.newrpm /etc/rfs-exports
-fi
-
-%postun
-if [ -f  etc/rfs-exports-old ]; then
-    mv /etc/rfs-exports-old /etc/rfs-exports
-fi
 
 # -------------------------    changelog    --------------------------------
 %changelog
+* Wed Jan 21 2009 Jean-Jacques Sarton <jjsarton@users.sourceforge.net>
+  [0.11-1]
+- Improvments and adapted for version 0.11
 * Mon Aug 11 2008 Jean-Jacques Sarton <jjsarton@users.sourceforge.net>
   [0.10-1]
 - Original package

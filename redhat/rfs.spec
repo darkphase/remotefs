@@ -30,7 +30,8 @@ cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
 cp man/man1/rfs.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
-cp librfs.so.0.11 $RPM_BUILD_ROOT%{_prefix}/lib
+cp librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib
+ln -s librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/librfs.so
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -44,12 +45,16 @@ rm -rf $RPM_BUILD_ROOT
 #%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfs
 %attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
-%attr(655, root,root) %{_prefix}/lib/librfs.so.0.11
+%attr(655, root,root) %{_prefix}/lib/librfs.so.%{version}
+%attr(777, root,root) %{_prefix}/lib/librfs.so
 
 %post
 
 # -------------------------    changelog    --------------------------------
 %changelog
+* Wed Jan 21 2009 Jean-Jacques Sarton <jjsarton@users.sourceforge.net>
+  [0.11-1]
+- Improvments and adapted for version 0.11
 * Mon Aug 11 2008 Jean-Jacques Sarton <jjsarton@users.sourceforge.net>
   [0.10-1]
 - Original package
