@@ -33,7 +33,7 @@
  *
  *************************************************/
 
-static int process_message(int sock)
+static int process_message(int sock, int min_id)
 {
     cmd_t          command;
     struct passwd *pwd;
@@ -60,7 +60,12 @@ static int process_message(int sock)
                 command.found = htonl(1);
             break;
             case GETPWENT:
-                if ( (pwd = getpwent()) )
+                while ( (pwd = getpwent()) )
+                {
+                    if ( pwd->pw_uid >= min_id )
+                        break;
+                }
+                if ( pwd  )
                 {
                     strncpy(command.name, pwd->pw_name, RFS_LOGIN_NAME_MAX);
                     command.name[RFS_LOGIN_NAME_MAX] = '\0';
@@ -68,7 +73,12 @@ static int process_message(int sock)
                 }
             break;
             case GETGRENT:
-                if ( (grp = getgrent()) )
+                while ( (grp = getgrent()) )
+                {
+                    if ( grp->gr_gid >= min_id )
+                        break;
+                }
+                if ( grp )
                 {
                     strncpy(command.name, grp->gr_name, RFS_LOGIN_NAME_MAX);
                     command.name[RFS_LOGIN_NAME_MAX] = '\0';
@@ -96,7 +106,7 @@ static int process_message(int sock)
  *
  *************************************************/
 
-static int main_loop(char *listen_on, int port)
+static int main_loop(char *listen_on, int port, int min_id)
 {
     struct addrinfo *addr_info = NULL;
     struct addrinfo hints = { 0 };
@@ -194,7 +204,7 @@ static int main_loop(char *listen_on, int port)
             }
             else
             {
-                process_message(accpt);
+                process_message(accpt, min_id);
                 close(accpt);
             }
         }
@@ -219,7 +229,7 @@ static int main_loop(char *listen_on, int port)
 
 static void syntax(char *prog_name)
 {
-    fprintf(stderr,"Syntax: %s [-f] [-a listen_address] [-p port]\n",prog_name);
+    fprintf(stderr,"Syntax: %s [-f] [-a listen_address] [-p port] [-m min_id]\n",prog_name);
 }
 
 
@@ -230,6 +240,7 @@ int main(int argc, char **argv)
     int   opt;
     int daemonize = 1;
     char *listen_on = NULL;
+    int   min_id = 0;
 
     if ( prog_name )
     {
@@ -240,13 +251,14 @@ int main(int argc, char **argv)
         prog_name = argv[0];
     }
 
-    while( (opt = getopt(argc, argv, "a:p:f")) != -1 )
+    while( (opt = getopt(argc, argv, "a:p:fm:")) != -1 )
     {
         switch(opt)
         {
             case 'p': port = atoi(optarg); break;
             case 'a': listen_on = optarg; break;
             case 'f': daemonize = 0; break;
+            case 'm': min_id = atoi(optarg); break;
             default:  syntax(prog_name);return 1;
         }
     }
@@ -256,7 +268,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    main_loop(listen_on, port);
+    main_loop(listen_on, port, min_id);
 
     return 0;
 }

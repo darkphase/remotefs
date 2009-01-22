@@ -8,9 +8,28 @@
 #if defined FREEBSD
 #include <netinet/in.h>
 #endif
+#include <pwd.h>
+#include <grp.h>
 
 #include "rfs_nss.h"
 
+/**************************************************
+ * connect_to_host()
+ *
+ * Establish a connection to the given server and
+ * resolve the host name so we can use it for build
+ * of the user and group name
+ * .
+ * char   *rhost   The remote host to contact (ip or
+                   name)
+ * int     port    and the port to use
+ *
+ * char   *host    The host name will be placed here
+ * size_t  hlen    size of the host array
+ *
+ * return the socket handle or -1
+ *
+ *************************************************/
 
 int connect_to_host(char *rhost, int port, char *host, size_t hlen)
 {
@@ -71,6 +90,19 @@ int connect_to_host(char *rhost, int port, char *host, size_t hlen)
     return sock;
 }
 
+
+/**************************************************
+ * do_command()
+ *
+ * Send a query to the server and get it answer
+ * .
+ * cmd_t *command  buffer for communication
+ * int    sock     our communication handle
+ *
+ * return 1 if OK else 0
+ *
+ *************************************************/
+
 int do_command(cmd_t *command, int sock)
 {
     int ret;
@@ -92,10 +124,26 @@ int do_command(cmd_t *command, int sock)
     return command->found;
 }
 
+/**************************************************
+ * ask_for_name()
+ *
+ * Call setXent(), getXent(),... endXent() on the
+ * server and put the answer to rfs_nss
+ * .
+ * int   sock        our communication handle
+ * char *type        "user" or "group"
+ * char *host_name   name of remote host as known
+ *                   on the client (this), may be
+ *                   NULL
+ *
+ * return 1 if OK else 0
+ *
+ *************************************************/
+
 int ask_for_name(int sock, char *type, char *host_name)
 {
     cmd_t command;
-
+    int is_user = 1;
     /* set commands according to wanted entry type */
     int setcmd = SETPWENT;
     int getcmd = GETPWENT;
@@ -109,6 +157,7 @@ int ask_for_name(int sock, char *type, char *host_name)
         getcmd = GETGRENT;
         endcmd = ENDGRENT;
         putcmd = PUTGRNAM;
+        is_user = 0;
     }
 
      command.cmd     = setcmd;
@@ -130,14 +179,28 @@ int ask_for_name(int sock, char *type, char *host_name)
      {
          if ( command.found )
          {
+             /* if the user or group is known don't add */
+             if ( ( is_user && getpwnam(command.name) )
+                  ||
+                  ( !is_user && getgrnam(command.name) )
+                )
+             {
+                 memset(&command, 0, sizeof(command));
+                 command.cmd     = getcmd;
+                 continue;
+             }
+
              if ( strchr(command.name, '@') == NULL )
              {
-             
                  /* we ignore possible errors here */
-                 if ( putcmd == PUTPWNAM )
+                 if ( is_user )
+                 {
                      rfs_putpwnam(command.name, host_name);
+                 }
                  else
+                 {
                      rfs_putgrnam(command.name, host_name);
+                 }
              }
          }
          memset(&command, 0, sizeof(command));
@@ -154,6 +217,18 @@ int ask_for_name(int sock, char *type, char *host_name)
 
      return 1;
 }
+
+/**************************************************
+ * syntax()
+ *
+ * print thze usage information
+ * server and put the answer to rfs_nss
+ * .
+ * char *prog_name   the name of this program
+ *
+ * return nothings
+ *
+ *************************************************/
 
 static void syntax(char *prog_name)
 {

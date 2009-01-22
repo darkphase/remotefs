@@ -6,11 +6,13 @@ rfs_nss_rem \- remotefs server for id-mapping has to run on the remote server
 
 .SH "OPTIONS"
 .PP
-\fB\-f\fR start in foreground.
+\fB\-f\fR, start in foreground.
 .br
-\fB\-p\fR port to use for communication, default 5004.
+\fB\-p\fR, port to use for communication, default 5004.
 .br
-\fB\-a\fR IP address where we listen
+\fB\-a\fR ,IP address where we listen
+.br
+\fB\-m min_id\fR, lowest uid/gid for which we transmit the name.
 .RE
 
 .PP

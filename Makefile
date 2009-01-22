@@ -69,11 +69,19 @@ $(LIBNAME): $(LIBRFS_OBJ)
 
 
 # a simple test program
-test: rfs_nss_test
+test: rfs_nss_test getpwent getgrent
 
 rfs_nss_test: test/rfs_nss_test.c src/rfs_nss_control.o
 	@echo link $@
 	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o $(SVR_LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
+
+getpwent: test/getpwent.c
+	@echo link $@
+	@$(CC) -g -o $@ $<
+
+getgrent: test/getgrent.c
+	@echo link $@
+	@$(CC) -g -o $@ $<
 
 clean:
 	@echo clean
@@ -86,6 +94,9 @@ clean:
 	@if [ -f rfs_nss_test  ]; then $(RM) rfs_nss_test;  fi
 	@if [ -f rfs_nss_get   ]; then $(RM) rfs_nss_get;   fi
 	@if [ -f rfs_nss_rem   ]; then $(RM) rfs_nss_rem;   fi
+	@if [ -f getpwent      ]; then $(RM) getpwent;      fi
+	@if [ -f getgrent      ]; then $(RM) getgrent;      fi
+	@if [ -e rfs_nss.tgz   ]; then $(RM) rfs_nss.tgz;   fi
 
 install:
 	@echo install
@@ -107,7 +118,10 @@ uninstall:
 
 tgz: clean
 	@echo build tar gz archive
-	@DIR=`pwd`; DIR=`basename $$DIR`; cd ..; tar czf $$DIR.tgz $$DIR
+	@mkdir rfs_nss
+	@tar -c -T FILES -f - | ( cd rfs_nss; tar xf - )
+	@tar czf rfs_nss.tgz rfs_nss
+	@rm -fr rfs_nss;
 
 .c.o:
 	@echo compile $@

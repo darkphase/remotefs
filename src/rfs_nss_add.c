@@ -32,6 +32,7 @@ int main(int argc, char **argv)
        prog_name = argv[0];
     }
 
+    /* check if our library is insralled */
     if ( (dl_hdl=dlopen(LIBRFS_NSS, RTLD_LAZY)) == NULL )
     {
         fprintf(stderr,
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    /* get the functions pointer*/
     if ( (putpwnam = (uid_t (*)(char*, char*))dlsym(dl_hdl,"rfs_putpwnam")) == NULL )
     {
         dlerror();
@@ -53,6 +55,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    /* parse the command line */
     while ( (ret=getopt(argc, argv,"u:g:h:")) != -1)
     {
         switch(ret)
@@ -71,7 +74,8 @@ int main(int argc, char **argv)
         syntax(prog_name);
         return 1;
     }
-    
+
+    /* do the hard job */
     if ( user )
     {
        uid_t uid = putpwnam(user, host);
@@ -92,5 +96,6 @@ int main(int argc, char **argv)
            return 1;
        }
     }
+
     return 0;
 }
