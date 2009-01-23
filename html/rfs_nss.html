@@ -29,7 +29,7 @@
   <h1>rfs_nss</h1>
   <h2>Introduction</h2>
   <p>
-   On UNIX<sup>&reg;</sup> user ang group are identified by a number and
+   On UNIX<sup>&reg;</sup> user and group are identified by a number and
    the user or group name returned by some applications (ls, file manager....)
    are retrieved from various databases which contains some rules concerning the
    user and group and of course the displayed user or group name.
@@ -38,7 +38,7 @@
    The database used are files, database, network services as ldap. and so on.
   </p>
   <p>
-   The most important database for resolving the user/group name AND id pairs
+   The most important database for resolving the user/group name and id pairs
    are the files /etc/passwd and /etc/group.
   </p>
   <p>
@@ -63,10 +63,10 @@
    registered databases.
   </p>
   <p>
-   <b>Rfs_nss</b> implememt such a database which allows to resolve the name of
+   <b>Rfs_nss</b> implement such a database which allows to resolve the name of
    user and group which are not known in the client. This is useful if remotefs
    is compiled with POSIX ACL support and there are data shared by different
-   users and the acces to the files or directories is governed by ACL.
+   users and the access to the files or directories is governed by ACL.
   </p>
   <p>
    The main component of <b>rfs_nss</b> is a library module which communicate
@@ -96,7 +96,7 @@
    name/id pairs:
   </p>
   <pre>
-$ set facl -m u:bib:rw- file
+$ setfacl -m u:bib:rw- file
 </pre>
   <p>
    will automatically create a user <i>bib</i> instead of the using the data from
@@ -196,7 +196,7 @@ $ set facl -m u:bib:rw- file
   <p>
    rfs_nss_get insert only unknow name to the rfs_nss database. The inserted
    names can be appended by &lt;@server&gt; if it is launched with
-  -H &lt;adresss&gt; instead of -h &lt;ip_or adresss&gt;
+  -H &lt;address&gt; instead of -h &lt;ip_or address&gt;
   </p>
   <h3>rfs_nss_rem</h3>
   <p>
@@ -210,8 +210,8 @@ $ set facl -m u:bib:rw- file
   </p>
   <h3>rfs_nss_add, librfs_nss.so</h3>
   <p>
-    rfs_nss_add allow passin user or group names to rfs_nss and is more an
-    example as a usefull program.
+    rfs_nss_add allow passing user or group names to rfs_nss and is more an
+    example as a useful program.
   </p>
   <p>
    Rfs_nss_add, use the library librfs_nss.so in order to communicate with the
@@ -265,15 +265,15 @@ $ set facl -m u:bib:rw- file
   </p>
   <p>
    <b>Notes</b> that the rfs_nss suite make only sense on systems which support POSIX
-   ACL. The support is dependend from the used file system. On openSolaris, the
+   ACL. The support is dependent from the used file system. On openSolaris, the
    default file system is ZFS. ZFS has support for the extended ACL (NFS4 ACL)
    which differ from the POSIX model. 
   </p>
   <p>
-   On Linux, the extented ACL model is not supported.
+   On Linux, the extended ACL model is not supported.
   </p>
   <p>
-   The FUSE implementation for some systemes don't offer the support of
+   The FUSE implementation for some systems don't offer the support of
    extended attributes (FreeBSD, openSolaris).
   </p>
  </body>
