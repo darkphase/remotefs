@@ -13,6 +13,7 @@
       border: solid 0px red;
    }
    p { text-align: justify; }
+   a { font-weight: bold; }
    th { text-align: left; background-color: #cccccc; }
    table { border-collapse:collapse;}
    td { border: 1px solid black; padding: 0.5em; vertical-align:top; }
@@ -24,13 +25,52 @@
    .e { font-weight: bold; }
    pre { border: 1px blue solid; background: #ccccff; }
   </style>
+  <script type="text/javascript">
+   function viewImg(ImageName, ImageTitle, ImageWidth, ImageHeight)
+   {
+      var scroll = 'no';
+      var SpacingLeft = (screen.availWidth - ImageWidth) / 2;
+      var SpacingTop =  (screen.availHeight - ImageHeight) / 2;
+
+
+      if (SpacingLeft < 0)
+      {
+         SpacingLeft = 0;
+         ImageWidth = screen.availWidth -6;
+         scroll = 1;
+      }
+      if (SpacingTop < 0)
+      {
+         SpacingTop = 0;
+         ImageHeight = screen.availHeight - 32;
+         scroll = 1;
+      }
+
+      winprops = 'height='+ImageHeight+',width='+ImageWidth+',top='+SpacingTop+',left='+SpacingLeft+',scrollbars='+scroll+',resizable=no';
+
+      win = window.open('', ImageTitle, winprops);
+      win.document.open();
+
+      win.document.write('<html>\n <head>\n');
+      win.document.write('  <title>'+ImageTitle+'</title>\n </head>\n');
+      win.document.write(' <body leftmargin="0" topmargin="0" marginheight="0" marginwidth="0" onClick="window.close()" onBlur="window.close()">\n');
+      win.document.write('  <img src="'+ImageName+'" alt="'+ImageTitle+'" title="'+ImageTitle+'" border="0" >\n');
+      win.document.write(' </body>\n</html>\n');
+
+      win.document.close();
+      if (parseInt(navigator.appVersion) >= 4)
+      {
+         win.window.focus();
+      }
+   }
+  </script>
  </head>
  <body>
   <h1>rfs_nss</h1>
   <h2>Introduction</h2>
   <p>
    On UNIX<sup>&reg;</sup> user and group are identified by a number and
-   the user or group name returned by some applications (ls, file manager....)
+   the user or group names returned by some applications (ls, file manager....)
    are retrieved from various databases which contains some rules concerning the
    user and group and of course the displayed user or group name.
   </p>
@@ -65,7 +105,7 @@
   <p>
    <b>Rfs_nss</b> implement such a database which allows to resolve the name of
    user and group which are not known in the client. This is useful if remotefs
-   is compiled with POSIX ACL support and there are data shared by different
+   is compiled with <a href="acl.html">POSIX ACL</a> support and there are data shared by different
    users and the access to the files or directories is governed by ACL.
   </p>
   <p>
@@ -123,6 +163,10 @@ $ setfacl -m u:bib:rw- file
    information's are build in so a manner that there will be no security issue.
   </p>
   <h2>Naming of remote users</h2>
+  <div style="float:right; padding-left:1em;">
+   <img src="nautilus.png" alt="" style="width:5cm;" onClick="viewImg('nautilus.png','Nautilus', 630,599)"><br><i style="font-size:80%;">Nautilus: Click me</i><br><br>
+   <img src="dolphin.png" alt="" style="width:5cm;" onClick="viewImg('dolphin.png','Dolphin', 668,475)"><br><i style="font-size:80%;">Dolphin: Click me</i>
+  </div>
   <p>
    <b>Rfs</b> and the server <b>rsfd</b> don't use uid or gid but use the user
    and group name in order to transmit the ownership data for file and
