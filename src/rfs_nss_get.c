@@ -140,7 +140,7 @@ int do_command(cmd_t *command, int sock)
  *
  *************************************************/
 
-int ask_for_name(int sock, char *type, char *host_name)
+int ask_for_name(int sock, char *type, char *host_name, int put_all)
 {
     cmd_t command;
     int is_user = 1;
@@ -179,16 +179,19 @@ int ask_for_name(int sock, char *type, char *host_name)
      {
          if ( command.found )
          {
-             /* if the user or group is known don't add */
-             if ( ( is_user && getpwnam(command.name) )
-                  ||
-                  ( !is_user && getgrnam(command.name) )
-                )
+             if (!put_all)
              {
-                 memset(&command, 0, sizeof(command));
-                 command.cmd     = getcmd;
-                 continue;
-             }
+                 /* if the user or group is known don't add */
+                 if ( ( is_user && getpwnam(command.name) )
+                      ||
+                      ( !is_user && getgrnam(command.name) )
+                    )
+                 {
+                     memset(&command, 0, sizeof(command));
+                     command.cmd     = getcmd;
+                     continue;
+                 }
+            }
 
              if ( strchr(command.name, '@') == NULL )
              {
@@ -232,9 +235,11 @@ int ask_for_name(int sock, char *type, char *host_name)
 
 static void syntax(char *prog_name)
 {
-    fprintf(stderr,"Syntax: %s -h|H host_name_or_ip [-p port]\n",prog_name);
+    fprintf(stderr,"Syntax: %s -h|H host_name_or_ip [-p port] [-a]\n",prog_name);
     fprintf(stderr,"       If you pass -H instead of -h, the name will be\n");
     fprintf(stderr,"       appended with @host_name_or_ip\n");
+    fprintf(stderr,"       with the -a option @host_name_or_ip is added\n");
+    fprintf(stderr,"       to all even if there are locally known\n");
 }
 
 int main(int argc, char **argv)
@@ -246,6 +251,7 @@ int main(int argc, char **argv)
     int   sock = -1;
     int   add_host = 0;
     char  host[NI_MAXHOST];
+    int  put_all = 0;
 
     if ( prog_name )
     {
@@ -256,13 +262,14 @@ int main(int argc, char **argv)
         prog_name = argv[0];
     }
 
-    while( (opt = getopt(argc, argv, "h:H:p:")) != -1 )
+    while( (opt = getopt(argc, argv, "h:H:p:a")) != -1 )
     {
         switch(opt)
         {
             case 'H': add_host = 1;
             case 'h': rhost = optarg; break;
             case 'p': port = atoi(optarg); break;
+            case 'a': put_all = 1; break;
             default: syntax(prog_name);return 1;
         }
     }
@@ -273,6 +280,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if ( add_host == 0 )
+    {
+        put_all = 0;
+    }
+
     *host = '\0';
     if ( (sock = connect_to_host(rhost, port, host, NI_MAXHOST )) != -1 )
     {
@@ -281,10 +293,10 @@ int main(int argc, char **argv)
             rhost = host;
         }
         /* ask for all user name and put them to our db server */
-        ask_for_name(sock, "user", add_host?rhost:NULL);
+        ask_for_name(sock, "user", add_host?rhost:NULL, put_all);
 
         /* ask for all group name  put them to our db server */
-        ask_for_name(sock, "group", add_host?rhost:NULL);
+        ask_for_name(sock, "group", add_host?rhost:NULL, put_all);
 
         close(sock);
     }
