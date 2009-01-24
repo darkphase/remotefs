@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="title" content="Remotefs, rfs_nss">
+  <style type="text/css">
+   body { 
+      width: 17.5cm;
+      font-size: 10pt;
+      margin:0;
+      padding-left: 1cm;
+      padding-right:0.5cm; 
+      border: solid 0px red;
+   }
+   p { text-align: justify; }
+   th { text-align: left; background-color: #cccccc; }
+   table { border-collapse:collapse;}
+   td { border: 1px solid black; padding: 0.5em; vertical-align:top; }
+   th { border: 1px solid black; padding: 0.5em; vertical-align:top; }
+   .c { text-align: center; }
+   .bl { text-align: left; background-color: #ddddff; }
+   .ye { text-align: left; background-color: #ffffcc; }
+   .super { position: relative; top: -0.4em; font-size: 0.5em; color:#cc0000; }
+   .e { font-weight: bold; }
+   pre { border: 1px blue solid; background: #ccccff; }
+   .opt { font-weight: bold; width: 3em; float:left; }
+   .cb  { clear:both; }
+  </style>
+ </head>
+ <body>
+  <h1>Design of remotefs</h1>
+  <h2>Introduction</h2>
+  <p>
+   Remotefs is intended to work on systems with limited capabilities as a home
+   NAS device or a router with hard drive support.
+  </p>
+  <p>
+   Such hardware is often build around a SOC (System On a Chip) with an ARM or
+   MIPS processor with a limited performance.
+  </p>
+  <p>
+   Files systems as NFS or CIFS are for such device often oversized and need
+   a lot of resources.
+  </p>
+  <h2>Considerations on right management</h2>
+  <p>
+   For Network File Systems as NFS a any one on a workstation can access
+   the mounted resources, the Checks for the access rights can be made
+   on the workstation or on the server.
+  </p>
+  <p>
+   If the workstation has to perform the checks, we will need some functions
+   which do this within the client. After the checks are done the server
+   can receive a command and process them. If we create a file the server
+   must set the ownership according to some values from the process on the
+   client.
+  </p>
+  <p>
+   If the file system is accessed from various workstations, the user and
+   group management on all involved systems must be consistent, this can be
+   guaranteed.
+  </p>
+  <p>
+   If the access checks occurs on the server, and any one is able to
+   access the remote file system, we will have similar problems as for the
+   first solution and further more the server daemon must have own check
+   functions.
+  </p>
+  <p>
+   An other approach is to have a login based file system. With this
+   approach we don't need special functions for checking the access
+   rights, they will be done directly by the kernel on the server.
+  </p>
+  <p>
+   An other advantage of a login based file system is that the user name
+   on the server and on the client must not be identical.
+  </p>
+  <p>
+   Therefore <b>remotefs</b> is a login based network File System</b>
+   The access checks are performed on the server, this mean that the
+   daemon on the server will work with the rights of the user which
+   mounted the resources. The kernel can then perform all access checks
+   and a time and possibly erroneous code for access check is avoided.
+  </p>
+  <p>
+   A login based Network System can show all files and directories as
+   owned by the user on the client, this may surprise the user if it
+   can't modify some file it apparently own (see sshfs).
+  </p>
+  <p>
+   The solutions provided by <b>remotefs</b> is to add the name of the owner
+   and the owning group to the data transmitted across the network. This
+   is only necessary for a few files operations and mean only a very low
+   decrease of the performance.
+  </p>
+  <p>
+   If some files or directories are owned by user which are not known on the
+   client, the ownership is defaulted to nobody/nogroup if provided or to root.
+  </p>
+  <h2>Speed optimization</h2>
+  <p>
+   There are many ways which can be chooses for an optimization. One of the
+   possibility is caching data and working on the client with the cached
+   data.
+  </p>
+  <p>
+   Such a caching require that a lot of data must be collected by the client
+   and possibly not consumed. If there are changes of some data on the server
+   a synchronization must be provided.
+  </p>
+  <p>
+   A possible reason of a low performance of Network File Systems is that a
+   lot of small amount of information's are send across the network. An example
+   is reading of the information of all files locates within a directory.
+  </p>
+  <p>
+   For such task, the number of frame will be important and the payload will
+   take only be a small part of the communications. The Payload is the amount
+   of data exchanged by the involved programs without all the protocol part.
+  </p>
+  <p>
+   The solutions choose for this case by <b>remotefs</b> is to collect all
+   file information's and to transmit them at a time if an <i>open directory</i>
+   was issued.
+  </p>
+  <p>
+   If file data are transmitted, we may have a lot of small telegrams, on Linux
+   portions of 4 KByte are read/write at a time. With such small amount of data
+   the protocol overhead will be big and the transmission speed relatively low.
+  </p>
+  <p>
+   <b>Remotefs</b> take this into considerations and try to collect a big amount
+   of data before sending them via the Ethernet connection.
+  </p>
+  <p>
+   Writing is delayed, this mean that the data are, first, stored into a cache
+   until the cache is full or if a file operation requiring a real write occur.
+  </p>
+  <p>
+   The Read call can't be delayed, so that the first call will always be
+   performed. For most applications files are completely read and then
+   the contained information's are processed. This mean that if a read call
+   occur, <b>remotefs</b> can request the next amount of data from the server
+   and of course a bigger amount as the amount of 4 KByte requested by the OS.
+  </p>
+  <p>
+   A further improvement for the read call is the use of the kernel function
+   sendfile(). Without this we will have a lot of memory copy task which
+   consume a lot of CPU time, If an application request data from a file, the
+   data are first copied from the disk to an internal kernel buffer, then
+   copied to the applications buffer. The further processing (sending the data
+   via the Ethernet) request also at least 2 copy. With the sendfile() call
+   the application must not process the data, and at least 2 copy tasks are
+   avoided.
+  </p>
+  <p>
+   A further optimization is that some data are passed as binary data, this
+   is not an optimization concerning the size of the Ethernet frames, but an
+   optimization of the number of tasks performed by the server, using binary
+   data mean that not time is used for the conversion of binary data to there
+   text representation.
+  </p>
+  <h2>Extended capabilities</h2>
+  <h3>POSIX ACL</h3>
+  <p>
+   <b>Remotefs</b> support the POSIX ACL, and extended rights management feature.
+  </p>
+  <p>
+   POSIX ACL allows to share common files and to permit different users to
+   access some files as if there are the real owner or with only a subset of
+   the owner right as well to not have access to them.
+  </p>
+  <h3>Internet connection</h3>
+  <p>
+   <b>Remotefs</b> allows to mount resources via an SSL connection. The type of
+   connection can be requested at mount time. 
+  </p>
+  <p>
+   A tunnel via ssh or stunnel is not needed and the transmission speed will be
+   greater as while using such tunneling software.
+  </p>
+  <p>
+   The available performance with a SSL connection will be much lower as without
+   encrypting, the processor has a lot to do in order to encrypt the data.
+  </p>
+  <h3>Links</h3>
+  <p>
+   As well hard links as soft links are supported by remotefs.
+  </p>
+  <h1>Conclusion</h2>
+  <p>
+   <b>Remotefs</b> is a login based file system as for example SSHFS or CIFS,
+   but offer some possibilities which are not provided by these Network File
+   Systems.
+  </p>
+  <p>
+   An advantage over a full featured file system as NFS is that the user and
+   data base don't need to be fully synchronized and an user can mount the
+   remotefs resources without the need to have administration right.
+  </p>
+  <p>
+   The case of connection loss and recovery of the connection work very well and
+   if the server is no more online, you will not need a lot of time waiting for
+   releasing of the file system as for CIFS.
+  </p>
+  <p>
+   <b>Remotefs</b> is not intended to be a replacement for the above mentioned
+   Network File Systems, but has some advantage over them for example while
+   using it for a connection via the internet to the home server.
+  </p>
+ </body>
+</html>
