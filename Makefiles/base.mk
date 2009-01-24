@@ -182,6 +182,7 @@ rfsdetc: dummy
 
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk librfsd >/dev/null
 	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null
@@ -190,6 +191,7 @@ rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
 	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
 	cp librfsd.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
+	cp debian/conffiles dpkg/DEBIAN/
 	ln -sf "librfsd.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfsd.$(SO_EXT)"
 	CONTROL_TEMPLATE="debian/control.rfsd" \
 	NAME="rfsd" \
