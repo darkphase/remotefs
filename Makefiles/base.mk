@@ -103,6 +103,9 @@ tbz:
 	
 	echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
 	cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/"
@@ -111,6 +114,10 @@ tbz:
 	cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src/"
 	cp src/md5crypt/*.c src/md5crypt/*.h "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
 	cp src/md5crypt/LSM src/md5crypt/ORIGIN src/md5crypt/README "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	cp src/acl/include/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
+	cp src/acl/doc/* "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
+	cp src/acl/libacl/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
+	cp src/acl/ORIGIN "remotefs-$(VERSION)-$(RELEASE)/src/acl/"
 	cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/"
 	cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
@@ -215,7 +222,7 @@ builddeb: dummy
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -sf Makefiles/base.mk clean_bins
 
 #############################
 # Build RPM
@@ -264,6 +271,7 @@ buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
+	$(MAKE) -f Makefiles/base.mk clean_bins
 
 dummy:
 
