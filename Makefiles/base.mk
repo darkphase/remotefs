@@ -203,16 +203,15 @@ builddeb: dummy
 		mkdir -p "dpkg$(INSTALL_DIR)/share/man";\
 		mv dpkg_man/* "dpkg$(INSTALL_DIR)/share/man/";\
 		rm -fr dpkg_man;\
-	fi;\
+	fi;
 	if [ -d dpkg_etc ];\
 	then\
 		mkdir -p "dpkg/etc";\
 		mv dpkg_etc/* "dpkg/etc/";\
 		rm -fr dpkg_etc;\
-	fi;\
-	SIZE=`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`;
+	fi;
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
-	-e "s/AND SIZE HERE/$(SIZE)/" \
+	-e "s/AND SIZE HERE/`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
