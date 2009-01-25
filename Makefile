@@ -111,10 +111,10 @@ uninstall:
 	@echo uninstall
 	@if [ -f $(NSS_LIB_DIR)/$(NSSMODULE) ]; then $(NSS_LIB_DIR)/$(NSSMODULE); fi
 	@if [ -f $(NSS_LIB_DIR)/$(LIBNAME)   ]; then $(NSS_LIB_DIR)/$(LIBNAME); fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss       ]; then$(CP) rfs_nss     $(NSS_BIN_DIR)/rfs_nss; fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss_get   ]; then$(CP) rfs_nss_get $(NSS_BIN_DIR)/rfs_nss_get; fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss_rem   ]; then$(CP) rfs_nss_rem $(NSS_BIN_DIR)/rfs_nss_rem; fi
-	@if [ -f $(NSS_BIN_DIR)rfs_nss_add   ]; then$(CP) rfs_nss_add $(NSS_BIN_DIR)/rfs_nss_rem; fi
+	@if [ -f $(NSS_BIN_DIR)/rfs_nss      ]; then $(CP) rfs_nss     $(NSS_BIN_DIR)/rfs_nss; fi
+	@if [ -f $(NSS_BIN_DIR)/rfs_nss_get  ]; then $(CP) rfs_nss_get $(NSS_BIN_DIR)/rfs_nss_get; fi
+	@if [ -f $(NSS_BIN_DIR)/rfs_nss_rem  ]; then $(CP) rfs_nss_rem $(NSS_BIN_DIR)/rfs_nss_rem; fi
+	@if [ -f $(NSS_BIN_DIR)/rfs_nss_add  ]; then $(CP) rfs_nss_add $(NSS_BIN_DIR)/rfs_nss_rem; fi
 
 tgz: clean
 	@echo build tar gz archive

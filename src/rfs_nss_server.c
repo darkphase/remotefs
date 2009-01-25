@@ -254,6 +254,90 @@ static int insert_new_idmap(list_t **root, cmd_t *command)
     return command->found;
 }
 
+/**********************************************************
+ *
+ * get_owner_entry()
+ *
+ * search the list element for the user/group of the
+ * calling process
+ *
+ * list_t  *list   root element for user or list
+ * int32_t  id;    uid or gid of caller
+ *
+ * return NULL if not found else the correspindinf
+ * rfs_idmap_t *element
+ *
+ ***********************************************************/
+
+static rfs_idmap_t *get_owner_entry(list_t *list, int32_t id)
+{
+     while(list)
+     {
+         if ( ((rfs_idmap_t*)(list->data))->id == id )
+         {
+             return (rfs_idmap_t*)list->data;
+         }
+         list = list->next;
+     }
+
+     return NULL;
+}
+
+/**********************************************************
+ *
+ * check_is_same()
+ *
+ * check if the name@host and name mean the same user/group
+ * 
+ *
+ * int sock the socked handle for comminication
+ *
+ * return 1 if this is the same oener/group
+ *
+ ***********************************************************/
+
+static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
+{
+    char *s = to_check   ? to_check->name   : NULL;
+    char *t = proc_owner ? proc_owner->name : NULL;
+
+    if ( s && t )
+    {
+        for(;;)
+        {
+            /* fist check if the host part begin if so
+             * we have the same name
+             */
+            if ( *s == '@' && *t == '\0' )
+            {
+                return 1;
+            }
+            /* if  the actual characters differs we habe
+             * different name so tell no the same.
+             * if we have reached the end of one name
+             * but not the other we will return here.
+             */
+            if ( *s != *t )
+            {
+                return 0;
+            }
+            else if ( *s == '\0' )
+            {
+                /*
+                 * We must also take into considerations
+                 * that an error within our code will produce
+                 * 2 entries with the same name (shall not be
+                 * possible) and we don't want to crash
+                 */
+                 return 1;
+            }
+            /* we can now check the next characters */
+            s++;
+            t++;
+        }
+    }
+    return 0;
+}
 
 /**********************************************************
  *
@@ -264,7 +348,7 @@ static int insert_new_idmap(list_t **root, cmd_t *command)
  *
  * int sock the socked handle for comminication
  *
- * return 0 on error, 1 on succeess
+ * return 0 on error, 1 on success
  *
  ***********************************************************/
 
@@ -272,7 +356,7 @@ static int process_message(int sock)
 {
     cmd_t command;
     list_t *list = NULL;
-
+    rfs_idmap_t *owner_idmap_entry = NULL;
     /* get message */
     int ret = recv(sock, &command, sizeof(command), 0);
 
@@ -309,13 +393,20 @@ static int process_message(int sock)
                                   ? "getpwent" : "getgrent");
 
             list = command.cmd == GETPWENT ? user_list: group_list;
+            owner_idmap_entry = get_owner_entry(list, command.caller_id);
             command.name[0] = '\0';
             while(list)
             {
                rfs_idmap_t *map = (rfs_idmap_t*)list->data;
                if ( map->id > command.id && ! map->sys )
                {
-                   break;
+                   /* if command.caller_id has the same name
+                    * (without @host) we will ignore this entry
+                    */
+                   if ( ! check_is_same(map, owner_idmap_entry) )
+                   {
+                       break;
+                   }
                }
                list = list->next;
             }

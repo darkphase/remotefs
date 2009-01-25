@@ -125,8 +125,9 @@
   </p>
   <p>
    If file data are transmitted, we may have a lot of small telegrams, on Linux
-   portions of 4 KByte are read/write at a time. With such small amount of data
-   the protocol overhead will be big and the transmission speed relatively low.
+   portions of 4 KByte (write) and possibly up to 128 KBytes (read) are requested
+   at a time. With such small amount of data the protocol overhead will be big and the
+   transmission speed relatively low.
   </p>
   <p>
    <b>Remotefs</b> take this into considerations and try to collect a big amount

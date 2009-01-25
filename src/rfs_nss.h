@@ -62,6 +62,7 @@ typedef struct cmd_s
    int32_t cmd;
    int32_t found;
    int32_t id;
+   int32_t caller_id; /* uid of application, for getpwent()/getgrent() */
    char  name[RFS_LOGIN_NAME_MAX+1];
 } cmd_t;
 

@@ -108,6 +108,7 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
     else
     {
        command.cmd = cmd;
+       command.caller_id = 0;
        switch(cmd)
        {
            case GETPWNAM:
@@ -117,9 +118,13 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
            break;
            case GETPWUID:
            case GETGRGID:
+               command.caller_id = getgid();
                command.id = *uid;
            break;
            case GETPWENT:
+               command.caller_id = getuid();
+               command.id = *uid;
+           break;
            case GETGRENT:
                command.id = *uid;
            break;
