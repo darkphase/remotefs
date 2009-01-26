@@ -223,6 +223,7 @@ builddeb: dummy
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
 	$(MAKE) -sf Makefiles/base.mk clean_bins
+	$(MAKE) -sf Makefiles/base.mk clean_packages_tmp
 
 #############################
 # Build RPM
@@ -272,6 +273,7 @@ buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
 	$(MAKE) -f Makefiles/base.mk clean_bins
+	$(MAKE) -sf Makefiles/base.mk clean_packages_tmp
 
 dummy:
 
