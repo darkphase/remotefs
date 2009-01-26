@@ -218,7 +218,7 @@ builddeb: dummy
 		rm -fr dpkg_etc;\
 	fi;
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
-	-e "s/AND SIZE HERE/`du -sb dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \
+	-e "s/AND SIZE HERE/`du -sk dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
