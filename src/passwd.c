@@ -16,12 +16,6 @@ See the file LICENSE.
 #include "list.h"
 #include "buffer.h"
 
-#ifdef RFS_DEBUG
-static const char *passwd_file = "./rfs-passwd";
-#else
-static const char *passwd_file = "/etc/rfs-passwd";
-#endif /* RFS_DEBUG */
-
 int add_or_replace_auth(struct list **auths, const char *user, const char *passwd)
 {
 	struct list *item = *auths;
@@ -112,7 +106,7 @@ const char *get_auth_password(const struct list *auths, const char *user)
 	return NULL;
 }
 
-int load_passwords(struct list **auths)
+int load_passwords(const char *passwd_file, struct list **auths)
 {
 	FILE *fp = fopen(passwd_file, "rt");
 	if (!fp)
@@ -183,7 +177,7 @@ int load_passwords(struct list **auths)
 	return 0;
 }
 
-int save_passwords(const struct list *auths)
+int save_passwords(const char *passwd_file, const struct list *auths)
 {
 	FILE *fp = fopen(passwd_file, "wt");
 	if (fp == NULL)
@@ -254,11 +248,6 @@ int delete_auth(struct list **auths, const char *user)
 	}
 	
 	return -1;
-}
-
-const char* passwd_filename()
-{
-	return passwd_file;
 }
 
 #ifdef RFS_DEBUG

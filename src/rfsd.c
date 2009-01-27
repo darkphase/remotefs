@@ -76,9 +76,6 @@ static int start_server(const char *address, const unsigned port)
 	{
 		listen_family = AF_INET6;
 	}
-
-	/* resolve name or address */
-	/* [alex] why we need to resolve anything? it's listen address, not name */
 #endif
 	
 	errno = 0;
@@ -211,6 +208,7 @@ void stop_server()
 {
 	server_close_connection(&rfsd_instance);
 	unlink(rfsd_instance.config.pid_file);
+	release_rfsd_instance(&rfsd_instance);
 	
 	exit(0);
 }
@@ -240,6 +238,8 @@ static void usage(const char *app_name)
 	"-g [groupname]\t\trun worker process with privileges of [groupname]\n"
 	"-r [path]\t\tchange pidfile path from default to [path]\n"
 	"-f \t\t\tstay foreground\n"
+	"-e [path]\t\texports file\n"
+	"-s [path]\t\tpasswd file\n"
 	"-q \t\t\tquite mode - supress warnings\n"
 	"\t\t\t(and don't treat them as errors)\n"
 	"\n"
@@ -249,12 +249,13 @@ static void usage(const char *app_name)
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:f")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
 	{
 		switch (opt)
 		{	
 			case 'h':
 				usage(argv[0]);
+				release_rfsd_instance(&rfsd_instance);
 				exit(0);
 			case 'q':
 				rfsd_instance.config.quiet = 1;
@@ -282,13 +283,23 @@ static int parse_opts(int argc, char **argv)
 				break;
 			}
 			case 'a':
+				free(rfsd_instance.config.listen_address);
 				rfsd_instance.config.listen_address = strdup(optarg);
 				break;
 			case 'p':
 				rfsd_instance.config.listen_port = atoi(optarg);
 				break;
 			case 'r':
+				free(rfsd_instance.config.pid_file);
 				rfsd_instance.config.pid_file = strdup(optarg);
+				break;
+			case 'e':
+				free(rfsd_instance.config.exports_file);
+				rfsd_instance.config.exports_file = strdup(optarg);
+				break;
+			case 's':
+				free(rfsd_instance.config.passwd_file);
+				rfsd_instance.config.passwd_file = strdup(optarg);
 				break;
 			case 'f':
 				daemonize = 0;
@@ -305,31 +316,28 @@ int main(int argc, char **argv)
 {
 	init_rfsd_instance(&rfsd_instance);
 	
-	DEBUG("2: %p\n", rfsd_instance.exports.list);
-
 	if (parse_opts(argc, argv) != 0)
 	{
 		exit(1);
 	}
 
-	DEBUG("3: %p\n", rfsd_instance.exports.list);
-
-	if (parse_exports(&rfsd_instance.exports.list, 
+	if (parse_exports(rfsd_instance.config.exports_file, 
+	&rfsd_instance.exports.list, 
 	rfsd_instance.config.worker_uid, 
 	rfsd_instance.config.worker_gid) != 0)
 	{
-		ERROR("%s\n", "Error parsing exports file");
+		ERROR("Error parsing exports file at %s\n", rfsd_instance.config.exports_file);
 		return 1;
 	}
-
+	
 #ifdef RFS_DEBUG
 	dump_exports(rfsd_instance.exports.list);
 #endif
 	
-	if (load_passwords(&rfsd_instance.passwd.auths) != 0)
+	DEBUG("loading passwords from %s\n", rfsd_instance.config.passwd_file);
+	if (load_passwords(rfsd_instance.config.passwd_file, &rfsd_instance.passwd.auths) != 0)
 	{
-		ERROR("%s\n", "Error loading passwords");
-		release_exports(&rfsd_instance.exports.list);
+		ERROR("Error loading passwords from %s\n", rfsd_instance.config.passwd_file);
 		return 1;
 	}
 	
@@ -364,6 +372,7 @@ int main(int argc, char **argv)
 	
 	release_exports(&rfsd_instance.exports.list);
 	release_passwords(&rfsd_instance.passwd.auths);
+	release_rfsd_instance(&rfsd_instance);
 	
 	return ret;
 }

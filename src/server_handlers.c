@@ -292,6 +292,7 @@ static int _handle_closeconnection(struct rfsd_instance *instance, const struct 
 	DEBUG("connection to %s is closed\n", straddr);
 
 #endif
+	release_rfsd_instance(instance);
 	server_close_connection(instance);
 	exit(0);
 }
@@ -629,10 +630,20 @@ static int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
 	
-	if (user == NULL
-	|| group == NULL)
+	if ((instance->server.mounted_export->options & opt_ugo) != 0 
+	&& (user == NULL
+	|| group == NULL))
 	{
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
+	}
+	
+	if (user == NULL)
+	{
+		user = "";
+	}
+	if (group == NULL)
+	{
+		group = "";
 	}
 	
 	DEBUG("sending user: %s, group: %s\n", user, group);
@@ -778,7 +789,12 @@ static int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr
 		mode = stbuf.st_mode;
 		
 		user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
-		user_len = strlen(user != NULL ? user : "") + 1;
+		if (user == NULL)
+		{
+			stat_failed = 1;
+			user = "";
+		}
+		user_len = strlen(user) + 1;
 		
 		if (user_len > MAX_SUPPORTED_NAME_LEN)
 		{
@@ -788,7 +804,12 @@ static int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr
 		}
 		
 		group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
-		group_len = strlen(group != NULL ? group : "") + 1;
+		if (group == NULL)
+		{
+			stat_failed = 1;
+			group = "";
+		}
+		group_len = strlen(group) + 1;
 		
 		if (group_len > MAX_SUPPORTED_NAME_LEN)
 		{

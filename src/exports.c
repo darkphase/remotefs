@@ -24,12 +24,6 @@ See the file LICENSE.
 #include "utils.h"
 
 #ifdef RFS_DEBUG
-static const char *exports_file = "./rfs-exports";
-#else
-static const char *exports_file = "/etc/rfs-exports";
-#endif /* RFS_DEBUG */
-
-#ifdef RFS_DEBUG
 static void dump_export(const struct rfs_export *single_export);
 #endif /* RFS_DEBUG */
 
@@ -333,7 +327,7 @@ static int validate_export(const struct rfs_export *line_export)
 	return 0;
 }
 
-unsigned parse_exports(struct list **exports, uid_t worker_uid, gid_t worker_gid)
+unsigned parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid)
 {
 	FILE *fd = fopen(exports_file, "rt");
 	if (fd == 0)
@@ -457,11 +451,6 @@ const struct rfs_export* get_export(const struct list *exports, const char *path
 	}
 	
 	return NULL;
-}
-
-const char* exports_filename()
-{
-	return exports_file;
 }
 
 #ifdef RFS_DEBUG

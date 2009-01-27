@@ -297,14 +297,13 @@ int main(int argc, char **argv)
 	if (rfs_instance.config.host == NULL)
 	{
 		ERROR("%s\n", "Remote host is not specified");
+		fuse_opt_free_args(&args);
 		exit(1);
 	}
 	
 #ifdef WITH_EXPORTS_LIST
 	if (just_list_exports != 0)
 	{
-		fuse_opt_free_args(&args);
-		
 		exit(list_exports_main());
 	}
 #endif
@@ -387,6 +386,7 @@ int main(int argc, char **argv)
 	
 	destroy_uids_lookup(&rfs_instance.id_lookup.uids);
 	destroy_gids_lookup(&rfs_instance.id_lookup.gids);
+	release_rfs_instance(&rfs_instance);
 	
 	return ret;
 }

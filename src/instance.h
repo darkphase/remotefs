@@ -192,8 +192,17 @@ struct rfsd_instance
 
 #define DEFINE_RFSD_INSTANCE(name) struct rfsd_instance (name) = { { 0 } }
 
+/* initialise rfs instance */
 void init_rfs_instance(struct rfs_instance *instance);
+
+/* release memory used by rfs instance */
+void release_rfs_instance(struct rfs_instance *instance);
+
+/* initialise rfsd instance */
 void init_rfsd_instance(struct rfsd_instance *instance);
+
+/* release memory used by rfsd instance */
+void release_rfsd_instance(struct rfsd_instance *instance);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

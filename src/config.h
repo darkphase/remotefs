@@ -38,6 +38,20 @@ extern "C" {
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 
 #ifdef RFS_DEBUG
+#define DEFAULT_PASSWD_FILE     "./rfs-passwd"
+#define DEFAULT_EXPORTS_FILE    "./rfs-exports"
+#define DEFAULT_PID_FILE        "./rfsd.pid"
+#define DEFAULT_SSL_KEY_FILE    "rfs-key.pem"
+#define DEFAULT_SSL_CERT_FILE   "rfs-cert.pem"
+#else
+#define DEFAULT_PASSWD_FILE     "/etc/rfs-passwd"
+#define DEFAULT_EXPORTS_FILE    "/etc/rfs-exports"
+#define DEFAULT_PID_FILE        "/var/run/rfsd.pid"
+#define DEFAULT_SSL_KEY_FILE    ".rfs/rfs-key.pem"
+#define DEFAULT_SSL_CERT_FILE   ".rfs/rfs-cert.pem"
+#endif /* RFS_DEBUG */
+
+#ifdef RFS_DEBUG
 #        define DEBUG(format, args...) do { printf(format, args); } while (0)
 #else
 #        define DEBUG(format, args...) {}
@@ -77,12 +91,14 @@ struct rfs_config
 /** server options */
 struct rfsd_config
 {
-	const char *listen_address;
-	const char *pid_file;
+	char *listen_address;
+	char *pid_file;
 	unsigned int listen_port;
 	uid_t worker_uid;
 	gid_t worker_gid;
 	unsigned int quiet;
+	char *exports_file;
+	char *passwd_file;
 #ifdef WITH_SSL
 	const char *ssl_key_file;
 	const char *ssl_cert_file;

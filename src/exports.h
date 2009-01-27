@@ -32,16 +32,13 @@ struct rfs_export
 /** parse exports files. data will be stored in static variable
 @see exports.c 
 */
-unsigned parse_exports(struct list **exports, uid_t worker_uid, gid_t worker_gid);
+unsigned parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid);
 
 /** delete parsed exports info and free memory allocated for exports */
 void release_exports(struct list **exports);
 
 /** get export info by path */
 const struct rfs_export* get_export(const struct list *exports, const char *path);
-
-/** return filename used to read exports */
-const char* exports_filename();
 
 #ifdef RFS_DEBUG
 /** write exports to output. debug only */

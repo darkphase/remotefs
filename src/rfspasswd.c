@@ -25,6 +25,8 @@ static struct termios stored_settings = { 0 };
 static unsigned need_to_restore_termio = 0;
 static struct list *auths = NULL;
 
+static char *passwd_file = NULL;
+
 /* forward declarations */
 int change_password(const char *login);
 int delete_password(const char *login);
@@ -133,6 +135,8 @@ static void install_signal_handlers()
 
 int main(int argc, char **argv)
 {
+	passwd_file = strdup(DEFAULT_PASSWD_FILE);
+
 	if (parse_opts(argc, argv) != 0)
 	{
 		usage(argv[0]);
@@ -151,7 +155,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
-	int load_ret = load_passwords(&auths);
+	int load_ret = load_passwords(passwd_file, &auths);
 	if (load_ret != 0)
 	{
 		ERROR("Error loading passwords: %s\n", strerror(-load_ret));
@@ -192,10 +196,11 @@ int main(int argc, char **argv)
 	
 	if (ret == 0)
 	{
-		int save_ret = save_passwords(auths);
+		int save_ret = save_passwords(passwd_file, auths);
 		if (save_ret != 0)
 		{
 			ERROR("Error saving passwords: %s\n", strerror(-save_ret));
+			free(passwd_file);
 			exit(1);
 		}
 	}
@@ -205,6 +210,7 @@ int main(int argc, char **argv)
 #endif
 	
 	release_passwords(&auths);
+	free(passwd_file);
 	
 	return ret;
 }

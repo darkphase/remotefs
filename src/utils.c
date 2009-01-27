@@ -25,7 +25,7 @@ unsigned int is_ipaddr(const char *string)
 	if (strchr(string,':'))
 	{
 		/* may be an IPv6 address */
-		struct sockaddr_in6 addr;
+		struct sockaddr_in6 addr = { 0 };
 		return inet_pton(AF_INET6, string, &(addr.sin6_addr)) == -1 ? 0 : 1;
 	}
 	else
@@ -51,6 +51,19 @@ unsigned int is_ipv4_local(const char *ip_addr)
 	
 	return 1;
 }
+
+#ifdef WITH_IPV6
+unsigned int is_ipv6_local(const char *ip_addr)
+{
+	if (strstr(ip_addr, "fc00:") != ip_addr
+	&& strstr(ip_addr, "::ffff:") != ip_addr)
+	{
+		return 0;
+	}
+	
+	return 1;
+}
+#endif /* WITH_IPV6 */
 
 char* host_ip(const char *host, int *resolved_address_family)
 {
@@ -99,16 +112,4 @@ const char* describe_option(const enum rfs_export_opts option)
 	
 	return "Unknown";
 }
-#endif
-
-#ifdef WITH_IPV6
-unsigned int is_ipv6_local(const char *ip_addr)
-{
-	if (strstr(ip_addr, "fc00:") != ip_addr)
-	{
-		return 0;
-	}
-	
-	return 1;
-}
-#endif /* WITH_IPV6 */
+#endif /* WITH_EXPORTS_LIST */

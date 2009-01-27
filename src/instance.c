@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <string.h>
 #include <unistd.h>
+#include <malloc.h>
 
 #include "config.h"
 #include "instance.h"
@@ -116,35 +117,28 @@ static void init_passwd(struct rfsd_instance *instance)
 static void init_exports(struct rfsd_instance *instance)
 {
 	instance->exports.list = NULL;
-	DEBUG("1: %p\n", instance->exports.list);
 }
 
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
 #ifndef WITH_IPV6
-	instance->config.listen_address = "0.0.0.0";
+	instance->config.listen_address = strdup("0.0.0.0");
 #else
-	instance->config.listen_address = "::";
+	instance->config.listen_address = strdup("::");
 #endif
 	instance->config.listen_port = DEFAULT_SERVER_PORT;
 	instance->config.worker_uid = geteuid();
 	instance->config.worker_gid = getegid();
 	instance->config.quiet = 0;
-#ifdef RFS_DEBUG
-	instance->config.pid_file = "./rfsd.pid";
-#else
-	instance->config.pid_file = "/var/run/rfsd.pid";
-#endif /* RFS_DEBUG */
+	
+	instance->config.pid_file = strdup(DEFAULT_PID_FILE);
+	instance->config.exports_file = strdup(DEFAULT_EXPORTS_FILE);
+	instance->config.passwd_file = strdup(DEFAULT_PASSWD_FILE);
 
 #ifdef WITH_SSL
 	instance->config.ssl_ciphers = RFS_DEFAULT_CIPHERS;
-#ifdef RFS_DEBUG
-	instance->config.ssl_key_file = "./rfsd-key.pem";
-	instance->config.ssl_cert_file = "./rfsd-cert.pem";
-#else
-	instance->config.ssl_key_file = "/etc/rfsd-key.pem";
-	instance->config.ssl_cert_file = "/etc/rfsd-cert.pem";
-#endif
+	instance->config.ssl_key_file = DEFAULT_SSL_KEY_FILE;
+	instance->config.ssl_cert_file = DEFAULT_SSL_CERT_FILE;
 #endif /* WITH_SSL */
 }
 
@@ -159,16 +153,9 @@ static void init_rfs_config(struct rfs_instance *instance)
 	instance->config.socket_buffer = -1;
 #ifdef WITH_SSL
 	instance->config.enable_ssl = 0;
-	/* rfs_config.ssl_ciphers = "ADH-RC4-MD5:RC4-MD5:AES128-MD5:RC4:AES128:ALL"; */
-	/* if we're not loading DH params, then we don't need ADH in ciphers list */
 	instance->config.ssl_ciphers = RFS_DEFAULT_CIPHERS;
-#ifdef RFS_DEBUG
-	instance->config.ssl_key_file = "rfs-key.pem";
-	instance->config.ssl_cert_file = "rfs-cert.pem";
-#else
-	instance->config.ssl_key_file = ".rfs/rfs-key.pem";
-	instance->config.ssl_cert_file = ".rfs/rfs-cert.pem";
-#endif
+	instance->config.ssl_key_file = DEFAULT_SSL_KEY_FILE;
+	instance->config.ssl_cert_file = DEFAULT_SSL_CERT_FILE;
 #endif /* WITH_SSL */
 }
 
@@ -188,6 +175,11 @@ void init_rfs_instance(struct rfs_instance *instance)
 	init_rfs_config(instance);
 }
 
+void release_rfs_instance(struct rfs_instance *instance)
+{
+	/* nothing to do yet */
+}
+
 void init_rfsd_instance(struct rfsd_instance *instance)
 {
 	init_cleanup(instance);
@@ -202,4 +194,12 @@ void init_rfsd_instance(struct rfsd_instance *instance)
 #endif
 	
 	init_rfsd_config(instance);
+}
+
+void release_rfsd_instance(struct rfsd_instance *instance)
+{
+	free(instance->config.listen_address);
+	free(instance->config.pid_file);
+	free(instance->config.exports_file);
+	free(instance->config.passwd_file);
 }

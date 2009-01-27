@@ -92,7 +92,7 @@ int suggest_server(const struct rfsd_instance *instance)
 		ret = -1;
 	}
 	
-	if (check_modes(exports_filename(), passwd_filename()) != 0)
+	if (check_modes(instance->config.exports_file, instance->config.passwd_file) != 0)
 	{
 		ret = -1;
 	}
