@@ -73,15 +73,15 @@ test: rfs_nss_test getpwent getgrent
 
 rfs_nss_test: test/rfs_nss_test.c src/rfs_nss_control.o
 	@echo link $@
-	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o $(SVR_LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
+	@$(CC) -g -o rfs_nss_test test/rfs_nss_test.c src/rfs_nss_control.o  $(LDFLAGS_NET) $(SVR_LDFLAGS) $(CFLAGS_GLOB) $(CFLAGS)
 
 getpwent: test/getpwent.c
 	@echo link $@
-	@$(CC) -g -o $@ $<
+	@$(CC) -g -o $@ test/getpwent.c
 
 getgrent: test/getgrent.c
 	@echo link $@
-	@$(CC) -g -o $@ $<
+	@$(CC) -g -o $@ test/getgrent.c
 
 clean:
 	@echo clean
@@ -105,7 +105,7 @@ install:
 	@if [ -f rfs_nss_rem  ]; then $(CP) rfs_nss_rem  $(NSS_BIN_DIR); fi
 	@if [ -f rfs_nss_add  ]; then $(CP) rfs_nss_add  $(NSS_BIN_DIR); fi
 	@if [ -f $(NSSMODULE) ]; then $(CP) $(NSSMODULE) $(NSS_LIB_DIR); fi
-	@if [ -f $(LIBNAME)   ]; then $(CP) $(NSSMODULE) $(NSS_LIB_DIR); fi
+	@if [ -f $(LIBNAME)   ]; then $(CP) $(LIBNAME)   $(NSS_LIB_DIR); fi
 
 uninstall:
 	@echo uninstall

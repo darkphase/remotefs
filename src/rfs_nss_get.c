@@ -82,6 +82,7 @@ int connect_to_host(char *rhost, int port, char *host, size_t hlen)
     }
 
     /* if we have passed an IP try to get the host name */
+    if ( *host == '\0' )
     getnameinfo((struct sockaddr *)addr_info->ai_addr,
                  addr_info->ai_addrlen, host, hlen, NULL, 0, 0);
 
@@ -235,11 +236,13 @@ int ask_for_name(int sock, char *type, char *host_name, int put_all)
 
 static void syntax(char *prog_name)
 {
-    fprintf(stderr,"Syntax: %s -h|H host_name_or_ip [-p port] [-a]\n",prog_name);
-    fprintf(stderr,"       If you pass -H instead of -h, the name will be\n");
-    fprintf(stderr,"       appended with @host_name_or_ip\n");
-    fprintf(stderr,"       with the -a option @host_name_or_ip is added\n");
-    fprintf(stderr,"       to all even if there are locally known\n");
+    fprintf(stderr,"Syntax: %s -h|H host_name_or_ip [-n host_name] [-p port] [-a]\n",prog_name);
+    fprintf(stderr,"       - If you pass -H instead of -h, the name will be\n");
+    fprintf(stderr,"         appended with @host_name_or_ip.\n");
+    fprintf(stderr,"       - If you use the -h option and want to assign a\n");
+    fprintf(stderr,"         host name to the server you can use the -n option,\n");
+    fprintf(stderr,"       - With the -a option @host_name_or_ip is added\n");
+    fprintf(stderr,"         to all even if there are locally known,\n");
 }
 
 int main(int argc, char **argv)
@@ -262,7 +265,9 @@ int main(int argc, char **argv)
         prog_name = argv[0];
     }
 
-    while( (opt = getopt(argc, argv, "h:H:p:a")) != -1 )
+    *host = '\0';
+    
+    while( (opt = getopt(argc, argv, "h:H:p:an:")) != -1 )
     {
         switch(opt)
         {
@@ -270,6 +275,7 @@ int main(int argc, char **argv)
             case 'h': rhost = optarg; break;
             case 'p': port = atoi(optarg); break;
             case 'a': put_all = 1; break;
+	    case 'n': add_host = 1; strncpy(host, optarg, NI_MAXHOST); break;
             default: syntax(prog_name);return 1;
         }
     }
@@ -285,7 +291,6 @@ int main(int argc, char **argv)
         put_all = 0;
     }
 
-    *host = '\0';
     if ( (sock = connect_to_host(rhost, port, host, NI_MAXHOST )) != -1 )
     {
         if ( *host )
