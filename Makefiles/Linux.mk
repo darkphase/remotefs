@@ -2,6 +2,7 @@
 # The executables
 ################################
 
+ARCH = i386
 MAKE = make
 CC = cc
 AR = ar
@@ -14,7 +15,7 @@ LN = ln -sf
 
 CFLAGS_OS      = -Wall -Werror
 CFLAGS_DEBUG   = -g
-CFLAGS_RELEASE = -Os
+CFLAGS_RELEASE = -O2
 
 ###############################
 # Flags needed for Fuse

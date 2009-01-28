@@ -20,17 +20,12 @@ rfs: dummy librfs
 	@$(MAKE) -f Makefiles/rfs.mk flags build
 	@echo
 
-librfsd: dummy
-	@echo
-	@$(MAKE) -f Makefiles/librfsd.mk flags build
-	@echo
-
-rfsd: dummy librfsd
+rfsd: dummy
 	@echo
 	@$(MAKE) -f Makefiles/rfsd.mk flags build
 	@echo
 
-rfspasswd: dummy librfsd
+rfspasswd: dummy
 	@echo
 	@$(MAKE) -f Makefiles/rfspasswd.mk flags build
 	@echo
@@ -54,6 +49,9 @@ clean_packages_tmp: dummy
 	$(RM) -fr man/gz
 	$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
 	
+	# ipkg
+	$(RM) -fr ipkg/
+	
 	# rpms
 	$(RM) -fr rpmbuild/
 	$(RM) -f .rpmmacros
@@ -69,6 +67,7 @@ clean_packages: dummy clean_packages_tmp
 	$(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2
 	$(RM) -f *.deb
 	$(RM) -f *.rpm
+	$(RM) -f *.ipk
 
 clean: clean_build clean_bins clean_packages
 
@@ -144,7 +143,6 @@ install_man:
 install: install_man
 	@TARGET_DIR=$(INSTALL_DIR)/lib $(MAKE) -sf Makefiles/librfs.mk install_librfs
 	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfs.mk install_rfs
-	@TARGET_DIR=$(INSTALL_DIR)/lib $(MAKE) -sf Makefiles/librfsd.mk install_librfsd
 	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfsd.mk install_rfsd
 	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfspasswd.mk install_rfspasswd
 
@@ -190,16 +188,12 @@ rfsdetc: dummy
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	$(MAKE) -f Makefiles/base.mk clean_build
-	$(MAKE) -f Makefiles/base.mk librfsd >/dev/null
-	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null
 	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null
 	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
 	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
-	cp librfsd.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
 	cp debian/conffiles dpkg/DEBIAN/
-	ln -sf "librfsd.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfsd.$(SO_EXT)"
 	CONTROL_TEMPLATE="debian/control.rfsd" \
 	NAME="rfsd" \
 	$(MAKE) -f Makefiles/base.mk builddeb
