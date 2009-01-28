@@ -8,7 +8,11 @@ See the file LICENSE.
 
 #include <string.h>
 #include <unistd.h>
+#if defined FREEBSD || defined DARWIN
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 
 #include "config.h"
 #include "instance.h"
