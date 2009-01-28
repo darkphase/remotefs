@@ -445,6 +445,19 @@ static int process_message(int sock)
             /* search for given name */
             list = search_name(&command, list);
 
+            /* if the rfs entry is misplaced (at the begin of the list
+             * and we put automatically the login name into our list
+             * we have to answer not found id we find an entry as root
+             * in our list
+             */
+            if ( list && ((rfs_idmap_t*)(list->data))->sys )
+            {
+                command.found = 0;
+                command.id    = 0;
+                *command.name = '\0';
+                break;
+            }
+
             if ( rfs_put_name && !(command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
                  break;
@@ -475,6 +488,19 @@ static int process_message(int sock)
                 list = user_list;
             /* search only the corresponding entry */
             search_id(&command, list);
+
+            /* if the rfs entry is misplaced (at the begin of the list
+             * and we put automatically the login name into our list
+             * we have to answer not found id we find an entry as root
+             * in our list
+             */
+            if ( list && ((rfs_idmap_t*)(list->data))->sys )
+            {
+                command.found = 0;
+                command.id    = 0;
+                *command.name = '\0';
+                break;
+            }
         break;
 
         default:

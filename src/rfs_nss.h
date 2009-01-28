@@ -13,9 +13,6 @@ See the file LICENSE.
 #include <grp.h>
 #include <stdint.h>
 
-/* commom struct and definition for the library and the server */
-#define _NSS_RFD_SOCK_H_
-
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif

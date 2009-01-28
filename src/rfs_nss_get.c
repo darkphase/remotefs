@@ -83,8 +83,10 @@ int connect_to_host(char *rhost, int port, char *host, size_t hlen)
 
     /* if we have passed an IP try to get the host name */
     if ( *host == '\0' )
-    getnameinfo((struct sockaddr *)addr_info->ai_addr,
-                 addr_info->ai_addrlen, host, hlen, NULL, 0, 0);
+    {
+        getnameinfo((struct sockaddr *)addr_info->ai_addr,
+                     addr_info->ai_addrlen, host, hlen, NULL, 0, 0);
+    }
 
     freeaddrinfo(addr_info);
 
@@ -275,7 +277,7 @@ int main(int argc, char **argv)
             case 'h': rhost = optarg; break;
             case 'p': port = atoi(optarg); break;
             case 'a': put_all = 1; break;
-	    case 'n': add_host = 1; strncpy(host, optarg, NI_MAXHOST); break;
+            case 'n': add_host = 1; strncpy(host, optarg, NI_MAXHOST); break;
             default: syntax(prog_name);return 1;
         }
     }
