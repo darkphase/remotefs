@@ -334,7 +334,6 @@ int main(int argc, char **argv)
 	dump_exports(rfsd_instance.exports.list);
 #endif
 	
-	DEBUG("loading passwords from %s\n", rfsd_instance.config.passwd_file);
 	if (load_passwords(rfsd_instance.config.passwd_file, &rfsd_instance.passwd.auths) != 0)
 	{
 		ERROR("Error loading passwords from %s\n", rfsd_instance.config.passwd_file);
