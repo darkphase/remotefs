@@ -13,9 +13,9 @@ rfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
                 $(OPTS)
 
 rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
-               $(LDFLAGS_OS)
-               $(LDFLAGS_NET)
-               $(LDFLAGS_OPTS)
+               $(LDFLAGS_OS) \
+               $(LDFLAGS_NET) \
+               $(LDFLAGS_OPTS) \
 
 #######################################
 # Define target and object files

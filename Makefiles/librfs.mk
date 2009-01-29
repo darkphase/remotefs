@@ -15,7 +15,7 @@ $(SO_NAME): $(librfs_OBJS)
 
 install_librfs:
 	@if [ -f $(SO_NAME) ]; then cp $(SO_NAME) $(TARGET_DIR); fi
-	$( cd  $(TARGET_DIR); $(LN) $(SO_NAME) $(librfs_TARGET).$(SO_EXT) )
+	@( cd  $(TARGET_DIR); $(LN) $(SO_NAME) $(librfs_TARGET).$(SO_EXT) )
 
 flags:
 	@echo Build librfs

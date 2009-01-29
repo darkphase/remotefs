@@ -10,10 +10,11 @@
 ##########################################
 
 ################################
-# Target processor for deb packages
+# Target processor for deb/rpm packages
 ################################
 
-TGTARCH = ARCH=armv5tejl
+#TGTARCH = ARCH=armv5tejl
+ARCH = arm
 
 ################################
 # The executables
