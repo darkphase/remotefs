@@ -1,0 +1,5 @@
+
+You won't find toolchans/ directory referenced in makefiles - you have to 
+create toolchains by yourself and link them to trunk/.
+
+I recommend to use OpenWrt build system. Emdebian should be fine too.

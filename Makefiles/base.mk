@@ -121,10 +121,12 @@ tbz:
 	cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/redhat"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/kamikaze"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
 	cp debian/* "remotefs-$(VERSION)-$(RELEASE)/debian/"
 	cp redhat/* "remotefs-$(VERSION)-$(RELEASE)/redhat/"
+	cp kamikaze/* "remotefs-$(VERSION)-$(RELEASE)/kamikaze/"
 	cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/"
 	cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/"
 	cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
@@ -155,7 +157,6 @@ debrelease: rfsdeb rfsddeb
 debbase:
 	mkdir -p "dpkg$(INSTALL_DIR)";
 	mkdir -p "dpkg$(INSTALL_DIR)/bin";
-	mkdir -p "dpkg$(INSTALL_DIR)/lib";
 	mkdir -p "dpkg/DEBIAN";
 
 rfsmanpages: dummy
@@ -165,6 +166,7 @@ rfsmanpages: dummy
 
 rfsdeb: dummy clean_tmp debbase rfsmanpages
 	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	mkdir -p "dpkg$(INSTALL_DIR)/lib";
 	$(MAKE) -f Makefiles/base.mk rfs >/dev/null
 	cp rfs "dpkg$(INSTALL_DIR)/bin/";
 	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
@@ -215,9 +217,10 @@ builddeb: dummy
 	-e "s/AND SIZE HERE/`du -sk dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
-	dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
-	$(MAKE) -sf Makefiles/base.mk clean_bins
-	$(MAKE) -sf Makefiles/base.mk clean_packages_tmp
+	fakeroot chown -R 0:0 dpkg/;
+	fakeroot dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
+	$(MAKE) -f Makefiles/base.mk clean_bins
+	$(MAKE) -f Makefiles/base.mk clean_packages_tmp
 
 #############################
 # Build RPM
@@ -267,7 +270,43 @@ buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
 	$(MAKE) -f Makefiles/base.mk clean_bins
-	$(MAKE) -sf Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f Makefiles/base.mk clean_packages_tmp
+
+#############################
+# Build ipkg
+#############################
+
+ipk: ipk-rfsd
+
+ipkbase: dummy
+	mkdir -p "ipkg/$(IPKNAME)/CONTROL/";
+	mkdir -p "ipkg/$(IPKNAME)$(INSTALL_DIR)/bin";
+
+rfsdipk: dummy ipkbase
+	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).ipk";
+	$(MAKE) -sf Makefiles/base.mk clean_tmp;
+	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk ipkbase;
+	mkdir -p "ipkg/rfsd/etc/init.d";
+	$(MAKE) -f Makefiles/base.mk clean_build;
+	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null;
+	$(MAKE) -f Makefiles/base.mk clean_build;
+	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null;
+	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/";
+	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/";
+	cp init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
+	chmod +x "ipkg/rfsd/etc/init.d/rfsd";
+	cp etc/rfs-exports "ipkg/rfsd/etc/";
+	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk buildipk;
+	$(MAKE) -sf Makefiles/base.mk clean_tmp;
+	
+buildipk: dummy
+	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
+	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
+	"kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
+	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)";
+	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . 2>&1 >/dev/null;
+	$(MAKE) -f Makefiles/base.mk clean_bins;
+	$(MAKE) -f Makefiles/base.mk clean_packages_tmp;
 
 dummy:
 

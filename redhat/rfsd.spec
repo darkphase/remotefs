@@ -37,8 +37,6 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
 cp man/man8/rfsd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
 cp man/man8/rfspasswd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
-cp librfsd.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib
-ln -s librfsd.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/librfsd.so
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -56,8 +54,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(600, root,root) /etc/rfs-exports
 %attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
 %attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
-%attr(655, root,root) %{_prefix}/lib/librfsd.so.%{version}
-%attr(777, root,root) %{_prefix}/lib/librfsd.so
 %config(noreplace) /etc/rc.d/init.d/rfsd
 %config(noreplace) /etc/rfs-exports
 

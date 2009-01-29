@@ -74,11 +74,19 @@ rfsddeb: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
 debs: rfsdeb rfsddeb
 
+rfsdipk: dummy
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdipk $(TGTARCH)
+	
+ipks: rfsdipk
+
 tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
 	
-packages: debs rpms tbz 
-	@$(MAKE) -sf Makefiles/base.mk clean_bins
+packages: tbz debs rpms
+	@ALT=MIPS   $(MAKE) -s ipks
+	@ALT=MIPSEL $(MAKE) -s ipks
+	@ALT=PPC    $(MAKE) -s ipks
+	@ALT=ARM    $(MAKE) -s ipks
 
 install:
 	@$(MAKE) -sf Makefiles/base.mk install
