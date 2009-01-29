@@ -42,6 +42,7 @@ static void usage(const char *app_name)
 	"-h\t\tdisplay this help message and exit\n"
 	"-l\t\tlock the named account\n"
 	"-u\t\tunlock the named account\n"
+	"-s [path]\tpath to passwd file\n"
 	"\n"
 	, app_name);
 }
@@ -61,7 +62,7 @@ static int check_opts()
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "dhlu")) != -1)
+	while ((opt = getopt(argc, argv, "dhlus:")) != -1)
 	{
 		if (operation != OP_DEFAULT)
 		{
@@ -82,6 +83,10 @@ static int parse_opts(int argc, char **argv)
 				break;
 			case 'u':
 				operation = OP_UNLOCK;
+				break;
+			case 's':
+				free(passwd_file);
+				passwd_file = strdup(optarg);
 				break;
 			default:
 				return -1;

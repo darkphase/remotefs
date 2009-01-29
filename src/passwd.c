@@ -108,6 +108,8 @@ const char *get_auth_password(const struct list *auths, const char *user)
 
 int load_passwords(const char *passwd_file, struct list **auths)
 {
+	DEBUG("loading passwords from %s\n", passwd_file);
+
 	FILE *fp = fopen(passwd_file, "rt");
 	if (!fp)
 	{
@@ -179,6 +181,8 @@ int load_passwords(const char *passwd_file, struct list **auths)
 
 int save_passwords(const char *passwd_file, const struct list *auths)
 {
+	DEBUG("saving passwords to %s\n", passwd_file);
+
 	FILE *fp = fopen(passwd_file, "wt");
 	if (fp == NULL)
 	{
