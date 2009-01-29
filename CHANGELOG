@@ -11,15 +11,21 @@
 [*] added dependency against libc to packages
 
 rfsd:
+[+] -e option for defining location of rfs-exports
+[+] -s option for defining location of rfs-passwd
+
 [*] read-ahead is replaced with sendfile
 [*] no more dependency against libcrypt
 
 rfs:
-[+] FUSE API switched to 2.6 (but still copatible with FUSE 2.5)
+[+] FUSE API switched to 2.6 (but rfs is still copatible with FUSE 2.5)
 [+] background prefetch and write
 
 [*] fixed cache clearing after connection is lost and restored
 [*] fixed memory leak in attributes cache
+
+rfspasswd:
+[+] -s option for defining location of rfs-passwd
 
 0.10-3
 
