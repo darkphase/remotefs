@@ -195,6 +195,8 @@ static int start_server(const char *address, const unsigned port)
 
 		if (fork() == 0) /* child */
 		{
+			close(listen_socket);
+
 			return handle_connection(&rfsd_instance, client_socket, &client_addr);
 		}
 		else
