@@ -2,6 +2,7 @@
 # The executables
 ################################
 
+EXPERIMENTAL = no
 TOOLCHAIN_ROOT = toolchains/toolchain-mipsel_gcc3.4.6
 ARCH = mipsel
 MAKE = make

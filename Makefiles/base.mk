@@ -284,7 +284,12 @@ ipkbase: dummy
 	mkdir -p "ipkg/$(IPKNAME)$(INSTALL_DIR)/bin";
 
 rfsdipk: dummy ipkbase
-	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).ipk";
+	if [ -z "$(EXPERIMENTAL)" ]; then \
+	    echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk"; \
+	else \
+	    echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).ipk"; \
+	fi
+	
 	$(MAKE) -sf Makefiles/base.mk clean_tmp;
 	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk ipkbase;
 	mkdir -p "ipkg/rfsd/etc/init.d";
@@ -308,6 +313,11 @@ buildipk: dummy
 	"kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
 	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)";
 	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . 2>&1 >/dev/null;
+	
+	if [ -z "$(EXPERIMENTAL)" ]; then \
+	    mv "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH).ipk" "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk";\
+	fi
+	
 	$(MAKE) -f Makefiles/base.mk clean_bins;
 	$(MAKE) -f Makefiles/base.mk clean_packages_tmp;
 
