@@ -2,11 +2,10 @@
 # The executables
 ################################
 
-TOOLCHAIN_ROOT = toolchains/toolchain-powerpc_gcc4.2.0
-ARCH = powerpc
+ARCH = ia64
 MAKE = make
-CC = "$(TOOLCHAIN_ROOT)/bin/powerpc-linux-uclibc-gcc"
-AR = "$(TOOLCHAIN_ROOT)/bin/powerpc-linux-uclibc-ar"
+CC = ia64-linux-gnu-gcc
+AR = ia64-linux-gnu-ar
 RM = rm
 LN = ln -sf
 

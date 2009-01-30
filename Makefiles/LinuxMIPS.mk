@@ -5,8 +5,8 @@
 TOOLCHAIN_ROOT = toolchains/toolchain-mips_gcc4.1.2
 ARCH = mips
 MAKE = make
-CC = "$(TOOLCHAIN_ROOT)/gcc-4.1.2-final/gcc/gcc-cross"
-AR = "$(TOOLCHAIN_ROOT)/binutils-2.17/binutils/ar"
+CC = "$(TOOLCHAIN_ROOT)/bin/mips-linux-uclibc-gcc"
+AR = "$(TOOLCHAIN_ROOT)/bin/mips-linux-uclibc-ar"
 RM = rm
 LN = ln -sf
 
@@ -16,7 +16,7 @@ LN = ln -sf
 
 CFLAGS_OS      = -Wall -Werror
 CFLAGS_DEBUG   = -g
-CFLAGS_RELEASE = -O2
+CFLAGS_RELEASE = -O3
 
 ###############################
 # Flags needed for Fuse
@@ -30,7 +30,7 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 ###############################
 
 LDFLAGS_DEBUG   = -g
-LDFLAGS_RELEASE = -s -O2
+LDFLAGS_RELEASE = -s -O3
 LDFLAGS_SSL     = -lssl
 
 ###############################

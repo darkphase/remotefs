@@ -182,9 +182,10 @@ rfsdmanpages: dummy
 	cp man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
 
 rfsdetc: dummy
-	mkdir -p "dpkg_etc/init.d/";\
-	cp etc/rfs-exports "dpkg_etc/";\
-	cp init.d/rfsd.debian "dpkg_etc/init.d/rfsd";\
+	mkdir -p "dpkg_etc/init.d/";
+	cp etc/rfs-exports "dpkg_etc/";
+	chmod 600 "dpkg_etc/rfs-exports";
+	cp init.d/rfsd.debian "dpkg_etc/init.d/rfsd";
 	chmod +x "dpkg_etc/init.d/rfsd"
 
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
@@ -296,6 +297,8 @@ rfsdipk: dummy ipkbase
 	cp init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
 	chmod +x "ipkg/rfsd/etc/init.d/rfsd";
 	cp etc/rfs-exports "ipkg/rfsd/etc/";
+	chmod 600 "ipkg/rfsd/etc/rfs-exports";
+	cp kamikaze/conffiles "ipkg/rfsd/CONTROL/";
 	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk buildipk;
 	$(MAKE) -sf Makefiles/base.mk clean_tmp;
 	

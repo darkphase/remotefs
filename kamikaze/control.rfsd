@@ -6,4 +6,4 @@ Section: net
 Architecture: INSERT ARCH HERE, PLEASE
 Maintainer: Aleksey Tulinov <aleksey_t@users.sourceforge.net>
 Depends: 
-Description: remotefs server
+Description: remotefs server and passwd utility

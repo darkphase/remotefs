@@ -5,8 +5,8 @@
 TOOLCHAIN_ROOT = toolchains/toolchain-mipsel_gcc3.4.6
 ARCH = mipsel
 MAKE = make
-CC = "$(TOOLCHAIN_ROOT)/gcc-3.4.6-final/gcc/gcc-cross"
-AR = "$(TOOLCHAIN_ROOT)/binutils-2.17/binutils/ar"
+CC = "$(TOOLCHAIN_ROOT)/bin/mipsel-linux-uclibc-gcc"
+AR = "$(TOOLCHAIN_ROOT)/bin/mipsel-linux-uclibc-ar"
 RM = rm
 LN = ln -sf
 

@@ -5,8 +5,8 @@
 TOOLCHAIN_ROOT = toolchains/toolchain-arm_gcc4.1.2
 ARCH = arm
 MAKE = make
-CC = "$(TOOLCHAIN_ROOT)/gcc-4.1.2-final/gcc/gcc-cross"
-AR = "$(TOOLCHAIN_ROOT)/binutils-2.17/binutils/ar"
+CC = "$(TOOLCHAIN_ROOT)/bin/arm-linux-uclibc-gcc"
+AR = "$(TOOLCHAIN_ROOT)/bin/arm-linux-uclibc-ar"
 RM = rm
 LN = ln -sf
 

@@ -2,11 +2,10 @@
 # The executables
 ################################
 
-TOOLCHAIN_ROOT = toolchains/toolchain-powerpc_gcc4.2.0
-ARCH = powerpc
+ARCH = mipsel
 MAKE = make
-CC = "$(TOOLCHAIN_ROOT)/bin/powerpc-linux-uclibc-gcc"
-AR = "$(TOOLCHAIN_ROOT)/bin/powerpc-linux-uclibc-ar"
+CC = mipsel-linux-gnu-gcc
+AR = mipsel-linux-gnu-ar
 RM = rm
 LN = ln -sf
 
@@ -16,7 +15,7 @@ LN = ln -sf
 
 CFLAGS_OS      = -Wall -Werror
 CFLAGS_DEBUG   = -g
-CFLAGS_RELEASE = -O2
+CFLAGS_RELEASE = -O3
 
 ###############################
 # Flags needed for Fuse
@@ -30,7 +29,7 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 ###############################
 
 LDFLAGS_DEBUG   = -g
-LDFLAGS_RELEASE = -s -O2
+LDFLAGS_RELEASE = -s -O3
 LDFLAGS_SSL     = -lssl
 
 ###############################
