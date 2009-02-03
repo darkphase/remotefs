@@ -55,8 +55,8 @@ unsigned int is_ipv4_local(const char *ip_addr)
 #ifdef WITH_IPV6
 unsigned int is_ipv6_local(const char *ip_addr)
 {
-	if (strstr(ip_addr, "fc00:") != ip_addr
-	&& strstr(ip_addr, "::ffff:") != ip_addr)
+	if (strstr(ip_addr, "fe") != ip_addr
+	&& strncmp(ip_addr, "::1", sizeof("::1")) != 0)
 	{
 		return 0;
 	}
