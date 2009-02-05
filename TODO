@@ -11,12 +11,11 @@
 + operations resuming on client
   + operations resuming in background read/write
 + SSL support
-- suggestions
++ suggestions
 + write operation should clear read cache for that file
 + read operation should flush that file before actual reading
 + server shouldn't use lookup_* funcs, but get_* instead
 + EREMOTEIO and EBADE should be eliminated from code
-- install_server/install_client and uninstall_server/uninstall_client
 
 bugs:
 + support of files >2Gb (uint64_t for size_t?)
@@ -24,5 +23,6 @@ bugs:
 
 releases:
 + rpms reviewed (without root permissions)
+- install_server/install_client and uninstall_server/uninstall_client
 - gentoo ebuild and init.d script
 
