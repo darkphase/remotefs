@@ -1,3 +1,4 @@
 VERSION=0.11
 RELEASE=1
-INSTALL_DIR=/usr
+
+include Makefiles/install.mk

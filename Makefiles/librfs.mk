@@ -14,8 +14,15 @@ $(SO_NAME): $(librfs_OBJS)
 	$(LN) $(SO_NAME) $(librfs_TARGET).$(SO_EXT)
 
 install_librfs:
-	@if [ -f $(SO_NAME) ]; then cp $(SO_NAME) $(TARGET_DIR); fi
-	@( cd  $(TARGET_DIR); $(LN) $(SO_NAME) $(librfs_TARGET).$(SO_EXT) )
+	if [ -f $(SO_NAME) ]; then \
+	    mkdir -p $(INSTALL_DIR)/lib; \
+	    cp $(SO_NAME) $(INSTALL_DIR)/lib; \
+	fi
+
+uninstall_librfs:
+	if [ -f $(INSTALL_DIR)/lib/$(SO_NAME) ]; then \
+	    rm -f $(INSTALL_DIR)/lib/$(SO_NAME); \
+	fi
 
 flags:
 	@echo Build librfs

@@ -88,6 +88,26 @@ packages: tbz debs rpms
 	@ALT=PPC    $(MAKE) -s ipks
 	@ALT=ARM    $(MAKE) -s ipks
 
-install:
-	@$(MAKE) -sf Makefiles/base.mk install
+install_client:
+	@$(MAKE) -sf Makefiles/librfs.mk install_librfs
+	@$(MAKE) -sf Makefiles/rfs.mk install_rfs
+install_server:
+	@$(MAKE) -sf Makefiles/rfsd.mk install_rfsd
+	@$(MAKE) -sf Makefiles/rfspasswd.mk install_rfspasswd
+install: dummy install_client install_server
+	@$(MAKE) -sf Makefiles/base.mk install_man
 
+uninstall_client:
+	@$(MAKE) -sf Makefiles/librfs.mk uninstall_librfs
+	@$(MAKE) -sf Makefiles/rfs.mk uninstall_rfs
+uninstall_server:
+	@$(MAKE) -sf Makefiles/rfsd.mk uninstall_rfsd
+	@$(MAKE) -sf Makefiles/rfspasswd.mk uninstall_rfspasswd
+uninstall: dummy uninstall_client uninstall_server
+	@$(MAKE) -sf Makefiles/base.mk uninstall_man
+
+rfs_man:
+	@$(MAKE) -sf Makefiles/base.mk rfs_man
+rfsd_man:
+	@$(MAKE) -sf Makefiles/base.mk rfsd_man
+man: dummy rfs_man rfsd_man

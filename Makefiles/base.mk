@@ -86,12 +86,16 @@ depends:
 # Build man pages
 #############################
 
-man: dummy
+rfs_man:
 	mkdir -p man/gz/man1
-	mkdir -p man/gz/man8
 	gzip -c < man/rfs.1 > man/gz/man1/rfs.1.gz
+
+rfsd_man:
+	mkdir -p man/gz/man8
 	gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
 	gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
+
+man: dummy rfs_man rfsd_man
 
 #############################
 # Build tarball
@@ -135,18 +139,20 @@ tbz:
 	
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
-install_man:
+install_man: dummy
+	mkdir -p $(INSTALL_DIR)/share/man;
 	@-INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
 	for GZ_FILE in "$$FILES"; \
 	do \
 		cp -r $$GZ_FILE $$INSTALL_DIR/share/man; \
 	done
 
-install: install_man
-	@TARGET_DIR=$(INSTALL_DIR)/lib $(MAKE) -sf Makefiles/librfs.mk install_librfs
-	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfs.mk install_rfs
-	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfsd.mk install_rfsd
-	@TARGET_DIR=$(INSTALL_DIR)/bin $(MAKE) -sf Makefiles/rfspasswd.mk install_rfspasswd
+uninstall_man: dummy
+	@-INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
+	for GZ_FILE in "$$FILES"; \
+	do \
+		rm -f $$INSTALL_DIR/share/man/$$GZ_FILE; \
+	done
 
 #############################
 # Build deb packages

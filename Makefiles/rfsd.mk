@@ -11,7 +11,15 @@ build: $(rfsd_OBJS)
 	$(CC) -o $(rfsd_TARGET) $(rfsd_OBJS) $(rfsd_LDFLAGS)
 
 install_rfsd:
-	@if [ -f $(rfsd_TARGET) ]; then cp $(rfsd_TARGET) $(TARGET_DIR); fi
+	if [ -f $(rfsd_TARGET) ]; then \
+	    mkdir -p $(INSTALL_DIR)/bin; \
+	    cp $(rfsd_TARGET) $(INSTALL_DIR)/bin; \
+	fi
+	
+uninstall_rfsd:
+	if [ -f $(INSTALL_DIR)/bin/$(rfsd_TARGET) ]; then \
+	    rm -f $(INSTALL_DIR)/bin/$(rfsd_TARGET); \
+	fi
 
 flags:
 	@echo Build rfsd

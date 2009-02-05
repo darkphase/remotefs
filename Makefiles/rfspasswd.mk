@@ -11,8 +11,15 @@ build: $(rfspasswd_OBJS)
 	@$(CC) -o $(rfspasswd_TARGET) $(rfspasswd_OBJS) $(rfspasswd_LDFLAGS)
 
 install_rfspasswd:
-	@if [ -f $(rfspasswd_TARGET) ]; then cp $(rfspasswd_TARGET) $(TARGET_DIR); fi
+	if [ -f $(rfspasswd_TARGET) ]; then \
+	    mkdir -p $(INSTALL_DIR)/bin; \
+	    cp $(rfspasswd_TARGET) $(INSTALL_DIR)/bin; \
+	fi
 
+uninstall_rfspasswd:
+	if [ -f $(INSTALL_DIR)/bin/$(rfspasswd_TARGET) ]; then \
+	    rm -f $(INSTALL_DIR)/bin/$(rfspasswd_TARGET); \
+	fi
 
 flags:
 	@echo Build rfspasswd

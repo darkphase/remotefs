@@ -11,7 +11,15 @@ build: $(rfs_OBJS)
 	$(CC) -o $(rfs_TARGET) $(rfs_OBJS) $(rfs_LDFLAGS)
 
 install_rfs:
-	@if [ -f $(rfs_TARGET) ]; then cp $(rfs_TARGET) $(TARGET_DIR); fi
+	if [ -f $(rfs_TARGET) ]; then \
+	    mkdir -p $(INSTALL_DIR)/bin; \
+	    cp $(rfs_TARGET) $(INSTALL_DIR)/bin; \
+	fi
+	
+uninstall_rfs:
+	if [ -f $(INSTALL_DIR)/bin/$(rfs_TARGET) ]; then \
+	    rm -f $(INSTALL_DIR)/bin/$(rfs_TARGET); \
+	fi
 
 flags:
 	@echo Build rfs
