@@ -8,7 +8,9 @@ Group: Applications/File
 URL: http://www.sourceforge.net/projects/remotefs
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-Requires: fuse-libs >= 2.6, glibc >= 2.4
+Requires: %__find_requires
+Provides: %__find_provides
+
 
 %description
 remotefs client

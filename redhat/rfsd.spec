@@ -8,7 +8,8 @@ Group: System Environment/Daemons
 URL: http://www.sourceforge.net/projects/remotefs
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-Requires: glibc >= 2.4
+Requires: %__find_requires
+Provides: %__find_provides
 
 %description
 remotefs server
@@ -21,8 +22,6 @@ remotefs server
 # -------------------------    build    -----------------------------------
 %build
 make server
-#make -f Makefiles/base.mk clean_build
-#make rfspasswd
 
 # ------------------------    install    -----------------------------------
 %install
@@ -30,8 +29,8 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
 cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
-mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d/
-cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/rc.d/init.d/rfsd
+mkdir -p $RPM_BUILD_ROOT/etc/init.d/
+cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/init.d/rfsd
 cp etc/rfs-exports $RPM_BUILD_ROOT/etc/rfs-exports
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
 cp man/man8/rfsd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
@@ -50,11 +49,11 @@ rm -rf $RPM_BUILD_ROOT
 #%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfsd
 %attr(755, root,root) %{_prefix}/bin/rfspasswd
-%attr(755, root,root) /etc/rc.d/init.d/rfsd
+%attr(755, root,root) /etc/init.d/rfsd
 %attr(600, root,root) /etc/rfs-exports
 %attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
 %attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
-%config(noreplace) /etc/rc.d/init.d/rfsd
+%config(noreplace) /etc/init.d/rfsd
 %config(noreplace) /etc/rfs-exports
 
 

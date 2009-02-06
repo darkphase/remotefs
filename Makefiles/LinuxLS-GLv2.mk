@@ -13,7 +13,6 @@
 # Target processor for deb/rpm packages
 ################################
 
-#TGTARCH = ARCH=armv5tejl
 ARCH = arm
 
 ################################

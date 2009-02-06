@@ -7,24 +7,51 @@
 # description: RFS is a fast network file system based on fuse \
 #              (client side). It is designed for NAS systems.
 ### BEGIN INIT INFO
+# Provides:        rfsd
+# Required-Start: $network
+# Required-Stop:
 # Default-Start:  2 3 4 5
-# Default-Stop: 0 1 6
+# Default-Stop:   0 1 6
 # Short-Description: start and stop rfs daemon
 # Description: A fast remote file system
 ### END INIT INFO
 
-# Source function library.
-. /etc/rc.d/init.d/functions
+# Source function library (Redhat)
+if [ -f /etc/rc.d/init.d/functions ]
+then
+   .  /etc/rc.d/init.d/functions
+   # Source networking configuration.
+   if [ ! -f /etc/sysconfig/network ]; then
+      exit 6
+   fi
 
-# Source networking configuration.
-if [ ! -f /etc/sysconfig/network ]; then
-    exit 6
+   . /etc/sysconfig/network
+
+   # Check that networking is up.
+   [ "${NETWORKING}" = "no" ] && exit 6
 fi
 
-. /etc/sysconfig/network
-
-# Check that networking is up.
-[ "${NETWORKING}" = "no" ] && exit 6
+# Source rc.status library (openSuse)
+if [ -f /etc/rc.status ]
+then
+   . /etc/rc.status
+   daemon()
+   {
+      /sbin/startproc /usr/bin/$1 $2 $2 $4
+      rc_status -v
+   }
+   status()
+   {
+      /sbin/checkproc $1
+      rc_status -v
+   }
+   killproc()
+   {
+      /sbin/killproc -TERM $1
+      rc_status -v
+   }
+   ECHO_ARG=-n
+fi
 
 
 ###[ -x /usr/bin/rfsd ] || exit 5
@@ -33,58 +60,58 @@ fi
 [ -r /etc/rfs-exports ] || \
     { echo "/etc/rfs-exports does not exist" ; exit 5 ; }
 
-
 RETVAL=0
 
 # See how we were called.
 case "$1" in
   start)
-	echo -n $"Starting RFS daemon: "
-	daemon rfsd
-	RETVAL=$?
-	echo
-	[ $RETVAL -ne 0 ] && exit $RETVAL
-	touch /var/lock/subsys/rfsd
-	;;
+     echo -n $"Starting RFS daemon: "
+     daemon rfsd -q
+     RETVAL=$?
+     echo $ECHO_ARG
+     [ $RETVAL -ne 0 ] && exit $RETVAL
+     touch /var/lock/subsys/rfsd
+     ;;
   stop)
-	# Stop daemons.
-	killproc rfsd
-	echo
-	rm -f /var/lock/subsys/rfsd
-	;;
+     # Stop daemons.
+     echo -n $"Stopping RFS daemon: "
+     killproc rfsd
+     echo $ECHO_ARG
+     rm -f /var/lock/subsys/rfsd
+     ;;
   status)
-	status rfsd
-	RETVAL=$?
-	;;
+     status rfsd
+     RETVAL=$?
+     ;;
   restart)
-	$0 stop
-	$0 start
-	;;
+     $0 stop
+     $0 start
+     ;;
   reload)
-	touch /var/lock/subsys/rfsd
-	;;
+     touch /var/lock/subsys/rfsd
+     ;;
   probe)
-	if [ ! -f /var/lock/subsys/rfsd ] ; then
-	  echo $"start"; exit 0
-	fi
-	/sbin/pidof rfsd >/dev/null 2>&1; RFSD="$?"
-	if [ $RFSD = 1 ] ; then
-	  echo $"restart"; exit 0
-	fi
-	if [ /etc/rfs-exports -nt /var/lock/subsys/rfss ] ; then
-	  echo $"reload"; exit 0
-	fi
-	;;
+      if [ ! -f /var/lock/subsys/rfsd ] ; then
+        echo $"start"; exit 0
+      fi
+      /sbin/pidof rfsd >/dev/null 2>&1; RFSD="$?"
+      if [ $RFSD = 1 ] ; then
+        echo $"restart"; exit 0
+      fi
+      if [ /etc/rfs-exports -nt /var/lock/subsys/rfss ] ; then
+        echo $"reload"; exit 0
+      fi
+      ;;
   condrestart)
-	[ -f /var/lock/subsys/rfsd ] && {
-		$0 stop
-		$0 start
-	}
-	;;
+     [ -f /var/lock/subsys/rfsd ] && {
+             $0 stop
+             $0 start
+     }
+     ;;
   *)
-	echo $"Usage: rfsd {start|stop|status|restart|reload|condrestart}"
-	RETVAL=3
-	;;
+     echo $"Usage: rfsd {start|stop|status|restart|reload|condrestart}"
+     RETVAL=3
+     ;;
 esac
 
 exit $RETVAL
