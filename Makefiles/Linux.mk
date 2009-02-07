@@ -13,7 +13,7 @@ LN = ln -sf
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror
+CFLAGS_OS      = -Wall -Werror -fPIC
 CFLAGS_DEBUG   = -g
 CFLAGS_RELEASE = -O2
 
