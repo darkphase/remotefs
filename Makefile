@@ -87,6 +87,7 @@ packages: tbz debs rpms
 	@ALT=MIPSEL $(MAKE) -s ipks
 	@ALT=PPC    $(MAKE) -s ipks
 	@ALT=ARM    $(MAKE) -s ipks
+	@ALT=ARMEB  $(MAKE) -s ipks
 
 install_client:
 	@$(MAKE) -sf Makefiles/librfs.mk install_librfs
