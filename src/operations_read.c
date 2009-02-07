@@ -244,7 +244,7 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 	else /* we're missed cache, so whatever, read as always and try
 	to prefetch next cache block more precisely */
 	{
-		DEBUG("*** miss (offset: %llu, size: %lu)\n", offset, (unsigned long)size);
+		DEBUG("*** miss (offset: %llu, size: %lu)\n", (unsigned long long)offset, (unsigned long)size);
 		
 		if (keep_alive_lock(instance) != 0)
 		{
@@ -311,7 +311,7 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	DEBUG("*** reading %lu bytes at %llu\n", (unsigned long)size, offset);
+	DEBUG("*** reading %lu bytes at %llu\n", (unsigned long)size, (unsigned long long)offset);
 	
 	instance->sendrecv.oob_received = 0;
 	
