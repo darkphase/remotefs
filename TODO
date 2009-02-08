@@ -26,5 +26,5 @@ bugs:
 releases:
 + rpms reviewed (without root permissions)
 + install_server/install_client and uninstall_server/uninstall_client
-- gentoo ebuild and init.d script
++ gentoo ebuild and init.d script
 
