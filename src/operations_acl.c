@@ -20,18 +20,19 @@ static int _rfs_getxattr(struct rfs_instance *instance, const char *path, const 
 	uint32_t name_len = strlen(name) + 1;
 	uint64_t value_size = (uint64_t)size;
 	
-	unsigned overall_size = path_len 
+	unsigned overall_size = 
 	+ sizeof(path_len) 
-	+ name_len
-	+ sizeof(name_len)
-	+ sizeof(value_size);
+	+ sizeof(name_len) 
+	+ sizeof(value_size) 
+	+ path_len 
+	+ name_len;
 	
 	char *buffer = get_buffer(overall_size);
 	
-	pack_64(&value_size, buffer, 
 	pack(name, name_len, buffer, 
-	pack_32(&name_len, buffer, 
 	pack(path, path_len, buffer, 
+	pack_64(&value_size, buffer, 
+	pack_32(&name_len, buffer, 
 	pack_32(&path_len, buffer, 0
 	)))));
 	
@@ -172,20 +173,21 @@ static int _rfs_setxattr(struct rfs_instance *instance, const char *path, const 
 	}
 	uint32_t name_len = strlen(name) + 1;
 	
-	unsigned overall_size = path_len 
+	unsigned overall_size = 
 	+ sizeof(path_len) 
+	+ sizeof(name_len) 
+	+ sizeof(acl_flags) 
+	+ path_len 
 	+ name_len
-	+ sizeof(name_len)
-	+ sizeof(acl_flags)
 	+ text_acl_len + 1;
 	
 	char *buffer = get_buffer(overall_size);
 	
 	pack(text_acl, text_acl_len + 1, buffer, 
-	pack_32(&acl_flags, buffer, 
 	pack(name, name_len, buffer, 
-	pack_32(&name_len, buffer, 
 	pack(path, path_len, buffer, 
+	pack_32(&acl_flags, buffer, 
+	pack_32(&name_len, buffer, 
 	pack_32(&path_len, buffer, 0
 	))))));
 	
@@ -215,5 +217,7 @@ static int _rfs_setxattr(struct rfs_instance *instance, const char *path, const 
 	
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
-
+#else
+int operations_acl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
 #endif /* WITH_ACL */
+

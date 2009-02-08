@@ -262,5 +262,5 @@ int rfs_ssl_read(SSL *socket, char *buffer, size_t size)
 }
 
 #else
-int ssl_h_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
+int ssl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
 #endif /* WITH_SSL */

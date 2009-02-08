@@ -19,8 +19,16 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 	}
 
 	uint32_t path_len = 0;
-	unpack_32(&path_len, buffer, 0);
-	const char *path = buffer + sizeof(path_len);
+	uint32_t name_len = 0;
+	uint64_t value_size = 0;
+
+	const char *path = buffer + 
+	unpack_64(&value_size, buffer, 
+	unpack_32(&name_len, buffer, 
+	unpack_32(&path_len, buffer, 0
+	)));
+	
+	DEBUG("value size: %lld\n", (long long)value_size);
 	
 	if (strlen(path) + 1 != path_len)
 	{
@@ -30,11 +38,7 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 	
 	DEBUG("path: %s\n", path);
 	
-	uint32_t name_len = 0;
-	memcpy(&name_len, buffer + sizeof(path_len) + path_len, sizeof(uint32_t));
-	name_len = ntohl(name_len);
-	
-	const char *name = buffer + sizeof(path_len) + path_len + sizeof(name_len);
+	const char *name = path + path_len;
 	
 	if (strlen(name) + 1 != name_len)
 	{
@@ -51,13 +55,6 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 		free_buffer(buffer);
 		return reject_request(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
 	}
-	
-	uint64_t value_size = 0;
-	memcpy(&value_size, buffer + 
-		sizeof(path_len) + path_len + sizeof(name_len) + name_len, sizeof(uint64_t));
-	value_size = ntohll(value_size);
-	
-	DEBUG("value size: %lld\n", value_size);
 	
 	char *value_buffer = NULL;
 	if (value_size > 0)
@@ -160,9 +157,17 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 	}
 	
 	uint32_t path_len = 0;
-	unpack_32(&path_len, buffer, 0);
-	const char *path = buffer + sizeof(path_len);
+	uint32_t name_len = 0;
+	uint32_t acl_flags = 0;
+
+	const char *path = buffer + 
+	unpack_32(&acl_flags, buffer, 
+	unpack_32(&name_len, buffer, 
+	unpack_32(&path_len, buffer, 0
+	)));
 	
+	DEBUG("flags: %u\n", acl_flags);
+
 	if (strlen(path) + 1 != path_len)
 	{
 		free_buffer(buffer);
@@ -171,10 +176,7 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 	
 	DEBUG("path: %s\n", path);
 	
-	uint32_t name_len = 0;
-	unpack_32(&name_len, buffer + sizeof(path_len) + path_len, 0);
-	
-	const char *name = buffer + sizeof(path_len) + path_len + sizeof(name_len);
+	const char *name = path + path_len;
 	
 	if (strlen(name) + 1 != name_len)
 	{
@@ -192,12 +194,6 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 		return reject_request(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
 	}
 	
-	uint32_t acl_flags = 0;
-	unpack_32(&acl_flags, buffer + 
-	sizeof(path_len) + path_len + sizeof(name_len) + name_len, 0);
-	
-	DEBUG("flags: %u\n", acl_flags);
-	
 	int flags = 0;
 	
 	if ((acl_flags & RFS_XATTR_CREATE) != 0)
@@ -209,8 +205,7 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 		flags |= XATTR_REPLACE;
 	}
 	
-	const char *text_acl = buffer
-	+ sizeof(path_len) + path_len + sizeof(name_len) + name_len + sizeof(acl_flags);
+	const char *text_acl = name + name_len;
 	
 	DEBUG("acl: %s\n", text_acl);
 	
@@ -255,4 +250,6 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 	return 0;
 }
 
+#else
+int server_handlers_acl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
 #endif /* WITH_ACL */

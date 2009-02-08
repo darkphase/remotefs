@@ -13,8 +13,8 @@ LN = ln -sf
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror -fPIC
-CFLAGS_DEBUG   = -g
+CFLAGS_OS      = -Wall -Werror
+CFLAGS_DEBUG   = -g -fPIC
 CFLAGS_RELEASE = -O2
 
 ###############################
@@ -37,7 +37,7 @@ LDFLAGS_SSL     = -lssl
 ###############################
 
 CFLAGS_SO    = -fPIC
-LDFLAGS_SO   = -shared -Wl,-soname,$(SO_NAME)
+LDFLAGS_SO   = -shared -Wl,-soname,$(SO_NAME) -fPIC
 SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
 
