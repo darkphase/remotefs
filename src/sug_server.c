@@ -20,7 +20,7 @@ See the file LICENSE.
 
 static int check_listen_address(const char *address)
 {
-	/* resolving won't happen wor listen address,
+	/* resolving won't happen for listen address,
 	so this is always an ip-address */
 	
 	if (
@@ -29,7 +29,7 @@ static int check_listen_address(const char *address)
 #endif
 	is_ipv4_local(address) == 0)
 	{
-		WARN("%s\n", "WARNING: You are listening on interface outside of private network.");
+		WARN("WARNING: You are listening on interface outside of private network (%s).\n", address);
 		return -1;
 	}
 	
@@ -76,7 +76,8 @@ static int check_modes(const char *exports_file, const char *passwd_file)
 		}
 	}
 	
-	return ret;}
+	return ret;
+}
 
 int suggest_server(const struct rfsd_instance *instance)
 {
