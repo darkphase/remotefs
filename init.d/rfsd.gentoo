@@ -3,7 +3,7 @@
 # Author: Oliver <ojaksch@gmx.de>
 # Some modifications: Aleksey Tulinov <aleksey_t@users.sourceforge.net>
 
-LISTEN="0.0.0.0"
+LISTEN="127.0.0.1"
 PORT="5001"
 RFSD_USER="root"
 PIDFILE="/var/run/rfsd.pid"
@@ -16,9 +16,9 @@ depend() {
 
 start() {
       ebegin "Starting rfsd"
-      start-stop-daemon --start --quiet --oknodo --pidfile ${PIDFILE}
---exec /usr/bin/rfsd -- -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r
-${PIDFILE}
+      start-stop-daemon --start --quiet --oknodo \
+        --pidfile ${PIDFILE} --exec /usr/bin/rfsd -- \
+        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
       eend $?
 }
 
@@ -36,7 +36,7 @@ restart() {
 reload() {
       ebegin "Reloading rfsd"
       kill -HUP `cat ${PIDFILE}` && \
-          /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
+        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
       eend $?
 }
 
