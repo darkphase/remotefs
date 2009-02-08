@@ -13,8 +13,11 @@
 #if defined QNX
 #endif /* QNX */
 
-#if ! defined O_ASYNC
-#	define O_ASYNC 0
+#if O_ASYNC == 0
+#else 
+#	if ! defined O_ASYNC
+#		define O_ASYNC 0
+#	endif
 #endif
 
 #endif /* COMPAT_H */

@@ -88,7 +88,11 @@ ebuilds: rfsdebuild rfsebuild
 tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
 	
-packages: tbz debs rpms ebuilds
+packages: tbz ebuilds
+	@ALT=AMD64N $(MAKE) -s debs
+	@ALT=AMD64N $(MAKE) -s rpms
+	@ALT=i386ML $(MAKE) -s debs
+	@ALT=i386ML $(MAKE) -s rpms
 	@ALT=MIPS   $(MAKE) -s ipks
 	@ALT=MIPSEL $(MAKE) -s ipks
 	@ALT=PPC    $(MAKE) -s ipks
