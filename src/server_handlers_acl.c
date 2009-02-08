@@ -31,7 +31,8 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 	DEBUG("path: %s\n", path);
 	
 	uint32_t name_len = 0;
-	unpack_32(&name_len, buffer + sizeof(path_len) + path_len, 0);
+	memcpy(&name_len, buffer + sizeof(path_len) + path_len, sizeof(uint32_t));
+	name_len = ntohl(name_len);
 	
 	const char *name = buffer + sizeof(path_len) + path_len + sizeof(name_len);
 	
@@ -52,8 +53,9 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 	}
 	
 	uint64_t value_size = 0;
-	unpack_64(&value_size, buffer + 
-	sizeof(path_len) + path_len + sizeof(name_len) + name_len, 0);
+	memcpy(&value_size, buffer + 
+		sizeof(path_len) + path_len + sizeof(name_len) + name_len, sizeof(uint64_t));
+	value_size = ntohll(value_size);
 	
 	DEBUG("value size: %lld\n", value_size);
 	
