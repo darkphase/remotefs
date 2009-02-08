@@ -68,6 +68,7 @@ clean_packages: dummy clean_packages_tmp
 	$(RM) -f *.deb
 	$(RM) -f *.rpm
 	$(RM) -f *.ipk
+	$(RM) -f *.ebuild
 
 clean: clean_build clean_bins clean_packages
 
@@ -326,6 +327,22 @@ buildipk: dummy
 	
 	$(MAKE) -f Makefiles/base.mk clean_bins;
 	$(MAKE) -f Makefiles/base.mk clean_packages_tmp;
+
+#############################
+# Gentoo ebuilds
+#############################
+
+rfsdebuild: dummy
+	TARGET="rfsd" $(MAKE) -f Makefiles/base.mk genebuild
+    
+rfsebuild: dummy
+	TARGET="rfs" $(MAKE) -f Makefiles/base.mk genebuild
+
+genebuild: dummy
+	echo "Creating $(TARGET)-${VERSION}-r${RELEASE}.ebuild"
+	sed -e "s/INSERT BUILDDIR HERE/\"remotefs-${VERSION}-${RELEASE}\"/" \
+	-e "s/VERSION HERE/${VERSION}-${RELEASE}/" \
+	"gentoo/$(TARGET).ebuild" > "$(TARGET)-${VERSION}-r${RELEASE}.ebuild";
 
 dummy:
 

@@ -79,10 +79,16 @@ rfsdipk: dummy
 	
 ipks: rfsdipk
 
+rfsdebuild: dummy
+	@$(MAKE) -sf Makefiles/base.mk rfsdebuild
+rfsebuild: dummy
+	@$(MAKE) -sf Makefiles/base.mk rfsebuild
+ebuilds: rfsdebuild rfsebuild
+
 tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
 	
-packages: tbz debs rpms
+packages: tbz debs rpms ebuilds
 	@ALT=MIPS   $(MAKE) -s ipks
 	@ALT=MIPSEL $(MAKE) -s ipks
 	@ALT=PPC    $(MAKE) -s ipks

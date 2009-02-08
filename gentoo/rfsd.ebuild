@@ -9,9 +9,9 @@ DEPEND="ssl? ( >=dev-libs/openssl-0.9.8h )"
 SLOT="0"
 
 KEYWORDS="~x86 ~mips ~mipsel ~ppc ~arm ~armeb ~ai64 ~amd64 ~x86_64"
-SRC_URI="http://downloads.sourceforge.net/remotefs/remotefs-0.11-1.tar.bz2"
+SRC_URI="http://downloads.sourceforge.net/remotefs/remotefs-VERSION HERE.tar.bz2"
 
-BUILDDIR="remotefs-0.11-1"
+BUILDDIR=INSERT BUILDDIR HERE
 
 setup_compile() {
     echo "" > "${BUILDDIR}/Makefiles/options.mk"
