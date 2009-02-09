@@ -89,15 +89,15 @@ tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
 	
 packages: tbz ebuilds
-	@ALT=AMD64N $(MAKE) -s debs
-	@ALT=AMD64N $(MAKE) -s rpms
-	@ALT=i386ML $(MAKE) -s debs
-	@ALT=i386ML $(MAKE) -s rpms
-	@ALT=MIPS   $(MAKE) -s ipks
-	@ALT=MIPSEL $(MAKE) -s ipks
-	@ALT=PPC    $(MAKE) -s ipks
-	@ALT=ARM    $(MAKE) -s ipks
-	@ALT=ARMEB  $(MAKE) -s ipks
+	@ALT=N-AMD64 	$(MAKE) -s debs
+	@ALT=N-AMD64 	$(MAKE) -s rpms
+	@ALT=ML-i386 	$(MAKE) -s debs
+	@ALT=ML-i386 	$(MAKE) -s rpms
+	@ALT=T-MIPS   	$(MAKE) -s ipks
+	@ALT=T-MIPSEL 	$(MAKE) -s ipks
+	@ALT=T-PPC    	$(MAKE) -s ipks
+	@ALT=T-ARM    	$(MAKE) -s ipks
+	@ALT=T-ARMEB  	$(MAKE) -s ipks
 
 install_client:
 	@$(MAKE) -sf Makefiles/librfs.mk install_librfs
