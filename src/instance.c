@@ -24,7 +24,7 @@ static void init_client(struct rfs_instance *instance)
 	instance->client.maintenance_thread = 0;
 	instance->client.maintenance_please_die = 0;
 	memset(instance->client.auth_salt, 0, sizeof(instance->client.auth_salt));
-	instance->client.export_opts = opt_none;
+	instance->client.export_opts = OPT_NONE;
 	instance->client.my_uid = (uid_t)-1;
 	instance->client.my_gid = (gid_t)-1;
 }

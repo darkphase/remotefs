@@ -131,7 +131,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	}
 
 	if (instance->server.mounted_export == NULL
-	|| (instance->server.mounted_export->options & opt_ro) != 0)
+	|| (instance->server.mounted_export->options & OPT_RO) != 0)
 	{
 		return reject_request_with_cleanup(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}
@@ -195,7 +195,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	}
 
 	if (instance->server.mounted_export == NULL
-	|| (instance->server.mounted_export->options & opt_ugo) == 0)
+	|| (instance->server.mounted_export->options & OPT_UGO) == 0)
 	{
 		return reject_request_with_cleanup(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}

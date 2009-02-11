@@ -102,11 +102,11 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 		{
 			if (strcmp(opt_str, "ro") == 0)
 			{
-				opts_export->options |= opt_ro;
+				opts_export->options |= OPT_RO;
 			}
 			else if (strcmp(opt_str, "ugo") == 0)
 			{
-				opts_export->options |= opt_ugo;
+				opts_export->options |= OPT_UGO;
 			}
 			else if (strstr(opt_str, "user=") == opt_str)
 			{
@@ -300,9 +300,9 @@ static char* parse_line(const char *buffer, unsigned size, int start_from, struc
 
 static int validate_export(const struct rfs_export *line_export)
 {
-	if ((line_export->options & opt_ugo) != 0)
+	if ((line_export->options & OPT_UGO) != 0)
 	{
-		if ((line_export->options & opt_ro) != 0
+		if ((line_export->options & OPT_RO) != 0
 		|| line_export->export_uid != -1
 		|| line_export->export_gid != -1)
 		{

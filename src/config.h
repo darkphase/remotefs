@@ -21,14 +21,13 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#define DEFAULT_SERVER_PORT 	5001
-#define KEEP_ALIVE_PERIOD 	60 * 5      /* secs */
-#define DEFAULT_RW_CACHE_SIZE 	512 * 1024  /* bytes */
-#define ATTR_CACHE_TTL 		5           /* secs */
-#define EMPTY_SALT 		"$1$"       /* use md5 */
-#define MAX_SALT_LEN 		3 + 8       /* "$1$" + 8 bytes of actual salt */
-#define MAX_SUPPORTED_NAME_LEN  32          /* if username or group is longer than 32 
-					    characters, then this user should be insane */
+#define DEFAULT_SERVER_PORT     5001
+#define KEEP_ALIVE_PERIOD       60 * 5      /* secs */
+#define DEFAULT_RW_CACHE_SIZE   512 * 1024  /* bytes */
+#define ATTR_CACHE_TTL          5           /* secs */
+#define EMPTY_SALT              "$1$"       /* use md5 */
+#define MAX_SALT_LEN            3 + 8       /* "$1$" + 8 bytes of actual salt */
+#define MAX_SUPPORTED_NAME_LEN  32          /* used in chown(), getattr() and etc related to stat() */
 #define RFS_WRITE_BLOCK         32 * 1024   /* bytes */
 #define RFS_READ_BLOCK          32 * 1024   /* bytes */
 #define PREFETCH_LIMIT          32 * 1024   /* bytes */
@@ -119,13 +118,13 @@ enum
 /** on/off export options */
 enum rfs_export_opts 
 { 
-	opt_none         = 0, 
-	opt_ro           = 1, 
-	opt_ugo          = 2, 
+	OPT_NONE         = 0, 
+	OPT_RO           = 1, 
+	OPT_UGO          = 2, 
 	
 	/* reserved */
 	
-	opt_compat       = 50
+	OPT_COMPAT       = 50
 };
 
 /** flags for rfs_open() */
@@ -135,7 +134,7 @@ enum rfs_open_flags
 	RFS_ASYNC 		= 2,
 	RFS_CREAT 		= 4,
 	RFS_EXCL 		= 8,
-	RFS_NONBLOCK 		= 16,
+	RFS_NONBLOCK    = 16,
 	RFS_NDELAY 		= 32,
 	RFS_SYNC 		= 64,
 	RFS_TRUNC 		= 128,
@@ -192,3 +191,4 @@ struct write_behind_request
 #endif
 
 #endif /* CONFIG_H */
+

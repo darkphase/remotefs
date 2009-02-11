@@ -76,7 +76,7 @@ static int stat_file(struct rfsd_instance *instance, const char *path, struct st
 	}
 	
 	if (instance->server.mounted_export != NULL
-	&& (instance->server.mounted_export->options & opt_ro) != 0)
+	&& (instance->server.mounted_export->options & OPT_RO) != 0)
 	{
 		stbuf->st_mode &= (~S_IWUSR);
 		stbuf->st_mode &= (~S_IWGRP);
@@ -111,7 +111,7 @@ static int check_permissions(struct rfsd_instance *instance, const struct rfs_ex
 	while (user_entry != NULL)
 	{
 		const char *user = (const char *)user_entry->data;
-		if ((export_info->options & opt_ugo) == 0
+		if ((export_info->options & OPT_UGO) == 0
 		&& is_ipaddr(user) != 0)
 		{
 #ifndef WITH_IPV6
@@ -329,7 +329,7 @@ static int setup_export_opts(struct rfsd_instance *instance, const struct rfs_ex
 	/* always set gid first :)
 	*/
 	
-	if ((export_info->options & opt_ugo) != 0)
+	if ((export_info->options & OPT_UGO) != 0)
 	{
 		DEBUG("setting process ids according to UGO. uid: %d, gid: %d\n", user_uid, user_gid);
 		if (instance->server.auth_user != NULL)
@@ -442,10 +442,10 @@ static int _handle_changepath(struct rfsd_instance *instance, const struct socka
 	uid_t user_uid = geteuid();
 	gid_t user_gid = getegid();
 	
-	DEBUG("auth user: %s, ugo: %d\n", instance->server.auth_user, export_info->options & opt_ugo);
+	DEBUG("auth user: %s, ugo: %d\n", instance->server.auth_user, export_info->options & OPT_UGO);
 	
 	if (instance->server.auth_user != NULL 
-	&& (export_info->options & opt_ugo) != 0)
+	&& (export_info->options & OPT_UGO) != 0)
 	{
 		struct passwd *pwd = getpwnam(instance->server.auth_user);
 		if (pwd != NULL)
@@ -461,7 +461,7 @@ static int _handle_changepath(struct rfsd_instance *instance, const struct socka
 	}
 	
 	if (instance->server.auth_user != NULL
-	&& (export_info->options & opt_ugo) != 0)
+	&& (export_info->options & OPT_UGO) != 0)
 	{
 		int init_errno = init_groups_for_ugo(instance, user_gid);
 		if (init_errno != 0)
@@ -630,7 +630,7 @@ static int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
 	
-	if ((instance->server.mounted_export->options & opt_ugo) != 0 
+	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
 	&& (user == NULL
 	|| group == NULL))
 	{

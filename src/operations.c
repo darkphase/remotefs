@@ -519,7 +519,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			return -1;
 		}
 		
-		if ((instance->client.export_opts & opt_ugo) > 0)
+		if ((instance->client.export_opts & OPT_UGO) > 0)
 		{
 			create_uids_lookup(&instance->id_lookup.uids);
 			create_gids_lookup(&instance->id_lookup.gids);
@@ -775,7 +775,7 @@ static int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts
 		return -ECONNABORTED;
 	}
 
-	*opts = opt_none;
+	*opts = OPT_NONE;
 	
 	struct command cmd = { cmd_getexportopts, 0 };
 	
@@ -975,7 +975,7 @@ static int _rfs_getattr(struct rfs_instance *instance, const char *path, struct 
 	
 	uid_t uid = (uid_t)-1;
 	
-	if ((instance->client.export_opts & opt_ugo) != 0
+	if ((instance->client.export_opts & OPT_UGO) != 0
 	&& strcmp(instance->config.auth_user, user) == 0)
 	{
 		uid = instance->client.my_uid;
@@ -1001,7 +1001,7 @@ static int _rfs_getattr(struct rfs_instance *instance, const char *path, struct 
 
 	result.st_mode = mode;
 
-	if ((instance->client.export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & OPT_UGO) == 0)
 	{
 		result.st_uid = instance->client.my_uid;
 		result.st_gid = instance->client.my_gid;
@@ -1151,7 +1151,7 @@ static int _rfs_readdir(struct rfs_instance *instance, const char *path, const r
 		
 		uid_t uid = (uid_t)-1;
 		
-		if ((instance->client.export_opts & opt_ugo) != 0
+		if ((instance->client.export_opts & OPT_UGO) != 0
 		&& strcmp(instance->config.auth_user, user) == 0)
 		{
 			uid = instance->client.my_uid;
@@ -1185,7 +1185,7 @@ static int _rfs_readdir(struct rfs_instance *instance, const char *path, const r
 			{
 				stbuf.st_mode = mode;
 				/* TODO: make func for this */
-				if ((instance->client.export_opts & opt_ugo) == 0)
+				if ((instance->client.export_opts & OPT_UGO) == 0)
 				{
 					stbuf.st_uid = instance->client.my_uid;
 					stbuf.st_gid = instance->client.my_gid;
@@ -1777,7 +1777,7 @@ static int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mo
 
 static int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 {
-	if ((instance->client.export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & OPT_UGO) == 0)
 	{
 		/* actually dummy to keep some software happy. 
 		do not replace with -EACCES or something */
@@ -1831,7 +1831,7 @@ static int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mo
 
 static int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {
-	if ((instance->client.export_opts & opt_ugo) == 0)
+	if ((instance->client.export_opts & OPT_UGO) == 0)
 	{
 		/* actually dummy to keep some software happy. 
 		do not replace with -EACCES or something */
@@ -2239,7 +2239,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 			return -ECONNABORTED;
 		}
 		
-		uint32_t options = opt_none;
+		uint32_t options = OPT_NONE;
 		
 		const char *path = buffer + 
 		unpack_32(&options, buffer, 0);
@@ -2252,16 +2252,16 @@ int rfs_list_exports(struct rfs_instance *instance)
 		
 		INFO("%s", path);
 		
-		if (options != opt_none)
+		if (options != OPT_NONE)
 		{
 			INFO("%s", " (");
-			if (((unsigned)options & opt_ro) > 0)
+			if (((unsigned)options & OPT_RO) > 0)
 			{
-				INFO("%s", describe_option(opt_ro));
+				INFO("%s", describe_option(OPT_RO));
 			}
-			else if (((unsigned)options & opt_ugo) > 0)
+			else if (((unsigned)options & OPT_UGO) > 0)
 			{
-				INFO("%s", describe_option(opt_ugo));
+				INFO("%s", describe_option(OPT_UGO));
 			}
 			INFO("%s\n", ")");
 		}

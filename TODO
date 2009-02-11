@@ -1,3 +1,7 @@
+0.12
+- rfs_nss support
+- librfs
+
 0.11
 + lock
 + timeout for sockets send/recv

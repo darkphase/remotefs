@@ -22,7 +22,7 @@ See the file LICENSE.
 unsigned int is_ipaddr(const char *string)
 {
 #ifdef WITH_IPV6
-	if (strchr(string,':'))
+	if (strchr(string, ':'))
 	{
 		/* may be an IPv6 address */
 		struct sockaddr_in6 addr = { 0 };
