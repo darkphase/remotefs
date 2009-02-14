@@ -4,7 +4,7 @@ DESCRIPTION="remote filesystem client"
 HOMEPAGE="http://remotefs.sourceforge.net"
 LICENSE="GPL"
 
-IUSE="ipv6 ssl"
+IUSE="ipv6"
 DEPEND="ssl? ( >=dev-libs/openssl-0.9.8h )"
 SLOT="0"
 
