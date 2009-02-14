@@ -16,6 +16,12 @@
 # Description: A fast remote file system
 ### END INIT INFO
 
+LISTEN="0.0.0.0"
+PORT="5001"
+RFSD_USER="root"
+RFSD_GROUP="root"
+PIDFILE="/var/run/rfsd.pid"
+
 # Source function library (Redhat)
 if [ -f /etc/rc.d/init.d/functions ]
 then
@@ -66,7 +72,7 @@ RETVAL=0
 case "$1" in
   start)
      echo -n $"Starting RFS daemon: "
-     daemon rfsd -q
+     daemon rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE}
      RETVAL=$?
      echo $ECHO_ARG
      [ $RETVAL -ne 0 ] && exit $RETVAL
@@ -88,7 +94,8 @@ case "$1" in
      $0 start
      ;;
   reload)
-     touch /var/lock/subsys/rfsd
+     kill -s HUP `cat ${PIDFILE}`
+     $0 start
      ;;
   probe)
       if [ ! -f /var/lock/subsys/rfsd ] ; then

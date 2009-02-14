@@ -89,8 +89,6 @@ tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
 	
 packages: tbz ebuilds
-	@ALT=N-AMD64 	$(MAKE) -s debs
-	@ALT=N-AMD64 	$(MAKE) -s rpms
 	@ALT=ML-i386 	$(MAKE) -s debs
 	@ALT=ML-i386 	$(MAKE) -s rpms
 	@ALT=T-MIPS   	$(MAKE) -s ipks
