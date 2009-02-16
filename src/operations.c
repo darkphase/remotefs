@@ -37,9 +37,6 @@ See the file LICENSE.
 #include "data_cache.h"
 #include "utils.h"
 #include "instance.h"
-#ifdef WITH_SSL
-#include "ssl.h"
-#endif
 
 int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {

@@ -104,10 +104,10 @@ const char* describe_option(const enum rfs_export_opts option)
 {
 	switch (option)
 	{
-	case opt_none:              return "None";
-	case opt_ro:                return "Read-only";
-	case opt_ugo:               return "UGO-compatible";
-	case opt_compat:            break;
+	case OPT_NONE:              return "None";
+	case OPT_RO:                return "Read-only";
+	case OPT_UGO:               return "UGO-compatible";
+	case OPT_COMPAT:            break;
 	}
 	
 	return "Unknown";

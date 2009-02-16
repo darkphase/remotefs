@@ -1,9 +1,17 @@
 #ifdef WITH_ACL
 
 #include <sys/xattr.h>
-#include "rfs_acl.h"
+#include <errno.h>
 
-static int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
+#include "config.h"
+#include "command.h"
+#include "buffer.h"
+#include "rfs_acl.h"
+#include "instance.h"
+#include "sendrecv.h"
+#include "operations_rfs.h"
+
+int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
 	if (instance->sendrecv.socket == -1)
 	{
@@ -113,7 +121,7 @@ static int _rfs_getxattr(struct rfs_instance *instance, const char *path, const 
 	return ans.ret >= 0 ? ans.ret : -ans.ret_errno;
 }
 
-static int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags)
+int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags)
 {
 	if (instance->sendrecv.socket == -1)
 	{

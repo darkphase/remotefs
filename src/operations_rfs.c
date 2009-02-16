@@ -28,6 +28,9 @@ See the file LICENSE.
 #include "instance.h"
 #include "attr_cache.h"
 #include "crypt.h"
+#ifdef WITH_SSL
+#include "ssl.h"
+#endif
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
 {
