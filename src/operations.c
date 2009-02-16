@@ -1330,7 +1330,3 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 }
 #endif /* WITH_LINKS */
 
-#if defined WITH_ACL
-#include "operations_acl.c"
-#endif
-
