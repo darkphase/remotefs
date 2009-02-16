@@ -13,7 +13,7 @@ See the file LICENSE.
 #include "signals_client.h"
 #include "sendrecv.h"
 #include "signals.h"
-#include "operations.h"
+#include "operations_rfs.h"
 
 static void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {

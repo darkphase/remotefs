@@ -7,15 +7,27 @@ See the file LICENSE.
 */
 
 #include <semaphore.h>
+#include <errno.h>
+#include <string.h>
 
+#include "config.h"
+#include "resume.h"
+#include "command.h"
+#include "buffer.h"
+#include "sendrecv.h"
+#include "list.h"
 #include "data_cache.h"
 #include "rfs_semaphore.h"
 #include "resume.h"
+#include "instance.h"
+#include "keep_alive_client.h"
+#include "operations.h"
+#include "operations_rfs.h"
 
 static void* prefetch(void *void_instance);
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc);
 
-static int init_prefetch(struct rfs_instance *instance)
+int init_prefetch(struct rfs_instance *instance)
 {
 	DEBUG("%s\n", "initing prefetch");
 	
@@ -44,7 +56,7 @@ static int init_prefetch(struct rfs_instance *instance)
 	return 0;
 }
 
-static void kill_prefetch(struct rfs_instance *instance)
+void kill_prefetch(struct rfs_instance *instance)
 {
 	DEBUG("%s\n", "killing prefetch");
 	
@@ -384,7 +396,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	return ans.data_len;
 }
 
-static int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc)
+int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc)
 {
 	if (instance->sendrecv.socket == -1)
 	{
@@ -419,3 +431,4 @@ static int _rfs_read(struct rfs_instance *instance, const char *path, char *buf,
 		return ret;
 	}
 }
+

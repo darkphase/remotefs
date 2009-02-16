@@ -8,7 +8,8 @@ See the file LICENSE.
 
 #include "config.h"
 #include "fuse_rfs.h"
-#include "operations.h"
+#include "operations_sync.h"
+#include "operations_rfs.h"
 
 struct rfs_instance *instance = NULL;
 

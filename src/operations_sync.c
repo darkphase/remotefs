@@ -8,16 +8,23 @@ See the file LICENSE.
 
 /** syncronized operations. will lock keep alive when it's needed */
 
-#define DECORATE(func, instance, args...)                           \
+#include <errno.h>
+
+#include "instance.h"
+#include "keep_alive_client.h"
+#include "operations.h"
+#include "operations_rfs.h"
+
+#define DECORATE(func, instance, args...)                       \
 	int ret = -ECONNABORTED;                                    \
 	if (keep_alive_lock((instance)) == 0)                       \
 	{                                                           \
-		PARTIALY_DECORATE(ret, (func), (instance), args)    \
-		keep_alive_unlock((instance));                      \
+		PARTIALY_DECORATE(ret, (func), (instance), args)        \
+		keep_alive_unlock((instance));                          \
 	}                                                           \
 	else                                                        \
 	{                                                           \
-		ret = -EIO;                                         \
+		ret = -EIO;                                             \
 	}                                                           \
 	return ret;
 

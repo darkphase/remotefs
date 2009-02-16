@@ -36,6 +36,10 @@ librfs_OBJS = src/attr_cache.o \
               src/keep_alive_client.o \
               src/list.o \
               src/operations.o \
+              src/operations_rfs.o \
+              src/operations_read.o \
+              src/operations_sync.o \
+              src/operations_write.o \
               src/path.o \
               src/resume.o \
               src/rfs_acl.o \

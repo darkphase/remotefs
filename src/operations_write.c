@@ -6,8 +6,25 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <semaphore.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "config.h"
+#include "resume.h"
+#include "command.h"
+#include "buffer.h"
+#include "sendrecv.h"
+#include "list.h"
 #include "data_cache.h"
+#include "attr_cache.h"
 #include "rfs_semaphore.h"
+#include "resume.h"
+#include "instance.h"
+#include "keep_alive_client.h"
+#include "operations.h"
+#include "operations_rfs.h"
 
 static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 static void* write_behind(void *void_instance);
@@ -27,7 +44,7 @@ static void reset_write_behind(struct rfs_instance *instance)
 	instance->write_cache.write_behind_request.path = NULL;
 }
 
-static int init_write_behind(struct rfs_instance *instance)
+int init_write_behind(struct rfs_instance *instance)
 {
 	DEBUG("%s\n", "initing write behind");
 	
@@ -52,7 +69,7 @@ static int init_write_behind(struct rfs_instance *instance)
 	return 0;
 }
 
-static void kill_write_behind(struct rfs_instance *instance)
+void kill_write_behind(struct rfs_instance *instance)
 {
 	DEBUG("%s\n", "killing write behind");
 	
@@ -147,7 +164,7 @@ static void* write_behind(void *void_instance)
 	} /* while (1) */
 }
 
-static int flush_write(struct rfs_instance *instance, const char *path, uint64_t descriptor)
+int flush_write(struct rfs_instance *instance, const char *path, uint64_t descriptor)
 {
 	DEBUG("flushing file %llu\n", (unsigned long long)descriptor);
 	
@@ -191,7 +208,7 @@ static int flush_write(struct rfs_instance *instance, const char *path, uint64_t
 	return 0;
 }
 
-static int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
+int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
 	/* not used. rfs will flush file if needed (buffer is full/file closed) */
 	return 0;
@@ -416,7 +433,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	return ans.ret == -1 ? -ans.ret_errno : (int)ans.ret;
 }
 
-static int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
+int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
 	if (instance->sendrecv.socket == -1)
 	{
@@ -450,3 +467,4 @@ static int _rfs_write(struct rfs_instance *instance, const char *path, const cha
 	
 	return ret;
 }
+

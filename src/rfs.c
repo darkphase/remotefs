@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "id_lookup.h"
 #include "sug_client.h"
 #include "instance.h"
-#include "operations.h"
+#include "operations_rfs.h"
 #include "fuse_rfs.h"
 
 static DEFINE_RFS_INSTANCE(rfs_instance);
