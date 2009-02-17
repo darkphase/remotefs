@@ -1,4 +1,5 @@
-VERSION=0.11
+VERSION=0.12
 RELEASE=1
 
 include Makefiles/install.mk
+

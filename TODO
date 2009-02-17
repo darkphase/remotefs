@@ -4,33 +4,5 @@
 - server's exports list support
 - links support
 
-0.11
-+ lock
-+ timeout for sockets send/recv
-+ performance improvements
-  + background read
-  + background write
-+ locked files clearing on server
-+ operations return values reviewed (with respect to POSIX.1)
-  + cleanup on client if EBADMSG encountered 
-    (if valid answer only, otherwise abort connection)
-+ operations resuming on client
-  + operations resuming in background read/write
-+ SSL support
-+ suggestions
-+ write operation should clear read cache for that file
-+ read operation should flush that file before actual reading
-+ server shouldn't use lookup_* funcs, but get_* instead
-+ EREMOTEIO and EBADE should be eliminated from code
-+ show actual interface if rfsd is refusing to run on it
-
-bugs:
-+ support of files >2Gb (uint64_t for size_t?)
-+ proper clearing of attributes cache
-+ fix segfault on -o username=...,password=... (amd64?)
-
-releases:
-+ rpms reviewed (without root permissions)
-+ install_server/install_client and uninstall_server/uninstall_client
-+ gentoo ebuild and init.d script
+- pid-file isn't deleted if rfsd can't start
 
