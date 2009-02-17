@@ -1,0 +1,55 @@
+#!/sbin/runscript
+
+# Author: Oliver Jaksch <ojaksch@gmx.de>
+
+
+CONFIG="/etc/rfs-mounts"
+
+depend() {
+      config ${CONFIG}
+      need net
+}
+
+checkconfig() {
+        if ! grep -qw fuse /proc/filesystems; then
+                eerror "Couldn't find the FUSE filesystem."
+                eerror "Please enable it in your kernel config and/or load the appropriate module(s)."
+                return 1
+        fi
+
+        if [ ! -e ${CONFIG} ] ; then
+                eerror "Configfile ${CONFIG} not found."
+                eerror "Can't live without it."
+                eerror "Please ensure that this file exists."
+                return 1
+        fi
+
+        return 0
+}
+
+start() {
+        ebegin "Mounting rfs entrys"
+	while read RFS; do
+	if ! [ "${RFS}" = "" ] && ! [ "${RFS:0:1}" = "#" ]; then
+	  RFSSRC=`echo ${RFS} | awk '{print $1}'`
+	  RFSDST=`echo ${RFS} | awk '{print $2}'`
+	  RFSOPT="-o `echo ${RFS} | awk '{print $3}'`"
+	  `which rfs` ${RFSSRC} ${RFSDST} ${RFSOPT}
+	fi
+	done < ${CONFIG}
+        ewend $? "Could not mount all network filesystems"
+        return 0
+}
+
+stop() {
+        ebegin "Unmounting rfs entrys"
+	while read RFS; do
+	if ! [ "${RFS}" = "" ] && ! [ "${RFS:0:1}" = "#" ]; then
+	  RFSDST=`echo ${RFS} | awk '{print $2}'`
+	  `which umount` ${RFSDST}
+	fi
+	done < ${CONFIG}
+        ewend $? "Could not unmount all rfs entrys"
+        return 0
+}
+

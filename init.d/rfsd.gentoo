@@ -1,13 +1,8 @@
 #!/sbin/runscript
 
-# Author: Oliver <ojaksch@gmx.de>
+# Author: Oliver Jaksch <ojaksch@gmx.de>
 # Some modifications: Aleksey Tulinov <aleksey_t@users.sourceforge.net>
 
-LISTEN="127.0.0.1"
-PORT="5001"
-RFSD_USER="root"
-RFSD_GROUP="root"
-PIDFILE="/var/run/rfsd.pid"
 
 opts="reload"
 
@@ -15,11 +10,34 @@ depend() {
       need net
 }
 
+checkconfig() {
+	if ! grep -qw fuse /proc/filesystems; then
+                eerror "Couldn't find the FUSE filesystem."
+                eerror "Please enable it in your kernel config and/or load the appropriate module(s)."
+                return 1
+	fi
+
+        if [ ! -e /etc/conf.d/rfsd ] ; then
+                eerror "Configfile /etc/conf.d/rfsd not found."
+                eerror "Please ensure that this file exists."
+                return 1
+        fi
+
+        if [ ! -e /etc/rfs-exports ] ; then
+                eerror "Exports-file /etc/rfs-exports not found."
+                eerror "Please ensure that this file exists."
+                return 1
+        fi
+
+        return 0
+}
+
 start() {
+      checkconfig || return 1
       ebegin "Starting rfsd"
       start-stop-daemon --start --quiet --oknodo \
         --pidfile ${PIDFILE} --exec /usr/bin/rfsd -- \
-        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE}
+        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE} ${QUIET}
       eend $?
 }
 
@@ -37,7 +55,7 @@ restart() {
 reload() {
       ebegin "Reloading rfsd"
       kill -HUP `cat ${PIDFILE}` && \
-        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
+        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE} ${QUIET}
       eend $?
 }
 

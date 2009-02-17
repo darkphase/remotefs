@@ -1,0 +1,8 @@
+# Example of rfs mount point(s) and options
+# See the rfs(1) man page for more info
+
+# Author: Oliver Jaksch <ojaksch@gmx.de>
+
+#192.168.112.66:/stuff	/mnt/work	allow_other
+#192.168.100.33:/stuff	/mnt/private	allow_other,nonempty
+
