@@ -33,7 +33,7 @@ LIBRFS_OBJ = src/rfs_nss_control.o
 
 all: server client
 
-client: $(CLIENT)
+client: $(CLIENT) $(NSSMODULE) $(LIBNAME)
 server: $(SERVER)
 
 $(NSSMODULE): $(LIB_OBJ)
@@ -61,7 +61,7 @@ rfs_nss_add: src/rfs_nss_add.o $(LIBNAME)
 
 rfs_nss_ctrl: $(CTRL_OBJ)
 	@echo link $@
-	@cc -g -o rfs_nss_ctrl $(CTRL_OBJ) $(LDFLAGS_NET) $(OS_CFLAGS) $(CFLAGS)
+	@$(CC) -g -o rfs_nss_ctrl $(CTRL_OBJ) $(LDFLAGS_NET) $(OS_CFLAGS) $(CFLAGS)
 
 $(LIBNAME): $(LIBRFS_OBJ)
 	@echo link $@
@@ -125,7 +125,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@cc -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) -I$(TOP_INC) $(CFLAGS) 
+	@$(CC) -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) -I$(TOP_INC) $(CFLAGS) 
 
 # Dependencies
 

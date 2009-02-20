@@ -442,6 +442,7 @@ static int process_message(int sock)
             else
                 list = user_list;
 
+            owner_idmap_entry = get_owner_entry(list, command.caller_id);
             /* search for given name */
             list = search_name(&command, list);
 
@@ -452,9 +453,18 @@ static int process_message(int sock)
              */
             if ( list && ((rfs_idmap_t*)(list->data))->sys )
             {
-                command.found = 0;
-                command.id    = 0;
-                *command.name = '\0';
+                if ( ! check_is_same((rfs_idmap_t*)(list->data), owner_idmap_entry) )
+                {
+                    command.found = 0;
+                    command.id    = 0;
+                    *command.name = '\0';
+                }
+                else
+                {
+                   command.found = 1;
+                   command.id = owner_idmap_entry->id;
+                   strcpy(command.name, owner_idmap_entry->name);
+                }
                 break;
             }
 
@@ -479,7 +489,7 @@ static int process_message(int sock)
         case GETPWUID:
             if ( log ) printf("Message received: %s(%d)\n",
                               command.cmd == GETGRGID
-                                  ? "getgrgid" : "getgrgid",
+                                  ? "getgrgid" : "getgruid",
                               command.id);
             command.name[0] = '\0';
             if ( command.cmd == GETGRGID )
@@ -487,7 +497,7 @@ static int process_message(int sock)
             else
                 list = user_list;
             /* search only the corresponding entry */
-            search_id(&command, list);
+            list = search_id(&command, list);
 
             /* if the rfs entry is misplaced (at the begin of the list
              * and we put automatically the login name into our list
@@ -743,7 +753,8 @@ int main(int argc,char **argv)
     ret = 1;
     while( ret &&(pwd = getpwent()) && ret )
     {
-       ret = add_to_list(&user_list, pwd->pw_name, (uid_t)pwd->pw_uid, 1);
+       if ( strchr(pwd->pw_name, '@') == NULL )
+          ret = add_to_list(&user_list, pwd->pw_name, (uid_t)pwd->pw_uid, 1);
     }
     endpwent();
 
@@ -758,7 +769,8 @@ int main(int argc,char **argv)
     ret = 1;
     while(ret && (grp = getgrent()))
     {
-       ret = add_to_list(&group_list, grp->gr_name, (uid_t)grp->gr_gid, 1);
+       if ( strchr(grp->gr_name, '@') == NULL )
+          ret = add_to_list(&group_list, grp->gr_name, (uid_t)grp->gr_gid, 1);
     }
     endgrent();
 

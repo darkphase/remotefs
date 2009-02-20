@@ -112,11 +112,19 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
        switch(cmd)
        {
            case GETPWNAM:
+               strncpy(command.name, name, RFS_LOGIN_NAME_MAX);
+               command.name[RFS_LOGIN_NAME_MAX] = '\0';
+               command.caller_id = getuid();
+           break;
            case GETGRNAM:
                strncpy(command.name, name, RFS_LOGIN_NAME_MAX);
                command.name[RFS_LOGIN_NAME_MAX] = '\0';
+               command.caller_id = getgid();
            break;
            case GETPWUID:
+               command.caller_id = getuid();
+               command.id = *uid;
+           break;
            case GETGRGID:
                command.caller_id = getgid();
                command.id = *uid;
@@ -126,6 +134,7 @@ static NSS_STATUS query_server(cmd_e cmd, char *name, uid_t *uid, int *error)
                command.id = *uid;
            break;
            case GETGRENT:
+               command.caller_id = getgid();
                command.id = *uid;
            break;
            case SETGRENT:
