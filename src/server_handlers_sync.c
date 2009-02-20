@@ -170,4 +170,11 @@ int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 }
 #endif
 
+#if defined WITH_NSS
+int handle_nss(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_nss)
+}
+#endif
+
 #undef DECORATE

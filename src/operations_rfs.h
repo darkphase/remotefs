@@ -43,6 +43,11 @@ int rfs_setsocktimeout(struct rfs_instance *instance, const int timeout);
 int rfs_setsockbuffer(struct rfs_instance *instance, const int size);
 int rfs_keep_alive(struct rfs_instance *instance);
 
+#if defined WITH_NSS
+int rfs_nss(struct rfs_instance *instance);
+int init_rfs_nss(void);
+#endif
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

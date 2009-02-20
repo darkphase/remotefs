@@ -33,6 +33,7 @@ enum server_commands
 	cmd_setsockbuffer,           /* 11 */
 	cmd_enablessl,               /* 12 */
 	cmd_listexports,             /* 13 */
+	cmd_nss,                     /* 14 */
 	
 	/* reserved */
 

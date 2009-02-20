@@ -101,6 +101,12 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 #else
 		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
 #endif
+#ifdef WITH_NSS
+	case cmd_nss:
+		return handle_nss(instance, client_addr, cmd);
+#else
+		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
+#endif
 	}
 
 	if (instance->server.directory_mounted == 0)

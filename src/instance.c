@@ -144,6 +144,9 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 	instance->config.ssl_key_file = DEFAULT_SSL_KEY_FILE;
 	instance->config.ssl_cert_file = DEFAULT_SSL_CERT_FILE;
 #endif /* WITH_SSL */
+#if defined WITH_NSS
+	instance->config.min_id = MIN_UID_GID;
+#endif
 }
 
 static void init_rfs_config(struct rfs_instance *instance)

@@ -251,7 +251,7 @@ static void usage(const char *app_name)
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:fi:")) != -1)
 	{
 		switch (opt)
 		{	
@@ -306,6 +306,11 @@ static int parse_opts(int argc, char **argv)
 			case 'f':
 				daemonize = 0;
 				break;
+#if defined WITH_NSS
+			case 'i':
+				rfsd_instance.config.min_id = atoi(optarg);
+				break;
+#endif
 			default:
 				return -1;
 		}

@@ -60,7 +60,9 @@ int handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 #endif
-
+#if defined WITH_NSS
+int handle_nss(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#endif
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
