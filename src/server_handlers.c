@@ -833,10 +833,10 @@ static int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr
 		
 		ans.data_len = overall_size;
 		
-		pack(group, group_len, buffer, 
-		pack(user, user_len, buffer, 
 		pack(entry_name, entry_len, buffer, 
 		pack_16(&stat_failed, buffer, 
+		pack(group, group_len, buffer, 
+		pack(user, user_len, buffer, 
 		pack_64(&ctime, buffer, 
 		pack_64(&mtime, buffer, 
 		pack_64(&atime, buffer, 

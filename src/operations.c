@@ -38,6 +38,96 @@ See the file LICENSE.
 #include "utils.h"
 #include "instance.h"
 
+static size_t stat_size()
+{
+	return 0
+	+ sizeof(uint32_t) /* mode */
+	+ sizeof(uint32_t) /* user_len */
+	+ sizeof(uint32_t) /* group_len */
+	+ sizeof(uint64_t) /* size */
+	+ sizeof(uint64_t) /* atime */
+	+ sizeof(uint64_t) /* mtime */
+	+ sizeof(uint64_t) /* ctime */
+	;
+}
+
+static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, struct stat *result, int *ret)
+{
+	uint32_t mode = 0;
+	uint32_t user_len = 0;
+	uint32_t group_len = 0;
+	uint64_t size = 0;
+	uint64_t atime = 0;
+	uint64_t mtime = 0;
+	uint64_t ctime = 0;
+	const char *user = NULL;
+	const char *group = NULL;
+
+	off_t last_pos = 
+	unpack_64(&ctime, buffer, 
+	unpack_64(&mtime, buffer, 
+	unpack_64(&atime, buffer, 
+	unpack_64(&size, buffer, 
+	unpack_32(&group_len, buffer, 
+	unpack_32(&user_len, buffer, 
+	unpack_32(&mode, buffer, 0 
+	)))))));
+	
+	user = buffer + last_pos;
+	group = buffer + last_pos + user_len;
+	
+	if (strlen(user) + 1 != user_len
+	|| strlen(group) + 1 != group_len)
+	{
+		*ret = EBADMSG;
+		return (off_t)-1;
+	}
+
+	last_pos += user_len + group_len;
+	
+	uid_t uid = (uid_t)-1;
+	
+	if ((instance->client.export_opts & OPT_UGO) != 0
+	&& strcmp(instance->config.auth_user, user) == 0)
+	{
+		uid = instance->client.my_uid;
+		user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
+		if (user == NULL)
+		{
+			*ret = EINVAL;
+			return (off_t)-1;
+		}
+	}
+	else
+	{
+		uid = lookup_user(instance->id_lookup.uids, user);
+	}
+	
+	gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
+	
+	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
+
+	result->st_mode = mode;
+
+	if ((instance->client.export_opts & OPT_UGO) == 0)
+	{
+		result->st_uid = instance->client.my_uid;
+		result->st_gid = instance->client.my_gid;
+	}
+	else
+	{
+		result->st_uid = uid;
+		result->st_gid = gid;
+	}
+	
+	result->st_size = (off_t)size;
+	result->st_atime = (time_t)atime;
+	result->st_mtime = (time_t)mtime;
+	result->st_ctime = (time_t)ctime;
+
+	return last_pos;
+}
+
 int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
 	if (instance->sendrecv.socket == -1)
@@ -70,7 +160,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 
 	if (ans.command != cmd_getattr)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == -1)
@@ -86,83 +176,17 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -ECONNABORTED;
 	}
 
-	uint32_t mode = 0;
-	uint32_t user_len = 0;
-	const char *user = NULL;
-	uint32_t group_len = 0;
-	const char *group = NULL;
-	uint64_t size = 0;
-	uint64_t atime = 0;
-	uint64_t mtime = 0;
-	uint64_t ctime = 0;
-
-	unsigned last_pos = 
-	unpack_64(&ctime, buffer, 
-	unpack_64(&mtime, buffer, 
-	unpack_64(&atime, buffer, 
-	unpack_64(&size, buffer, 
-	unpack_32(&group_len, buffer, 
-	unpack_32(&user_len, buffer, 
-	unpack_32(&mode, buffer, 0 
-		)))))));
-	
-	user = buffer + last_pos;
-	group = buffer + last_pos + user_len;
-	
-	if (strlen(user) + 1 != user_len
-	|| strlen(group) + 1 != group_len)
-	{
-		free_buffer(buffer);
-		return -EBADMSG;
-	}
-	
-	uid_t uid = (uid_t)-1;
-	
-	if ((instance->client.export_opts & OPT_UGO) != 0
-	&& strcmp(instance->config.auth_user, user) == 0)
-	{
-		uid = instance->client.my_uid;
-		user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
-		if (user == NULL)
-		{
-			free_buffer(buffer);
-			return -EINVAL;
-		}
-	}
-	else
-	{
-		uid = lookup_user(instance->id_lookup.uids, user);
-	}
-	
-	gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
-	
-	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
+	int stat_ret = 0;
+	unpack_stat(instance, buffer, stbuf, &stat_ret);
 
 	free_buffer(buffer);
 
-	struct stat result = { 0 };
-
-	result.st_mode = mode;
-
-	if ((instance->client.export_opts & OPT_UGO) == 0)
+	if (stat_ret != 0)
 	{
-		result.st_uid = instance->client.my_uid;
-		result.st_gid = instance->client.my_gid;
+		return -stat_ret;
 	}
-	else
-	{
-		result.st_uid = uid;
-		result.st_gid = gid;
-	}
-	
-	result.st_size = (off_t)size;
-	result.st_atime = (time_t)atime;
-	result.st_mtime = (time_t)mtime;
-	result.st_ctime = (time_t)ctime;
 
-	memcpy(stbuf, &result, sizeof(*stbuf));
-
-	if (cache_file(instance, path, &result) == NULL)
+	if (cache_file(instance, path, stbuf) == NULL)
 	{
 		return -EIO;
 	}
@@ -188,30 +212,10 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	struct answer ans = { 0 };
 	struct stat stbuf = { 0 };
-	uint32_t mode = 0;
-	uint32_t user_len = 0;
-	const char *user = NULL;
-	uint32_t group_len = 0;
-	const char *group = NULL;
-	uint64_t size = 0;
-	uint64_t atime = 0;
-	uint64_t mtime = 0;
-	uint64_t ctime = 0;
 	uint16_t stat_failed = 0;
 
-	unsigned stat_size = sizeof(mode)
-	+ sizeof(user_len)
-	+ MAX_SUPPORTED_NAME_LEN
-	+ sizeof(group_len)
-	+ MAX_SUPPORTED_NAME_LEN
-	+ sizeof(size)
-	+ sizeof(atime)
-	+ sizeof(mtime)
-	+ sizeof(ctime)
-	+ sizeof(stat_failed);
-
-	char full_path[FILENAME_MAX] = { 0 };
-	unsigned buffer_size = stat_size + sizeof(full_path);
+	char full_path[FILENAME_MAX + 1] = { 0 };
+	unsigned buffer_size = stat_size() + sizeof(full_path);
 	char *buffer = get_buffer(buffer_size);
 	
 	char operation_failed = 0;
@@ -268,55 +272,22 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 		
 		dump(buffer, ans.data_len);
 		
-		unsigned last_pos =
-		unpack_16(&stat_failed, buffer, 
-		unpack_64(&ctime, buffer, 
-		unpack_64(&mtime, buffer, 
-		unpack_64(&atime, buffer, 
-		unpack_64(&size, buffer, 
-		unpack_32(&group_len, buffer, 
-		unpack_32(&user_len, buffer, 
-		unpack_32(&mode, buffer, 0 
-			))))))));
-			
-		char *entry_name = buffer + last_pos;
-		unsigned entry_len = strlen(entry_name) + 1;
+		int stat_ret = 0;
+		off_t last_pos = unpack_stat(instance, buffer, &stbuf, &stat_ret);
 		
-		user = buffer + last_pos + entry_len;
-		group = buffer + last_pos + entry_len + user_len;
-		
-		if (strlen(user) + 1 != user_len
-		|| strlen(group) + 1 != group_len)
+		if (stat_ret != 0)
 		{
 			free_buffer(buffer);
-			return -EBADMSG;
+			return -stat_ret;
 		}
-		
-		uid_t uid = (uid_t)-1;
-		
-		if ((instance->client.export_opts & OPT_UGO) != 0
-		&& strcmp(instance->config.auth_user, user) == 0)
-		{
-			uid = instance->client.my_uid;
-			user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
-			if (user == NULL)
-			{
-				free_buffer(buffer);
-				return -EINVAL;
-			}
-			}
-		else
-		{
-			uid = lookup_user(instance->id_lookup.uids, user);
-		}
-		
-		gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
-		
-		DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
-		
+			
+		last_pos = unpack_16(&stat_failed, buffer, last_pos);
+
+		char *entry_name = buffer + last_pos;
+
 		if (stat_failed == 0)
 		{
-		int joined = path_join(full_path, sizeof(full_path), path, entry_name);
+			int joined = path_join(full_path, sizeof(full_path), path, entry_name);
 			
 			if (joined < 0)
 			{
@@ -326,23 +297,6 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			
 			if (joined == 0)
 			{
-				stbuf.st_mode = mode;
-				/* TODO: make func for this */
-				if ((instance->client.export_opts & OPT_UGO) == 0)
-				{
-					stbuf.st_uid = instance->client.my_uid;
-					stbuf.st_gid = instance->client.my_gid;
-				}
-				else
-				{
-					stbuf.st_uid = uid;
-					stbuf.st_gid = gid;
-				}
-				stbuf.st_size = (off_t)size;
-				stbuf.st_atime = (time_t)atime;
-				stbuf.st_mtime = (time_t)mtime;
-				stbuf.st_ctime = (time_t)ctime;
-			
 				if (cache_file(instance, full_path, &stbuf) == NULL)
 				{
 					free_buffer(buffer);
@@ -425,7 +379,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 
 	if (ans.command != cmd_open)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret != -1)
@@ -434,7 +388,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 		
 		if (ans.data_len != sizeof(handle))
 		{
-			return cleanup_badmsg(instance, &ans);;
+			return cleanup_badmsg(instance, &ans);
 		}
 		
 		if (rfs_receive_data(&instance->sendrecv, &handle, ans.data_len) == -1)
@@ -496,7 +450,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	if (ans.command != cmd_release 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 	
 	if (ans.ret == 0)
