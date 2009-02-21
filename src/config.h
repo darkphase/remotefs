@@ -36,10 +36,6 @@ extern "C" {
 #define SSL_WRITE_BLOCK         8 * 1024    /* bytes */
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 
-#if defined WITH_NSS
-#define MIN_UID_GID             1000  /* We assume that server is debian based */
-#endif
-
 #ifdef RFS_DEBUG
 #define DEFAULT_PASSWD_FILE     "./rfs-passwd"
 #define DEFAULT_EXPORTS_FILE    "./rfs-exports"
@@ -106,9 +102,6 @@ struct rfsd_config
 	const char *ssl_key_file;
 	const char *ssl_cert_file;
 	const char *ssl_ciphers;
-#endif
-#if defined WITH_NSS
-	int min_id;
 #endif
 };
 

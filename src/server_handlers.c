@@ -1889,9 +1889,4 @@ static int _handle_listexports(struct rfsd_instance *instance, const struct sock
 }
 #endif /* WITH_EXPORTS_LIST */
 
-#if defined WITH_NSS
-#include "server_handlers_nss.c"
-#endif
-
-
 #include "server_handlers_sync.c"

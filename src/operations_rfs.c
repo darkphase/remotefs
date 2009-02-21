@@ -478,13 +478,11 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			return -1;
 		}
 		
-
 		if ((instance->client.export_opts & OPT_UGO) > 0)
 		{
 			create_uids_lookup(&instance->id_lookup.uids);
 			create_gids_lookup(&instance->id_lookup.gids);
 		}
-
 		
 		int resume_ret = resume_files(instance);
 		if (resume_ret != 0)

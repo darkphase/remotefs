@@ -279,9 +279,7 @@ int main(int argc, char **argv)
 {
 	init_rfs_instance(&rfs_instance);
 	instance = &rfs_instance;
-#if defined WITH_NSS
-	init_rfs_nss();
-#endif
+
 	/* for the cache utility */
 	umask(0600);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
@@ -355,11 +353,7 @@ int main(int argc, char **argv)
 	{
 		return 1;
 	}
-#if defined WITH_NSS
-	init_nss_host_name(rfs_instance.config.host);
-	rfs_nss(&rfs_instance);
-#endif
-
+	
 	char opt_tmpl[] = "-ofsname=rfs@";
 	size_t fsname_len = strlen(opt_tmpl) + strlen(rfs_instance.config.host) + 1;
 	char *opt = get_buffer(fsname_len);

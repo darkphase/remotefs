@@ -31,7 +31,7 @@ librfs_OBJS = src/attr_cache.o \
               src/command.o \
               src/crypt.o \
               src/data_cache.o \
-              src/id_lookup_client.o \
+              src/id_lookup.o \
               src/instance.o \
               src/keep_alive_client.o \
               src/list.o \

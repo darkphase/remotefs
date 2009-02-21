@@ -304,7 +304,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 				free_buffer(buffer);
 				return -EINVAL;
 			}
-		}
+			}
 		else
 		{
 			uid = lookup_user(instance->id_lookup.uids, user);
@@ -1326,8 +1326,4 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	return 0;/* ans.ret;*/ /* This is not OKm readlink shall return the size of the link */
 }
 #endif /* WITH_LINKS */
-
-#ifdef WITH_NSS
-#include "operations_nss.c"
-#endif
 

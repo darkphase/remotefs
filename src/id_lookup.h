@@ -57,12 +57,6 @@ const char* lookup_uid(const struct list *uids, uid_t uid);
 (will default to username with uid if group can't be found) */
 const char* lookup_gid(const struct list *gids, gid_t gid, const struct list *uids, uid_t uid);
 
-#if defined WITH_NSS
-const char *get_user_name(struct list **uid_list, int min);
-const char *get_group_name(struct list **uid_list, int min);
-void init_nss_host_name(char *name);
-#endif
-
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
