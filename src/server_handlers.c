@@ -76,6 +76,87 @@ static int stat_file(struct rfsd_instance *instance, const char *path, struct st
 	return 0;
 }
 
+static size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int *ret)
+{
+	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
+	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
+	
+	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
+	&& (user == NULL
+	|| group == NULL))
+	{
+		*ret = ECANCELED;
+	}
+	
+	if (user == NULL)
+	{
+		user = "";
+	}
+	if (group == NULL)
+	{
+		group = "";
+	}
+	
+	uint32_t user_len = strlen(user) + 1;
+	uint32_t group_len = strlen(group) + 1;
+
+	return 0
+	+ sizeof(uint32_t) /* mode */
+	+ sizeof(uint32_t) /* user_len */ 
+	+ sizeof(uint32_t) /* group_len */
+	+ sizeof(uint64_t) /* size */
+	+ sizeof(uint64_t) /* atime */
+	+ sizeof(uint64_t) /* mtime */
+	+ sizeof(uint64_t) /* ctime */
+	+ user_len
+	+ group_len;
+}
+
+static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat *stbuf, int *ret)
+{
+	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
+	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
+	
+	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
+	&& (user == NULL
+	|| group == NULL))
+	{
+		*ret = ECANCELED;
+	}
+	
+	if (user == NULL)
+	{
+		user = "";
+	}
+	if (group == NULL)
+	{
+		group = "";
+	}
+	
+	DEBUG("sending user: %s, group: %s\n", user, group);
+	
+	uint32_t mode = stbuf->st_mode;
+	uint32_t user_len = strlen(user) + 1;
+	uint32_t group_len = strlen(group) + 1;
+	
+	uint64_t size = stbuf->st_size;
+	uint64_t atime = stbuf->st_atime;
+	uint64_t mtime = stbuf->st_mtime;
+	uint64_t ctime = stbuf->st_ctime;
+
+	return 
+	pack(group, group_len, buffer, 
+	pack(user, user_len, buffer, 
+	pack_64(&ctime, buffer, 
+	pack_64(&mtime, buffer, 
+	pack_64(&atime, buffer, 
+	pack_64(&size, buffer, 
+	pack_32(&group_len, buffer, 
+	pack_32(&user_len, buffer, 
+	pack_32(&mode, buffer, 0
+	)))))))));
+}
+
 int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
@@ -111,62 +192,26 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	free_buffer(buffer);
 	
-	uint32_t mode = stbuf.st_mode;
-	
-	const char *user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
-	const char *group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
-	
-	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
-	&& (user == NULL
-	|| group == NULL))
-	{
-		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
-	}
-	
-	if (user == NULL)
-	{
-		user = "";
-	}
-	if (group == NULL)
-	{
-		group = "";
-	}
-	
-	DEBUG("sending user: %s, group: %s\n", user, group);
-	
-	uint32_t user_len = strlen(user) + 1;
-	uint32_t group_len = strlen(group) + 1;
-	
-	uint64_t size = stbuf.st_size;
-	uint64_t atime = stbuf.st_atime;
-	uint64_t mtime = stbuf.st_mtime;
-	uint64_t ctime = stbuf.st_ctime;
+	int size_ret = 0;
+	unsigned overall_size = stat_size(instance, &stbuf, &size_ret);
 
-	unsigned overall_size = sizeof(mode)
-	+ sizeof(user_len)
-	+ user_len
-	+ sizeof(group_len)
-	+ group_len
-	+ sizeof(size)
-	+ sizeof(atime)
-	+ sizeof(mtime)
-	+ sizeof(ctime);
+	if (size_ret != 0)
+	{
+		return reject_request(instance, cmd, size_ret) == 0 ? 1: -1;
+	}
 	
 	struct answer ans = { cmd_getattr, overall_size, 0, 0 };
 
 	buffer = get_buffer(ans.data_len);
 
-	pack(group, group_len, buffer, 
-	pack(user, user_len, buffer, 
-	pack_64(&ctime, buffer, 
-	pack_64(&mtime, buffer, 
-	pack_64(&atime, buffer, 
-	pack_64(&size, buffer, 
-	pack_32(&group_len, buffer, 
-	pack_32(&user_len, buffer, 
-	pack_32(&mode, buffer, 0
-		)))))))));
+	int pack_ret = 0;
+	pack_stat(instance, buffer, &stbuf, &pack_ret);
 
+	if (pack_ret != 0)
+	{
+		return reject_request(instance, cmd, pack_ret) == 0 ? 1: -1;
+	}
+	
 	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, ans.data_len) == -1)
 	{
 		free_buffer(buffer);
@@ -221,30 +266,9 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 	struct dirent *dir_entry = NULL;
 	struct stat stbuf = { 0 };
-	uint32_t mode = 0;
-	uint32_t user_len = 0;
-	const char *user = NULL;
-	uint32_t group_len = 0;
-	const char *group = NULL;
-	uint64_t size = 0;
-	uint64_t atime = 0;
-	uint64_t mtime = 0;
-	uint64_t ctime = 0;
 	uint16_t stat_failed = 0;
 	
-	unsigned stat_size = sizeof(mode)
-	+ sizeof(user_len)
-	+ MAX_SUPPORTED_NAME_LEN
-	+ sizeof(group_len)
-	+ MAX_SUPPORTED_NAME_LEN
-	+ sizeof(size)
-	+ sizeof(atime)
-	+ sizeof(mtime)
-	+ sizeof(ctime)
-	+ sizeof(stat_failed);
-	
-	char full_path[FILENAME_MAX] = { 0 };
-	buffer = get_buffer(stat_size + sizeof(full_path));
+	char full_path[FILENAME_MAX + 1] = { 0 };
 	
 	struct answer ans = { cmd_readdir, 0 };
 	
@@ -261,9 +285,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		{
 			stat_failed = 1;
 		}
-		
-		unsigned overall_size = stat_size + entry_len;
-		
+	
 		if (joined == 0)
 		{
 			if (stat_file(instance, full_path, &stbuf) != 0)
@@ -272,65 +294,30 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			}
 		}
 		
-		mode = stbuf.st_mode;
-		
-		user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
-		if (user == NULL)
-		{
-			stat_failed = 1;
-			user = "";
-		}
-		user_len = strlen(user) + 1;
-		
-		if (user_len > MAX_SUPPORTED_NAME_LEN)
-		{
-			stat_failed = 1;
-			user = "";
-			user_len = 1;
-		}
-		
-		group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
-		if (group == NULL)
-		{
-			stat_failed = 1;
-			group = "";
-		}
-		group_len = strlen(group) + 1;
-		
-		if (group_len > MAX_SUPPORTED_NAME_LEN)
-		{
-			stat_failed = 1;
-			group = "";
-			group_len = 1;
-		}
-		
-		if (user == NULL 
-		|| group == NULL)
+		int size_ret = 0;
+		size_t stat_struct_size = stat_size(instance, &stbuf, &size_ret);
+
+		if (size_ret != 0)
 		{
 			stat_failed = 1;
 		}
 		
-		size = stbuf.st_size;
-		atime = stbuf.st_atime;
-		mtime = stbuf.st_mtime;
-		ctime = stbuf.st_ctime;
-		
-		DEBUG("sending user: %s, group: %s\n", user, group);
-		
+		unsigned overall_size = stat_struct_size + sizeof(stat_failed) + sizeof(entry_len);
+		buffer = get_buffer(overall_size);
+
 		ans.data_len = overall_size;
 		
+		int pack_ret = 0; 
+		off_t last_offset = pack_stat(instance, buffer, &stbuf, &pack_ret);
+
+		if (pack_ret != 0)
+		{
+			stat_failed = 1;
+		}
+
 		pack(entry_name, entry_len, buffer, 
-		pack_16(&stat_failed, buffer, 
-		pack(group, group_len, buffer, 
-		pack(user, user_len, buffer, 
-		pack_64(&ctime, buffer, 
-		pack_64(&mtime, buffer, 
-		pack_64(&atime, buffer, 
-		pack_64(&size, buffer, 
-		pack_32(&group_len, buffer, 
-		pack_32(&user_len, buffer, 
-		pack_32(&mode, buffer, 0
-			)))))))))));
+		pack_16(&stat_failed, buffer, last_offset
+		));
 		
 		dump(buffer, overall_size);
 
