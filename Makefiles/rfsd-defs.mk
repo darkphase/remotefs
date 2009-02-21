@@ -37,6 +37,11 @@ rfsd_OBJS = src/buffer.o \
             src/sendrecv.o \
             src/server.o \
             src/server_handlers.o \
+            src/server_handlers_acl.o \
+            src/server_handlers_read.o \
+            src/server_handlers_rfs.o \
+            src/server_handlers_sync.o \
+            src/server_handlers_write.o \
             src/signals.o \
             src/sockets.o \
             src/ssl.o \

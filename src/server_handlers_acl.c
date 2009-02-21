@@ -1,9 +1,18 @@
 #if defined WITH_ACL
 
 #include <sys/xattr.h>
-#include "rfs_acl.h"
+#include <errno.h>
+#include <string.h>
 
-static int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+#include "config.h"
+#include "command.h"
+#include "buffer.h"
+#include "rfs_acl.h"
+#include "instance.h"
+#include "server.h"
+#include "sendrecv.h"
+
+int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 
@@ -142,7 +151,7 @@ static int _handle_getxattr(struct rfsd_instance *instance, const struct sockadd
 	return 0;
 }
 
-static int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
 	if (buffer == NULL)
@@ -253,3 +262,4 @@ static int _handle_setxattr(struct rfsd_instance *instance, const struct sockadd
 #else
 int server_handlers_acl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
 #endif /* WITH_ACL */
+

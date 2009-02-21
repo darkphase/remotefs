@@ -62,3 +62,4 @@ void dump_acl(struct id_lookup_info *lookup, const rfs_acl_t *acl, int count);
 #endif /* WITH_ACL */
 
 #endif /* RFS_ACL_H */
+

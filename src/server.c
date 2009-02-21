@@ -24,7 +24,7 @@ See the file LICENSE.
 #include "exports.h"
 #include "id_lookup.h"
 #include "command.h"
-#include "server_handlers.h"
+#include "server_handlers_sync.h"
 #include "sendrecv.h"
 #include "keep_alive_server.h"
 #include "cleanup.h"

@@ -8,6 +8,9 @@ See the file LICENSE.
 
 /** syncronized server handlers. will lock keep alive when it's needed */
 
+#include "server_handlers.h"
+#include "keep_alive_server.h"
+
 /* need to define client_socket, client_addr and cmd before using this macro */
 #define DECORATE(decorate_func)                                                 \
 	if (keep_alive_lock(instance) == 0)                                     \
@@ -171,3 +174,4 @@ int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 #endif
 
 #undef DECORATE
+

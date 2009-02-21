@@ -2,6 +2,7 @@
 
 #include <sys/xattr.h>
 #include <errno.h>
+#include <string.h>
 
 #include "config.h"
 #include "command.h"

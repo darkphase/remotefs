@@ -6,6 +6,24 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <errno.h>
+#include <unistd.h>
+#if defined DARWIN
+extern int     sendfile(int, int, off_t, size_t,  void *, off_t *, int);
+#endif
+#if ! defined FREEBSD && ! defined DARWIN && ! defined QNX
+#	include <sys/sendfile.h>
+#endif
+
+#include "config.h"
+#include "command.h"
+#include "buffer.h"
+#include "instance.h"
+#include "sendrecv.h"
+#include "server.h"
 
 #ifdef RFS_DEBUG
 #include <sys/time.h>
@@ -196,7 +214,7 @@ static unsigned use_sendfile(struct rfsd_instance *instance, size_t block_size)
 }
 #endif
 
-static int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
@@ -266,3 +284,4 @@ static int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in
 	return read_as_always(instance, cmd, handle, (off_t)offset, (size_t)size);
 #endif
 }
+
