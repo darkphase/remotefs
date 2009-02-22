@@ -85,6 +85,8 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);
 #endif
 
+int rfs_getnames(struct rfs_instance *instance);
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

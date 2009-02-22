@@ -130,6 +130,15 @@ struct rfs_instance
 	struct ssl_info ssl;
 #endif
 
+	/* nss server */
+	struct
+	{
+		int socket;
+		struct list *users_storage;
+		struct list *groups_storage;
+		pthread_t server_thread;
+	} nss;
+
 	struct rfs_config config;
 };
 

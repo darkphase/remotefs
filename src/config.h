@@ -51,6 +51,12 @@ extern "C" {
 #endif /* RFS_DEBUG */
 
 #ifdef RFS_DEBUG
+#define NSS_SOCKETS_DIR			"./"
+#else
+#define NSS_SOCKETS_DIR			"/tmp/"
+#endif
+
+#ifdef RFS_DEBUG
 #        define DEBUG(format, args...) do { printf(format, args); } while (0)
 #else
 #        define DEBUG(format, args...) {}

@@ -62,6 +62,8 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 #endif
 
+int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

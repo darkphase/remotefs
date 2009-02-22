@@ -19,6 +19,8 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "config.h"
 #include "resume.h"
@@ -86,27 +88,70 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	last_pos += user_len + group_len;
 	
 	uid_t uid = (uid_t)-1;
+	gid_t gid = (gid_t)-1;
 	
-	if ((instance->client.export_opts & OPT_UGO) != 0
-	&& strcmp(instance->config.auth_user, user) == 0)
+	if ((instance->client.export_opts & OPT_UGO) != 0)
 	{
-		uid = instance->client.my_uid;
-		user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
-		if (user == NULL)
+		size_t host_len = strlen(instance->config.host);
+
+		if (strcmp(instance->config.auth_user, user) == 0)
 		{
-			*ret = EINVAL;
-			return (off_t)-1;
+			uid = instance->client.my_uid;
+			user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
+			if (user == NULL)
+			{
+				*ret = EINVAL;
+				return (off_t)-1;
+			}
+		}
+		else
+		{
+			size_t user_len = strlen(user);
+			size_t overall_user_len = user_len + host_len + 1  + 1; /* + '@' + final \0 */
+
+			char *remote_user = get_buffer(overall_user_len);
+			snprintf(remote_user, overall_user_len, "%s@%s", user, instance->config.host);
+
+			DEBUG("remote user: %s\n", remote_user);
+		
+			struct passwd *pw = getpwnam(remote_user);
+		
+			free_buffer(remote_user);
+		
+			if (pw != NULL)
+			{
+				uid = pw->pw_uid;
+			}
+		}
+
+		size_t group_len = strlen(group);
+		size_t overall_group_len = group_len + host_len + 1 + 1;
+
+		char *remote_group = get_buffer(overall_group_len);
+		snprintf(remote_group, overall_group_len, "%s@%s", group, instance->config.host);
+
+		DEBUG("remote group: %s\n", remote_group);
+
+		struct group *gr = getgrnam(remote_group);
+
+		free_buffer(remote_group);
+
+		if (gr != NULL)
+		{
+			gid = gr->gr_gid;
+		}
+
+		if (uid == (uid_t)-1)
+		{
+			uid = lookup_user(instance->id_lookup.uids, user);
+		}
+
+		if (gid == (gid_t)-1)
+		{
+			gid = lookup_group(instance->id_lookup.gids, group, user);
 		}
 	}
-	else
-	{
-		uid = lookup_user(instance->id_lookup.uids, user);
-	}
 	
-	gid_t gid = lookup_group(instance->id_lookup.gids, group, user);
-	
-	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
-
 	result->st_mode = mode;
 
 	if ((instance->client.export_opts & OPT_UGO) == 0)
@@ -124,6 +169,8 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	result->st_atime = (time_t)atime;
 	result->st_mtime = (time_t)mtime;
 	result->st_ctime = (time_t)ctime;
+	
+	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
 
 	return last_pos;
 }

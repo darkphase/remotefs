@@ -31,6 +31,7 @@ See the file LICENSE.
 #ifdef WITH_SSL
 #include "ssl.h"
 #endif
+#include "nss_server.h"
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
 {
@@ -477,8 +478,22 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			rfs_disconnect(instance, 1);
 			return -1;
 		}
+
+		if ((instance->client.export_opts & OPT_UGO) != 0)
+		{
+			int getnames_ret = rfs_getnames(instance);
+			if (getnames_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
+				}
+				rfs_disconnect(instance, 1);
+				return -1;
+			}
+		}
 		
-		if ((instance->client.export_opts & OPT_UGO) > 0)
+		if ((instance->client.export_opts & OPT_UGO) != 0)
 		{
 			create_uids_lookup(&instance->id_lookup.uids);
 			create_gids_lookup(&instance->id_lookup.gids);
@@ -535,12 +550,20 @@ void* rfs_init(struct rfs_instance *instance)
 		init_write_behind(instance);
 	}
 
+#ifdef RFS_DEBUG
+	start_nss_server(instance);
+#endif
+
 	return NULL;
 }
 
 void rfs_destroy(struct rfs_instance *instance)
 {
 	keep_alive_lock(instance);
+
+#ifdef RFS_DEBUG
+	stop_nss_server(instance);
+#endif
 	
 	rfs_disconnect(instance, 1);
 
@@ -882,7 +905,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 		
 		if (ans.command != cmd_listexports)
 		{
-			return cleanup_badmsg(instance, &ans);;
+			return cleanup_badmsg(instance, &ans);
 		}
 		
 		if (ans.data_len == 0)
@@ -954,4 +977,109 @@ int rfs_list_exports(struct rfs_instance *instance)
 	return 0;
 }
 #endif /* WITH_EXPORTS_LIST */
+
+int rfs_getnames(struct rfs_instance *instance)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+	
+	struct command cmd = { cmd_getnames, 0 };
+	
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) < 0)
+	{
+		return -ECONNABORTED;
+	}
+	
+	struct answer ans = { 0 };
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) < 0)
+	{
+		return -ECONNABORTED;
+	}
+		
+	if (ans.command != cmd_getnames)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if (ans.ret != 0)
+	{
+		return -ans.ret_errno;
+	}
+	
+	destroy_list(&instance->nss.users_storage);
+	
+	if (ans.data_len > 0)
+	{
+		char *users = get_buffer(ans.data_len);
+		
+		if (rfs_receive_data(&instance->sendrecv, users, ans.data_len) < 0)
+		{
+			free_buffer(users);
+			return -ECONNABORTED;
+		}
+
+		const char *user = users;
+		while (user < users + ans.data_len)
+		{
+			size_t user_len = strlen(user) + 1;
+
+			char *nss_user = get_buffer(user_len);
+			memcpy(nss_user, user, user_len);
+
+			add_to_list(&instance->nss.users_storage, nss_user);
+
+			user += user_len;
+		}
+
+		free_buffer(users);
+	}
+	
+	if (rfs_receive_answer(&instance->sendrecv, &ans) < 0)
+	{
+		return -ECONNABORTED;
+	}
+		
+	if (ans.command != cmd_getnames)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if (ans.ret != 0)
+	{
+		return -ans.ret_errno;
+	}
+
+	destroy_list(&instance->nss.groups_storage);
+
+	if (ans.data_len > 0)
+	{
+		char *groups = get_buffer(ans.data_len);
+		
+		if (rfs_receive_data(&instance->sendrecv, groups, ans.data_len) < 0)
+		{
+			free_buffer(groups);
+			return -ECONNABORTED;
+		}
+
+		const char *group = groups;
+		while (group < groups + ans.data_len)
+		{
+			size_t group_len = strlen(group) + 1;
+
+			char *nss_group = get_buffer(group_len);
+			memcpy(nss_group, group, group_len);
+
+			add_to_list(&instance->nss.groups_storage, nss_group);
+
+			group += group_len;
+		}
+
+		free_buffer(groups);
+	}
+
+	return 0;
+}
 

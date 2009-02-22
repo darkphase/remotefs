@@ -208,6 +208,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 
 	case cmd_chown:
 		return handle_chown(instance, client_addr, cmd);
+	
+	case cmd_getnames:
+		return handle_getnames(instance, client_addr, cmd);
 	}
 	
 	reject_request_with_cleanup(instance, cmd, EINVAL);

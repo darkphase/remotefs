@@ -16,18 +16,6 @@ See the file LICENSE.
 #include "buffer.h"
 #include "list.h"
 
-struct uid_look_ent
-{
-	const char *name;
-	uid_t uid;
-};
-
-struct gid_look_ent
-{
-	const char *name;
-	gid_t gid;
-};
-
 static int put_to_uids(struct list **uids, const char *name, const uid_t uid)
 {
 	struct uid_look_ent *entry = get_buffer(sizeof(*entry));

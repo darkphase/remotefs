@@ -62,6 +62,15 @@ static void init_write_cache(struct rfs_instance *instance)
 	instance->write_cache.write_behind_thread = 0;
 }
 
+static void init_nss(struct rfs_instance *instance)
+{
+	/* nss */
+	instance->nss.socket = -1;
+	instance->nss.users_storage = NULL;
+	instance->nss.groups_storage = NULL;
+	instance->nss.server_thread = 0;
+}
+
 static void init_sendrecv(struct sendrecv_info *sendrecv)
 {
 	sendrecv->socket = -1;
@@ -175,6 +184,7 @@ void init_rfs_instance(struct rfs_instance *instance)
 #ifdef WITH_SSL
 	init_ssl(&instance->ssl);
 #endif
+	init_nss(instance);
 
 	init_rfs_config(instance);
 }
@@ -207,3 +217,4 @@ void release_rfsd_instance(struct rfsd_instance *instance)
 	free(instance->config.exports_file);
 	free(instance->config.passwd_file);
 }
+

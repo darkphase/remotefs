@@ -47,6 +47,16 @@ src/keep_alive_server.o:src/instance.h
 src/list.o:src/config.h
 src/list.o:src/list.h
 src/list.o:src/buffer.h
+src/nss_client.o:src/config.h
+src/nss_client.o:src/command.h
+src/nss_client.o:src/buffer.h
+src/nss_server.o:src/config.h
+src/nss_server.o:src/command.h
+src/nss_server.o:src/buffer.h
+src/nss_server.o:src/nss_server.h
+src/nss_server.o:src/instance.h
+src/nss_server.o:src/sendrecv.h
+src/nss_server.o:src/list.h
 src/operations.o:src/config.h
 src/operations.o:src/resume.h
 src/operations.o:src/operations.h
@@ -100,6 +110,7 @@ src/operations_rfs.o:src/instance.h
 src/operations_rfs.o:src/attr_cache.h
 src/operations_rfs.o:src/crypt.h
 src/operations_rfs.o:src/ssl.h
+src/operations_rfs.o:src/nss_server.h
 src/operations_sync.o:src/instance.h
 src/operations_sync.o:src/keep_alive_client.h
 src/operations_sync.o:src/operations.h
@@ -291,6 +302,8 @@ src/instance.o:src/instance.c
 src/keep_alive_client.o:src/keep_alive_client.c
 src/keep_alive_server.o:src/keep_alive_server.c
 src/list.o:src/list.c
+src/nss_client.o:src/nss_client.c
+src/nss_server.o:src/nss_server.c
 src/operations_acl.o:src/operations_acl.c
 src/operations.o:src/operations.c
 src/operations_read.o:src/operations_read.c

@@ -153,3 +153,4 @@ int rfs_setxattr(struct rfs_instance *instance, const char *path, const char *na
 #endif
 
 #undef DECORATE
+

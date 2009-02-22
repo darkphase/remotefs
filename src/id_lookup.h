@@ -17,6 +17,18 @@ extern "C" {
 
 struct list;
 
+struct uid_look_ent
+{
+	const char *name;
+	uid_t uid;
+};
+
+struct gid_look_ent
+{
+	const char *name;
+	gid_t gid;
+};
+
 /** get uid of named user */
 uid_t get_uid(const struct list *uids, const char *name);
 

@@ -33,6 +33,7 @@ enum server_commands
 	cmd_setsockbuffer,           /* 11 */
 	cmd_enablessl,               /* 12 */
 	cmd_listexports,             /* 13 */
+	cmd_getnames,                /* 14 */
 	
 	/* reserved */
 
@@ -59,6 +60,13 @@ enum server_commands
 	cmd_readlink,                /* 45 */
 	cmd_getxattr,                /* 46 */
 	cmd_setxattr,                /* 47 */
+
+	/* reserved */
+
+	/* nss */
+	cmd_checkuser          = 100, 
+	cmd_checkgroup, 
+
 	cmd_last
 };
 
