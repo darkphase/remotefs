@@ -26,7 +26,8 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-librfs_OBJS = src/attr_cache.o \
+librfs_OBJS = src/acl_utils.o \
+              src/attr_cache.o \
               src/buffer.o \
               src/command.o \
               src/crypt.o \
@@ -45,8 +46,7 @@ librfs_OBJS = src/attr_cache.o \
               src/operations_write.o \
               src/path.o \
               src/resume.o \
-              src/rfs_acl.o \
-              src/rfs_errno.o \
+              src/error.o \
               src/sendrecv.o \
               src/signals.o \
               src/signals_client.o \

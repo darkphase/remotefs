@@ -9,7 +9,7 @@ See the file LICENSE.
 #include <errno.h>
 
 #include "compat.h"
-#include "rfs_errno.h"
+#include "error.h"
 #include "inet.h"
 
 /** available errnos (POSIX.1)  */

@@ -13,14 +13,7 @@ See the file LICENSE.
 
 #include "config.h"
 
-/************************************************
- * implementation of semaphore based on pthread
- * The basic functions correspond to the sem_*()
- * functions declared by semaphore.h.
- * There is no sem_open(), sem_unlink() and
- * sem_close().
- *
- ************************************************/
+/** implementation of semaphore based on pthread */
 
 typedef struct {
 	pthread_cond_t cond;
@@ -80,3 +73,4 @@ static inline int rfs_sem_destroy(rfs_sem_t *sem)
 }
 
 #endif /* RFS_SEMAPHORE_H */
+

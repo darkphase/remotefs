@@ -23,7 +23,7 @@ See the file LICENSE.
 #include "sendrecv.h"
 #include "command.h"
 #include "inet.h"
-#include "rfs_errno.h"
+#include "error.h"
 #include "instance.h"
 
 #ifdef WITH_SSL

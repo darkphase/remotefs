@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "config.h"
 #include "buffer.h"
 #include "list.h"
-#include "rfs_acl.h"
+#include "acl_utils.h"
 #include "id_lookup.h"
 #include "instance.h"
 #include "acl/libacl/byteorder.h"

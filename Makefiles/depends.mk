@@ -1,3 +1,10 @@
+src/acl_utils.o:src/config.h
+src/acl_utils.o:src/buffer.h
+src/acl_utils.o:src/list.h
+src/acl_utils.o:src/acl_utils.h
+src/acl_utils.o:src/id_lookup.h
+src/acl_utils.o:src/instance.h
+src/acl_utils.o:src/acl/libacl/byteorder.h
 src/attr_cache.o:src/config.h
 src/attr_cache.o:src/attr_cache.h
 src/attr_cache.o:src/buffer.h
@@ -20,6 +27,9 @@ src/data_cache.o:src/config.h
 src/data_cache.o:src/data_cache.h
 src/data_cache.o:src/buffer.h
 src/data_cache.o:src/list.h
+src/error.o:src/compat.h
+src/error.o:src/error.h
+src/error.o:src/inet.h
 src/exports.o:src/config.h
 src/exports.o:src/exports.h
 src/exports.o:src/buffer.h
@@ -37,7 +47,7 @@ src/id_lookup.o:src/list.h
 src/instance.o:src/config.h
 src/instance.o:src/instance.h
 src/instance.o:src/sendrecv.h
-src/instance.o:src/rfs_semaphore.h
+src/instance.o:src/pt_semaphore.h
 src/keep_alive_client.o:src/config.h
 src/keep_alive_client.o:src/keep_alive_client.h
 src/keep_alive_client.o:src/instance.h
@@ -77,7 +87,7 @@ src/operations.o:src/instance.h
 src/operations_acl.o:src/config.h
 src/operations_acl.o:src/command.h
 src/operations_acl.o:src/buffer.h
-src/operations_acl.o:src/rfs_acl.h
+src/operations_acl.o:src/acl_utils.h
 src/operations_acl.o:src/instance.h
 src/operations_acl.o:src/sendrecv.h
 src/operations_acl.o:src/operations_rfs.h
@@ -88,7 +98,7 @@ src/operations_read.o:src/buffer.h
 src/operations_read.o:src/sendrecv.h
 src/operations_read.o:src/list.h
 src/operations_read.o:src/data_cache.h
-src/operations_read.o:src/rfs_semaphore.h
+src/operations_read.o:src/pt_semaphore.h
 src/operations_read.o:src/resume.h
 src/operations_read.o:src/instance.h
 src/operations_read.o:src/keep_alive_client.h
@@ -123,7 +133,7 @@ src/operations_write.o:src/sendrecv.h
 src/operations_write.o:src/list.h
 src/operations_write.o:src/data_cache.h
 src/operations_write.o:src/attr_cache.h
-src/operations_write.o:src/rfs_semaphore.h
+src/operations_write.o:src/pt_semaphore.h
 src/operations_write.o:src/resume.h
 src/operations_write.o:src/instance.h
 src/operations_write.o:src/keep_alive_client.h
@@ -149,16 +159,6 @@ src/rfs.o:src/sug_client.h
 src/rfs.o:src/instance.h
 src/rfs.o:src/operations_rfs.h
 src/rfs.o:src/fuse_rfs.h
-src/rfs_acl.o:src/config.h
-src/rfs_acl.o:src/buffer.h
-src/rfs_acl.o:src/list.h
-src/rfs_acl.o:src/rfs_acl.h
-src/rfs_acl.o:src/id_lookup.h
-src/rfs_acl.o:src/instance.h
-src/rfs_acl.o:src/acl/libacl/byteorder.h
-src/rfs_errno.o:src/compat.h
-src/rfs_errno.o:src/rfs_errno.h
-src/rfs_errno.o:src/inet.h
 src/rfsd.o:src/config.h
 src/rfsd.o:src/rfsd.h
 src/rfsd.o:src/signals_server.h
@@ -177,7 +177,7 @@ src/sendrecv.o:src/config.h
 src/sendrecv.o:src/sendrecv.h
 src/sendrecv.o:src/command.h
 src/sendrecv.o:src/inet.h
-src/sendrecv.o:src/rfs_errno.h
+src/sendrecv.o:src/error.h
 src/sendrecv.o:src/instance.h
 src/sendrecv.o:src/ssl.h
 src/server.o:src/config.h
@@ -213,7 +213,7 @@ src/server_handlers.o:src/server.h
 src/server_handlers_acl.o:src/config.h
 src/server_handlers_acl.o:src/command.h
 src/server_handlers_acl.o:src/buffer.h
-src/server_handlers_acl.o:src/rfs_acl.h
+src/server_handlers_acl.o:src/acl_utils.h
 src/server_handlers_acl.o:src/instance.h
 src/server_handlers_acl.o:src/server.h
 src/server_handlers_acl.o:src/sendrecv.h
@@ -289,12 +289,14 @@ src/sug_server.o:src/instance.h
 src/utils.o:src/config.h
 src/utils.o:src/utils.h
 src/utils.o:src/sendrecv.h
+src/acl_utils.o:src/acl_utils.c
 src/attr_cache.o:src/attr_cache.c
 src/buffer.o:src/buffer.c
 src/cleanup.o:src/cleanup.c
 src/command.o:src/command.c
 src/crypt.o:src/crypt.c
 src/data_cache.o:src/data_cache.c
+src/error.o:src/error.c
 src/exports.o:src/exports.c
 src/fuse_rfs.o:src/fuse_rfs.c
 src/id_lookup.o:src/id_lookup.c
@@ -313,10 +315,8 @@ src/operations_write.o:src/operations_write.c
 src/passwd.o:src/passwd.c
 src/path.o:src/path.c
 src/resume.o:src/resume.c
-src/rfs_acl.o:src/rfs_acl.c
 src/rfs.o:src/rfs.c
 src/rfsd.o:src/rfsd.c
-src/rfs_errno.o:src/rfs_errno.c
 src/rfspasswd.o:src/rfspasswd.c
 src/sendrecv.o:src/sendrecv.c
 src/server.o:src/server.c

@@ -21,7 +21,8 @@ rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-rfsd_OBJS = src/buffer.o \
+rfsd_OBJS = src/acl_utils.o \
+            src/buffer.o \
             src/cleanup.o \
             src/command.o \
             src/crypt.o \
@@ -32,8 +33,7 @@ rfsd_OBJS = src/buffer.o \
             src/list.o \
             src/passwd.o \
             src/path.o \
-            src/rfs_acl.o \
-            src/rfs_errno.o \
+            src/error.o \
             src/sendrecv.o \
             src/server.o \
             src/server_handlers.o \

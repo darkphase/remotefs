@@ -17,7 +17,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance.h"
 #include "sendrecv.h"
-#include "rfs_semaphore.h"
+#include "pt_semaphore.h"
 
 static void init_client(struct rfs_instance *instance)
 {

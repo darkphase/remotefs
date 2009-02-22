@@ -7,7 +7,7 @@
 #include "config.h"
 #include "command.h"
 #include "buffer.h"
-#include "rfs_acl.h"
+#include "acl_utils.h"
 #include "instance.h"
 #include "server.h"
 #include "sendrecv.h"

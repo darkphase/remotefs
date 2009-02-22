@@ -19,7 +19,7 @@ See the file LICENSE.
 #endif
 
 #include "config.h"
-#include "rfs_semaphore.h"
+#include "pt_semaphore.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

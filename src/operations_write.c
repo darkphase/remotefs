@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "list.h"
 #include "data_cache.h"
 #include "attr_cache.h"
-#include "rfs_semaphore.h"
+#include "pt_semaphore.h"
 #include "resume.h"
 #include "instance.h"
 #include "keep_alive_client.h"
