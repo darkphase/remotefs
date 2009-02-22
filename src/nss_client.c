@@ -87,13 +87,22 @@ static char* extract_name(const char *full_name)
 	return name;
 }
 
-static int check_name(const char *name, const char *server, enum server_commands cmd_id)
-{
+static int check_name(const char *full_name, enum server_commands cmd_id)
+{	
+	char *server = extract_server(full_name);
+	if (server == NULL)
+	{
+		return -EINVAL;
+	}
+
 	char *socket_name = find_socket(getuid(), server);
 	if (socket_name == NULL)
 	{
+		free_buffer(server);
 		return -EAGAIN;
 	}
+		
+	free_buffer(server);
 
 	DEBUG("socket name: %s\n", socket_name);
 
@@ -103,6 +112,8 @@ static int check_name(const char *name, const char *server, enum server_commands
 		free_buffer(socket_name);
 		return -errno;
 	}
+	
+	int saved_errno = 0;
 
 	struct sockaddr_un address = { 0 };
 	strcpy(address.sun_path, socket_name);
@@ -114,10 +125,16 @@ static int check_name(const char *name, const char *server, enum server_commands
 
 	if (connect(sock, (struct sockaddr *)&address, sizeof(address)) != 0)
 	{
-		return -errno;
+		saved_errno = -errno;
+		goto error;
 	}
 
-	int saved_errno = 0;
+	char *name = extract_name(full_name);
+	if (name == NULL)
+	{
+		saved_errno = -EINVAL;
+		goto error;
+	}
 
 	size_t overall_size = strlen(name) + 1;
 	struct command cmd = { cmd_id, overall_size };
@@ -127,6 +144,7 @@ static int check_name(const char *name, const char *server, enum server_commands
 	if (send(sock, &cmd, sizeof(cmd), 0) != sizeof(cmd))
 	{
 		saved_errno = errno;
+		free_buffer(name);
 		goto error;
 	}
 
@@ -135,8 +153,11 @@ static int check_name(const char *name, const char *server, enum server_commands
 	if (send(sock, name, overall_size, 0) != overall_size)
 	{
 		saved_errno = errno;
+		free_buffer(name);
 		goto error;
 	}
+		
+	free_buffer(name);
 		
 	DEBUG("%s\n", "getting result");
 
@@ -151,8 +172,8 @@ static int check_name(const char *name, const char *server, enum server_commands
 	saved_errno = ret_errno;
 
 error:
-	close(sock);
 	shutdown(sock, SHUT_RDWR);
+	close(sock);
 
 	return -saved_errno;
 
@@ -160,47 +181,15 @@ error:
 
 int nss_check_user(const char *full_name)
 {
-	char *name = extract_name(full_name);
-	if (name == NULL)
-	{
-		return -EINVAL;
-	}
-
-	char *server = extract_server(full_name);
-	if (server == NULL)
-	{
-		free_buffer(name);
-		return -EINVAL;
-	}
-
-	int ret = check_name(name, server, cmd_checkuser);
+	int ret = check_name(full_name, cmd_checkuser);
 	
-	free_buffer(name);
-	free_buffer(server);
-
 	return ret;
 }
 
 int nss_check_group(const char *full_name)
 {
-	char *name = extract_name(full_name);
-	if (name == NULL)
-	{
-		return -EINVAL;
-	}
-
-	char *server = extract_server(full_name);
-	if (server == NULL)
-	{
-		free_buffer(name);
-		return -EINVAL;
-	}
-
-	int ret = check_name(name, server, cmd_checkgroup);
+	int ret = check_name(full_name, cmd_checkgroup);
 	
-	free_buffer(name);
-	free_buffer(server);
-
 	return ret;
 }
 
