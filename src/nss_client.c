@@ -17,9 +17,10 @@ See the file LICENSE.
 #include "command.h"
 #include "buffer.h"
 
-static char* find_socket(uid_t uid, const char *rfsd_host)
+static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 {
 	char *ret = NULL;
+	int skipped = 0;
 
 	DEBUG("sockets dir: %s\n", NSS_SOCKETS_DIR);
 
@@ -42,6 +43,13 @@ static char* find_socket(uid_t uid, const char *rfsd_host)
 		if (strstr(entry->d_name, socket_pattern) == entry->d_name)
 		{
 			DEBUG("file is matching pattern: %s\n", entry->d_name);
+			if (skipped < skip)
+			{
+				DEBUG("%s\n", "skipping");
+				++skipped;
+				continue;
+			}
+
 			ret = get_buffer(strlen((const char *)entry->d_name) + 1);
 			memcpy(ret, (const char *)entry->d_name, strlen((const char *)entry->d_name) + 1);
 			break;
@@ -87,6 +95,53 @@ static char* extract_name(const char *full_name)
 	return name;
 }
 
+static int nss_connect(const char *server)
+{
+	int last_errno = 0;
+	int skip = -1;
+
+	while (1)
+	{
+		++skip;
+
+		char *socket_name = find_socket(getuid(), server, skip);
+		if (socket_name == NULL)
+		{
+			return -EAGAIN;
+		}
+
+		DEBUG("socket name: %s\n", socket_name);
+
+		int sock = socket(PF_UNIX, SOCK_STREAM, 0);
+
+		if (sock == -1)
+		{
+			last_errno = errno;
+			free_buffer(socket_name);
+			continue;
+		}
+		
+		struct sockaddr_un address = { 0 };
+		strcpy(address.sun_path, socket_name);
+		address.sun_family = AF_UNIX;
+	
+		free_buffer(socket_name);
+	
+		DEBUG("%s\n", "connecting");
+
+		if (connect(sock, (struct sockaddr *)&address, sizeof(address)) != 0)
+		{
+			last_errno = errno;
+			close(sock);
+			continue;
+		}
+
+		return sock;
+	}
+
+	return -last_errno;
+}
+
 static int check_name(const char *full_name, enum server_commands cmd_id)
 {	
 	char *server = extract_server(full_name);
@@ -95,40 +150,17 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		return -EINVAL;
 	}
 
-	char *socket_name = find_socket(getuid(), server);
-	if (socket_name == NULL)
+	int sock = nss_connect(server);
+	if (sock < 0)
 	{
 		free_buffer(server);
-		return -EAGAIN;
+		return sock;
 	}
-		
+			
 	free_buffer(server);
-
-	DEBUG("socket name: %s\n", socket_name);
-
-	int sock = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (sock == -1)
-	{
-		free_buffer(socket_name);
-		return -errno;
-	}
-	
+		
 	int saved_errno = 0;
-
-	struct sockaddr_un address = { 0 };
-	strcpy(address.sun_path, socket_name);
-	address.sun_family = AF_UNIX;
 	
-	free_buffer(socket_name);
-	
-	DEBUG("%s\n", "connecting");
-
-	if (connect(sock, (struct sockaddr *)&address, sizeof(address)) != 0)
-	{
-		saved_errno = -errno;
-		goto error;
-	}
-
 	char *name = extract_name(full_name);
 	if (name == NULL)
 	{
@@ -139,7 +171,7 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	size_t overall_size = strlen(name) + 1;
 	struct command cmd = { cmd_id, overall_size };
 
-	DEBUG("%s\n", "sending command");
+	dump_command(&cmd);
 
 	if (send(sock, &cmd, sizeof(cmd), 0) != sizeof(cmd))
 	{
