@@ -39,6 +39,7 @@ rfsd_OBJS = src/acl_utils.o \
             src/server.o \
             src/server_handlers.o \
             src/server_handlers_acl.o \
+            src/server_handlers_exports.o \
             src/server_handlers_links.o \
             src/server_handlers_read.o \
             src/server_handlers_rfs.o \
