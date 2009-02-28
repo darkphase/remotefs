@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <netdb.h>
+#include <string.h>
 #if defined SOLARIS
 #include <sys/sockio.h>
 #endif

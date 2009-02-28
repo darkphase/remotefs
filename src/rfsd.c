@@ -10,6 +10,8 @@ See the file LICENSE.
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include "config.h"

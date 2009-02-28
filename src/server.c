@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #if defined FREEBSD || defined QNX

@@ -6,6 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "buffer.h"
 #include "config.h"
 #include "instance_client.h"

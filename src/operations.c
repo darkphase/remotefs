@@ -10,6 +10,7 @@ See the file LICENSE.
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
+#include <string.h>
 #include <sys/statvfs.h>
 #include <utime.h>
 

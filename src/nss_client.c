@@ -170,7 +170,9 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	size_t overall_size = strlen(name) + 1;
 	struct command cmd = { cmd_id, overall_size };
 
+#ifdef RFS_DEBUG
 	dump_command(&cmd);
+#endif
 
 	if (send(sock, &cmd, sizeof(cmd), 0) != sizeof(cmd))
 	{

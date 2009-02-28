@@ -1,6 +1,7 @@
 #if defined WITH_ACL
 
 #include <errno.h>
+#include <string.h>
 #include <sys/xattr.h>
 
 #include "acl_utils.h"

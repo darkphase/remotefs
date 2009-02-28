@@ -14,6 +14,7 @@ See the file LICENSE.
 #endif
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <string.h>
 #include <unistd.h>
 #include <utime.h>
 #if defined FREEBSD

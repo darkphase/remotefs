@@ -7,6 +7,8 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "attr_cache.h"
 #include "buffer.h"

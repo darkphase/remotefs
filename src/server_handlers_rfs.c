@@ -9,6 +9,8 @@ See the file LICENSE.
 #include <errno.h>
 #include <grp.h>
 #include <pwd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "buffer.h"

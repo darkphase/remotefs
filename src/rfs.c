@@ -7,6 +7,9 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "config.h"
