@@ -6,14 +6,11 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <signal.h>
 #include <stdlib.h>
 
 #include "config.h"
-#include "signals_client.h"
-#include "sendrecv.h"
-#include "signals.h"
 #include "operations_rfs.h"
+#include "signals.h"
 
 static void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {
@@ -29,3 +26,4 @@ void install_signal_handlers_client()
 {
 	install_signal_handler(SIGTERM, signal_handler_client);
 }
+

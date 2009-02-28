@@ -9,7 +9,6 @@ See the file LICENSE.
 #include <string.h>
 
 #include "config.h"
-#include "path.h"
 
 int path_join(char *full_path, size_t max_len, const char *path, const char *filename)
 {

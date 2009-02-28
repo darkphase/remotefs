@@ -17,8 +17,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct rfsd_instance;
 struct command;
+struct rfsd_instance;
 
 /** reject client's request */
 int reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno);
@@ -42,3 +42,4 @@ void server_close_connection(struct rfsd_instance *instance);
 #endif
 
 #endif /* SERVER_H */
+

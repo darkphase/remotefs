@@ -15,9 +15,6 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include <dirent.h>
-#include <stdio.h>
-
 /** used in rfs_readdir()
 @param full_path[FILENAME_MAX] join result
 @param path directory part
@@ -31,3 +28,4 @@ int path_join(char *full_path, size_t max_len, const char *path, const char *fil
 #endif
 
 #endif /* PATH_H */
+

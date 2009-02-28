@@ -6,49 +6,15 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#if defined FREEBSD
-#	include <netinet/in.h>
-#	include <sys/uio.h>
-#	include <sys/socket.h>
-#endif
-#if defined QNX
-#       include <sys/socket.h>
-#endif
-#if defined DARWIN
-#	include <netinet/in.h>
-#	include <sys/uio.h>
-#	include <sys/socket.h>
-#endif
-#ifdef WITH_IPV6
-#	include <netdb.h>
-#endif
-#include <stdlib.h>
+#include <errno.h>
 #include <unistd.h>
 
-#include <errno.h>
-#include <string.h>
-#include <fcntl.h>
-#include <utime.h>
-#include <pwd.h>
-#include <grp.h>
-
-#include "config.h"
-#include "server_handlers.h"
-#include "command.h"
-#include "sendrecv.h"
 #include "buffer.h"
-#include "exports.h"
-#include "list.h"
-#include "passwd.h"
-#include "inet.h"
-#include "keep_alive_server.h"
-#include "crypt.h"
-#include "path.h"
-#include "id_lookup.h"
-#include "sockets.h"
-#include "cleanup.h"
-#include "utils.h"
+#include "command.h"
+#include "config.h"
 #include "instance_server.h"
+#include "list.h"
+#include "sendrecv.h"
 #include "server.h"
 
 int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

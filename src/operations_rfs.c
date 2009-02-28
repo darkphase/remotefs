@@ -6,32 +6,29 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
 #include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/socket.h>
 #include <sys/file.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-#include "config.h"
-#include "operations.h"
-#include "operations_rfs.h"
+#include "attr_cache.h"
 #include "buffer.h"
 #include "command.h"
-#include "sendrecv.h"
+#include "config.h"
+#include "crypt.h"
+#include "id_lookup.h"
+#include "instance_client.h"
 #include "keep_alive_client.h"
 #include "list.h"
-#include "id_lookup.h"
-#include "sockets.h"
-#include "resume.h"
-#include "utils.h"
-#include "instance_client.h"
-#include "attr_cache.h"
-#include "crypt.h"
-#ifdef WITH_SSL
-#include "ssl.h"
-#endif
 #include "nss_server.h"
+#include "operations.h"
+#include "operations_rfs.h"
+#include "resume.h"
+#include "sendrecv.h"
+#include "sockets.h"
+#ifdef WITH_SSL
+#	include "ssl.h"
+#endif
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
 {

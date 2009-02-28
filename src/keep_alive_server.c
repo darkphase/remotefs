@@ -6,10 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <time.h>
-
 #include "config.h"
-#include "keep_alive_server.h"
 #include "instance_server.h"
 
 unsigned keep_alive_period()
@@ -48,3 +45,4 @@ int keep_alive_unlock(struct rfsd_instance *instance)
 	instance->keep_alive.lock = 0;
 	return 0;
 }
+

@@ -6,32 +6,22 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#if defined FREEBSD || defined QNX
-#       include <netinet/in.h>
-#endif
-#ifdef WITH_IPV6
-#       include <netdb.h>
-#endif
 #include <unistd.h>
-#include <string.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>
 
 #include "config.h"
-#include "rfsd.h"
-#include "signals_server.h"
 #include "exports.h"
-#include "passwd.h"
+#include "instance_server.h"
 #include "keep_alive_server.h"
+#include "passwd.h"
+#include "rfsd.h"
+#include "server.h"
+#include "signals_server.h"
 #include "sockets.h"
 #include "sug_server.h"
-#include "instance_server.h"
-#include "server.h"
 
 static int daemonize = 1;
 static int listen_socket = -1;

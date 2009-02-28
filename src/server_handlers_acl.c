@@ -1,13 +1,12 @@
 #if defined WITH_ACL
 
-#include <sys/xattr.h>
 #include <errno.h>
-#include <string.h>
+#include <sys/xattr.h>
 
-#include "config.h"
-#include "command.h"
-#include "buffer.h"
 #include "acl_utils.h"
+#include "buffer.h"
+#include "command.h"
+#include "config.h"
 #include "instance_server.h"
 #include "server.h"
 #include "sendrecv.h"

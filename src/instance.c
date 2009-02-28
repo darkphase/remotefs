@@ -6,17 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <unistd.h>
-#if defined FREEBSD || defined DARWIN
-#include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
-
 #include "config.h"
 #include "instance.h"
-#include "sendrecv.h"
 
 void init_sendrecv(struct sendrecv_info *sendrecv)
 {

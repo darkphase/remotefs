@@ -33,18 +33,18 @@ pass ret (int) as return value of this macro */
 extern "C" {
 #endif
 
-struct stat;
-struct utimebuf;
-struct rfs_instance;
 struct flock;
-struct utimbuf;
+struct rfs_instance;
+struct stat;
 struct statvfs;
+struct utimbuf;
 
 typedef int(*rfs_readdir_callback_t)(const char *, void *);
 
 #ifdef WITH_EXPORTS_LIST
 int rfs_list_exports(struct rfs_instance *instance);
 #endif
+
 #ifdef WITH_SSL
 int _rfs_enablessl(struct rfs_instance *instance, unsigned show_errors);
 #endif
@@ -85,6 +85,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);
 #endif
 
+/* nss */
 int rfs_getnames(struct rfs_instance *instance);
 
 #if defined (__cplusplus) || defined (c_plusplus)

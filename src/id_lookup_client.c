@@ -8,7 +8,6 @@ See the file LICENSE.
 
 #include "config.h"
 #include "id_lookup_client.h"
-#include "list.h"
 
 uid_t lookup_user(const struct list *uids, const char *name)
 {

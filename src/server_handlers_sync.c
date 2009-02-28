@@ -8,16 +8,16 @@ See the file LICENSE.
 
 /** syncronized server handlers. will lock keep alive when it's needed */
 
-#include "server_handlers.h"
 #include "keep_alive_server.h"
+#include "server_handlers.h"
 
 /* need to define client_socket, client_addr and cmd before using this macro */
-#define DECORATE(decorate_func)                                                 \
-	if (keep_alive_lock(instance) == 0)                                     \
-	{                                                                       \
-		int ret = (decorate_func)(instance, client_addr, cmd);          \
-		return keep_alive_unlock(instance) == 0 ? ret : -1;             \
-	}                                                                       \
+#define DECORATE(decorate_func)                                 \
+	if (keep_alive_lock(instance) == 0)                         \
+	{                                                           \
+		int ret = (decorate_func)(instance, client_addr, cmd);  \
+		return keep_alive_unlock(instance) == 0 ? ret : -1;     \
+	}                                                           \
 	return -1;
 
 int handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

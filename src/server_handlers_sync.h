@@ -15,9 +15,9 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct sockaddr_in;
 struct command;
 struct rfsd_instance;
+struct sockaddr_in;
 
 int handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);

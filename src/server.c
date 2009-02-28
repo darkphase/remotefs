@@ -7,27 +7,26 @@ See the file LICENSE.
 */
 
 #include <errno.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #if defined FREEBSD || defined QNX
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
-#include "config.h"
-#include "server.h"
-#include "instance_server.h"
 #include "buffer.h"
-#include "passwd.h"
+#include "command.h"
+#include "config.h"
+#include "cleanup.h"
 #include "exports.h"
 #include "id_lookup.h"
-#include "command.h"
-#include "server_handlers_sync.h"
-#include "sendrecv.h"
+#include "instance_server.h"
 #include "keep_alive_server.h"
-#include "cleanup.h"
+#include "passwd.h"
+#include "sendrecv.h"
+#include "server.h"
+#include "server_handlers_sync.h"
 
 static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
@@ -311,3 +310,4 @@ void server_close_connection(struct rfsd_instance *instance)
 	dump_sendrecv_stats(&instance->sendrecv);
 #endif
 }
+

@@ -9,12 +9,11 @@ See the file LICENSE.
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdio.h>
 
-#include "config.h"
-#include "passwd.h"
-#include "list.h"
 #include "buffer.h"
+#include "config.h"
+#include "list.h"
+#include "passwd.h"
 
 int add_or_replace_auth(struct list **auths, const char *user, const char *passwd)
 {

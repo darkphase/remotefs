@@ -62,3 +62,4 @@ void dump_block(const struct cache_block *block);
 #endif
 
 #endif /* DATA_CACHE_H */
+

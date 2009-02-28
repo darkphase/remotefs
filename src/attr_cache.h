@@ -44,7 +44,7 @@ void destroy_cache(struct rfs_instance *instance);
 /** check if cache is outdated
 @return not 0 if cache is old 
 */
-unsigned char cache_is_old(struct rfs_instance *instance);
+unsigned cache_is_old(struct rfs_instance *instance);
 
 /** delete outdated files from cache */
 void clear_cache(struct rfs_instance *instance);
@@ -59,3 +59,4 @@ void dump_attr_stats(struct rfs_instance *instance);
 #endif
 
 #endif /* CACHE_H */
+

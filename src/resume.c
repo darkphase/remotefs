@@ -6,14 +6,11 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "config.h"
-#include "resume.h"
-#include "list.h"
 #include "buffer.h"
+#include "config.h"
 #include "instance_client.h"
+#include "list.h"
+#include "resume.h"
 
 int add_file_to_open_list(struct rfs_instance *instance, const char *path, int flags, uint64_t desc)
 {

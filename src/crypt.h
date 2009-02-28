@@ -23,3 +23,4 @@ char *passwd_hash(const char *password, const char *salt);
 #endif
 
 #endif /* CRYPT_H */
+

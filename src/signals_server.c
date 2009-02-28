@@ -6,19 +6,16 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <signal.h>
 #if defined FREEBSD || defined DARWIN || defined QNX
 #       include <sys/wait.h>
 #else
 #       include <wait.h>
 #endif
-#include <unistd.h>
 #include <stdlib.h>
 
 #include "config.h"
-#include "signals_server.h"
-#include "signals.h"
 #include "rfsd.h"
+#include "signals.h"
 
 static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
 {

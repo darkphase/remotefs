@@ -6,25 +6,20 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <semaphore.h>
 #include <errno.h>
-#include <string.h>
-#include <stdlib.h>
 
-#include "config.h"
-#include "resume.h"
-#include "command.h"
-#include "buffer.h"
-#include "sendrecv.h"
-#include "list.h"
-#include "data_cache.h"
 #include "attr_cache.h"
-#include "pt_semaphore.h"
-#include "resume.h"
+#include "buffer.h"
+#include "command.h"
+#include "config.h"
+#include "data_cache.h"
 #include "instance_client.h"
 #include "keep_alive_client.h"
+#include "list.h"
 #include "operations.h"
 #include "operations_rfs.h"
+#include "pt_semaphore.h"
+#include "sendrecv.h"
 
 static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 static void* write_behind(void *void_instance);

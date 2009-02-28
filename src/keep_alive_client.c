@@ -7,7 +7,6 @@ See the file LICENSE.
 */
 
 #include "config.h"
-#include "keep_alive_client.h"
 #include "instance_client.h"
 
 unsigned keep_alive_period()

@@ -6,17 +6,17 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <unistd.h>
+#include <errno.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pwd.h>
 #include <string.h>
-#include <errno.h>
 #include <termios.h>
+#include <unistd.h>
 
 #include "config.h"
-#include "passwd.h"
 #include "crypt.h"
+#include "passwd.h"
 #include "signals.h"
 
 static char *login = NULL;
@@ -386,3 +386,4 @@ int delete_password(const char *login)
 	
 	return 0;
 }
+

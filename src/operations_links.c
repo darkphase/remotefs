@@ -6,37 +6,16 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <dirent.h>
-#include <utime.h>
-#include <sys/statvfs.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <pwd.h>
-#include <grp.h>
 
-#include "config.h"
-#include "resume.h"
-#include "operations.h"
-#include "operations_rfs.h"
+#include "attr_cache.h"
 #include "buffer.h"
 #include "command.h"
-#include "sendrecv.h"
-#include "attr_cache.h"
-#include "inet.h"
-#include "list.h"
-#include "path.h"
-#include "sockets.h"
-#include "data_cache.h"
-#include "utils.h"
+#include "config.h"
 #include "instance_client.h"
+#include "list.h"
+#include "operations_rfs.h"
+#include "sendrecv.h"
 
 #if defined WITH_LINKS
 int _rfs_link(struct rfs_instance *instance, const char *path, const char *target)

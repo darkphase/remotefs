@@ -8,8 +8,8 @@ See the file LICENSE.
 
 #include "config.h"
 #include "fuse_rfs.h"
-#include "operations_sync.h"
 #include "operations_rfs.h"
+#include "operations_sync.h"
 
 struct rfs_instance *instance = NULL;
 
@@ -201,3 +201,4 @@ int fuse_rfs_setxattr(const char *path, const char *name, const char *value, siz
 #endif
 
 #undef FUSE_DECORATE
+

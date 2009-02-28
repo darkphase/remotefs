@@ -6,15 +6,13 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
 #include <arpa/inet.h>
+#include <sys/stat.h>
 
 #include "config.h"
+#include "instance_client.h"
 #include "sug_client.h"
 #include "utils.h"
-#include "instance_client.h"
 
 #ifdef WITH_SSL
 static void check_ssl(const char *host)
@@ -88,3 +86,4 @@ void suggest_client(const struct rfs_instance *instance)
 		check_passwd_file(instance->config.auth_passwd_file);
 	}
 }
+

@@ -6,15 +6,12 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/socket.h>
 #if defined QNX
 #include <sys/time.h>
 #endif
-
-#include "sockets.h"
 
 int setup_socket_timeout(int socket, const int timeout)
 {

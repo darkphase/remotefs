@@ -6,17 +6,15 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <string.h>
 #if defined QNX || defined FREEBSD
 # include <sys/socket.h>
 #endif
-#include <netdb.h>
-#include <stdlib.h>
 
 #include "config.h"
-#include "utils.h"
 #include "sendrecv.h"
 
 unsigned int is_ipaddr(const char *string)

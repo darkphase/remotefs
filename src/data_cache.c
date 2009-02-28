@@ -6,11 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-
+#include "buffer.h"
 #include "config.h"
 #include "data_cache.h"
-#include "buffer.h"
 #include "list.h"
 
 struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t offset, uint64_t descriptor)

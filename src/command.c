@@ -8,8 +8,8 @@ See the file LICENSE.
 
 #include <string.h>
 
-#include "config.h"
 #include "command.h"
+#include "config.h"
 
 const char* describe_command(const uint32_t cmd)
 {
@@ -75,3 +75,4 @@ void dump_answer(const struct answer *ans)
 	DEBUG("answer: %s (%d), data length: %u, ret: %d, errno: %s (%d)\n", describe_command(ans->command), ans->command, ans->data_len, ans->ret, strerror(ans->ret_errno), ans->ret_errno);
 }
 #endif
+

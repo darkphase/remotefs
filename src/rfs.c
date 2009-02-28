@@ -6,20 +6,17 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include <errno.h>
 
-#include "config.h"
 #include "buffer.h"
-#include "passwd.h"
+#include "config.h"
 #include "crypt.h"
+#include "fuse_rfs.h"
 #include "id_lookup.h"
-#include "sug_client.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
-#include "fuse_rfs.h"
+#include "passwd.h"
+#include "sug_client.h"
 
 static DEFINE_RFS_INSTANCE(rfs_instance);
 

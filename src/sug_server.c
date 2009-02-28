@@ -6,17 +6,13 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include "config.h"
-#include "sug_server.h"
-#include "passwd.h"
-#include "exports.h"
-#include "utils.h"
 #include "instance_server.h"
+#include "passwd.h"
+#include "utils.h"
 
 static int check_listen_address(const char *address)
 {
@@ -105,3 +101,4 @@ int suggest_server(const struct rfsd_instance *instance)
 	
 	return ret;
 }
+

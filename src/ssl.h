@@ -6,10 +6,10 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifdef WITH_SSL
-
 #ifndef SSL_H
 #define SSL_H
+
+#ifdef WITH_SSL
 
 /** SSL related routines */
 
@@ -50,6 +50,7 @@ int rfs_ssl_read(SSL *socket, char *buffer, size_t size);
 }
 #endif
 
+#endif /* WITH_SSL */
+
 #endif /* SSL_H */
 
-#endif /* WITH_SSL */

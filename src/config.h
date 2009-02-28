@@ -12,8 +12,8 @@ See the file LICENSE.
 /** remotefs configuration */
 
 #include <stdio.h>
-#include <sys/types.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "compat.h"
 

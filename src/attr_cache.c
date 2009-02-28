@@ -7,15 +7,11 @@ See the file LICENSE.
 */
 
 #include <search.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 
-#include "config.h"
 #include "attr_cache.h"
 #include "buffer.h"
+#include "config.h"
 #include "instance_client.h"
-
 #ifdef RFS_DEBUG
 #include "ratio.h"
 #endif
@@ -30,7 +26,7 @@ static int compare_path(const void *s1, const void *s2)
 	return strcmp(((struct tree_item *)s1)->path, ((struct tree_item *)s2)->path);
 }
 
-unsigned char cache_is_old(struct rfs_instance *instance)
+unsigned cache_is_old(struct rfs_instance *instance)
 {
 	if (time(NULL) > instance->attr_cache.last_time_checked + ATTR_CACHE_TTL)
 	{

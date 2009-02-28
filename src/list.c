@@ -6,9 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "buffer.h"
 #include "config.h"
 #include "list.h"
-#include "buffer.h"
 
 struct list* add_to_list(struct list **head, void *data)
 {
@@ -96,3 +96,4 @@ void destroy_list(struct list **head)
 	
 	*head = NULL;
 }
+

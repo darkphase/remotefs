@@ -6,7 +6,6 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <pthread.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -14,13 +13,13 @@ See the file LICENSE.
 #include <sys/un.h>
 #include <sys/stat.h>
 
-#include "config.h"
-#include "command.h"
 #include "buffer.h"
-#include "nss_server.h"
+#include "command.h"
+#include "config.h"
 #include "instance_client.h"
-#include "sendrecv.h"
 #include "list.h"
+#include "nss_server.h"
+#include "sendrecv.h"
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {

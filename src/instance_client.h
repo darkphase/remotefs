@@ -11,13 +11,6 @@ See the file LICENSE.
 
 /** remotefs client instances */
 
-#include <sys/types.h>
-#include <pthread.h>
-
-#ifdef WITH_SSL
-#include <openssl/ssl.h>
-#endif
-
 #include "config.h"
 #include "pt_semaphore.h"
 #include "instance.h"

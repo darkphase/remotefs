@@ -6,14 +6,13 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
-#include "config.h"
-#include "cleanup.h"
-#include "list.h"
 #include "buffer.h"
+#include "config.h"
 #include "instance_server.h"
+#include "list.h"
 
 static struct list* check_file_in_list(struct list *head, int file)
 {
@@ -130,3 +129,4 @@ int cleanup_files(struct rfsd_instance *instance)
 
 	return 0;
 }
+

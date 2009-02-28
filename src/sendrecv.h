@@ -6,19 +6,17 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef SEND_H
-#define SEND_H
+#ifndef SENDRECV_H
+#define SENDRECV_H
 
 /** socket send/recv and connect/disconnect routines */
-
-#include "config.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-struct command;
 struct answer;
+struct command;
 struct sendrecv_info;
 
 int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port);
@@ -44,4 +42,5 @@ void dump_sendrecv_stats(struct sendrecv_info *info);
 }
 #endif
 
-#endif /* SEND_H */
+#endif /* SENDRECV_H */
+

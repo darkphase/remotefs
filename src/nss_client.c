@@ -6,16 +6,15 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <dirent.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <unistd.h>
-#include <errno.h>
 
-#include "config.h"
-#include "command.h"
 #include "buffer.h"
+#include "command.h"
+#include "config.h"
 
 static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 {

@@ -31,3 +31,4 @@ static float ratio(unsigned long hits, unsigned long misses)
 #endif
 
 #endif /* RATIO_H */
+

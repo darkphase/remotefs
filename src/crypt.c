@@ -6,10 +6,6 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <unistd.h>
-#if ! ( defined DARWIN || defined QNX )
-#include <crypt.h>
-#endif
 #include <string.h>
 
 #include "config.h"
@@ -28,3 +24,4 @@ char *passwd_hash(const char *password, const char *salt)
 	passwd = strdup(passwd + strlen(salt) + 1);
 	return passwd;
 }
+

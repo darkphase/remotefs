@@ -6,27 +6,25 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdint.h>
 #include <errno.h>
-#include <unistd.h>
-#if defined DARWIN
-extern int     sendfile(int, int, off_t, size_t,  void *, off_t *, int);
-#endif
+#include <sys/stat.h>
 #if ! defined FREEBSD && ! defined DARWIN && ! defined QNX
 #	include <sys/sendfile.h>
 #endif
+#include <unistd.h>
 
-#include "config.h"
-#include "command.h"
 #include "buffer.h"
+#include "command.h"
+#include "config.h"
 #include "instance_server.h"
 #include "sendrecv.h"
 #include "server.h"
-
 #ifdef RFS_DEBUG
-#include <sys/time.h>
+#	include <sys/time.h>
+#endif
+
+#if defined DARWIN
+extern int sendfile(int, int, off_t, size_t,  void *, off_t *, int);
 #endif
 
 static int read_small_block(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)

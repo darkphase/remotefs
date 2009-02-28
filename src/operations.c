@@ -6,39 +6,27 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <dirent.h>
-#include <utime.h>
-#include <sys/statvfs.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <pwd.h>
+#include <fcntl.h>
 #include <grp.h>
+#include <pwd.h>
+#include <sys/statvfs.h>
+#include <utime.h>
 
-#include "config.h"
-#include "resume.h"
-#include "operations.h"
-#include "operations_rfs.h"
+#include "attr_cache.h"
 #include "buffer.h"
 #include "command.h"
-#include "sendrecv.h"
-#include "attr_cache.h"
-#include "inet.h"
-#include "keep_alive_client.h"
-#include "list.h"
-#include "id_lookup_client.h"
-#include "path.h"
-#include "sockets.h"
+#include "config.h"
 #include "data_cache.h"
-#include "utils.h"
+#include "id_lookup_client.h"
+#include "inet.h"
 #include "instance_client.h"
+#include "list.h"
+#include "operations.h"
+#include "operations_rfs.h"
+#include "path.h"
+#include "resume.h"
+#include "sendrecv.h"
 
 static size_t stat_size()
 {

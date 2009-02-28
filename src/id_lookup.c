@@ -6,9 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <stdlib.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "config.h"

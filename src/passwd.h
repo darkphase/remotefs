@@ -58,3 +58,4 @@ void dump_passwords(const struct list *auths);
 #endif
 
 #endif /* PASSWD_H */
+

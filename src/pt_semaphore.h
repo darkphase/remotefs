@@ -6,8 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef RFS_SEMAPHORE_H
-#define RFS_SEMAPHORE_H
+#ifndef PT_SEMAPHORE_H
+#define PT_SEMAPHORE_H
 
 #include <pthread.h>
 
@@ -72,5 +72,5 @@ static inline int rfs_sem_destroy(rfs_sem_t *sem)
 	return 0;
 }
 
-#endif /* RFS_SEMAPHORE_H */
+#endif /* PT_SEMAPHORE_H */
 

@@ -9,7 +9,6 @@ See the file LICENSE.
 #ifndef ID_LOOKUP_CLIENT_H
 #define ID_LOOKUP_CLIENT_H
 
-#include <sys/types.h>
 #include "id_lookup.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)

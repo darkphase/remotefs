@@ -15,8 +15,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct rfs_instance;
 struct answer;
+struct rfs_instance;
 
 void* rfs_init(struct rfs_instance *instance);
 void rfs_destroy(struct rfs_instance *instance);
@@ -48,3 +48,4 @@ int rfs_keep_alive(struct rfs_instance *instance);
 #endif
 
 #endif /* OPERATIONS_RFS_H */
+

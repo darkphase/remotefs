@@ -6,21 +6,15 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <stdio.h>
 #include <string.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
 #include <errno.h>
 
+#include "buffer.h"
 #include "config.h"
 #include "exports.h"
-#include "buffer.h"
 #include "list.h"
-#include "rfsd.h"
 #include "utils.h"
 
 #ifdef RFS_DEBUG
@@ -490,3 +484,4 @@ void dump_exports(const struct list *exports)
 	}
 }
 #endif /* RFS_DEBUG */
+

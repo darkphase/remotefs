@@ -13,9 +13,9 @@ See the file LICENSE.
 #include <openssl/err.h>
 #include <openssl/rand.h>
 
+#include "buffer.h"
 #include "config.h"
 #include "ssl.h"
-#include "buffer.h"
 
 static SSL* rfs_init_ssl(
 	SSL_CTX **ctx, 

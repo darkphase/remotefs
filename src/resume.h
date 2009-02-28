@@ -11,7 +11,7 @@ See the file LICENSE.
 
 /** routines for file operations resuming by client */
 
-#include <sys/types.h>
+#include <stdint.h>
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

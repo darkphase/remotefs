@@ -6,32 +6,21 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <string.h>
-#include <netdb.h>
 #include <errno.h>
-#include <sys/uio.h>
-#include <sys/ioctl.h>
+#include <netdb.h>
 #if defined SOLARIS
-#	include <sys/sockio.h>
+#include <sys/sockio.h>
 #endif
-
-#include "config.h"
-#include "sendrecv.h"
-#include "command.h"
-#include "inet.h"
-#include "error.h"
-#include "instance.h"
-
-#ifdef WITH_SSL
-#include "ssl.h"
-#endif
-
 #ifdef RFS_DEBUG
 #include <sys/time.h>
+#endif
+
+#include "command.h"
+#include "config.h"
+#include "error.h"
+#include "instance.h"
+#ifdef WITH_SSL
+#include "ssl.h"
 #endif
 
 int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
@@ -613,3 +602,4 @@ void dump_sendrecv_stats(struct sendrecv_info *info)
 	info->recv_susecs_used != 0 ? (info->bytes_recv / 1024) / (info->recv_susecs_used / 1000000.0) : 0);
 }
 #endif
+

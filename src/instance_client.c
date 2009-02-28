@@ -6,19 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <string.h>
-#include <unistd.h>
-#if defined FREEBSD || defined DARWIN
-#include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
-
 #include "config.h"
-#include "instance.h"
 #include "instance_client.h"
-#include "sendrecv.h"
-#include "pt_semaphore.h"
 
 static void init_client(struct rfs_instance *instance)
 {

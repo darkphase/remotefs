@@ -8,17 +8,16 @@ See the file LICENSE.
 
 #ifdef WITH_ACL
 
-#include <sys/xattr.h>
 #include <sys/acl.h>
+#include <sys/xattr.h>
 #include <string.h>
-#include <stdlib.h>
 
-#include "config.h"
-#include "buffer.h"
-#include "list.h"
 #include "acl_utils.h"
+#include "buffer.h"
+#include "config.h"
 #include "id_lookup.h"
 #include "instance.h"
+#include "list.h"
 #include "acl/libacl/byteorder.h"
 
 static inline void write_text(char **cursor, const char *text, size_t len)
