@@ -17,6 +17,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+struct flock;
 struct rfs_instance;
 
 typedef int(*rfs_readdir_callback_t)(const char *, void *);
