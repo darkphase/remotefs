@@ -162,9 +162,6 @@ char* rfs_acl_to_text(struct id_lookup_info *lookup,
 	}
 	
 	char *text_acl = get_buffer(total_len + 1);
-#ifdef RFS_DEBUG
-	memset(text_acl, 0, total_len + 1);
-#endif
 	char *cursor = text_acl;
 	
 	/* second pass - fill in allocated buffer */
