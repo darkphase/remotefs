@@ -13,7 +13,7 @@ See the file LICENSE.
 #include "resume.h"
 #include "list.h"
 #include "buffer.h"
-#include "instance.h"
+#include "instance_client.h"
 
 int add_file_to_open_list(struct rfs_instance *instance, const char *path, int flags, uint64_t desc)
 {

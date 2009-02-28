@@ -33,7 +33,9 @@ librfs_OBJS = src/acl_utils.o \
               src/crypt.o \
               src/data_cache.o \
               src/id_lookup.o \
+              src/id_lookup_client.o \
               src/instance.o \
+              src/instance_client.o \
               src/keep_alive_client.o \
               src/list.o \
 			  src/nss_client.o \

@@ -21,7 +21,7 @@ extern int     sendfile(int, int, off_t, size_t,  void *, off_t *, int);
 #include "config.h"
 #include "command.h"
 #include "buffer.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "sendrecv.h"
 #include "server.h"
 

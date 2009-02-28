@@ -48,7 +48,7 @@ See the file LICENSE.
 #include "sockets.h"
 #include "cleanup.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "server.h"
 
 #ifdef WITH_SSL

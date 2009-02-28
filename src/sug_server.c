@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "passwd.h"
 #include "exports.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_server.h"
 
 static int check_listen_address(const char *address)
 {

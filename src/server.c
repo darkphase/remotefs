@@ -18,7 +18,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "server.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "buffer.h"
 #include "passwd.h"
 #include "exports.h"

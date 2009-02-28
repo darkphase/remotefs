@@ -50,7 +50,7 @@ See the file LICENSE.
 #include "sockets.h"
 #include "cleanup.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "server.h"
 
 static int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)

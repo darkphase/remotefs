@@ -33,12 +33,12 @@ See the file LICENSE.
 #include "inet.h"
 #include "keep_alive_client.h"
 #include "list.h"
-#include "id_lookup.h"
+#include "id_lookup_client.h"
 #include "path.h"
 #include "sockets.h"
 #include "data_cache.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_client.h"
 
 static size_t stat_size()
 {

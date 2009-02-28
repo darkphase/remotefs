@@ -8,7 +8,7 @@
 #include "command.h"
 #include "buffer.h"
 #include "acl_utils.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "server.h"
 #include "sendrecv.h"
 

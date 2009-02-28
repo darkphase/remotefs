@@ -48,7 +48,7 @@ See the file LICENSE.
 #include "sockets.h"
 #include "cleanup.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "server.h"
 
 int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

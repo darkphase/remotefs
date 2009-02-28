@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "attr_cache.h"
 #include "pt_semaphore.h"
 #include "resume.h"
-#include "instance.h"
+#include "instance_client.h"
 #include "keep_alive_client.h"
 #include "operations.h"
 #include "operations_rfs.h"

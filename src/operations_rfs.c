@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "sockets.h"
 #include "resume.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_client.h"
 #include "attr_cache.h"
 #include "crypt.h"
 #ifdef WITH_SSL

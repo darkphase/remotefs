@@ -13,7 +13,7 @@ See the file LICENSE.
 #include "cleanup.h"
 #include "list.h"
 #include "buffer.h"
-#include "instance.h"
+#include "instance_server.h"
 
 static struct list* check_file_in_list(struct list *head, int file)
 {

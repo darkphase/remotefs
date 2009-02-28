@@ -14,7 +14,7 @@ See the file LICENSE.
 #include "config.h"
 #include "sug_client.h"
 #include "utils.h"
-#include "instance.h"
+#include "instance_client.h"
 
 #ifdef WITH_SSL
 static void check_ssl(const char *host)

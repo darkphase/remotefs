@@ -30,7 +30,7 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "sockets.h"
 #include "sug_server.h"
-#include "instance.h"
+#include "instance_server.h"
 #include "server.h"
 
 static int daemonize = 1;

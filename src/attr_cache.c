@@ -14,7 +14,7 @@ See the file LICENSE.
 #include "config.h"
 #include "attr_cache.h"
 #include "buffer.h"
-#include "instance.h"
+#include "instance_client.h"
 
 #ifdef RFS_DEBUG
 #include "ratio.h"

@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "command.h"
 #include "buffer.h"
 #include "nss_server.h"
-#include "instance.h"
+#include "instance_client.h"
 #include "sendrecv.h"
 #include "list.h"
 

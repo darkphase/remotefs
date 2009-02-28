@@ -10,7 +10,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "keep_alive_server.h"
-#include "instance.h"
+#include "instance_server.h"
 
 unsigned keep_alive_period()
 {

@@ -29,6 +29,7 @@ rfsd_OBJS = src/acl_utils.o \
             src/exports.o \
             src/id_lookup.o \
             src/instance.o \
+            src/instance_server.o \
             src/keep_alive_server.o \
             src/list.o \
             src/passwd.o \
