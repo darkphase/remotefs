@@ -320,11 +320,12 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			free_buffer(buffer);
 			return -1;
 		}
+
+		free_buffer(buffer);
 	}
 
 	closedir(dir);
 	free_buffer(path);
-	free_buffer(buffer);
 	
 	ans.data_len = 0;
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
