@@ -7,10 +7,24 @@
 #include "../../src/list.h"
 #include "../../src/config.h"
 
+static void usage()
+{
+	INFO("%s\n", "nss_test [server1] [user@server2] [group@server3]");
+	INFO("%s\n", "");
+	INFO("%s\n", "server1 is for getting users and groups from");
+	INFO("%s\n", "server2 is for checking if user is valid");
+	INFO("%s\n", "server3 is for checking if group is valid");
+	INFO("%s\n", "");
+	INFO("%s\n", "server1, server2 and server3 may be the same server");
+	INFO("%s\n", "");
+	INFO("%s\n", "example: nss_test 127.0.0.1 alex@127.0.0.1 alex@127.0.0.1");
+}
+
 int main(int argc, char **argv)
 {	
 	if (argc < 2)
 	{
+		usage();
 		exit(1);
 	}
 
