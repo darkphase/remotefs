@@ -3,6 +3,8 @@
 - librfs
 - server's exports list support
 - links support
++ separating client/server code
 
+bugs:
 - pid-file isn't deleted if rfsd can't start
 

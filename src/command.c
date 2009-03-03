@@ -57,6 +57,8 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_getnames:						return "getnames";
 	case cmd_checkuser:						return "checkuser";
 	case cmd_checkgroup:					return "checkgroup";
+	case cmd_getusers:                      return "getusers";
+	case cmd_getgroups:                     return "getgroups";
 
 	case cmd_first:                         return "first command in list. should be unused. if you see this line in the output, then we have a problem";
 	case cmd_last:                          return "last command in list. should be unused. if you see this line in the output, then we have another problem";

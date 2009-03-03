@@ -15,6 +15,7 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
+#include "list.h"
 
 static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 {
@@ -181,7 +182,7 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		goto error;
 	}
 
-	DEBUG("sending data: %s\n", name);
+	DEBUG("sending name: %s\n", name);
 
 	if (send(sock, name, overall_size, 0) != overall_size)
 	{
@@ -192,17 +193,25 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		
 	free_buffer(name);
 		
-	DEBUG("%s\n", "getting result");
-
-	uint32_t ret_errno = 0;
-
-	if (recv(sock, &ret_errno, sizeof(ret_errno), 0) != sizeof(ret_errno))
+	struct answer ans = { 0 };
+	
+	if (recv(sock, &ans, sizeof(ans), 0) != sizeof(ans))
 	{
 		saved_errno = errno;
 		goto error;
 	}
+
+#ifdef RFS_DEBUG
+	dump_answer(&ans);
+#endif
+
+	if (ans.command != cmd_id)
+	{
+		saved_errno = EINVAL;
+		goto error;
+	}
 	
-	saved_errno = ret_errno;
+	saved_errno = ans.ret_errno;
 
 error:
 	shutdown(sock, SHUT_RDWR);
@@ -214,15 +223,102 @@ error:
 
 int nss_check_user(const char *full_name)
 {
-	int ret = check_name(full_name, cmd_checkuser);
-	
-	return ret;
+	return check_name(full_name, cmd_checkuser);
 }
 
 int nss_check_group(const char *full_name)
 {
-	int ret = check_name(full_name, cmd_checkgroup);
+	return check_name(full_name, cmd_checkgroup);
+}
+
+static int get_names(const char *server, struct list **names, enum server_commands cmd_id)
+{
+	/* 419-9086 */
+
+	if (*names != NULL)
+	{
+		destroy_list(names);
+	}
+
+	int sock = nss_connect(server);
+	if (sock < 0)
+	{
+		return sock;
+	}
+			
+	int saved_errno = 0;
 	
-	return ret;
+	struct command cmd = { cmd_id, 0 };
+
+#ifdef RFS_DEBUG
+	dump_command(&cmd);
+#endif
+
+	if (send(sock, &cmd, sizeof(cmd), 0) != sizeof(cmd))
+	{
+		saved_errno = errno;
+		goto error;
+	}
+
+	struct answer ans = { 0 };
+
+	do
+	{
+		if (recv(sock, &ans, sizeof(ans), 0) != sizeof(ans))
+		{
+			saved_errno = errno;
+			goto error;
+		}
+
+#ifdef RFS_DEBUG
+		dump_answer(&ans);
+#endif
+
+		if (ans.command != cmd_id)
+		{
+			saved_errno = EINVAL;
+			goto error;
+		}
+
+		if (ans.data_len > 0)
+		{
+			char *name = get_buffer(ans.data_len);
+
+			if (recv(sock, name, ans.data_len, 0) != ans.data_len)
+			{
+				saved_errno = errno;
+				goto error;
+			}
+
+			if (add_to_list(names, name) == NULL)
+			{
+				saved_errno = EIO;
+				goto error;
+			}
+		}
+	}
+	while (ans.data_len != 0
+	&& ans.ret_errno == 0);
+
+	goto success;
+
+error:
+	destroy_list(names);
+
+success:
+	shutdown(sock, SHUT_RDWR);
+	close(sock);
+
+	return saved_errno;
+}
+
+int nss_get_users(const char *server, struct list **users)
+{
+	return get_names(server, users, cmd_getusers);
+}
+
+int nss_get_groups(const char *server, struct list **groups)
+{
+	return get_names(server, groups, cmd_getgroups);
 }
 

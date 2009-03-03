@@ -66,6 +66,8 @@ enum server_commands
 	/* nss */
 	cmd_checkuser          = 100, 
 	cmd_checkgroup, 
+	cmd_getusers, 
+	cmd_getgroups, 
 
 	cmd_last
 };
