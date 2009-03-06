@@ -19,9 +19,6 @@ struct rfs_instance;
 
 int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc);
 
-int init_prefetch(struct rfs_instance *instance);
-void kill_prefetch(struct rfs_instance *instance);
-
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

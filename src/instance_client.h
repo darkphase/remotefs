@@ -63,10 +63,6 @@ struct rfs_instance
 	{
 		size_t max_cache_size;
 		struct list *cache;
-		struct prefetch_request prefetch_request;
-		pthread_t prefetch_thread;
-		rfs_sem_t prefetch_sem;
-		rfs_sem_t prefetch_started;
 	} read_cache;
 	
 	/* write cache */

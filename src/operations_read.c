@@ -22,112 +22,22 @@ See the file LICENSE.
 #include "resume.h"
 #include "sendrecv.h"
 
-static void* prefetch(void *void_instance);
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc);
 
-int init_prefetch(struct rfs_instance *instance)
+static int prefetch(struct rfs_instance *instance, uint64_t desc, off_t offset, size_t size)
 {
-	DEBUG("%s\n", "initing prefetch");
-	
-	instance->read_cache.prefetch_request.size = 0;
-	instance->read_cache.prefetch_request.offset = (off_t)-1;
-	instance->read_cache.prefetch_request.descriptor = -1;
-	instance->read_cache.prefetch_request.please_die = 0;
-	instance->read_cache.prefetch_request.inprogress = 0;
-
-	DEBUG("%s\n", "initing semaphores");
-	
-	errno = 0;
-	if (rfs_sem_init(&instance->read_cache.prefetch_sem, 0, 0) != 0)
-	{
-		return -errno;
-	}
-	
-	DEBUG("%s\n", "creating prefetch thread");
-	
-	errno = 0;
-	if (pthread_create(&instance->read_cache.prefetch_thread, NULL, prefetch, (void *)instance) != 0)
-	{
-		return -errno;
-	}
-	
-	return 0;
-}
-
-void kill_prefetch(struct rfs_instance *instance)
-{
-	DEBUG("%s\n", "killing prefetch");
-	
-	instance->read_cache.prefetch_request.please_die = 1;
-	
-	DEBUG("%s\n", "unlocking mutex");
-	if (rfs_sem_post(&instance->read_cache.prefetch_sem) != 0)
-	{
-		return;
-	}
-	
-	DEBUG("%s\n", "waiting for thread to end");
-	pthread_join(instance->read_cache.prefetch_thread, NULL);
-	rfs_sem_destroy(&instance->read_cache.prefetch_sem);
-}
-
-static void* prefetch(void *void_instance)
-{
-	struct rfs_instance *instance = (struct rfs_instance *)(void_instance);
-	struct prefetch_request *prefetch_request = &instance->read_cache.prefetch_request;
-	
-	if (rfs_sem_init(&instance->read_cache.prefetch_started, 0, 0) != 0)
-	{
-		return NULL;
-	}
-	
-	DEBUG("%s\n", "prefetch started. waiting for request");
-	
-	while (1)
-	{
-	
-	if (rfs_sem_wait(&instance->read_cache.prefetch_sem) != 0)
-	{
-		pthread_exit(NULL);
-	}
-	
-	if (prefetch_request->please_die != 0)
-	{
-		DEBUG("%s\n", "exiting prefetch");
-		prefetch_request->inprogress = 0;
-		pthread_exit(NULL);
-	}
-	
-	if (keep_alive_lock(instance) != 0)
-	{
-		prefetch_request->inprogress = 0;
-		pthread_exit(NULL);
-	}
-	
-	rfs_sem_post(&instance->read_cache.prefetch_started);
-	
-	DEBUG("%s\n", "received prefetch request:");
-	DEBUG("size: %lu, offset: %llu, descriptor: %llu\n", 
-	(long unsigned int)prefetch_request->size,
-	(unsigned long long)prefetch_request->offset,
-	(unsigned long long)prefetch_request->descriptor);
-	
-	size_t prefetch_size = prefetch_request->size;
-	off_t prefetch_offset = prefetch_request->offset + prefetch_request->size;
-	uint64_t prefetch_descriptor = prefetch_request->descriptor;
+	size_t prefetch_size = size;
 	
 	if (prefetch_size > instance->read_cache.max_cache_size)
 	{
-		prefetch_request->inprogress = 0;
-		keep_alive_unlock(instance);
-		continue;
+		return -E2BIG;
 	}
 	
 	struct list *open_rec = instance->resume.open_files;
 	while (open_rec != NULL)
 	{
 		struct open_rec *info = (struct open_rec *)open_rec->data;
-		if (info->desc == prefetch_descriptor)
+		if (info->desc == desc)
 		{
 			if (info->last_used_read_block > prefetch_size
 			&& info->last_used_read_block <= instance->read_cache.max_cache_size)
@@ -145,29 +55,21 @@ static void* prefetch(void *void_instance)
 		prefetch_size *= 2;
 	}
 	
-	if (open_rec != NULL
-	&& ((struct open_rec *)open_rec->data)->desc == prefetch_descriptor)
-	{
-		((struct open_rec *)open_rec->data)->last_used_read_block = prefetch_size;
-	}
-	
 	struct cache_block *block = reserve_cache_block(
 	&instance->read_cache.cache, 
 	prefetch_size, 
-	prefetch_offset,
-	prefetch_descriptor);
+	offset,
+	desc);
 	
 	if (block == NULL)
 	{
-		prefetch_request->inprogress = 0;
-		keep_alive_unlock(instance);
-		continue;
+		return -EIO;
 	}
 
 	DEBUG("*** prefetching %u bytes from offset %llu (%llu)\n", 
 	(unsigned int)prefetch_size, 
-	(unsigned long long)prefetch_offset,
-	(unsigned long long)prefetch_descriptor);
+	(unsigned long long)offset,
+	(unsigned long long)desc);
 	
 	int ret = 0;
 	PARTIALY_DECORATE(ret, 
@@ -175,66 +77,38 @@ static void* prefetch(void *void_instance)
 	instance, 
 	block->data, 
 	prefetch_size, 
-	prefetch_offset,
-	prefetch_descriptor);
+	offset,
+	desc);
 	
 	if (ret < 0)
 	{
 		delete_block_from_cache(&instance->read_cache.cache, block);
-		
-		prefetch_request->inprogress = 0;
-		keep_alive_unlock(instance);
-		continue;
+
+		return -EIO;
 	}
-	
+
+	if (open_rec != NULL
+	&& ((struct open_rec *)open_rec->data)->desc == desc)
+	{
+		((struct open_rec *)open_rec->data)->last_used_read_block = prefetch_size;
+	}
+
 	block->used = ret;
 	
 #ifdef RFS_DEBUG
 	dump_block(block);
 #endif
-	
-	prefetch_request->inprogress = 0;
-	keep_alive_unlock(instance);
-	
-	} /* while (1) */
-#if defined QNX
-	return NULL; /* gcc error ! */
-#endif
+
+	return ret;
 }
 
 static int _rfs_read_cached(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	struct prefetch_request *prefetch_request = &instance->read_cache.prefetch_request;
-
-	prefetch_request->inprogress = 0;
-	
 	struct cache_block *block = find_suitable_cache_block(instance->read_cache.cache, size, offset, desc);
 	
 	DEBUG("cache block: %p\n", block);
 
 	int ret = 0;
-	
-	if (block == NULL
-	|| block->used == 0) /* prefetch may be still in progress */
-	{
-		DEBUG("prefetch progress: %u, desc: %llu\n", 
-		prefetch_request->inprogress,
-		(unsigned long long)prefetch_request->descriptor);
-		
-		/* if so, then wait for it to finish */
-		if (prefetch_request->descriptor == desc)
-		{
-			DEBUG("%s\n", "waiting for prefetch to finish");
-			if (keep_alive_lock(instance) != 0)
-			{
-				return -EIO;
-			}
-			
-			block = find_suitable_cache_block(instance->read_cache.cache, size, offset, desc);
-			
-			keep_alive_unlock(instance);
-		}
-	}
 	
 	if (block != NULL
 	&& (block->used + block->offset >= size + offset))
@@ -279,10 +153,10 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 		}
 	}
 	
-	/* if we're here, then we missed cache and already have requested data
-	or cache become empty after current read, but we still have requested data
-	
-	now we need to read-ahead some more cache */
+	/* if we're here, then we missed cache, but already have requested data
+	or cache become empty after current read, and we need to prefetch next read block, still we already have requested data
+
+	so, in short: now we need to read-ahead some more cache from offset + size */
 	if (ret == size 
 	&& size >= PREFETCH_LIMIT)
 	{
@@ -293,22 +167,9 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 		
 		clear_cache_by_desc(&instance->read_cache.cache, desc);
 		
-		prefetch_request->size = size;
-		prefetch_request->offset = offset;
-		prefetch_request->descriptor = desc;
-		prefetch_request->inprogress = 1;
-		
-		if (rfs_sem_post(&instance->read_cache.prefetch_sem) != 0)
-		{
-			keep_alive_unlock(instance);
-			prefetch_request->inprogress = 0;
-			return -EIO;
-		}
+		prefetch(instance, desc, offset + size, size);
 		
 		keep_alive_unlock(instance);
-		
-		/* ensure prefetch is running */
-		rfs_sem_wait(&instance->read_cache.prefetch_started);
 		
 		return ret;
 	}

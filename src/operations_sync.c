@@ -75,7 +75,7 @@ int rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 
 int rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	/* we have to manually handle keep alive in _rfs_read and _rfs_read_cached
+	/* we have to manually handle keep alive in _rfs_write and _rfs_write_cached
 	for _rfs_read_cached to be able to add write block to cache
 	while write_behind() is sending data */
 	return _rfs_write(instance, path, buf, size, offset, desc);

@@ -539,11 +539,6 @@ void* rfs_init(struct rfs_instance *instance)
 	keep_alive_init(instance);
 	pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance);
 	
-	if (instance->config.use_read_cache != 0)
-	{
-		init_prefetch(instance);
-	}
-	
 	if (instance->config.use_write_cache != 0)
 	{
 		init_write_behind(instance);
@@ -566,10 +561,6 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 	rfs_disconnect(instance, 1);
 
-	if (instance->config.use_read_cache != 0)
-	{
-		kill_prefetch(instance);
-	}
 	if (instance->config.use_write_cache != 0)
 	{
 		kill_write_behind(instance);
