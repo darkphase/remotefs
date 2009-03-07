@@ -311,12 +311,18 @@ int stop_nss_server(struct rfs_instance *instance)
 
 	if (instance->nss.server_thread != 0)
 	{
-		return pthread_join(instance->nss.server_thread, NULL);
+		pthread_join(instance->nss.server_thread, NULL);
+		instance->nss.server_thread = 0;
 	}
 
 	destroy_list(&instance->nss.users_storage);
 	destroy_list(&instance->nss.groups_storage);
 	
 	return 0;
+}
+
+unsigned is_nss_running(struct rfs_instance *instance)
+{
+	return (instance->nss.server_thread != 0);
 }
 

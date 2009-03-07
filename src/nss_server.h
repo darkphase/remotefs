@@ -19,6 +19,7 @@ struct rfs_instance;
 
 int start_nss_server(struct rfs_instance *instance);
 int stop_nss_server(struct rfs_instance *instance);
+unsigned is_nss_running(struct rfs_instance *instance);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

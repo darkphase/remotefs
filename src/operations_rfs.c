@@ -490,6 +490,17 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				rfs_disconnect(instance, 1);
 				return -1;
 			}
+
+			int nss_start_ret = start_nss_server(instance);
+			if (nss_start_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
+				}
+				rfs_disconnect(instance, 1);
+				return -1;
+			}
 		}
 		
 		if ((instance->client.export_opts & OPT_UGO) != 0)
@@ -544,10 +555,6 @@ void* rfs_init(struct rfs_instance *instance)
 		init_write_behind(instance);
 	}
 
-#ifdef RFS_DEBUG
-	start_nss_server(instance);
-#endif
-
 	return NULL;
 }
 
@@ -555,9 +562,10 @@ void rfs_destroy(struct rfs_instance *instance)
 {
 	keep_alive_lock(instance);
 
-#ifdef RFS_DEBUG
-	stop_nss_server(instance);
-#endif
+	if (is_nss_running(instance))
+	{
+		stop_nss_server(instance);
+	}
 	
 	rfs_disconnect(instance, 1);
 
