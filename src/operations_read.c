@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "list.h"
 #include "operations.h"
 #include "operations_rfs.h"
-#include "pt_semaphore.h"
+#include "psemaphore.h"
 #ifdef RFS_DEBUG
 #	include "ratio.h"
 #endif

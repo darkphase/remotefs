@@ -12,7 +12,7 @@ See the file LICENSE.
 /** remotefs client instances */
 
 #include "config.h"
-#include "pt_semaphore.h"
+#include "psemaphore.h"
 #include "instance.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)

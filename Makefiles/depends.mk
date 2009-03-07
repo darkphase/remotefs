@@ -61,6 +61,7 @@ src/list.o:src/list.h
 src/nss_client.o:src/buffer.h
 src/nss_client.o:src/command.h
 src/nss_client.o:src/config.h
+src/nss_client.o:src/list.h
 src/nss_server.o:src/buffer.h
 src/nss_server.o:src/command.h
 src/nss_server.o:src/config.h
@@ -120,7 +121,8 @@ src/operations_read.o:src/keep_alive_client.h
 src/operations_read.o:src/list.h
 src/operations_read.o:src/operations.h
 src/operations_read.o:src/operations_rfs.h
-src/operations_read.o:src/pt_semaphore.h
+src/operations_read.o:src/psemaphore.h
+src/operations_read.o:#	include "ratio.h"
 src/operations_read.o:src/resume.h
 src/operations_read.o:src/sendrecv.h
 src/operations_rfs.o:src/attr_cache.h
@@ -153,7 +155,7 @@ src/operations_write.o:src/keep_alive_client.h
 src/operations_write.o:src/list.h
 src/operations_write.o:src/operations.h
 src/operations_write.o:src/operations_rfs.h
-src/operations_write.o:src/pt_semaphore.h
+src/operations_write.o:src/psemaphore.h
 src/operations_write.o:src/sendrecv.h
 src/passwd.o:src/buffer.h
 src/passwd.o:src/config.h

@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "list.h"
 #include "operations.h"
 #include "operations_rfs.h"
-#include "pt_semaphore.h"
+#include "psemaphore.h"
 #include "sendrecv.h"
 
 static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
