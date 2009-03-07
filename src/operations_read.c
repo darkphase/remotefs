@@ -114,7 +114,8 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 	int ret = 0;
 	
 	if (block != NULL
-	&& (block->used + block->offset >= size + offset))
+	&& (block->used + block->offset >= size + offset
+		|| block->used < block->allocated)) /* this means that EOF was already reached */
 	{
 		size_t cached_size = (block->offset + block->used) - offset;
 		DEBUG("*** hit (%d)\n", (int)cached_size);
@@ -126,7 +127,8 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 		memcpy(buf, cached_data, size);
 		ret = size;
 		
-		if (cached_size > size)
+		if (cached_size > size
+		|| block->used < block->allocated)
 		{
 			return ret; /* no prefetch needed */
 		}
