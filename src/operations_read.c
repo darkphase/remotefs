@@ -19,6 +19,9 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "pt_semaphore.h"
+#ifdef RFS_DEBUG
+#	include "ratio.h"
+#endif
 #include "resume.h"
 #include "sendrecv.h"
 
@@ -115,6 +118,9 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 	{
 		size_t cached_size = (block->offset + block->used) - offset;
 		DEBUG("*** hit (%d)\n", (int)cached_size);
+#ifdef RFS_DEBUG
+		++instance->read_cache.hits;
+#endif
 		const char *cached_data = block->data + (offset - block->offset);
 		
 		memcpy(buf, cached_data, size);
@@ -129,6 +135,9 @@ static int _rfs_read_cached(struct rfs_instance *instance, const char *path, cha
 	to prefetch next cache block more precisely */
 	{
 		DEBUG("*** miss (offset: %llu, size: %lu)\n", (unsigned long long)offset, (unsigned long)size);
+#ifdef RFS_DEBUG
+		++instance->read_cache.misses;
+#endif
 		
 		if (keep_alive_lock(instance) != 0)
 		{
@@ -290,4 +299,14 @@ int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t
 		return ret;
 	}
 }
+
+#ifdef RFS_DEBUG
+void dump_read_cache_stats(struct rfs_instance *instance)
+{
+	DEBUG("read cache hits: %lu, misses: %lu, ratio: %.2f\n", 
+	instance->read_cache.hits, 
+	instance->read_cache.misses, 
+	ratio(instance->read_cache.hits, instance->read_cache.misses));
+}
+#endif
 

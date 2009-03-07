@@ -19,6 +19,10 @@ struct rfs_instance;
 
 int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc);
 
+#ifdef RFS_DEBUG
+void dump_read_cache_stats(struct rfs_instance *instance);
+#endif
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

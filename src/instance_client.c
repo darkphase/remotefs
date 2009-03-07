@@ -43,6 +43,10 @@ static void init_read_cache(struct rfs_instance *instance)
 	/* read cache */
 	instance->read_cache.max_cache_size = DEFAULT_RW_CACHE_SIZE;
 	instance->read_cache.cache = NULL;
+#ifdef RFS_DEBUG
+	instance->read_cache.hits = 0;
+	instance->read_cache.misses = 0;
+#endif
 }
 
 static void init_write_cache(struct rfs_instance *instance)

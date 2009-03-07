@@ -585,6 +585,7 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 #ifdef RFS_DEBUG
 	dump_attr_stats(instance);
+	dump_read_cache_stats(instance);
 #endif
 }
 

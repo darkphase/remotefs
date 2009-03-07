@@ -63,6 +63,10 @@ struct rfs_instance
 	{
 		size_t max_cache_size;
 		struct list *cache;
+#ifdef RFS_DEBUG
+		unsigned long hits;
+		unsigned long misses;
+#endif
 	} read_cache;
 	
 	/* write cache */
