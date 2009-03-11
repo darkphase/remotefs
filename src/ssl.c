@@ -141,15 +141,13 @@ static SSL* rfs_init_ssl(
 	DEBUG("loading private key: %s\n", key_file);
 	if (SSL_CTX_use_PrivateKey_file(*ctx, key_file, SSL_FILETYPE_PEM) != 1)
 	{
-		SSL_CTX_free(*ctx);
-		return NULL;
+		goto ctx_error;
 	}
 	
 	DEBUG("loading certificate: %s\n", cert_file);
 	if (SSL_CTX_use_certificate_file(*ctx, cert_file, SSL_FILETYPE_PEM) != 1)
 	{
-		SSL_CTX_free(*ctx);
-		return NULL;
+		goto ctx_error;
 	}
 	
 	SSL_CTX_set_verify(*ctx, SSL_VERIFY_NONE, NULL);
@@ -159,17 +157,24 @@ static SSL* rfs_init_ssl(
 	{
 		if (SSL_CTX_set_cipher_list(*ctx, cipher_list) != 1)
 		{
-			SSL_CTX_free(*ctx);
-			return NULL;
+			goto ctx_error;
 		}
 	}
 	
 	SSL *ssl = SSL_new(*ctx);
 	if (ssl == NULL)
 	{
-		SSL_CTX_free(*ctx);
-		return NULL;
+		goto ctx_error;
 	}
+
+	goto ok;
+
+ctx_error:
+	SSL_CTX_free(*ctx);
+	*ctx = NULL;
+	return NULL;
+
+ok:
 	SSL_set_read_ahead(ssl, 1);
 	return ssl;
 }
@@ -178,7 +183,8 @@ int rfs_clear_ssl(SSL **socket, SSL_CTX **ctx)
 {
 	DEBUG("%s\n", "clearing SSL");
 	
-	if (*socket != NULL)
+	if (socket != NULL 
+	&& *socket != NULL)
 	{
 		if (SSL_shutdown(*socket) == 0)
 		{
@@ -191,7 +197,8 @@ int rfs_clear_ssl(SSL **socket, SSL_CTX **ctx)
 		*socket = NULL;
 	}
 	
-	if (*ctx != NULL)
+	if (ctx != NULL 
+	&& *ctx != NULL)
 	{
 		SSL_CTX_free(*ctx);
 		
