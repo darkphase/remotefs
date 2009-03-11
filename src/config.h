@@ -79,8 +79,7 @@ struct rfs_config
 	char *auth_passwd_file;
 	char *auth_passwd;
 	unsigned int use_write_cache;
-	unsigned int use_read_cache;
-	unsigned int use_read_write_cache;
+	int use_read_cache;
 	unsigned int server_port;
 	unsigned int quiet;
 	int socket_buffer;

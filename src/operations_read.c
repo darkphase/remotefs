@@ -273,7 +273,10 @@ int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t
 		return -ECONNABORTED;
 	}
 	
-	if (instance->config.use_read_cache)
+	if (instance->config.use_read_cache > 0) 
+	/* "> 0" matters. it's -1 by default (off) 
+	and 0 if user turned it off with cmd-line parameter 
+	so it shouldn't be "!= 0" */
 	{
 		/* flush this file first */
 		if (keep_alive_lock(instance) != 0)

@@ -69,9 +69,6 @@ static void init_nss(struct rfs_instance *instance)
 static void init_rfs_config(struct rfs_instance *instance)
 {
 	instance->config.server_port = DEFAULT_SERVER_PORT;
-	instance->config.use_read_cache = 1;
-	instance->config.use_write_cache = 1;
-	instance->config.use_read_write_cache = 1;
 	instance->config.quiet = 0;
 	instance->config.socket_timeout = -1;
 	instance->config.socket_buffer = -1;
@@ -81,6 +78,15 @@ static void init_rfs_config(struct rfs_instance *instance)
 	instance->config.ssl_key_file = DEFAULT_SSL_KEY_FILE;
 	instance->config.ssl_cert_file = DEFAULT_SSL_CERT_FILE;
 #endif /* WITH_SSL */
+	/* read cache is indeed disabled by default
+	it seems ineffective after some past modifications of rfs, like sendfile() or something 
+	rfs can perform better without it on fast hardware
+	and it's still used with SSL (by default) */
+
+	/* we're using -1 here to make difference between default value 
+	and user-specified value */
+	instance->config.use_read_cache = -1;
+	instance->config.use_write_cache = 1;
 }
 
 void init_rfs_instance(struct rfs_instance *instance)

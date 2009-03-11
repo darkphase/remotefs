@@ -41,7 +41,6 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("password=%s", auth_passwd_file, 0),
 	RFS_OPT("rd_cache=%u", use_read_cache, 0),
 	RFS_OPT("wr_cache=%u", use_write_cache, 0),
-	RFS_OPT("rdwr_cache=%u", use_read_write_cache, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	RFS_OPT("socket_timeout=%d", socket_timeout, -1),
 	RFS_OPT("socket_buffer=%d", socket_buffer, -1),
@@ -70,9 +69,12 @@ static void usage(const char *program)
 	"    -q                      suppress warnings\n"
 	"    -l                      list exports of specified host (and exit)\n"
 	"    -o username=name        auth username\n"
-	"    -o rd_cache=0           disable read cache\n"
+#ifdef WITH_SSL
+	"    -o rd_cache=1           enable read cache\n"
+#else
+	"    -o rd_cache=1           enable read cache (enabled by default by -o ssl)\n"
+#endif
 	"    -o wr_cache=0           disable write cache\n"
-	"    -o rdwr_cache=0         disable read/write cache\n"
 	"    -o password=filename    filename with password for auth\n"
 	"    -o port=server_port     port which the server is listening to\n"
 #ifdef WITH_SSL
@@ -85,11 +87,13 @@ static void usage(const char *program)
 
 static void rfs_fix_options()
 {
-	if (rfs_instance.config.use_read_write_cache == 0)
+#ifdef WITH_SSL
+	if (rfs_instance.config.enable_ssl != 0 
+	&& rfs_instance.config.use_read_cache == -1 /* default */)
 	{
-		rfs_instance.config.use_read_cache = 0;
-		rfs_instance.config.use_write_cache = 0;
+		rfs_instance.config.use_read_cache = 1;
 	}
+#endif
 }
 
 static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
@@ -315,7 +319,7 @@ int main(int argc, char **argv)
 	}
 	
 #ifdef RFS_DEBUG
-	if (rfs_instance.config.use_read_cache != 0)
+	if (rfs_instance.config.use_read_cache > 0) /* > 0 matters. see operations_read.c and instance_client.c */
 	{
 		DEBUG("%s\n", "using read cache");
 	}
