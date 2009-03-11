@@ -49,6 +49,15 @@ static int create_pidfile(const char *pidfile)
 	return 0;
 }
 
+static void release_server(struct rfsd_instance *instance)
+{
+	release_exports(&rfsd_instance.exports.list);
+	release_passwords(&rfsd_instance.passwd.auths);
+
+	unlink(rfsd_instance.config.pid_file);
+	release_rfsd_instance(&rfsd_instance);
+}
+
 static int start_server(const char *address, const unsigned port)
 {
 	install_signal_handlers_server();
@@ -201,9 +210,8 @@ static int start_server(const char *address, const unsigned port)
 void stop_server()
 {
 	server_close_connection(&rfsd_instance);
-	unlink(rfsd_instance.config.pid_file);
-	release_rfsd_instance(&rfsd_instance);
-	
+	release_server(&rfsd_instance);
+
 	exit(0);
 }
 
@@ -363,9 +371,7 @@ int main(int argc, char **argv)
 
 	int ret = start_server(rfsd_instance.config.listen_address, rfsd_instance.config.listen_port);
 	
-	release_exports(&rfsd_instance.exports.list);
-	release_passwords(&rfsd_instance.passwd.auths);
-	release_rfsd_instance(&rfsd_instance);
+	release_server(&rfsd_instance);
 	
 	return ret;
 }
