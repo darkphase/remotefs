@@ -308,6 +308,7 @@ int main(int argc, char **argv)
 #ifdef WITH_EXPORTS_LIST
 	if (just_list_exports != 0)
 	{
+		fuse_opt_free_args(&args);
 		exit(list_exports_main());
 	}
 #endif
@@ -315,6 +316,7 @@ int main(int argc, char **argv)
 	if (rfs_instance.config.path == NULL)
 	{
 		ERROR("%s\n", "Remote path is not specified");
+		fuse_opt_free_args(&args);
 		exit(1);
 	}
 	
@@ -340,6 +342,7 @@ int main(int argc, char **argv)
 		if (read_ret != 0)
 		{
 			ERROR("Error reading password file: %s\n", strerror(-read_ret));
+			fuse_opt_free_args(&args);
 			return 1;
 		}
 	}
@@ -355,6 +358,7 @@ int main(int argc, char **argv)
 	
 	if (rfs_reconnect(&rfs_instance, 1, 1) != 0)
 	{
+		fuse_opt_free_args(&args);
 		return 1;
 	}
 	
