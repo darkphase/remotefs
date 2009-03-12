@@ -73,12 +73,14 @@ static size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int 
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
 	
+#ifdef WITH_UGO
 	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
 	&& (user == NULL
 	|| group == NULL))
 	{
 		*ret = ECANCELED;
 	}
+#endif
 	
 	if (user == NULL)
 	{
@@ -108,13 +110,15 @@ static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat
 {
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
-	
+
+#ifdef WITH_UGO
 	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
 	&& (user == NULL
 	|| group == NULL))
 	{
 		*ret = ECANCELED;
 	}
+#endif
 	
 	if (user == NULL)
 	{

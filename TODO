@@ -9,3 +9,5 @@
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
+- rfsd crashes if no username (or ip-address) is specified in export line
+

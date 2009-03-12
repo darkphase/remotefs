@@ -17,7 +17,7 @@
 # /tmp 127.0.0.1, alex, 10.0.0.2 (ro,user=alex)
 # /tmp 127.0.0.1 (user=rfs,group=rfs)
 #
-# UGO model enabled:
+# UGO model enabled: (if compiled with it)
 # /tmp alex (ugo)
 #
 # make note, that you can not authenticate user 

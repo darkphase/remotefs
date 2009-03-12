@@ -98,10 +98,12 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 			{
 				opts_export->options |= OPT_RO;
 			}
+#ifdef WITH_UGO
 			else if (strcmp(opt_str, "ugo") == 0)
 			{
 				opts_export->options |= OPT_UGO;
 			}
+#endif
 			else if (strstr(opt_str, "user=") == opt_str)
 			{
 				if (opts_export->export_uid != (uid_t)-1)
@@ -142,7 +144,7 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 			}
 			else
 			{
-				ERROR("Unknown export option: %s\n", opt_str);
+				ERROR("Unknown export option: \"%s\"\n", opt_str);
 				return -1;
 			}
 		}
@@ -294,6 +296,7 @@ static char* parse_line(const char *buffer, unsigned size, int start_from, struc
 
 static int validate_export(const struct rfs_export *line_export)
 {
+#ifdef WITH_UGO
 	if ((line_export->options & OPT_UGO) != 0)
 	{
 		if ((line_export->options & OPT_RO) != 0
@@ -317,6 +320,7 @@ static int validate_export(const struct rfs_export *line_export)
 			user_item = user_item->next;
 		}
 	}
+#endif
 
 	return 0;
 }

@@ -31,11 +31,16 @@ OPT_1 = -DWITH_IPV6
 #OPT_5 = -DWITH_ACL
 
 ###############################################
+# Support for UGO
+
+OPT_6 = -DWITH_UGO
+
+###############################################
 # End of user configuration, don't change the
 # following lines
 
-CFLAGS_OPTS = $(CFLAGS) $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5)
-LDFLAGS_OPTS = $(LDFLAGS) $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD)
+CFLAGS_OPTS = $(CFLAGS) $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5) $(OPT_6)
+LDFLAGS_OPTS = $(LDFLAGS) $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT_6_LD)
 
 # Default entry for main Makefile
 help:

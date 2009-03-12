@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#ifdef WITH_UGO
+
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -325,4 +327,8 @@ unsigned is_nss_running(struct rfs_instance *instance)
 {
 	return (instance->nss.server_thread != 0);
 }
+
+#else
+int nss_server_c_empty_module_makes_suncc_upset = 0;
+#endif /* WITH_UGO */
 

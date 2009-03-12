@@ -181,19 +181,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_readlink:
 		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
 #endif
-
-#if defined WITH_ACL
-	case cmd_getxattr:
-		return handle_getxattr(instance, client_addr, cmd);
-	case cmd_setxattr:
-		return handle_setxattr(instance, client_addr, cmd);
-#else
-	case cmd_getxattr:
-	case cmd_setxattr:
-		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
-#endif
 	}
 
+#ifdef WITH_UGO
 	if (instance->server.mounted_export == NULL
 	|| (instance->server.mounted_export->options & OPT_UGO) == 0)
 	{
@@ -211,7 +201,28 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	case cmd_getnames:
 		return handle_getnames(instance, client_addr, cmd);
+#if defined WITH_ACL
+	case cmd_getxattr:
+		return handle_getxattr(instance, client_addr, cmd);
+	case cmd_setxattr:
+		return handle_setxattr(instance, client_addr, cmd);
+#else
+	case cmd_getxattr:
+	case cmd_setxattr:
+		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
+#endif
 	}
+#else /* without UGO */
+	switch (cmd->command)
+	{	
+	case cmd_chmod:
+	case cmd_chown:
+	case cmd_getnames:
+	case cmd_getxattr:
+	case cmd_setxattr:
+		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
+	}
+#endif
 	
 	reject_request_with_cleanup(instance, cmd, EINVAL);
 	

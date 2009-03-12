@@ -22,7 +22,9 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "keep_alive_client.h"
 #include "list.h"
-#include "nss_server.h"
+#ifdef WITH_UGO
+#	include "nss_server.h"
+#endif
 #include "operations.h"
 #include "operations_rfs.h"
 #include "resume.h"
@@ -478,6 +480,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			return -1;
 		}
 
+#ifdef WITH_UGO
 		if ((instance->client.export_opts & OPT_UGO) != 0)
 		{
 			int getnames_ret = rfs_getnames(instance);
@@ -501,13 +504,11 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				rfs_disconnect(instance, 1);
 				return -1;
 			}
-		}
-		
-		if ((instance->client.export_opts & OPT_UGO) != 0)
-		{
+			
 			create_uids_lookup(&instance->id_lookup.uids);
 			create_gids_lookup(&instance->id_lookup.gids);
 		}
+#endif
 		
 		int resume_ret = resume_files(instance);
 		if (resume_ret != 0)
@@ -562,10 +563,12 @@ void rfs_destroy(struct rfs_instance *instance)
 {
 	keep_alive_lock(instance);
 
+#ifdef WITH_UGO
 	if (is_nss_running(instance))
 	{
 		stop_nss_server(instance);
 	}
+#endif
 	
 	rfs_disconnect(instance, 1);
 

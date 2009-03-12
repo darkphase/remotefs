@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#ifdef WITH_UGO
+
 #ifndef NSS_CLIENT_H
 #define NSS_CLIENT_H
 
@@ -27,4 +29,6 @@ int nss_get_groups(const char *server, struct list **groups);
 #endif
 
 #endif /* NSS_CLIENT_H */
+
+#endif /* WITH_UGO */
 

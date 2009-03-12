@@ -76,6 +76,7 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 
 	last_pos += user_len + group_len;
 	
+#ifdef WITH_UGO
 	uid_t uid = (uid_t)-1;
 	gid_t gid = (gid_t)-1;
 	
@@ -140,26 +141,27 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 			gid = lookup_group(instance->id_lookup.gids, group, user);
 		}
 	}
-	
-	result->st_mode = mode;
 
-	if ((instance->client.export_opts & OPT_UGO) == 0)
-	{
-		result->st_uid = instance->client.my_uid;
-		result->st_gid = instance->client.my_gid;
-	}
-	else
+	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
+
+	if ((instance->client.export_opts & OPT_UGO) != 0)
 	{
 		result->st_uid = uid;
 		result->st_gid = gid;
 	}
+	else
+#endif /* WITH_UGO */
+	{
+		result->st_uid = instance->client.my_uid;
+		result->st_gid = instance->client.my_gid;
+	}
 	
+	result->st_mode = mode;
 	result->st_size = (off_t)size;
 	result->st_atime = (time_t)atime;
 	result->st_mtime = (time_t)mtime;
 	result->st_ctime = (time_t)ctime;
 	
-	DEBUG("user: %s, group: %s, uid: %d, gid: %d\n", user, group, uid, gid);
 
 	return last_pos;
 }
@@ -910,13 +912,17 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 {
+#ifndef WITH_UGO
+	/* actually dummy to keep some software happy. 
+	do not replace with -EACCES or something */
+	return 0; 
+#else	
 	if ((instance->client.export_opts & OPT_UGO) == 0)
 	{
-		/* actually dummy to keep some software happy. 
-		do not replace with -EACCES or something */
+		/* do nothing, since this is not UGOed export */
 		return 0; 
 	}
-	
+
 	if (instance->sendrecv.socket == -1)
 	{
 		return -ECONNABORTED;
@@ -960,14 +966,19 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
+#endif
 }
 
 int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {
+#ifndef WITH_UGO
+	/* actually dummy to keep some software happy. 
+	do not replace with -EACCES or something */
+	return 0;
+#else
 	if ((instance->client.export_opts & OPT_UGO) == 0)
 	{
-		/* actually dummy to keep some software happy. 
-		do not replace with -EACCES or something */
+		/* do nothing, since this is not UGOed export */
 		return 0;
 	}
 	
@@ -1059,6 +1070,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
+#endif
 }
 
 int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int lock_cmd, struct flock *fl)

@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#ifdef WITH_UGO
+
 #ifndef NSS_SERVER_H
 #define NSS_SERVER_H
 
@@ -26,4 +28,6 @@ unsigned is_nss_running(struct rfs_instance *instance);
 #endif
 
 #endif /* NSS_SERVER_H */
+
+#endif /* WITH_UGO */
 

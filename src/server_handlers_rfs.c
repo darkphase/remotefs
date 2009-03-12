@@ -55,8 +55,11 @@ static int check_permissions(struct rfsd_instance *instance, const struct rfs_ex
 	while (user_entry != NULL)
 	{
 		const char *user = (const char *)user_entry->data;
-		if ((export_info->options & OPT_UGO) == 0
-		&& is_ipaddr(user) != 0)
+		if (
+#ifdef WITH_UGO
+		(export_info->options & OPT_UGO) == 0 &&
+#endif
+		is_ipaddr(user) != 0)
 		{
 #ifndef WITH_IPV6
 			if (strcmp(user, client_ip_addr) == 0)
@@ -241,6 +244,7 @@ int _handle_closeconnection(struct rfsd_instance *instance, const struct sockadd
 	exit(0);
 }
 
+#ifdef WITH_UGO
 static int init_groups_for_ugo(struct rfsd_instance *instance, gid_t user_gid)
 {
 	/* we have to init groups before chroot() */
@@ -267,12 +271,14 @@ static int init_groups_for_ugo(struct rfsd_instance *instance, gid_t user_gid)
 #endif
 	return 0;
 }
+#endif
 
 static int setup_export_opts(struct rfsd_instance *instance, const struct rfs_export *export_info, uid_t user_uid, gid_t user_gid)
 {
 	/* always set gid first :)
 	*/
 	
+#ifdef WITH_UGO
 	if ((export_info->options & OPT_UGO) != 0)
 	{
 		DEBUG("setting process ids according to UGO. uid: %d, gid: %d\n", user_uid, user_gid);
@@ -292,6 +298,7 @@ static int setup_export_opts(struct rfsd_instance *instance, const struct rfs_ex
 		}
 	}
 	else
+#endif
 	{
 		DEBUG("setting process ids according to user= and group=. uid: %d, gid: %d\n", export_info->export_uid, export_info->export_gid);
 		if (export_info->export_gid != getgid() 
@@ -377,17 +384,14 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}
 #endif
-	/* the server must known oir identity (usi/primary gid
-	 * this is important in order to have the correct right
-	 * managment on the server. We assume here that all systems
-	 * within our network know the same user and groups and the
-	 * the corresponding uid/gid are the same
-	 */
+
 	uid_t user_uid = geteuid();
 	gid_t user_gid = getegid();
-	
-	DEBUG("auth user: %s, ugo: %d\n", instance->server.auth_user, export_info->options & OPT_UGO);
-	
+
+#ifdef WITH_UGO
+	/* if we're going into UGO, then user_uid and user_gid should 
+	point to logged user */
+
 	if (instance->server.auth_user != NULL 
 	&& (export_info->options & OPT_UGO) != 0)
 	{
@@ -402,11 +406,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 			free_buffer(buffer);
 			return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 		}
-	}
-	
-	if (instance->server.auth_user != NULL
-	&& (export_info->options & OPT_UGO) != 0)
-	{
+
 		int init_errno = init_groups_for_ugo(instance, user_gid);
 		if (init_errno != 0)
 		{
@@ -417,7 +417,8 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		create_uids_lookup(&instance->id_lookup.uids);
 		create_gids_lookup(&instance->id_lookup.gids);
 	}
-	
+#endif
+
 	errno = 0;
 	int result = chroot(path);
 
@@ -425,9 +426,6 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	
 	free_buffer(buffer);
 	
-	/* there is a bug here or above. we can go here with export_info == NULL */
-	/* [alex] we shouldn't according to if (export_info == NULL ... above
-	if we are, then *that* bug should be fixed. i'll check it */
 	if (result == 0)
 	{
 		int setup_errno = setup_export_opts(instance, export_info, user_uid, user_gid);

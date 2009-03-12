@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#ifdef WITH_UGO
+
 #include <dirent.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -321,4 +323,8 @@ int nss_get_groups(const char *server, struct list **groups)
 {
 	return get_names(server, groups, cmd_getgroups);
 }
+
+#else
+int nss_client_c_empty_module_makes_suncc_feel_bad = 0;
+#endif /* WITH_UGO */
 
