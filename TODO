@@ -3,8 +3,9 @@
 - librfs
 - server's exports list support
 - links support
+- making UGO as an compile option
 + separating client/server code
+  + separating ssl code
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
-

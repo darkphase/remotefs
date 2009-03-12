@@ -57,6 +57,7 @@ librfs_OBJS = src/acl_utils.o \
               src/signals_client.o \
               src/sockets.o \
               src/ssl.o \
+              src/ssl_client.o \
               src/utils.o \
               src/md5crypt/crypt_md5.o \
               src/md5crypt/md5.o

@@ -29,7 +29,7 @@ See the file LICENSE.
 #include "sendrecv.h"
 #include "sockets.h"
 #ifdef WITH_SSL
-#	include "ssl.h"
+#	include "ssl_client.h"
 #endif
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)

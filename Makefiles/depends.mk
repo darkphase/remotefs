@@ -288,6 +288,10 @@ src/signals_server.o:src/signals.h
 src/ssl.o:src/buffer.h
 src/ssl.o:src/config.h
 src/ssl.o:src/ssl.h
+src/ssl_client.o:src/config.h
+src/ssl_client.o:src/ssl_client.h
+src/ssl_server.o:src/config.h
+src/ssl_server.o:src/ssl_server.h
 src/sug_client.o:src/config.h
 src/sug_client.o:src/instance_client.h
 src/sug_client.o:src/sug_client.h
@@ -349,6 +353,8 @@ src/signals_client.o:src/signals_client.c
 src/signals_server.o:src/signals_server.c
 src/sockets.o:src/sockets.c
 src/ssl.o:src/ssl.c
+src/ssl_client.o:src/ssl_client.c
+src/ssl_server.o:src/ssl_server.c
 src/sug_client.o:src/sug_client.c
 src/sug_server.o:src/sug_server.c
 src/utils.o:src/utils.c

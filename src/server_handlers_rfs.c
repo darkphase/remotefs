@@ -27,7 +27,7 @@ See the file LICENSE.
 #include "server.h"
 #include "sendrecv.h"
 #ifdef WITH_SSL
-#	include "ssl.h"
+#	include "ssl_server.h"
 #endif
 
 static int check_password(struct rfsd_instance *instance)

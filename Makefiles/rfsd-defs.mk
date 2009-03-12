@@ -49,6 +49,7 @@ rfsd_OBJS = src/acl_utils.o \
             src/signals.o \
             src/sockets.o \
             src/ssl.o \
+            src/ssl_server.o \
             src/utils.o \
             src/md5crypt/crypt_md5.o \
             src/md5crypt/md5.o \

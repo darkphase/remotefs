@@ -11,7 +11,7 @@ See the file LICENSE.
 
 #ifdef WITH_SSL
 
-/** SSL related routines */
+/** common SSL related routines */
 
 #include <openssl/ssl.h>
 
@@ -19,20 +19,16 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** init SSL for client */
-SSL* rfs_init_client_ssl(SSL_CTX **ctx, const char *key_file, const char *cert_file, const char *ciphers);
-
-/** init SSL for server */
-SSL* rfs_init_server_ssl(SSL_CTX **ctx, const char *key_file, const char *cert_file, const char *ciphers);
+/** init SSL and CTX using specified certificates */
+SSL* rfs_init_ssl(
+	SSL_CTX **ctx, 
+	SSL_METHOD *method, 
+	const char *key_file, 
+	const char *cert_file, 
+	const char *cipher_list);
 
 /** attach SSL structures to socket */
 int rfs_attach_ssl(SSL *ssl_socket, int socket);
-
-/** accept SSLed connection */
-int rfs_accept_ssl(SSL *socket);
-
-/** connect SSLed socket */
-int rfs_connect_ssl(SSL *socket);
 
 /** cleanup allocated SSL structures */
 int rfs_clear_ssl(SSL **socket, SSL_CTX **ctx);
