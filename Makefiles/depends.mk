@@ -122,7 +122,7 @@ src/operations_read.o:src/list.h
 src/operations_read.o:src/operations.h
 src/operations_read.o:src/operations_rfs.h
 src/operations_read.o:src/psemaphore.h
-src/operations_read.o:#	include "ratio.h"
+src/operations_read.o:src/ratio.h
 src/operations_read.o:src/resume.h
 src/operations_read.o:src/sendrecv.h
 src/operations_rfs.o:src/attr_cache.h
@@ -140,7 +140,7 @@ src/operations_rfs.o:src/operations_rfs.h
 src/operations_rfs.o:src/resume.h
 src/operations_rfs.o:src/sendrecv.h
 src/operations_rfs.o:src/sockets.h
-src/operations_rfs.o:#	include "ssl.h"
+src/operations_rfs.o:src/ssl_client.h
 src/operations_sync.o:src/instance.h
 src/operations_sync.o:src/keep_alive_client.h
 src/operations_sync.o:src/operations.h
@@ -268,7 +268,7 @@ src/server_handlers_rfs.o:src/sockets.h
 src/server_handlers_rfs.o:src/utils.h
 src/server_handlers_rfs.o:src/server.h
 src/server_handlers_rfs.o:src/sendrecv.h
-src/server_handlers_rfs.o:#	include "ssl.h"
+src/server_handlers_rfs.o:src/ssl_server.h
 src/server_handlers_sync.o:src/keep_alive_server.h
 src/server_handlers_sync.o:src/server_handlers.h
 src/server_handlers_write.o:src/buffer.h
@@ -288,6 +288,7 @@ src/signals_server.o:src/signals.h
 src/ssl.o:src/buffer.h
 src/ssl.o:src/config.h
 src/ssl.o:src/ssl.h
+src/ssl_client.o:src/buffer.h
 src/ssl_client.o:src/config.h
 src/ssl_client.o:src/ssl_client.h
 src/ssl_server.o:src/config.h
