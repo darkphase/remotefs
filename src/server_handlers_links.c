@@ -48,8 +48,6 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	}
 	
 	/* make sure link will work in chroot() */
-	DEBUG("stating %s\n", path);
-
 	struct stat stbuf = { 0 };
 	errno = 0;
 
@@ -58,8 +56,6 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		free_buffer(buffer);
 		return reject_request(instance, cmd, EPERM) == 0 ? 1 : -1;
 	}
-
-	DEBUG("%s\n", "stat ok");
 
 	errno = 0;
 	int result = symlink(path, target);
