@@ -17,19 +17,6 @@ See the file LICENSE.
 #include <string.h>
 #include <unistd.h>
 #include <utime.h>
-#if defined FREEBSD
-#	include <netinet/in.h>
-#	include <sys/socket.h>
-#	include <sys/uio.h>
-#endif
-#if defined QNX
-#	include <sys/socket.h>
-#endif
-#if defined DARWIN
-#	include <netinet/in.h>
-#	include <sys/socket.h>
-#	include <sys/uio.h>
-#endif
 
 #include "buffer.h"
 #include "command.h"

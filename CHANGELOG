@@ -1,3 +1,22 @@
+0.12
+
+[+] IPv6 is enabled by default
+
+[*] remotefs may be built without UGO support
+[*] fixed segfault if certificate file(s) isn't exist
+
+rfsd:
+
+[*] fixed segfault if no users specified in export line
+[*] pid file correctly deleted if rfsd can't start
+[*] more friendly error messages on exports parsing
+[*] fixed memory leak in readdir()
+
+rfs:
+
+[*] prefetch is disabled by default if SSL isn't used
+[*] removed -ordwr_cache option
+
 0.11
 
 [+] links support in SVN
@@ -54,7 +73,7 @@ rfsd:
 [*] fixed bug with cache clearing
 
 rfs:
-|+] chmod/chown support with UGO
+[+] chmod/chown support with UGO
 [+] auto reconnect support
 [+] -q option - suppress warnings
 
