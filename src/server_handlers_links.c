@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "buffer.h"
@@ -130,6 +131,18 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 
 	char *link_buffer = get_buffer(bsize + 1); /* include size for \0 */
+
+	/* make sure file is really accessible in chroot() */
+	struct stat stbuf = { 0 };
+	errno = 0;
+
+	if (stat(path, &stbuf) != 0)
+	{
+		int saved_errno = errno;
+		
+		free_buffer(buffer);
+		return reject_request(instance, cmd, saved_errno) == 0 ? 1 : -1;
+	}
 
 	errno = 0;
 	int ret = readlink(path, link_buffer, bsize);

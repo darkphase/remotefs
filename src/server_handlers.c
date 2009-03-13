@@ -48,10 +48,11 @@ See the file LICENSE.
 static int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)
 {
 	errno = 0;
-#if ! defined WITH_LINKS
-	if (stat(path, stbuf) != 0)
-#else
+
+#ifdef WITH_LINKS
 	if (lstat(path, stbuf) != 0)
+#else
+	if (stat(path, stbuf) != 0)
 #endif
 	{
 		return errno;
