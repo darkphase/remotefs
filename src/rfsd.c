@@ -323,12 +323,19 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (parse_exports(rfsd_instance.config.exports_file, 
+	int parse_ret = parse_exports(rfsd_instance.config.exports_file, 
 	&rfsd_instance.exports.list, 
 	rfsd_instance.config.worker_uid, 
-	rfsd_instance.config.worker_gid) != 0)
+	rfsd_instance.config.worker_gid);
+
+	if (parse_ret > 0)
 	{
-		ERROR("Error parsing exports file at %s\n", rfsd_instance.config.exports_file);
+		ERROR("Error parsing exports file at %s (line %d)\n", rfsd_instance.config.exports_file, parse_ret);
+		return 1;
+	}
+	else if (parse_ret < 0)
+	{
+		ERROR("Error parsing exports file at %s: %s\n", rfsd_instance.config.exports_file, strerror(-parse_ret));
 		return 1;
 	}
 	
@@ -375,3 +382,4 @@ int main(int argc, char **argv)
 	
 	return ret;
 }
+

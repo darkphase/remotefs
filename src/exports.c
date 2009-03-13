@@ -245,14 +245,15 @@ static char* parse_line(const char *buffer, unsigned size, int start_from, struc
 	}
 	
 	if (users == NULL 
-	|| users >= border
-	|| users_end == NULL
-	|| users_end > border)
+	|| users >= border 
+	|| users_end == NULL 
+	|| users_end > border 
+	|| users == users_end)
 	{
 		free_buffer(share);
 		return (char *)-1;
 	}
-	
+
 	struct list *this_line_users = parse_list(users, users_end);
 	
 	const char *options = find_chr(users_end, border, "(");
@@ -325,18 +326,20 @@ static int validate_export(const struct rfs_export *line_export)
 	return 0;
 }
 
-unsigned parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid)
+int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid)
 {
 	FILE *fd = fopen(exports_file, "rt");
 	if (fd == 0)
 	{
-		return -1;
+		return -errno;
 	}
 	
 	if (fseek(fd, 0, SEEK_END) != 0)
 	{
+		int saved_errno = errno;
+
 		fclose(fd);
-		return -1;
+		return -saved_errno;
 	}
 	
 	long size = ftell(fd);
@@ -346,27 +349,36 @@ unsigned parse_exports(const char *exports_file, struct list **exports, uid_t wo
 	
 	if (buffer == NULL)
 	{
+		int saved_errno = errno;
+
 		fclose(fd);
-		return -1;
+		return -saved_errno;
 	}
 	
 	if (fseek(fd, 0, SEEK_SET) != 0)
 	{
+		int saved_errno = errno;
+
 		free_buffer(buffer);
 		fclose(fd);
-		return -1;
+		return -saved_errno;
 	}
 	
 	if (fread(buffer, 1, size, fd) != size)
 	{
+		int saved_errno = errno;
+		
 		free_buffer(buffer);
 		fclose(fd);
-		return -1;
+		return -saved_errno;
 	}
-	
+
+	int line_number = 0;
 	char *next_line = buffer;
 	do
 	{
+		++line_number;
+
 		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
 		memset(line_export, 0, sizeof(*line_export));
 		line_export->export_uid = (uid_t)-1;
@@ -377,7 +389,7 @@ unsigned parse_exports(const char *exports_file, struct list **exports, uid_t wo
 		{
 			free_buffer(line_export);
 			fclose(fd);
-			return -1;
+			return line_number;
 		}
 		
 		/* must be called before setting uid/gid to default values
@@ -386,7 +398,7 @@ unsigned parse_exports(const char *exports_file, struct list **exports, uid_t wo
 		{
 			free_buffer(line_export);
 			fclose(fd);
-			return -1;
+			return line_number;
 		}
 		
 		if (line_export->export_uid == (uid_t)-1)
@@ -407,9 +419,8 @@ unsigned parse_exports(const char *exports_file, struct list **exports, uid_t wo
 		}
 	}
 	while (next_line != NULL);
-	
+
 	free_buffer(buffer);
-	
 	fclose(fd);
 	
 	return 0;
