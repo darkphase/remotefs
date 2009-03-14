@@ -166,7 +166,6 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_lock:
 		return handle_lock(instance, client_addr, cmd);
 
-#if defined WITH_LINKS
 	case cmd_link:
 		return handle_link(instance, client_addr, cmd);
 	
@@ -175,12 +174,6 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	case cmd_readlink:
 		return handle_readlink(instance, client_addr, cmd);
-#else
-	case cmd_link:
-	case cmd_symlink:
-	case cmd_readlink:
-		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
-#endif
 	}
 
 #ifdef WITH_UGO

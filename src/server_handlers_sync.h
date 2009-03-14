@@ -51,11 +51,9 @@ int handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cli
 int handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#if defined WITH_LINKS
 int handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#endif
 #if defined WITH_ACL
 int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);

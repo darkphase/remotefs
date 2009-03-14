@@ -37,11 +37,9 @@ struct fuse_operations fuse_rfs_operations = {
 #if FUSE_USE_VERSION >= 26
 	.lock		= fuse_rfs_lock,
 #endif
-#if defined WITH_LINKS
 	.link		= fuse_rfs_link,
 	.symlink	= fuse_rfs_symlink,
 	.readlink	= fuse_rfs_readlink,
-#endif
 #if defined WITH_ACL
 	.setxattr	= fuse_rfs_setxattr,
 	.getxattr	= fuse_rfs_getxattr,
@@ -171,7 +169,6 @@ int fuse_rfs_lock(const char *path, struct fuse_file_info *fi, int cmd, struct f
 }
 #endif
 
-#if defined WITH_LINKS
 int fuse_rfs_link(const char *path, const char *target)
 {
 	FUSE_DECORATE(rfs_link, instance, path, target);
@@ -186,7 +183,6 @@ int fuse_rfs_readlink(const char *path, char *buffer, size_t size)
 {
 	FUSE_DECORATE(rfs_readlink, instance, path, buffer, size);
 }
-#endif
 
 #if defined WITH_ACL
 int fuse_rfs_getxattr(const char *path, const char *name, char *value, size_t size)

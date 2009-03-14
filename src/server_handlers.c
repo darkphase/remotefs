@@ -36,11 +36,7 @@ static int stat_file(struct rfsd_instance *instance, const char *path, struct st
 {
 	errno = 0;
 
-#ifdef WITH_LINKS
 	if (lstat(path, stbuf) != 0)
-#else
-	if (stat(path, stbuf) != 0)
-#endif
 	{
 		return errno;
 	}

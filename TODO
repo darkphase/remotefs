@@ -6,6 +6,8 @@
 + making UGO as an compile option
 + separating client/server code
   + separating ssl code
+- man page for rfscert.sh
+- optional paths for SSL cert and key
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

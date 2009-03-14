@@ -18,7 +18,6 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "sendrecv.h"
 
-#if defined WITH_LINKS
 int _rfs_link(struct rfs_instance *instance, const char *path, const char *target)
 {
 	if (instance->sendrecv.socket == -1)
@@ -185,7 +184,4 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
 }
-#else
-int operations_links_c_empty_module_makes_suncc_sad = 0;
-#endif /* WITH_LINKS */
 

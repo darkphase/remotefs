@@ -48,12 +48,10 @@ int rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int
 /* fs */
 int rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs *buf);
 
-#if defined WITH_LINKS
 /* links */
 int rfs_link(struct rfs_instance *instance, const char *path, const char *target);
 int rfs_symlink(struct rfs_instance *instance, const char *path, const char *target);
 int rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size);
-#endif
 
 #if defined WITH_ACL
 /* acl */

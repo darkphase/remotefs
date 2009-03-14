@@ -122,7 +122,6 @@ int rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int
 	DECORATE(_rfs_lock, instance, path, desc, cmd, fl);
 }
 
-#if defined WITH_LINKS
 int rfs_link(struct rfs_instance *instance, const char *path, const char *target)
 {
 	DECORATE(_rfs_link, instance, path, target);
@@ -137,8 +136,6 @@ int rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, 
 {
 	DECORATE(_rfs_readlink, instance, path, buffer, size);
 }
-
-#endif
 
 #if defined WITH_ACL
 int rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)

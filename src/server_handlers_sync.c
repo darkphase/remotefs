@@ -144,7 +144,6 @@ int handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client
 	DECORATE(_handle_lock)
 }
 
-#if defined WITH_LINKS
 int handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
 {
 	DECORATE(_handle_symlink)
@@ -159,7 +158,6 @@ int handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client
 {
 	DECORATE(_handle_link)
 }
-#endif
 
 #if defined WITH_ACL
 int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

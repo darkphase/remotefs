@@ -19,7 +19,6 @@ See the file LICENSE.
 #include "sendrecv.h"
 #include "server.h"
 
-#if defined WITH_LINKS
 int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
@@ -211,7 +210,4 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	return 0;
 }
-#else
-int server_handlers_c_empty_modules_makes_suncc_sad = 0;
-#endif /* WITH_LINKS */
 

@@ -48,11 +48,9 @@ int fuse_rfs_chown(const char *path, uid_t uid, gid_t gid);
 #if FUSE_USE_VERSION >= 26
 int fuse_rfs_lock(const char *path, struct fuse_file_info *fi, int cmd, struct flock *fl);
 #endif
-#if defined WITH_LINKS
 int fuse_rfs_link(const char *path, const char *target);
 int fuse_rfs_symlink(const char *path, const char *target);
 int fuse_rfs_readlink(const char *path, char *buffer, size_t size);
-#endif
 #if defined WITH_ACL
 int fuse_rfs_getxattr(const char *path, const char *name, char *value, size_t size);
 int fuse_rfs_setxattr(const char *path, const char *name, const char *vslue, size_t size, int flags);
