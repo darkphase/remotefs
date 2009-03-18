@@ -15,7 +15,6 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
-#include "path.h"
 #include "sendrecv.h"
 #include "server.h"
 
@@ -46,31 +45,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		free_buffer(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
-
-	if (path_len > FILENAME_MAX)
-	{	
-		free_buffer(buffer);
-		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
-	}
 	
-	char full_path[FILENAME_MAX + 1] = { 0 };
-
-	if (path_join(full_path, FILENAME_MAX, "/", path) < 0)
-	{
-		free_buffer(buffer);
-		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
-	}
-
-	struct stat stbuf = { 0 };
-	errno = 0;
-
-	/* make sure link will work in chroot() */
-	if (stat(full_path, &stbuf) != 0)
-	{
-		free_buffer(buffer);
-		return reject_request(instance, cmd, EPERM) == 0 ? 1 : -1;
-	}
-
 	errno = 0;
 	int result = symlink(path, target);
 	
@@ -114,24 +89,6 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 
-	char full_path[FILENAME_MAX + 1] = { 0 };
-
-	if (path_join(full_path, FILENAME_MAX, "/", path) < 0)
-	{
-		free_buffer(buffer);
-		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
-	}
-
-	struct stat stbuf = { 0 };
-	errno = 0;
-
-	/* make sure link will work in chroot() */
-	if (stat(full_path, &stbuf) != 0)
-	{
-		free_buffer(buffer);
-		return reject_request(instance, cmd, EPERM) == 0 ? 1 : -1;
-	}
-
 	errno = 0;
 	int result = link(path, target);
 	
@@ -173,18 +130,6 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 
 	char *link_buffer = get_buffer(bsize + 1); /* include size for \0 */
-
-	/* make sure file is really accessible in chroot() */
-	struct stat stbuf = { 0 };
-	errno = 0;
-
-	if (stat(path, &stbuf) != 0)
-	{
-		int saved_errno = errno;
-		
-		free_buffer(buffer);
-		return reject_request(instance, cmd, saved_errno) == 0 ? 1 : -1;
-	}
 
 	errno = 0;
 	int ret = readlink(path, link_buffer, bsize);
