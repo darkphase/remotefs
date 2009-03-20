@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -20,6 +20,7 @@ See the file LICENSE.
 #include <sys/stat.h>
 
 #include "rfs_nss.h"
+#include "rfs_getnames.h"
 
 int main(int argc, char **argv)
 {
@@ -27,6 +28,7 @@ int main(int argc, char **argv)
     int command = -1;
     char *prog_name = strrchr(argv[0], '/');
     int rfs_send_name = 0;
+    char *host = NULL;
 
     if ( prog_name )
     {
@@ -58,6 +60,17 @@ int main(int argc, char **argv)
         {
             rfs_send_name = 1;
         }
+        else if ( strcmp(argv[0], "-h") == 0 )
+        {
+            argv++;
+            argc--;
+            host = argv[0];
+            if (host == NULL)
+            {
+               command = -1;
+               break;
+            }
+        }
         else
         {
             command = -1;
@@ -69,7 +82,7 @@ int main(int argc, char **argv)
 
     if ( command == -1 )
     {
-        printf("Syntax: %s [-r] start|stop|check\n", prog_name);
+        printf("Syntax: %s [-r] start [ip-or-host] |stop [ip-or-host] |check\n", prog_name);
         return 0;
     }
 
@@ -84,8 +97,12 @@ int main(int argc, char **argv)
             if ( command == INC_CONN )
             {
                printf("new client instance added\n");
+               if ( host )
+               {
+                  get_all_names(host);
+               }
             }
-            else if ( command == INC_CONN )
+            else if ( command == DEC_CONN )
             {
                printf("new client instance removed\n");
             }
@@ -99,9 +116,13 @@ int main(int argc, char **argv)
              {
                  printf("Start rfs_nss\n");
                  if ( rfs_send_name )
-                     return system("rfs_nss -r");
+                     ret = system("rfs_nss");
                  else
-                     return system("rfs_nss");
+                     ret = system("rfs_nss");
+                if ( ret == 0 && host )
+                {
+                    get_all_names(host);
+                }
              }
         break;
     }

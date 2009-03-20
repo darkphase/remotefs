@@ -18,8 +18,8 @@ Rfs_nss can't be ported to all systems.
   The only program which make sense is rfs_nss_rem and this is
   the only programm which can be compiled for Mac OS X
 - QNX is for embedded systems and don't need the nss component
-  as for Linux opüenSolaris and BSD systems. As for Darwin the
-  only component which may be used is rfs_nss_rem
+  as for Linux openSolaris and BSD systems. Darwin (Mac OS X)
+  is very different and porting this will result in a new development.
 
 For System which support nss, you must write a wrapper in order
 to call the different nss functions supported by rfs_nss.
@@ -27,4 +27,6 @@ to call the different nss functions supported by rfs_nss.
 The file rfs_nss_server.c contain at the top some include directive
 and defined which are OS related.
 The wrapper code shall be included st the bottom of rfs_nss_server.c
+
+
 

@@ -2,7 +2,7 @@
 # The executables
 ###########################################
 
-CC = cc
+CC = icc
 RM = rm
 CP = cp
 
@@ -12,7 +12,7 @@ CP = cp
 ###########################################
 
 CFLAGS_OPT  = -O2
-OS_CFLAGS   = -Wall -Werror -DDARWIN
+OS_CFLAGS   = 
 # we use this within the main Makefile
 CFLAGS_GLOB = $(OS_CFLAGS) $(CFLAGS_OPT)
 
@@ -20,7 +20,7 @@ CFLAGS_GLOB = $(OS_CFLAGS) $(CFLAGS_OPT)
 # LDFLAGS 
 ###########################################
 
-LDFLAGS_SHARED = -dynamiclib -Wl,-single_module,-flat_namespace,-undefined,dynamic_lookup
+LDFLAGS_SHARED = -shared -Wl,-soname,$(LIBNAME)
 LDFLAGS_NET    = 
 LDLFLAG_DYNLD  = -ldl
 
@@ -28,13 +28,7 @@ LDLFLAG_DYNLD  = -ldl
 # NAME for nss module, OS specific
 ###########################################
 
-NSSMODULE = 
-
-###########################################
-# NAME for librfs_nss
-###########################################
-
-LIBNAME = librfs_nss.dly
+NSSMODULE = libnss_rfs.so.2
 
 ###########################################
 # Where to install, OS specific
@@ -47,6 +41,6 @@ NSS_BIN_DIR = /usr/bin
 # What we can compile
 ##########################################
 
-CLIENT  = nosupport
+CLIENT  = $(NSSMODULE) rfs_nss
 SERVER  = 
 OTHER   = 

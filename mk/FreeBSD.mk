@@ -34,12 +34,6 @@ LDLFLAG_DYNLD  =
 NSSMODULE = nss_rfs.so.1
 
 ###########################################
-# NAME for librfs_nss
-###########################################
-
-LIBNAME = librfs_nss.so
-
-###########################################
 # Where to install, OS specific
 ###########################################
 
@@ -51,5 +45,5 @@ NSS_BIN_DIR = /usr/bin
 ##########################################
 
 CLIENT  = $(NSSMODULE) rfs_nss rfs_nss_get
-SERVER  = rfs_nss_rem
-OTHER   = $(LIBNAME) rfs_nss_add rfs_nss_ctrl
+SERVER  = 
+OTHER   = 

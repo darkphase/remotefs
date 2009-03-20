@@ -15,7 +15,7 @@ See the file LICENSE.
  *
  * Insert before the element pointed by **list a new list
  * element.
- * If *älist is null a new root element is created.
+ * If **list is null a new root element is created.
  *
  * The data are not duplicated.
  *
@@ -276,7 +276,6 @@ int list_remove(list_t **root, list_t *list)
          next->prev = prev;
       }
       free(list);
-//      list = prev;
    }
    else
    {
@@ -287,8 +286,6 @@ int list_remove(list_t **root, list_t *list)
       }
       free(list);
       *root = next;
-//      list = next;
-     
    }
    return 1;
 }

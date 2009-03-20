@@ -8,7 +8,7 @@ See the file LICENSE.
 
 /* rfs_nss_server.c
  *
- * communiocate with local rds clients and
+ * communicate with local rfs clients and
  * libnss_rfs
  *
  */
@@ -28,26 +28,41 @@ See the file LICENSE.
 #include <time.h>
 #include <stdlib.h>
 
+#include <sys/socket.h>
+#include <netdb.h>
+#if defined FREEBSD
+#include <netinet/in.h>
+#endif
+#if defined QNX
+#include <arpa/inet.h>
+#endif
+
 #include "rfs_nss.h"
 #include "dllist.h"
+#include "rfs_getnames.h"
 
-int rfs_put_name = 0; /* main working mode for the server
-                       * 0 = server generate entries on getXnam()
-                       *     request
-                       * 1 = client must send special command
-                       *     for generatimg of entries
-                       */
+typedef struct user_host_s
+{
+   char *host;
+   int   hostid;
+   int   count;
+   list_t *users; /* data contain the uid instead io a pointer */
+} user_host_t;
+
 
 typedef struct rfs_idmap_s
 {
     char *name;
     uid_t id;
-    int sys;
+    int   sys;
+    int   hostid;
 } rfs_idmap_t;
 
-static list_t *user_list = NULL;
-static list_t *group_list = NULL;
-static int     log = 0;
+
+static list_t *user_list   = NULL;
+static list_t *group_list  = NULL;
+static list_t *hosts       = NULL;
+static int     log         = 0;
 static int     connections = 1; /* number of rfs client */
 
 /**********************************************************
@@ -191,6 +206,284 @@ static inline list_t *search_id(cmd_t *command, list_t *list)
 
 /**********************************************************
  *
+ * add_user
+ *
+ * int   id   zid for the concerned user
+ *
+ *********************************************************/
+
+static int add_user(list_t **users, int id)
+{
+    list_t *user = *users;
+    list_t *new  = NULL;
+
+    /* look if allready present */
+    while(user)
+    {
+        if ( id == (int)(user->data) )
+        {
+            break;
+        }
+        user = user->next;
+    }
+
+    /* there was not entry, build one */
+    if ( user == NULL )
+    {
+        list_insert(users, NULL, &new);
+    }
+
+    if ( new )
+    {
+       new->data = (void*)id;
+    }
+    else
+    {
+        return 0; /* new not allocated ! */
+    }
+
+    return 1;
+}
+
+/**********************************************************
+ *
+ * get_hostid
+ *
+ * char *name host name or user/group name (user@host)
+ *
+ *********************************************************/
+
+static int get_hostid(char *name)
+{
+    list_t *host = hosts;
+    char *nm;
+
+    if ( name == NULL)
+    {
+        return 0;
+    }
+
+    /* get host name */
+    if ( (nm = strchr(name, '@')) )
+    {
+       nm++;
+    }
+    else
+    {
+       nm = name;
+    }
+
+    /* search for the host id */
+    while ( host )
+    {
+        if ( strcmp(nm, ((user_host_t*)(host->data))->host) == 0 )
+        {
+            return ((user_host_t*)(host->data))->hostid;
+        }
+        host = host->next;
+    }
+    return 0;
+}
+
+/**********************************************************
+ *
+ * add_host
+ *
+ * char *name host name
+ * int   id   zid for the concerned user
+ *
+ *********************************************************/
+
+static int add_host(char *name, int id)
+{
+    list_t *host = hosts;
+    list_t *new  = NULL;
+    int     hostid = 1;
+    char *host_name;
+
+    /* if allready provided increase only count */
+    while(host)
+    {
+        host_name = ((user_host_t*)(host->data))->host;
+        if ( strcmp(name, host_name) == 0 )
+        {
+            ((user_host_t*)(host->data))->count++;
+            break;
+        }
+        host = host->next;
+    }
+
+    /* there was not entry, build one */
+    if ( hosts == NULL )
+    {
+        list_insert(&hosts, NULL, &new);
+    }
+    else if ( host == NULL )
+    {
+        /* no entry, add one and set a unique hostid */
+        host = hosts;
+        while(host)
+        {
+            if ( ((user_host_t*)host->data)->hostid > hostid )
+            {
+                list_insert(&host, NULL, &new);
+                break;
+            }
+            else if ( ((user_host_t*)host->data)->hostid == hostid )
+            {
+               hostid++;
+            }
+            else if ( host->next == NULL )
+            {
+               /* the end of list will be reached, append */
+               list_append(&host->next, NULL, &new);
+               break;
+            }
+            host = host->next;
+        } 
+    }
+
+    if ( new )
+    {
+        new->data = (void*)calloc(sizeof(user_host_t),1);
+        if ( new->data == NULL )
+        {
+            return 0;
+        }
+        ((user_host_t*)new->data)->hostid = hostid;
+        ((user_host_t*)new->data)->host   = strdup(name);
+        ((user_host_t*)new->data)->count  = 1;
+        host = new;
+    }
+    else
+    {
+       return 0; /* error */
+    }
+
+    add_user(&(((user_host_t*)new->data)->users), id);
+
+    return 1;
+}
+
+
+/**********************************************************
+ *
+ * user_is_concerned()
+ *
+ * check if the user which call this (user has mounted
+ * resource for the  host referenced by mak->hostid
+ *
+ *return 1 if concerned else 0
+ *
+ **********************************************************/
+
+static int user_is_concerned(rfs_idmap_t *map, int uid)
+{
+    list_t *host = hosts;
+    list_t *user = NULL;
+
+    while ( host )
+    {
+        if ( map->hostid == ((user_host_t*)(host->data))->hostid )
+        {
+            user = ((user_host_t*)(host->data))->users;
+            while ( user )
+            {
+               if ( (int)user->data == uid )
+               {
+                   return 1;
+               }
+               user = user->next;
+            }
+        }
+        host = host->next;
+    }
+    return 0;
+}
+
+/**********************************************************
+ *
+ * remove_host()
+ *
+ * char *name host name for which entries are to be removed
+ *
+ *
+ **********************************************************/
+
+static int remove_host(char *name, int id)
+{
+    list_t *host = hosts;
+    int     hostid = 1;
+
+    /* find host */
+    while ( host )
+    {
+        char *host_name = ((user_host_t*)(host->data))->host;
+        if ( strcmp(name, host_name) == 0 )
+        {
+            break;
+        }
+        host = host->next;
+    }
+
+    if ( host )
+    {
+        int count = --((user_host_t*)(host->data))->count;
+        if ( count <= 0 )
+        {
+           hostid = ((user_host_t*)(host->data))->hostid;
+
+           /* all user and groups are to be removed */
+           list_t *list = user_list;
+           list_t *next = NULL;
+
+           while(list)
+           {
+              next = list->next;
+              if ( ((rfs_idmap_t*)(list->data))->hostid == hostid )
+              {
+                  if ( ((rfs_idmap_t*)(list->data))->name )
+                  {
+                      free(((rfs_idmap_t*)(list->data))->name);
+                      list_remove(&user_list, list);
+                  }
+              }
+              list = next;
+           }
+
+           list = group_list;
+           next = NULL;
+           while(list)
+           {
+              next = list->next;
+              if ( ((rfs_idmap_t*)(list->data))->hostid == hostid )
+              {
+                  if ( ((rfs_idmap_t*)(list->data))->name )
+                  {
+                      free(((rfs_idmap_t*)(list->data))->name);
+                      list_remove(&group_list, list);
+                  }
+              }
+              list = next;
+           }
+
+           /* finaly remove the host istself */
+           free(((user_host_t*)host->data)->host);
+           /* remove users members */
+           list_t *root =(list_t*) host->data;
+           while(root)
+           {
+              list_remove(&root,root);
+           }
+           list_remove(&hosts, host);
+        }
+    }
+
+    return 1;
+}
+
+/**********************************************************
+ *
  * insert_new_idmap()
  *
  * list_t **root   pointer to the user or group list
@@ -204,7 +497,7 @@ static inline list_t *search_id(cmd_t *command, list_t *list)
  * 
  ************************************************************/
 
-static int insert_new_idmap(list_t **root, cmd_t *command)
+static int insert_new_idmap(list_t **root, cmd_t *command, int hostid)
 {
     /* the name was not found, calculate an id */
     int hashVal = 0;
@@ -229,6 +522,7 @@ static int insert_new_idmap(list_t **root, cmd_t *command)
 
             map->id = hashVal;
             map->name = strdup(command->name);
+            map->hostid = hostid;
             if ( map->name == NULL )
             {
                  if ( log ) perror("calloc");
@@ -376,12 +670,14 @@ static int process_message(int sock)
 
         case DEC_CONN:
             connections--;
+            remove_host(command.name, command.caller_id);
             if ( log ) printf("Number of rfs clients: %d\n", connections);
             return 1;
         break;
 
         case INC_CONN:
             connections++;
+            add_host(command.name, command.caller_id);
             if ( log ) printf("Number of rfs clients: %d\n", connections);
             return 1;
         break;
@@ -407,12 +703,18 @@ static int process_message(int sock)
                    {
                        break;
                    }
+
                }
                list = list->next;
             }
 
             if ( list )
             {
+                /*  check if user has entry for the given host */
+                if ( ! user_is_concerned((rfs_idmap_t*)list->data, command.caller_id ) )
+                {
+                    break;
+                }
                 command.found = 1;
                 command.id    = ((rfs_idmap_t*)(list->data))->id;
                 strncpy(command.name, ((rfs_idmap_t*)(list->data))->name,
@@ -468,7 +770,7 @@ static int process_message(int sock)
                 break;
             }
 
-            if ( rfs_put_name && !(command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
+            if ( !(command.cmd == PUTGRNAM || command.cmd == PUTPWNAM) )
             {
                  break;
             }
@@ -480,9 +782,11 @@ static int process_message(int sock)
                 else if ( command.cmd == PUTPWNAM || command.cmd == GETPWNAM )
                     list = user_list;
 
+                int hostid = get_hostid(command.name);
                 /* the name was not found, insert it to the global list */
-                insert_new_idmap(&list, &command);
+                insert_new_idmap(&list, &command, hostid);
             }
+
         break;
 
         case GETGRGID:
@@ -634,60 +938,6 @@ static int add_to_list(list_t **root, char *name, uid_t id, int is_sys)
     return ret;
 }
 
-/***************************************************
- *
- * open_file()
- *
- * Open a file for saving or reding of the entries
- * created by rfs_nss
- * char *mode "r" for read, "w" for write
- *
- * Return a FILE poiunter or NULL
- *
- ***************************************************/
-
-FILE *open_file(char *mode)
-{
-    char *db_file = ".rfs_nss";
-    char *dir = NULL;
-    char *path = NULL;
-    uid_t uid = getuid();
-    FILE *fp = NULL;
-    
-    if ( uid != 0 )
-    {
-        struct passwd *pwd = getpwuid(uid);
-        if ( pwd != NULL && pwd->pw_dir != NULL )
-        {
-            dir = pwd->pw_dir;
-        }
-    }
-    else
-    {
-        dir = "/var/rfs_nss";
-        db_file = "rfs_nss";
-        if ( access(dir, W_OK) == -1 )
-        {
-           mkdir(dir, 0700);
-        }
-    }
-
-    if ( dir )
-    {
-        path = (char*)calloc(strlen(db_file)+strlen(dir)+2,1);
-        if ( path == NULL )
-        {
-            perror("calloc");
-            return NULL;
-        }
-        sprintf(path, "%s/%s", dir, db_file);
-        fp = fopen(path,mode);
-        free(path);
-    }
-    return fp;
-}
-
-
 /***************************************
  *
  * main()
@@ -704,41 +954,65 @@ int main(int argc,char **argv)
     int            daemonize = 1;
     int            opt;
     char           *prog_name = strrchr(argv[0],'/');
-    int             save = 0;
-    FILE           *fp = NULL;
-    list_t         *list = NULL;
-    list_t         *root = NULL;
+    char           *ip_host = NULL;
+    int             mode = 1; /* 1 = start, -1 = stop */
+    int             check = 0;
+    uid_t           uid = 0;
+    char            host[NI_MAXHOST];
+    int             nohost = 0;
+    int             kill_rfs = 0;
 
     /* parse arguments */
     if ( prog_name == NULL )
         prog_name = argv[0];
     else
         prog_name++;
-
-    while ( (opt = getopt(argc, argv, "flrs")) != -1 )
+    while ( (opt = getopt(argc, argv, "fls:e:nk")) != -1 )
     {
         switch(opt)
         {
              case 'f': daemonize    = 0; break;
              case 'l': log          = 1; break;
-             case 'r': rfs_put_name = 1; break;
-             case 's': save         = 1; break;
+             case 's': ip_host      = optarg; break;
+             case 'e': ip_host      = optarg; mode = -1; break;
+             case 'n': nohost       = 1; break;
+             case 'k': kill_rfs     = 1; mode = -1; break;
              default:
-                printf("Syntax: %s [-f] [-l] [-r]\n", prog_name);
+                printf("Syntax: %s [-f] [-l] -s|e [host]\n", prog_name);
                 printf("      -f, start in foreground\n");
                 printf("      -l, print debug info.\n");
-                printf("      -r, name send from rfs\n");
-                printf("      -s, store db in a file\n");
+                printf("      -s [host] start and add name from host\n");
+                printf("      -e [host] end and remove name for host\n");
                 return 0;
         }
     }
 
     /* check first for running server */
-    switch (control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL))
+    switch ((check = control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL)))
     {
         case RFS_NSS_OK:
             /* a server is running, don't start */
+            if ( nohost ) return 0;
+            uid = getuid();
+            if ( ip_host )
+            {
+                translate_ip(ip_host, host, NI_MAXHOST);
+            }
+            if ( mode == -1 )
+            {
+                do
+                {
+                    ret = control_rfs_nss(DEC_CONN, NULL, host, &uid);
+                } while (kill_rfs && !(ret == RFS_NSS_NO_SERVER||ret == RFS_NSS_SYS_ERROR));
+                return 0;
+            }
+            /* but add names from client if there is one */
             printf("An other server is allready running!\n");
+            control_rfs_nss(INC_CONN, NULL, host, &uid);
+            if ( mode == 1 && ip_host )
+            {
+                get_all_names(ip_host);
+            }
             return 1;
         break;
         case RFS_NSS_SYS_ERROR:
@@ -747,7 +1021,19 @@ int main(int argc,char **argv)
             unlink(SOCKNAME);
         break;
     }
-    
+
+    if(mode == -1)
+    {
+        return 0;
+    }
+
+    if ( nohost == 0 && kill_rfs == 0)
+    {
+       /* Add host */
+       translate_ip(ip_host, host, NI_MAXHOST);
+       add_host(host, getuid());
+    }
+
     /* collect the known users */
     setpwent();
     ret = 1;
@@ -764,7 +1050,7 @@ int main(int argc,char **argv)
        exit(1);
     }
 
-    /* collect the known gtoups */
+    /* collect the known groups */
     setgrent();
     ret = 1;
     while(ret && (grp = getgrent()))
@@ -778,54 +1064,6 @@ int main(int argc,char **argv)
     {
        /* no enough memory ? we have a big problem and terminate */
        exit(1);
-    }
-
-    if ( save )
-    {
-        cmd_t command;
-        fp = open_file("r");
-        if ( fp != NULL )
-        {
-            char line[1024];
-            char name[1024];
-            char type;
-            uid_t id = 0;
-            int   ok = 1;
-            while (ok && fgets(line, sizeof(line),fp) )
-            {
-                if ( sscanf(line, "%c:%[^:]:%d", &type, name, &id) == 3 )
-                {
-                    if ( id < 10000 || id > 20000 )
-                    {
-                       ok = 0;
-                    }
-                    strncpy(command.name, name, sizeof(command.name));
-                    command.name[sizeof(command.name)-1] = '\0';
-                    switch(type)
-                    {
-                        case 'u': root = user_list; break;
-                        case 'g': root = group_list; break;
-                        default:  ok = 0; break;
-                    }
-                    if ( ok && (list = search_name(&command, root)) == NULL )
-                    {
-                        ok = insert_new_idmap(&root, &command);
-                    }
-                    if ( log && ok && id != command.id )
-                    {
-                        printf("%s ID old %d new %d\n",
-                               name,
-                               id,
-                               command.id);
-                    }
-                }
-            }
-            fclose(fp);
-            if (!ok && log)
-            {
-               printf("wrong line %s\n",line);
-            }
-        }
     }
 
     /* at this stage we have collected all id known for
@@ -847,6 +1085,10 @@ int main(int argc,char **argv)
      /* damonize */
      if (daemonize && fork() != 0)
      {
+         if ( mode == 1 && ip_host )
+         {
+            get_all_names(ip_host);
+         }
          return 0;
      }
 
@@ -856,40 +1098,5 @@ int main(int argc,char **argv)
      unlink(SOCKNAME);
      unlink(PIDFILE);
 
-    if ( save )
-    {
-        fp = open_file("w");
-        if ( fp != NULL )
-        {
-            list_t *list = user_list;
-            while (list)
-            {
-                rfs_idmap_t *idmap;
-                idmap = (rfs_idmap_t*)list->data;
-                if ( idmap->sys == 0 )
-                {
-                    fprintf(fp,"u:%s:%d\n", idmap->name, idmap->id);
-                }
-                list = list->next;
-            }
-
-            list = group_list;
-            while (list)
-            {
-                rfs_idmap_t *idmap;
-                idmap = (rfs_idmap_t*)list->data;
-                if ( idmap->sys == 0 )
-                {
-                    fprintf(fp, "g:%s:%d\n", idmap->name, idmap->id);
-                }
-                list = list->next;
-            }
-            fclose(fp);
-        }
-        else
-        {
-             perror("fopen");
-        }
-    }
     return 0;
 }

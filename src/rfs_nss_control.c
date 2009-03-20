@@ -106,6 +106,22 @@ int control_rfs_nss(const int cmd, const char *name, const char *host, uid_t *id
             }
         }
 
+        if ( cmd == DEC_CONN || cmd == INC_CONN )
+        {
+            if ( host )
+            {
+                strncpy(command.name, host,sizeof(command.name));
+            }
+            if ( id )
+            {
+               command.caller_id = *id;
+            }
+            else
+            {
+               command.caller_id = 0;
+            }
+        }
+
         ret = send(sock, &command, sizeof(command), 0);
         if ( ret == -1 )
         {

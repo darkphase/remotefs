@@ -20,7 +20,6 @@ CFLAGS_GLOB = $(OS_CFLAGS) $(CFLAGS_OPT)
 # LDFLAGS 
 ###########################################
 
-LDFLAGS_SHARED = -shared -Wl,-soname,$(LIBNAME)
 LDFLAGS_NET    = -lsocket
 LDLFLAG_DYNLD  = -ldl
 
@@ -29,12 +28,6 @@ LDLFLAG_DYNLD  = -ldl
 ###########################################
 
 NSSMODULE = libnss_rfs.so.2
-
-###########################################
-# NAME for librfs_nss
-###########################################
-
-LIBNAME = librfs_nss.so
 
 ###########################################
 # Where to install, OS specific
@@ -47,6 +40,6 @@ NSS_BIN_DIR = /usr/bin
 # What we can compile
 ##########################################
 
-CLIENT  = 
-SERVER  = rfs_nss_rem
+CLIENT  = nosupport
+SERVER  = 
 OTHER   = 
