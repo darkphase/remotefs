@@ -5,18 +5,22 @@
 OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
+
+all: server client
+
 include mk/$(OS)$(ALT).mk
 
+# Path to remotefs main directory
+RFS_PATH = ..
+
+# include options from remotefs opt1 = ipv6, opt5 = igo
+include $(RFS_PATH)/Makefiles/options.mk
+CFLAGS_GLOB = $(OPT_1) $(OPT_5)
+
+
 # You may put your special flags here
-CFLAGS = -g
-INCFLAGS = -I../../trunk/src
-RFSLDFLAGS = -L../../trunk -lrfs
-
-# if you don't want IPv6 support comment in
-IPV6 = -DWITH_IPV6
-
-# Sorry this is for remotefs (see file option.mk)
-TOP_INC = ./include -DWITH_UGO
+INCFLAGS   = -I$(RFS_PATH)/src -I.
+RFSLDFLAGS = -L$(RFS_PATH) -lrfs
 
 # define the object files we have
 LIB_OBJ  = src/rfs_nss_client.o
@@ -92,7 +96,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@$(CC) -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) -I$(TOP_INC) $(CFLAGS)  $(INCFLAGS)
+	@$(CC) -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) $(CFLAGS) $(INCFLAGS)
 
 # Dependencies
 
@@ -103,7 +107,6 @@ src/rfs_getnames.o:    src/rfs_nss.h
 src/dllist.o:          src/dllist.h
 
 # external dependencies to for remotefs
-src/rfs_getnames.o:    ../../trunk/src/nss_client.h 
-src/rfs_getnames.o:    ../../trunk/src/list.h 
-src/rfs_getnames.o:    ../../trunk/src/config.h
+src/rfs_getnames.o:    $(RFS_PATH)/src/nss_client.h 
+src/rfs_getnames.o:    $(RFS_PATH)/src/list.h 
 
