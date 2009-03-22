@@ -303,6 +303,17 @@ src/sug_server.o:src/passwd.h
 src/sug_server.o:src/utils.h
 src/utils.o:src/config.h
 src/utils.o:src/sendrecv.h
+rfs_nss/src/dllist.o:src/dllist.h
+rfs_nss/src/rfs_getnames.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_client.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_client.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_client.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_client.o:src/rfs_nss_freebsd.c
+rfs_nss/src/rfs_nss_client.o:src/rfs_nss_solaris.c
+rfs_nss/src/rfs_nss_control.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_server.o:src/rfs_nss.h
+rfs_nss/src/rfs_nss_server.o:src/dllist.h
+rfs_nss/src/rfs_nss_server.o:src/rfs_getnames.h
 src/acl_utils.o:src/acl_utils.c
 src/attr_cache.o:src/attr_cache.c
 src/buffer.o:src/buffer.c
