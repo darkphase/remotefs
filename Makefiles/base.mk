@@ -87,7 +87,8 @@ clean: clean_build clean_bins clean_packages
 # Rebuild dependency file
 #############################
 depends:
-	@grep 'include *".*"' src/*.c rfs_nss/src/*.c | sed -e 's/\.c/.o/' -e 's/#\s*include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
+	@grep 'include *".*"' src/*.c | sed -e 's/\.c/.o/' -e 's/#\s*include *"\(.*\.[ch]\)"/src\/\1/' > Makefiles/depends.mk
+	@grep 'include *".*"' rfs_nss/src/*.c | sed -e 's/\.c/.o/' -e 's/#\s*include *"\(.*\.[ch]\)"/rfs_nss\/src\/\1/' > Makefiles/depends.mk
 	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
 
 #######################################
