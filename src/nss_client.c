@@ -120,7 +120,7 @@ static int nss_connect(const char *server)
 		{
 			last_errno = errno;
 			free_buffer(socket_name);
-			continue;
+			break;
 		}
 		
 		struct sockaddr_un address = { 0 };
@@ -133,7 +133,6 @@ static int nss_connect(const char *server)
 
 		if (connect(sock, (struct sockaddr *)&address, sizeof(address)) != 0)
 		{
-			last_errno = errno;
 			close(sock);
 			continue;
 		}
