@@ -10,6 +10,16 @@ include Makefiles/$(OS)$(ALT).mk
 include Makefiles/options.mk
 include Makefiles/version.mk
 
+libnss: dummy
+	@echo
+	@$(MAKE) -f Makefiles/libnss.mk flags build
+	@echo
+
+nss: dummy
+	@echo
+	@$(MAKE) -f Makefiles/nssd.mk flags build
+	@echo
+
 librfs: dummy
 	@echo
 	@$(MAKE) -f Makefiles/librfs.mk flags build
@@ -37,6 +47,7 @@ rfspasswd: dummy
 clean_build: dummy
 	$(RM) -f src/*.o
 	$(RM) -f src/md5crypt/*.o
+	$(RM) -f rfs_nss/src/*.o
 
 clean_bins: dummy
 	$(RM) -f rfs

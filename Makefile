@@ -21,9 +21,9 @@ help:
 	@more Makefiles/help
 
 debug:
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf Makefiles/base.mk rfsd rfspasswd rfs
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
-all release: server client
+all release: server client libnss nss
 
 server: rfsd rfspasswd
 
@@ -47,15 +47,11 @@ rfspasswd: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfspasswd
 	@$(MAKE) -sf Makefiles/base.mk clean_build
 
+libnss:
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk libnss
+
 nss:
-	@( cd rfs_nss; make -s )
-
-nss_clean:
-	@( cd rfs_nss; make clean -s )
-
-nss_install:
-	@( cd rfs_nss; make install -s )
-
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk nss
 
 dummy:
 
@@ -130,3 +126,4 @@ rfs_man:
 rfsd_man:
 	@$(MAKE) -sf Makefiles/base.mk rfsd_man
 man: dummy rfs_man rfsd_man
+

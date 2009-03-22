@@ -45,4 +45,7 @@ SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
 # Optional OS dependent program
 ###############################
 
-RFS_NSS = rfs_nss
+SO_NAME_NSS    = $(TARGET).$(SO_EXT).2
+LDFLAGS_SO_NSS = -shared -Wl,-soname,$(SO_NAME_NSS) -fPIC
+CFLAGS_SO_NSS  = $(CFLAGS_SO)
+
