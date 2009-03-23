@@ -38,6 +38,13 @@ int translate_ip(char *ip_or_name, char *host, size_t hlen)
 {
     struct addrinfo *addr_info = NULL;
     struct addrinfo hints = { 0 };
+
+    /* clear host */
+    if ( host )
+    {
+       *host = '\0';
+    }
+
     /* resolve name or address */
     hints.ai_family    = AF_UNSPEC;
     hints.ai_socktype  = SOCK_STREAM; 
@@ -50,15 +57,21 @@ int translate_ip(char *ip_or_name, char *host, size_t hlen)
     if (result != 0)
     {
          fprintf(stderr,"Can't resolve address: %s\n", gai_strerror(result));
-         return -1;
     }
-
-    if ( host && *host == '\0' )
+    else if ( host )
     {
         getnameinfo((struct sockaddr *)addr_info->ai_addr,
                      addr_info->ai_addrlen, host, hlen, NULL, 0, 0);
+        freeaddrinfo(addr_info);
     }
-    freeaddrinfo(addr_info);
+
+    /* if name resolving was not OK copy the name/ip to host */
+    if (  host && *host == '\0' )
+    {
+        strncpy(host, ip_or_name, hlen);
+        host[hlen-1] = '\0';
+    }
+
     return 0;
 }
 
@@ -68,9 +81,8 @@ int translate_ip(char *ip_or_name, char *host, size_t hlen)
  * put them to the running rfs_nss server.
  *
  *****************************************************/
-int get_all_names(char *ip_or_name)
+int get_all_names(char *ip_or_name, char *host)
 {
-   char         host[NI_MAXHOST];
    struct list *users  = NULL;
    struct list *user   = NULL;
    struct list *groups = NULL;
@@ -78,13 +90,6 @@ int get_all_names(char *ip_or_name)
    struct passwd *pwd;
    struct group *grp;
    
-   /* translate the possible IP to a real host name */
-   *host = '\0';
-   translate_ip(ip_or_name, host, NI_MAXHOST);
-   if ( *host == '\0' )
-   {
-      strncpy(host, ip_or_name, NI_MAXHOST);
-   }
    /* get and store all user names */
    if ( nss_get_users(ip_or_name, &users) == 0 )
    {

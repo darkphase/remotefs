@@ -46,7 +46,7 @@ typedef struct user_host_s
    char *host;
    int   hostid;
    int   count;
-   list_t *users; /* data contain the uid instead io a pointer */
+   list_t *users; /* data contain the uid instead is a pointer */
 } user_host_t;
 
 
@@ -220,7 +220,7 @@ static int add_user(list_t **users, int id)
     /* look if allready present */
     while(user)
     {
-        if ( id == (int)(user->data) )
+        if ( id == *((int*)(user->data)) )
         {
             break;
         }
@@ -235,7 +235,8 @@ static int add_user(list_t **users, int id)
 
     if ( new )
     {
-       new->data = (void*)id;
+         new->data = (void*) malloc(sizeof(int));
+         *((int*)(new->data)) = id;
     }
     else
     {
@@ -389,7 +390,7 @@ static int user_is_concerned(rfs_idmap_t *map, int uid)
             user = ((user_host_t*)(host->data))->users;
             while ( user )
             {
-               if ( (int)user->data == uid )
+               if ( *((int*)(user->data)) == uid )
                {
                    return 1;
                }
@@ -412,7 +413,9 @@ static int user_is_concerned(rfs_idmap_t *map, int uid)
 
 static int remove_host(char *name, int id)
 {
-    list_t *host = hosts;
+    list_t *host   = hosts;
+    list_t *user   = NULL;
+    user_host_t *h = NULL;
     int     hostid = 1;
 
     /* find host */
@@ -445,6 +448,7 @@ static int remove_host(char *name, int id)
                   if ( ((rfs_idmap_t*)(list->data))->name )
                   {
                       free(((rfs_idmap_t*)(list->data))->name);
+                      free(list->data);
                       list_remove(&user_list, list);
                   }
               }
@@ -461,21 +465,37 @@ static int remove_host(char *name, int id)
                   if ( ((rfs_idmap_t*)(list->data))->name )
                   {
                       free(((rfs_idmap_t*)(list->data))->name);
+                      free(list->data);
                       list_remove(&group_list, list);
                   }
               }
               list = next;
            }
 
+           h = (user_host_t*)host->data;
+
            /* finaly remove the host istself */
-           free(((user_host_t*)host->data)->host);
-           /* remove users members */
-           list_t *root =(list_t*) host->data;
-           while(root)
-           {
-              list_remove(&root,root);
-           }
+           free(h->host);
+
+           /* remove users member */
+           free(h->users->data);
+           list_remove(&h->users,h->users);
+
+           free(h);
            list_remove(&hosts, host);
+        }
+        else
+        {
+           /* remove the user entry for id */
+           user = ((user_host_t*)(host)->data)->users;
+           while(user)
+           {
+              if ( *((int*)(user->data)) == id )
+              {
+                 free(user->data);
+                 list_remove( & ((user_host_t*)host)->users, user);
+              }
+           }
         }
     }
 
@@ -978,15 +998,16 @@ int main(int argc,char **argv)
              case 'n': nohost       = 1; break;
              case 'k': kill_rfs     = 1; mode = -1; break;
              default:
-                printf("Syntax: %s [-f] [-l] -s|e [host]\n", prog_name);
+                printf("Syntax: %s [-f] [-l] -s|e host \n", prog_name);
                 printf("      -f, start in foreground\n");
                 printf("      -l, print debug info.\n");
-                printf("      -s [host] start and add name from host\n");
-                printf("      -e [host] end and remove name for host\n");
+                printf("      -s  host  start and add name from host\n");
+                printf("      -e  host  end and remove name for host\n");
                 return 0;
         }
     }
 
+    *host = '\0';
     /* check first for running server */
     switch ((check = control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL)))
     {
@@ -1006,12 +1027,13 @@ int main(int argc,char **argv)
                 } while (kill_rfs && !(ret == RFS_NSS_NO_SERVER||ret == RFS_NSS_SYS_ERROR));
                 return 0;
             }
+
             /* but add names from client if there is one */
             printf("An other server is allready running!\n");
             control_rfs_nss(INC_CONN, NULL, host, &uid);
             if ( mode == 1 && ip_host )
             {
-                get_all_names(ip_host);
+                get_all_names(ip_host, host);
             }
             return 1;
         break;
@@ -1087,7 +1109,12 @@ int main(int argc,char **argv)
      {
          if ( mode == 1 && ip_host )
          {
-            get_all_names(ip_host);
+            if ( *host == '\0' )
+            {
+                translate_ip(ip_host, host, NI_MAXHOST);
+            }
+printf("Host: %s",host);
+            get_all_names(ip_host, host);
          }
          return 0;
      }
@@ -1097,6 +1124,21 @@ int main(int argc,char **argv)
      close(sock);
      unlink(SOCKNAME);
      unlink(PIDFILE);
+     /* remove all allocated memory so we can check with valgrind for leaks,... */
+     list_t *root = user_list;
+     while(root)
+     {
+         free(((rfs_idmap_t*)root->data)->name);
+         free(root->data);
+         list_remove(&root,root);
+     }
+     root = group_list;
+     while(root)
+     {
+         free(((rfs_idmap_t*)root->data)->name);
+         free(root->data);
+         list_remove(&root,root);
+     }
 
     return 0;
 }

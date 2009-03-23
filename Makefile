@@ -13,6 +13,9 @@ include mk/$(OS)$(ALT).mk
 # Path to remotefs main directory
 RFS_PATH = ..
 
+# for testing from top directoty remotefs/rfs_nss:trunk
+#RFS_PATH = ../../trunk
+
 # include options from remotefs opt1 = ipv6, opt5 = igo
 include $(RFS_PATH)/Makefiles/options.mk
 CFLAGS_GLOB = $(OPT_1) $(OPT_5)
@@ -96,7 +99,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@$(CC) -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) $(CFLAGS) $(INCFLAGS)
+	@$(CC) -g -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) $(CFLAGS) $(INCFLAGS) $(OS_CFLAGS)
 
 # Dependencies
 
