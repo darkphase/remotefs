@@ -12,6 +12,16 @@ See the file LICENSE.
 #if defined SOLARIS
 #include <sys/sockio.h>
 #endif
+#if defined FREEBSD
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/uio.h>
+#endif
+#if defined DARWIN
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/uio.h>
+#endif
 #ifdef RFS_DEBUG
 #include <sys/time.h>
 #endif

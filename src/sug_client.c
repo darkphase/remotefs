@@ -7,6 +7,10 @@ See the file LICENSE.
 */
 
 #include <arpa/inet.h>
+#if defined FREEBSD
+# include <sys/socket.h>
+# include <netinet/in.h>
+#endif
 #include <sys/stat.h>
 
 #include "config.h"

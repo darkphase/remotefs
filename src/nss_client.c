@@ -13,6 +13,7 @@ See the file LICENSE.
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "command.h"
@@ -51,9 +52,13 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 				++skipped;
 				continue;
 			}
-
+#if defined RFS_DEBUG
 			ret = get_buffer(strlen((const char *)entry->d_name) + 1);
 			memcpy(ret, (const char *)entry->d_name, strlen((const char *)entry->d_name) + 1);
+#else
+			ret = get_buffer(strlen((const char *)entry->d_name) + 3 + strlen(NSS_SOCKETS_DIR));
+			sprintf(ret, "%s/%s",NSS_SOCKETS_DIR, entry->d_name);
+#endif
 			break;
 		}
 	}

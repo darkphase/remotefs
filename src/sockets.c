@@ -9,7 +9,13 @@ See the file LICENSE.
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#if defined QNX
+#if defined QNX 
+#include <sys/time.h>
+#endif
+#if defined FREEBSD 
+#include <sys/time.h>
+#endif
+#if defined DARWIN 
 #include <sys/time.h>
 #endif
 

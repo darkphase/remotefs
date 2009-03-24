@@ -12,6 +12,10 @@ See the file LICENSE.
 /** server routines */
 
 #include <arpa/inet.h>
+#if defined FREEBSD
+# include <sys/socket.h>
+# include <netinet/in.h>
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

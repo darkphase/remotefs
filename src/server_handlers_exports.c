@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "command.h"

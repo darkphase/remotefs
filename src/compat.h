@@ -21,11 +21,8 @@ See the file LICENSE.
 #if defined QNX
 #endif /* QNX */
 
-#if O_ASYNC == 0
-#else 
-#	if ! defined O_ASYNC
-#		define O_ASYNC 0
-#	endif
+#if ! defined O_ASYNC
+#	define O_ASYNC 0
 #endif
 
 #endif /* COMPAT_H */

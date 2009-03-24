@@ -15,18 +15,18 @@ OPT_1 = -DWITH_IPV6
 # If you want support for SSL encryption
 # remove the '#' character for both lines
 
-#OPT_2 = -DWITH_SSL
-#OPT_2_LD = $(LDFLAGS_SSL)
+OPT_2 = -DWITH_SSL
+OPT_2_LD = $(LDFLAGS_SSL)
 
 ###############################################
 # Support of exports listing
 
-#OPT_3 = -DWITH_EXPORTS_LIST
+OPT_3 = -DWITH_EXPORTS_LIST
 
 ###############################################
 # Support for POSIX ACL
 
-#OPT_4 = -DWITH_ACL
+OPT_4 = -DWITH_ACL
 
 ###############################################
 # Support for UGO

@@ -8,6 +8,7 @@ See the file LICENSE.
 #ifdef WITH_SSL
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "config.h"

@@ -28,6 +28,7 @@ See the file LICENSE.
 #include "path.h"
 #include "resume.h"
 #include "sendrecv.h"
+#include "compat.h"
 
 static size_t stat_size()
 {

@@ -10,8 +10,13 @@ See the file LICENSE.
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined QNX || defined FREEBSD
+#if defined QNX
 # include <sys/socket.h>
+#endif
+#include <string.h>
+#if defined FREEBSD
+# include <sys/socket.h>
+# include <netinet/in.h>
 #endif
 
 #include "config.h"

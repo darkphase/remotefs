@@ -14,6 +14,7 @@ See the file LICENSE.
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "command.h"

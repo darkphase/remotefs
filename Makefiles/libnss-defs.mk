@@ -4,7 +4,7 @@
 # flags passed by the caller (?FLAGS_G)
 #######################################
 
-libnss_TARGET = librfs_nss
+libnss_TARGET = $(SO_NAME_NSS)
 
 libnss_CFLAGS  = $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
