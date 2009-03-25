@@ -16,6 +16,9 @@ See the file LICENSE.
 # include <sys/socket.h>
 # include <netinet/in.h>
 #endif
+#if defined QNX
+#include <sys/socket.h>
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

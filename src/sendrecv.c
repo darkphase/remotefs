@@ -22,6 +22,12 @@ See the file LICENSE.
 #include <netinet/in.h>
 #include <sys/uio.h>
 #endif
+#if defined QNX
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#define AI_ADDRCONFIG 0
+#endif
 #ifdef RFS_DEBUG
 #include <sys/time.h>
 #endif
