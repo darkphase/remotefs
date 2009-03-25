@@ -53,6 +53,7 @@ clean_bins: dummy
 	$(RM) -f rfs
 	$(RM) -f rfsd
 	$(RM) -f rfspasswd
+	$(RM) -f rfs_nssd
 	$(RM) -f *.so*
 
 clean_packages_tmp: dummy

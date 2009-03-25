@@ -29,5 +29,3 @@ libnss_OBJS = rfs_nss/src/rfs_nss_client.o
 # Help variable for dynamic libs
 #######################################
 
-TARGET  = $(libnss_TARGET)
-

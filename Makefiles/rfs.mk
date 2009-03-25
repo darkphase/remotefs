@@ -26,3 +26,4 @@ flags:
 	@echo CFLAGS = $(rfs_CFLAGS)
 	@echo LDFLAGS = $(rfs_LDFLAGS)
 	@echo
+
