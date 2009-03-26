@@ -17,6 +17,7 @@ See the file LICENSE.
 #include "attr_cache.h"
 #include "buffer.h"
 #include "command.h"
+#include "compat.h"
 #include "config.h"
 #include "data_cache.h"
 #include "id_lookup_client.h"
@@ -28,7 +29,6 @@ See the file LICENSE.
 #include "path.h"
 #include "resume.h"
 #include "sendrecv.h"
-#include "compat.h"
 
 static size_t stat_size()
 {

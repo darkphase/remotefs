@@ -7,6 +7,9 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#if defined SOLARIS
+#	include <fcntl.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <sys/file.h>

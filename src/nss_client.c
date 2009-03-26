@@ -10,10 +10,10 @@ See the file LICENSE.
 
 #include <dirent.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <string.h>
 
 #include "buffer.h"
 #include "command.h"

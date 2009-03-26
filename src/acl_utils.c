@@ -575,7 +575,7 @@ void dump_acl(struct id_lookup_info *lookup, const rfs_acl_t *acl, int count)
 	}
 }
 #else
-int acl_utils_dummy;
+int acl_utils_dummy = 0;
 #endif
 
 #endif /* WITH_ACL */
