@@ -411,7 +411,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	
 	if (instance->config.socket_timeout != -1)
 	{
-		
 		int server_settimeout_ret = rfs_setsocktimeout(instance, instance->config.socket_timeout);
 		if (server_settimeout_ret != 0)
 		{
@@ -486,26 +485,29 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 #ifdef WITH_UGO
 		if ((instance->client.export_opts & OPT_UGO) != 0)
 		{
-			int getnames_ret = rfs_getnames(instance);
-			if (getnames_ret != 0)
+			if (is_nss_running(instance) == 0)
 			{
-				if (show_errors != 0)
+				int getnames_ret = rfs_getnames(instance);
+				if (getnames_ret != 0)
 				{
-					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
+					if (show_errors != 0)
+					{
+						ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
+					}
+					rfs_disconnect(instance, 1);
+					return -1;
 				}
-				rfs_disconnect(instance, 1);
-				return -1;
-			}
 
-			int nss_start_ret = start_nss_server(instance);
-			if (nss_start_ret != 0)
-			{
-				if (show_errors != 0)
+				int nss_start_ret = start_nss_server(instance);
+				if (nss_start_ret != 0)
 				{
-					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
+					if (show_errors != 0)
+					{
+						WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
+					}
+					rfs_disconnect(instance, 1);
+					return -1;
 				}
-				rfs_disconnect(instance, 1);
-				return -1;
 			}
 			
 			create_uids_lookup(&instance->id_lookup.uids);

@@ -64,6 +64,7 @@ static void init_nss(struct rfs_instance *instance)
 	instance->nss.users_storage = NULL;
 	instance->nss.groups_storage = NULL;
 	instance->nss.server_thread = 0;
+	instance->nss.use_nss = 1;
 }
 
 static void init_rfs_config(struct rfs_instance *instance)

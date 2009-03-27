@@ -98,6 +98,7 @@ struct rfs_instance
 		struct list *users_storage;
 		struct list *groups_storage;
 		pthread_t server_thread;
+		unsigned use_nss;
 	} nss;
 
 	struct rfs_config config;
