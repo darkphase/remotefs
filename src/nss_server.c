@@ -347,6 +347,9 @@ int stop_nss_server(struct rfs_instance *instance)
 		instance->nss.server_thread = 0;
 	}
 	
+	destroy_list(&instance->nss.users_storage);
+	destroy_list(&instance->nss.groups_storage);
+	
 	char cmd_line[4096] = { 0 };
 
 	snprintf(cmd_line, 
@@ -357,14 +360,15 @@ int stop_nss_server(struct rfs_instance *instance)
 		instance->config.host);
 
 	DEBUG("trying to stop rfs_nss: %s\n", cmd_line);
-	
+
 	int rfs_nss_ret = system(cmd_line);
+	if (rfs_nss_ret != 0)
+	{
+		return -1;
+	}
 
 	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
 
-	destroy_list(&instance->nss.users_storage);
-	destroy_list(&instance->nss.groups_storage);
-	
 	return 0;
 }
 
