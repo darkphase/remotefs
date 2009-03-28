@@ -88,8 +88,9 @@ int nss_close_socket(struct rfs_instance *instance)
 {
 	if (instance->nss.socket != -1)
 	{
-		shutdown(instance->nss.socket, SHUT_RDWR);
 		close(instance->nss.socket);
+		shutdown(instance->nss.socket, SHUT_RDWR);
+
 		instance->nss.socket = -1;
 
 		char *socket_name = nss_socket_name(instance);
@@ -287,8 +288,8 @@ static void* nss_server_proc(void *void_instance)
 
 		DEBUG("%s\n", "closing socket");
 
-		shutdown(client_sock, SHUT_RDWR);
 		close(client_sock);
+		shutdown(client_sock, SHUT_RDWR);
 	}
 
 	return NULL;
@@ -349,25 +350,29 @@ int stop_nss_server(struct rfs_instance *instance)
 	
 	destroy_list(&instance->nss.users_storage);
 	destroy_list(&instance->nss.groups_storage);
-	
-	char cmd_line[4096] = { 0 };
 
-	snprintf(cmd_line, 
-		sizeof(cmd_line) - 1, 
-		"%s %s %s", 
-		RFS_NSS_BIN, 
-		RFS_NSS_STOP_OPTION, 
-		instance->config.host);
-
-	DEBUG("trying to stop rfs_nss: %s\n", cmd_line);
-
-	int rfs_nss_ret = system(cmd_line);
-	if (rfs_nss_ret != 0)
+	if (instance->nss.use_nss != 0)
 	{
-		return -1;
-	}
+		char cmd_line[4096] = { 0 };
 
-	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
+		snprintf(cmd_line, 
+			sizeof(cmd_line) - 1, 
+			"%s %s %s", 
+			RFS_NSS_BIN, 
+			RFS_NSS_STOP_OPTION, 
+			instance->config.host);
+
+		DEBUG("trying to stop rfs_nss: %s\n", cmd_line);
+
+		int rfs_nss_ret = system(cmd_line);
+	
+		DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
+
+		if (rfs_nss_ret != 0)
+		{
+			return -1;
+		}
+	}
 
 	return 0;
 }

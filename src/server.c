@@ -284,8 +284,8 @@ void server_close_connection(struct rfsd_instance *instance)
 {
 	if (instance->sendrecv.socket != -1)
 	{
-		shutdown(instance->sendrecv.socket, SHUT_RDWR);
 		close(instance->sendrecv.socket);
+		shutdown(instance->sendrecv.socket, SHUT_RDWR);
 	}
 	
 	cleanup_files(instance);

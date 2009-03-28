@@ -220,8 +220,8 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	saved_errno = ans.ret_errno;
 
 error:
-	shutdown(sock, SHUT_RDWR);
 	close(sock);
+	shutdown(sock, SHUT_RDWR);
 
 	return -saved_errno;
 
@@ -312,8 +312,8 @@ error:
 	destroy_list(names);
 
 success:
-	shutdown(sock, SHUT_RDWR);
 	close(sock);
+	shutdown(sock, SHUT_RDWR);
 
 	return saved_errno;
 }
