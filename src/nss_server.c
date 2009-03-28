@@ -10,6 +10,7 @@ See the file LICENSE.
 
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -250,6 +251,8 @@ static void* nss_server_proc(void *void_instance)
 	
 	DEBUG("%s\n", "NSS started");
 
+	rfs_sem_post(&instance->nss.thread_ready);
+
 	while (1)
 	{
 		struct sockaddr_un client_addr = { 0 };
@@ -303,6 +306,32 @@ int start_nss_server(struct rfs_instance *instance)
 	
 	pthread_create(&instance->nss.server_thread, NULL, nss_server_proc, (void *)instance);
 
+	DEBUG("%s\n", "waiting for NSS thread to become ready");
+	if (rfs_sem_wait(&instance->nss.thread_ready) != 0)
+	{
+		return -1;
+	}
+
+	char cmd_line[4096] = { 0 };
+
+	snprintf(cmd_line, 
+		sizeof(cmd_line) - 1, 
+		"%s %s %s", 
+		RFS_NSS_BIN, 
+		RFS_NSS_START_OPTION, 
+		instance->config.host);
+
+	DEBUG("trying to start rfs_nss: %s\n", cmd_line);
+
+	int rfs_nss_ret = system(cmd_line);
+
+	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
+
+	if (rfs_nss_ret != 0)
+	{
+		instance->nss.use_nss = 0;
+	}
+
 	return 0;
 }
 
@@ -317,6 +346,21 @@ int stop_nss_server(struct rfs_instance *instance)
 		pthread_join(instance->nss.server_thread, NULL);
 		instance->nss.server_thread = 0;
 	}
+	
+	char cmd_line[4096] = { 0 };
+
+	snprintf(cmd_line, 
+		sizeof(cmd_line) - 1, 
+		"%s %s %s", 
+		RFS_NSS_BIN, 
+		RFS_NSS_STOP_OPTION, 
+		instance->config.host);
+
+	DEBUG("trying to stop rfs_nss: %s\n", cmd_line);
+	
+	int rfs_nss_ret = system(cmd_line);
+
+	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
 
 	destroy_list(&instance->nss.users_storage);
 	destroy_list(&instance->nss.groups_storage);

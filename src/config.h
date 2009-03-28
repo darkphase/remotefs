@@ -51,10 +51,14 @@ extern "C" {
 #endif /* RFS_DEBUG */
 
 #ifdef RFS_DEBUG
-#define NSS_SOCKETS_DIR			"./"
+#define NSS_SOCKETS_DIR	        "./"
+#define RFS_NSS_BIN             "LD_LIBRARY_PATH=. ./rfs_nssd"
 #else
-#define NSS_SOCKETS_DIR			"/tmp/"
+#define NSS_SOCKETS_DIR         "/tmp/"
+#define RFS_NSS_BIN             "rfs_nssd"
 #endif
+#define RFS_NSS_START_OPTION    "-s"
+#define RFS_NSS_STOP_OPTION     "-e"
 
 #ifdef RFS_DEBUG
 #        define DEBUG(format, args...) do { printf(format, args); } while (0)
