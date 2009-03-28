@@ -14,7 +14,7 @@ include mk/$(OS)$(ALT).mk
 RFS_PATH = ..
 
 # for testing from top directoty remotefs/rfs_nss:trunk
-#RFS_PATH = ../../trunk
+RFS_PATH = ../../trunk
 
 # include options from remotefs opt1 = ipv6, opt5 = igo
 include $(RFS_PATH)/Makefiles/options.mk

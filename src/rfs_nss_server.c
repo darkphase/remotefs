@@ -960,6 +960,22 @@ static int add_to_list(list_t **root, char *name, uid_t id, int is_sys)
 
 /***************************************
  *
+ * syntax()
+ *
+ *
+ **************************************/
+static void syntax(char *prog_name)
+{
+     printf("Syntax: %s [-f] [-l] -s|e host \n", prog_name);
+     printf("      -f, start in foreground\n");
+     printf("      -l, print debug info.\n");
+     printf("      -s  host  start and add name from host\n");
+     printf("      -e  host  end and remove name for host\n");
+     exit(1);
+}
+
+/***************************************
+ *
  * main()
  *
  *
@@ -997,13 +1013,7 @@ int main(int argc,char **argv)
              case 'e': ip_host      = optarg; mode = -1; break;
              case 'n': nohost       = 1; break;
              case 'k': kill_rfs     = 1; mode = -1; break;
-             default:
-                printf("Syntax: %s [-f] [-l] -s|e host \n", prog_name);
-                printf("      -f, start in foreground\n");
-                printf("      -l, print debug info.\n");
-                printf("      -s  host  start and add name from host\n");
-                printf("      -e  host  end and remove name for host\n");
-                return 0;
+             default: syntax(prog_name);
         }
     }
 
@@ -1047,6 +1057,11 @@ int main(int argc,char **argv)
     if(mode == -1)
     {
         return 0;
+    }
+
+    if ( nohost == 0 && ip_host == NULL )
+    {
+        syntax(prog_name);
     }
 
     if ( nohost == 0 && kill_rfs == 0)
@@ -1113,7 +1128,6 @@ int main(int argc,char **argv)
             {
                 translate_ip(ip_host, host, NI_MAXHOST);
             }
-printf("Host: %s",host);
             get_all_names(ip_host, host);
          }
          return 0;
