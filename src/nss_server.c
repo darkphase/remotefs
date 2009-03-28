@@ -37,13 +37,16 @@ static char* nss_socket_name(struct rfs_instance *instance)
 	uid_t uid = getuid();
 	pid_t pid = getpid();
 
-	snprintf(name, 
-		FILENAME_MAX + 1, 
+	if (snprintf(name, 
+		FILENAME_MAX, 
 		"%s%d-%s.%d", 
 		NSS_SOCKETS_DIR, 
 		uid, 
 		instance->config.host, 
-		pid);
+		pid) >= FILENAME_MAX)
+	{
+		return NULL;
+	}
 
 	return name;
 }
@@ -57,7 +60,7 @@ int nss_create_socket(struct rfs_instance *instance)
 		return -ECANCELED;
 	}
 
-	DEBUG("%s\n", socket_name);
+	DEBUG("socket name: %s\n", socket_name);
 
 	int sock = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (sock == -1)
@@ -88,8 +91,8 @@ int nss_close_socket(struct rfs_instance *instance)
 {
 	if (instance->nss.socket != -1)
 	{
-		close(instance->nss.socket);
 		shutdown(instance->nss.socket, SHUT_RDWR);
+		close(instance->nss.socket);
 
 		instance->nss.socket = -1;
 
@@ -243,7 +246,7 @@ static void* nss_server_proc(void *void_instance)
 		pthread_exit(NULL);
 	}
 
-	int sock =  instance->nss.socket;
+	int sock = instance->nss.socket;
 
 	if (listen(sock, 1) != 0)
 	{
@@ -288,8 +291,8 @@ static void* nss_server_proc(void *void_instance)
 
 		DEBUG("%s\n", "closing socket");
 
-		close(client_sock);
 		shutdown(client_sock, SHUT_RDWR);
+		close(client_sock);
 	}
 
 	return NULL;
@@ -305,7 +308,12 @@ int start_nss_server(struct rfs_instance *instance)
 		return create_sock_ret;
 	}
 	
-	pthread_create(&instance->nss.server_thread, NULL, nss_server_proc, (void *)instance);
+	if (pthread_create(&instance->nss.server_thread, NULL, nss_server_proc, (void *)instance) != 0)
+	{
+		instance->nss.server_thread = 0;
+		nss_close_socket(instance);
+		return -1;
+	}
 
 	DEBUG("%s\n", "waiting for NSS thread to become ready");
 	if (rfs_sem_wait(&instance->nss.thread_ready) != 0)

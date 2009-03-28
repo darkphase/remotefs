@@ -554,7 +554,11 @@ void* rfs_init(struct rfs_instance *instance)
 	instance->client.my_gid = getgid();
 	
 	keep_alive_init(instance);
-	pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance);
+	if (pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance) != 0)
+	{
+		instance->client.maintenance_thread = 0;
+		/* TODO: how to handle ? */
+	}
 	
 	if (instance->config.use_write_cache != 0)
 	{
@@ -586,7 +590,11 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 	instance->client.maintenance_please_die = 1;
 
-	pthread_join(instance->client.maintenance_thread, NULL);
+	if (instance->client.maintenance_thread != 0)
+	{
+		pthread_join(instance->client.maintenance_thread, NULL);
+	}
+
 	keep_alive_destroy(instance);
 	
 	destroy_cache(instance);
@@ -618,8 +626,8 @@ void rfs_disconnect(struct rfs_instance *instance, int gently)
 		rfs_send_cmd(&instance->sendrecv, &cmd);
 	}
 	
-	close(instance->sendrecv.socket);
 	shutdown(instance->sendrecv.socket, SHUT_RDWR);
+	close(instance->sendrecv.socket);
 	
 	instance->sendrecv.connection_lost = 1;
 	instance->sendrecv.socket = -1;
