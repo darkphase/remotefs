@@ -21,7 +21,7 @@ OPT_1 = -DWITH_IPV6
 ###############################################
 # Support of exports listing
 
-#OPT_3 = -DWITH_EXPORTS_LIST
+OPT_3 = -DWITH_EXPORTS_LIST
 
 ###############################################
 # Support for POSIX ACL
