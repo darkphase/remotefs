@@ -34,8 +34,8 @@ static char* nss_socket_name(struct rfs_instance *instance)
 		return NULL;
 	}
 	
-	uid_t uid = getuid();
-	pid_t pid = getpid();
+	uid_t uid = instance->client.my_uid;
+	pid_t pid = instance->client.my_pid;
 
 	if (snprintf(name, 
 		FILENAME_MAX, 

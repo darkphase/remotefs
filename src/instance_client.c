@@ -7,6 +7,8 @@ See the file LICENSE.
 */
 
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "instance_client.h"
@@ -17,8 +19,9 @@ static void init_client(struct rfs_instance *instance)
 	instance->client.maintenance_please_die = 0;
 	memset(instance->client.auth_salt, 0, sizeof(instance->client.auth_salt));
 	instance->client.export_opts = OPT_NONE;
-	instance->client.my_uid = (uid_t)-1;
-	instance->client.my_gid = (gid_t)-1;
+	instance->client.my_uid = getuid();
+	instance->client.my_gid = getgid();
+	instance->client.my_pid = getpid();
 }
 
 static void init_attr_cache(struct rfs_instance *instance)

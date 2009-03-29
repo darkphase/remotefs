@@ -371,7 +371,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	}
 #endif
 	
-	int setpid_ret = setup_soket_pid(sock, getpid());
+	int setpid_ret = setup_soket_pid(sock, instance->client.my_pid);
 	if (setpid_ret != 0)
 	{
 		if (show_errors != 0)
@@ -550,9 +550,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 void* rfs_init(struct rfs_instance *instance)
 {
-	instance->client.my_uid = getuid();
-	instance->client.my_gid = getgid();
-	
 	keep_alive_init(instance);
 	if (pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance) != 0)
 	{

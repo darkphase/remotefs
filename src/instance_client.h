@@ -31,7 +31,8 @@ struct rfs_instance
 		enum rfs_export_opts export_opts;
 		
 		uid_t my_uid;
-		uid_t my_gid;
+		gid_t my_gid;
+		pid_t my_pid;
 	} client;
 	
 	/* attributes cache */
