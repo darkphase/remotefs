@@ -495,6 +495,10 @@ static int remove_host(char *name, int id)
                  free(user->data);
                  list_remove( & ((user_host_t*)host)->users, user);
               }
+              else
+              {
+                 user = user->next;
+              }
            }
         }
     }
@@ -871,6 +875,10 @@ static void main_loop(int sock)
     memset(&sock_address, 0, sizeof(sock_address));
     while(connections > 0)
     {
+        if ( log )
+        {
+            printf("Wait for connection\n");
+        }
         if ( listen(sock, 1) >= 0 )
         {
            accpt = accept(sock, (struct sockaddr*)&sock_address, &sockLen);
@@ -881,8 +889,16 @@ static void main_loop(int sock)
            }
            else
            {
+               if ( log )
+               {
+                   printf("Accept connection\n");
+               }
                ret = process_message(accpt);
                close(accpt);
+               if ( log )
+               {
+                   printf("Message processed, connection closed\n");
+               }
                if ( ret == 0 )
                {
                   return;
@@ -1045,7 +1061,7 @@ int main(int argc,char **argv)
             {
                 get_all_names(ip_host, host);
             }
-            return 1;
+            return 0;
         break;
         case RFS_NSS_SYS_ERROR:
         case RFS_NSS_NO_SERVER:
