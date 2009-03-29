@@ -336,7 +336,7 @@ int start_nss_server(struct rfs_instance *instance)
 
 	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
 
-	return 0;
+	return (rfs_nss_ret == 0 ? 0 : -1);
 }
 
 int stop_nss_server(struct rfs_instance *instance)
