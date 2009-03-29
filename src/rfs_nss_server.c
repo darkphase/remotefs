@@ -217,6 +217,7 @@ static int add_user(list_t **users, int id)
     list_t *user = *users;
     list_t *new  = NULL;
 
+#if 0
     /* look if allready present */
     while(user)
     {
@@ -226,6 +227,9 @@ static int add_user(list_t **users, int id)
         }
         user = user->next;
     }
+#else
+    user = NULL;
+#endif
 
     /* there was not entry, build one */
     if ( user == NULL )
@@ -301,7 +305,6 @@ static int add_host(char *name, int id)
     list_t *new  = NULL;
     int     hostid = 1;
     char *host_name;
-
     /* if allready provided increase only count */
     while(host)
     {
@@ -356,12 +359,15 @@ static int add_host(char *name, int id)
         ((user_host_t*)new->data)->count  = 1;
         host = new;
     }
-    else
+    else 
     {
+    	if(host==NULL)
+    	{
+		printf("host = NULL\n");
        return 0; /* error */
+	}
     }
-
-    add_user(&(((user_host_t*)new->data)->users), id);
+    add_user(&(((user_host_t*)host->data)->users), id);
 
     return 1;
 }
@@ -417,6 +423,7 @@ static int remove_host(char *name, int id)
     list_t *user   = NULL;
     user_host_t *h = NULL;
     int     hostid = 1;
+    int     count  = 0;
 
     /* find host */
     while ( host )
@@ -431,7 +438,7 @@ static int remove_host(char *name, int id)
 
     if ( host )
     {
-        int count = --((user_host_t*)(host->data))->count;
+        count = --((user_host_t*)(host->data))->count;
         if ( count <= 0 )
         {
            hostid = ((user_host_t*)(host->data))->hostid;
@@ -484,7 +491,7 @@ static int remove_host(char *name, int id)
            free(h);
            list_remove(&hosts, host);
         }
-        else
+        else /* count is > 0 */
         {
            /* remove the user entry for id */
            user = ((user_host_t*)(host)->data)->users;
@@ -493,7 +500,8 @@ static int remove_host(char *name, int id)
               if ( *((int*)(user->data)) == id )
               {
                  free(user->data);
-                 list_remove( & ((user_host_t*)host)->users, user);
+                 list_remove( &((user_host_t*)host->data)->users, user);
+                  break;
               }
               else
               {
