@@ -67,7 +67,9 @@ static void usage(const char *program)
 	"\n"
 	"RFS options:\n"
 	"    -q                      suppress warnings\n"
+#ifdef WITH_EXPORTS_LIST
 	"    -l                      list exports of specified host (and exit)\n"
+#endif
 	"    -o username=name        auth username\n"
 #ifdef WITH_SSL
 	"    -o rd_cache=1           enable read cache\n"

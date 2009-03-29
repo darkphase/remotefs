@@ -257,7 +257,7 @@ static void* nss_server_proc(void *void_instance)
 
 	rfs_sem_post(&instance->nss.thread_ready);
 
-	while (1)
+	while (instance->nss.socket != -1)
 	{
 		struct sockaddr_un client_addr = { 0 };
 		socklen_t client_addr_size = sizeof(client_addr);
@@ -268,7 +268,7 @@ static void* nss_server_proc(void *void_instance)
 		
 		DEBUG("client socket: %d\n", client_sock);
 
-		if (client_sock == -1)
+		if (client_sock <= 0)
 		{
 			break;
 		}
@@ -295,7 +295,7 @@ static void* nss_server_proc(void *void_instance)
 		close(client_sock);
 	}
 
-	return NULL;
+	pthread_exit(NULL);
 }
 
 int start_nss_server(struct rfs_instance *instance)
@@ -325,7 +325,7 @@ int start_nss_server(struct rfs_instance *instance)
 
 	snprintf(cmd_line, 
 		sizeof(cmd_line) - 1, 
-		"%s %s %s", 
+		"%s %s %s >/dev/null 2>&1", 
 		RFS_NSS_BIN, 
 		RFS_NSS_START_OPTION, 
 		instance->config.host);
@@ -335,11 +335,6 @@ int start_nss_server(struct rfs_instance *instance)
 	int rfs_nss_ret = system(cmd_line);
 
 	DEBUG("rfs_nss return: %d\n", rfs_nss_ret);
-
-	if (rfs_nss_ret != 0)
-	{
-		instance->nss.use_nss = 0;
-	}
 
 	return 0;
 }
@@ -365,7 +360,7 @@ int stop_nss_server(struct rfs_instance *instance)
 
 		snprintf(cmd_line, 
 			sizeof(cmd_line) - 1, 
-			"%s %s %s", 
+			"%s %s %s >/dev/null 2>&1", 
 			RFS_NSS_BIN, 
 			RFS_NSS_STOP_OPTION, 
 			instance->config.host);

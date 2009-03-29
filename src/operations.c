@@ -85,34 +85,21 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	{
 		size_t host_len = strlen(instance->config.host);
 
-		if (strcmp(instance->config.auth_user, user) == 0)
-		{
-			uid = instance->client.my_uid;
-			user = get_uid_name(instance->id_lookup.uids, instance->client.my_uid);
-			if (user == NULL)
-			{
-				*ret = EINVAL;
-				return (off_t)-1;
-			}
-		}
-		else
-		{
-			size_t user_len = strlen(user);
-			size_t overall_user_len = user_len + host_len + 1  + 1; /* + '@' + final \0 */
+		size_t user_len = strlen(user);
+		size_t overall_user_len = user_len + host_len + 1  + 1; /* + '@' + final \0 */
 
-			char *remote_user = get_buffer(overall_user_len);
-			snprintf(remote_user, overall_user_len, "%s@%s", user, instance->config.host);
+		char *remote_user = get_buffer(overall_user_len);
+		snprintf(remote_user, overall_user_len, "%s@%s", user, instance->config.host);
 
-			DEBUG("remote user: %s\n", remote_user);
+		DEBUG("remote user: %s\n", remote_user);
 		
-			struct passwd *pw = getpwnam(remote_user);
+		struct passwd *pw = getpwnam(remote_user);
 		
-			free_buffer(remote_user);
+		free_buffer(remote_user);
 		
-			if (pw != NULL)
-			{
-				uid = pw->pw_uid;
-			}
+		if (pw != NULL)
+		{
+			uid = pw->pw_uid;
 		}
 
 		size_t group_len = strlen(group);
@@ -131,6 +118,8 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 		{
 			gid = gr->gr_gid;
 		}
+
+		DEBUG("intermediate uid: %d, gid: %d\n", uid, gid);
 
 		if (uid == (uid_t)-1)
 		{

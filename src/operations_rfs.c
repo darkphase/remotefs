@@ -481,39 +481,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			rfs_disconnect(instance, 1);
 			return -1;
 		}
-
-#ifdef WITH_UGO
-		if ((instance->client.export_opts & OPT_UGO) != 0)
-		{
-			if (is_nss_running(instance) == 0)
-			{
-				int getnames_ret = rfs_getnames(instance);
-				if (getnames_ret != 0)
-				{
-					if (show_errors != 0)
-					{
-						ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
-					}
-					rfs_disconnect(instance, 1);
-					return -1;
-				}
-
-				int nss_start_ret = start_nss_server(instance);
-				if (nss_start_ret != 0)
-				{
-					if (show_errors != 0)
-					{
-						WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
-					}
-					rfs_disconnect(instance, 1);
-					return -1;
-				}
-			}
-			
-			create_uids_lookup(&instance->id_lookup.uids);
-			create_gids_lookup(&instance->id_lookup.gids);
-		}
-#endif
 		
 		int resume_ret = resume_files(instance);
 		if (resume_ret != 0)
@@ -548,6 +515,40 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	return 0;
 }
 
+#ifdef WITH_UGO
+static int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
+{
+	if ((instance->client.export_opts & OPT_UGO) != 0)
+	{
+		if (is_nss_running(instance) == 0)
+		{
+			int getnames_ret = rfs_getnames(instance);
+			if (getnames_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
+				}
+				return -1;
+			}
+
+			int nss_start_ret = start_nss_server(instance);
+			DEBUG("nss start ret: %d\n", nss_start_ret);
+			if (nss_start_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
+				}
+				return -1;
+			}
+		}		
+	}
+
+	return 0;
+}
+#endif
+
 void* rfs_init(struct rfs_instance *instance)
 {
 	keep_alive_init(instance);
@@ -561,6 +562,19 @@ void* rfs_init(struct rfs_instance *instance)
 	{
 		init_write_behind(instance);
 	}
+
+#ifdef WITH_UGO
+	if (init_nss_server(instance, 0) != 0)
+	{
+		instance->nss.use_nss = 0;
+	}
+	
+	if ((instance->client.export_opts & OPT_UGO) != 1)
+	{
+		create_uids_lookup(&instance->id_lookup.uids);
+		create_gids_lookup(&instance->id_lookup.gids);
+	}
+#endif
 
 	return NULL;
 }
