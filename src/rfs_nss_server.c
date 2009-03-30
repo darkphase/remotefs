@@ -161,7 +161,6 @@ static inline list_t *search_name(cmd_t *command, list_t *list)
     while ( list )
     {
        rfs_idmap_t *idmap = (rfs_idmap_t*)list->data;
-
        if ( strncmp( idmap->name, command->name, RFS_LOGIN_NAME_MAX) == 0 )
        {
            command->id    = idmap->id;
@@ -612,9 +611,9 @@ static rfs_idmap_t *get_owner_entry(list_t *list, int32_t id)
 
 static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
 {
+#if 0
     char *s = to_check   ? to_check->name   : NULL;
     char *t = proc_owner ? proc_owner->name : NULL;
-
     if ( s && t )
     {
         for(;;)
@@ -650,6 +649,7 @@ static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
             t++;
         }
     }
+#endif
     return 0;
 }
 
@@ -766,7 +766,7 @@ static int process_message(int sock)
             owner_idmap_entry = get_owner_entry(list, command.caller_id);
             /* search for given name */
             list = search_name(&command, list);
-
+printf("search_name -> %s\n",list ? ((rfs_idmap_t*)(list->data))->name:"");
             /* if the rfs entry is misplaced (at the begin of the list
              * and we put automatically the login name into our list
              * we have to answer not found if we find an entry as root
@@ -1006,7 +1006,6 @@ int main(int argc,char **argv)
     int             mode = 1; /* 1 = start, -1 = stop */
     int             check = 0;
     uid_t           uid = 0;
-    char            host[NI_MAXHOST];
     int             nohost = 0;
     int             kill_rfs = 0;
 
@@ -1029,7 +1028,6 @@ int main(int argc,char **argv)
         }
     }
 
-    *host = '\0';
     /* check first for running server */
     switch ((check = control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL)))
     {
@@ -1037,25 +1035,21 @@ int main(int argc,char **argv)
             /* a server is running, don't start */
             if ( nohost ) return 0;
             uid = getuid();
-            if ( ip_host )
-            {
-                translate_ip(ip_host, host, NI_MAXHOST);
-            }
             if ( mode == -1 )
             {
                 do
                 {
-                    ret = control_rfs_nss(DEC_CONN, NULL, host, &uid);
+                    ret = control_rfs_nss(DEC_CONN, NULL, ip_host, &uid);
                 } while (kill_rfs && !(ret == RFS_NSS_NO_SERVER||ret == RFS_NSS_SYS_ERROR));
                 return 0;
             }
 
             /* but add names from client if there is one */
             printf("An other server is allready running!\n");
-            control_rfs_nss(INC_CONN, NULL, host, &uid);
+            control_rfs_nss(INC_CONN, NULL, ip_host, &uid);
             if ( mode == 1 && ip_host )
             {
-                get_all_names(ip_host, host);
+                get_all_names(ip_host);
             }
             return 0;
         break;
@@ -1079,8 +1073,7 @@ int main(int argc,char **argv)
     if ( nohost == 0 && kill_rfs == 0)
     {
        /* Add host */
-       translate_ip(ip_host, host, NI_MAXHOST);
-       add_host(host, getuid());
+       add_host(ip_host, getuid());
     }
 
     /* collect the known users */
@@ -1139,11 +1132,7 @@ int main(int argc,char **argv)
      {
          if ( mode == 1 && ip_host )
          {
-            if ( *host == '\0' )
-            {
-                translate_ip(ip_host, host, NI_MAXHOST);
-            }
-            get_all_names(ip_host, host);
+            get_all_names(ip_host);
          }
          return 0;
      }

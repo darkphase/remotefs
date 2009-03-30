@@ -6,8 +6,7 @@
 extern "C" {
 #endif
 
-int get_all_names(char *ip_or_name, char *host);
-int translate_ip(char *ip_or_name, char *host, size_t hlen);
+int get_all_names(char *ip_or_name);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
