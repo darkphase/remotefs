@@ -97,10 +97,7 @@ int get_all_names(char *ip_or_name, char *host)
       while (user != NULL)
       {
          pwd = getpwnam((char *)user->data);
-         if ( pwd == NULL || pwd->pw_uid > 500 )
-         {
-            rfs_putpwnam((char *)user->data, host);
-         }
+         rfs_putpwnam((char *)user->data, host);
          user = user->next;
       }
       destroy_list(&users);
@@ -113,8 +110,7 @@ int get_all_names(char *ip_or_name, char *host)
       {
          group = groups;
          grp = getgrnam((char *)group->data);
-         if ( grp == NULL || grp->gr_gid > 500 )
-            rfs_putgrnam((char *)user->data, host);
+         rfs_putgrnam((char *)user->data, host);
          group = groups->next;
       }
       destroy_list(&groups);

@@ -769,9 +769,10 @@ static int process_message(int sock)
 
             /* if the rfs entry is misplaced (at the begin of the list
              * and we put automatically the login name into our list
-             * we have to answer not found id we find an entry as root
+             * we have to answer not found if we find an entry as root
              * in our list
              */
+
             if ( list && ((rfs_idmap_t*)(list->data))->sys )
             {
                 if ( ! check_is_same((rfs_idmap_t*)(list->data), owner_idmap_entry) )
@@ -1131,6 +1132,7 @@ int main(int argc,char **argv)
      signal(SIGQUIT, signal_handler);
      signal(SIGABRT, signal_handler);
      signal(SIGSEGV, signal_handler);
+     signal(SIGBUS,  signal_handler);
 
      /* damonize */
      if (daemonize && fork() != 0)
