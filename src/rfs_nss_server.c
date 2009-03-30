@@ -766,7 +766,6 @@ static int process_message(int sock)
             owner_idmap_entry = get_owner_entry(list, command.caller_id);
             /* search for given name */
             list = search_name(&command, list);
-printf("search_name -> %s\n",list ? ((rfs_idmap_t*)(list->data))->name:"");
             /* if the rfs entry is misplaced (at the begin of the list
              * and we put automatically the login name into our list
              * we have to answer not found if we find an entry as root
@@ -983,6 +982,9 @@ static void syntax(char *prog_name)
      printf("      -l, print debug info.\n");
      printf("      -s  host  start and add name from host\n");
      printf("      -e  host  end and remove name for host\n");
+     printf("      -a        only unknown will be taken into account\n");
+     printf("      -n        start a first instance\n");
+     printf("      -k        kill %s\n", prog_name);
      exit(1);
 }
 
@@ -1008,16 +1010,18 @@ int main(int argc,char **argv)
     uid_t           uid = 0;
     int             nohost = 0;
     int             kill_rfs = 0;
+    int             avoid_dup = 0;
 
     /* parse arguments */
     if ( prog_name == NULL )
         prog_name = argv[0];
     else
         prog_name++;
-    while ( (opt = getopt(argc, argv, "fls:e:nk")) != -1 )
+    while ( (opt = getopt(argc, argv, "fls:e:nka")) != -1 )
     {
         switch(opt)
         {
+             case 'a': avoid_dup    = 1; break;
              case 'f': daemonize    = 0; break;
              case 'l': log          = 1; break;
              case 's': ip_host      = optarg; break;
@@ -1049,9 +1053,9 @@ int main(int argc,char **argv)
             control_rfs_nss(INC_CONN, NULL, ip_host, &uid);
             if ( mode == 1 && ip_host )
             {
-                get_all_names(ip_host);
+                ret = get_all_names(ip_host, avoid_dup);
             }
-            return 0;
+            return ret;
         break;
         case RFS_NSS_SYS_ERROR:
         case RFS_NSS_NO_SERVER:
@@ -1132,9 +1136,9 @@ int main(int argc,char **argv)
      {
          if ( mode == 1 && ip_host )
          {
-            get_all_names(ip_host);
+             ret = get_all_names(ip_host,avoid_dup);
          }
-         return 0;
+         return ret;
      }
 
      main_loop(sock);

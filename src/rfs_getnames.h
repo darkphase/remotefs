@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-int get_all_names(char *ip_or_name);
+int get_all_names(char *ip_or_name, int avoid_dup);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
