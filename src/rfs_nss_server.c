@@ -217,19 +217,7 @@ static int add_user(list_t **users, int id)
     list_t *user = *users;
     list_t *new  = NULL;
 
-#if 0
-    /* look if allready present */
-    while(user)
-    {
-        if ( id == *((int*)(user->data)) )
-        {
-            break;
-        }
-        user = user->next;
-    }
-#else
     user = NULL;
-#endif
 
     /* there was not entry, build one */
     if ( user == NULL )
@@ -305,6 +293,7 @@ static int add_host(char *name, int id)
     list_t *new  = NULL;
     int     hostid = 1;
     char *host_name;
+
     /* if allready provided increase only count */
     while(host)
     {
@@ -326,7 +315,7 @@ static int add_host(char *name, int id)
     {
         /* no entry, add one and set a unique hostid */
         host = hosts;
-        while(host)
+        do
         {
             if ( ((user_host_t*)host->data)->hostid > hostid )
             {
@@ -337,14 +326,14 @@ static int add_host(char *name, int id)
             {
                hostid++;
             }
-            else if ( host->next == NULL )
+            if ( host->next == NULL )
             {
                /* the end of list will be reached, append */
                list_append(&host->next, NULL, &new);
                break;
             }
             host = host->next;
-        } 
+        } while(host);
     }
 
     if ( new )
@@ -361,11 +350,10 @@ static int add_host(char *name, int id)
     }
     else 
     {
-    	if(host==NULL)
-    	{
-		printf("host = NULL\n");
-       return 0; /* error */
-	}
+        if(host==NULL)
+        {
+            return 0; /* error */
+        }
     }
     add_user(&(((user_host_t*)host->data)->users), id);
 
@@ -733,7 +721,11 @@ static int process_message(int sock)
                     */
                    if ( ! check_is_same(map, owner_idmap_entry) )
                    {
-                       break;
+                       /* if user is conderned don't ignore */
+                       if (  user_is_concerned((rfs_idmap_t*)list->data, command.caller_id ) )
+                       {
+                           break;
+                       }
                    }
 
                }
@@ -742,11 +734,6 @@ static int process_message(int sock)
 
             if ( list )
             {
-                /*  check if user has entry for the given host */
-                if ( ! user_is_concerned((rfs_idmap_t*)list->data, command.caller_id ) )
-                {
-                    break;
-                }
                 command.found = 1;
                 command.id    = ((rfs_idmap_t*)(list->data))->id;
                 strncpy(command.name, ((rfs_idmap_t*)(list->data))->name,
@@ -1142,6 +1129,8 @@ int main(int argc,char **argv)
      signal(SIGTERM, signal_handler);
      signal(SIGINT,  signal_handler);
      signal(SIGQUIT, signal_handler);
+     signal(SIGABRT, signal_handler);
+     signal(SIGSEGV, signal_handler);
 
      /* damonize */
      if (daemonize && fork() != 0)
