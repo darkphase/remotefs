@@ -1,7 +1,7 @@
 0.12
-- rfs_nss support
++ rfs_nss support
 - librfs
-- server's exports list support
++ server's exports list support
 + links support
 + making UGO as an compile option
 + separating client/server code

@@ -564,15 +564,15 @@ void* rfs_init(struct rfs_instance *instance)
 	}
 
 #ifdef WITH_UGO
-	if (init_nss_server(instance, 0) != 0)
-	{
-		instance->nss.use_nss = 0;
-	}
-	
 	if ((instance->client.export_opts & OPT_UGO) != 1)
 	{
 		create_uids_lookup(&instance->id_lookup.uids);
 		create_gids_lookup(&instance->id_lookup.gids);
+	}
+
+	if (init_nss_server(instance, 0) != 0)
+	{
+		instance->nss.use_nss = 0;
 	}
 #endif
 

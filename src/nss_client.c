@@ -57,7 +57,7 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 
 			ret = get_buffer(overall_len);
 			snprintf(ret, overall_len, "%s%s", NSS_SOCKETS_DIR, entry->d_name);
-			ret[overall_len] = 0;
+			ret[overall_len - 1] = 0;
 			
 			break;
 		}
