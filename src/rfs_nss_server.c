@@ -1130,15 +1130,19 @@ int main(int argc,char **argv)
      signal(SIGABRT, signal_handler);
      signal(SIGSEGV, signal_handler);
      signal(SIGBUS,  signal_handler);
+     
+	 ret = get_all_names(ip_host,avoid_dup);
+
+	 if (ret != 0)
+	{
+	unlink(SOCKNAME);
+	exit(1);
+	}
 
      /* damonize */
      if (daemonize && fork() != 0)
      {
-         if ( mode == 1 && ip_host )
-         {
-             ret = get_all_names(ip_host,avoid_dup);
-         }
-         return ret;
+         return 0;
      }
 
      main_loop(sock);

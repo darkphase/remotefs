@@ -44,7 +44,11 @@ int get_all_names(char *ip_or_name, int avoid_dup)
    struct group  *grp;
    
    /* get and store all user names */
-   if ( nss_get_users(ip_or_name, &users) == 0 )
+   if ( nss_get_users(ip_or_name, &users) != 0 )
+	{
+		return 1;
+	}
+
    {
       user = users;
       while (user != NULL)
@@ -65,13 +69,13 @@ int get_all_names(char *ip_or_name, int avoid_dup)
       }
       destroy_list(&users);
    }
-   else
-   {
-      return 1;
-   }
 
    /* get and store all group names */
-   if ( nss_get_groups(ip_or_name, &groups) == 0 )
+   if ( nss_get_groups(ip_or_name, &groups) != 0 )
+	{
+	return 1;
+ 	}
+
    {
       group = groups;
       while (group != NULL)
@@ -91,10 +95,6 @@ int get_all_names(char *ip_or_name, int avoid_dup)
          group = group->next;
       }
       destroy_list(&groups);
-   }
-   else
-   {
-      return 1;
    }
 
    return 0;
