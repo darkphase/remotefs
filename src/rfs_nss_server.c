@@ -1139,18 +1139,30 @@ int main(int argc,char **argv)
              /* wait 10 ms in order to allow our background
               * process to work
               */
-             usleep(WAIT_FORSERVER);
-             ret = get_all_names(ip_host,avoid_dup);
-             if ( ret == 1 )
+             int count = 0;
+             uid = getuid();
+             ret = 1; /* default to error */
+             while ( count < MAX_TRY )
              {
-                 uid = getuid();
-                 control_rfs_nss(DEC_CONN, NULL, ip_host, &uid);
+                 usleep(WAIT_FORSERVER);
+                 check = control_rfs_nss(CHECK_SERVER, NULL, NULL, NULL);
+                 if ( check == RFS_NSS_OK )
+                 {
+                     ret = get_all_names(ip_host,avoid_dup);
+                     if ( ret == 1 )
+                     {
+                          control_rfs_nss(DEC_CONN, NULL, ip_host, &uid);
+                     }
+                     break;
+                 }
+                 count++;
              }
+             return ret;
          }
-         return ret;
      }
 
      main_loop(sock);
+
      close(sock);
      unlink(SOCKNAME);
      unlink(PIDFILE);

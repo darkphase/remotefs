@@ -76,9 +76,11 @@ typedef struct cmd_s
 #define LIBRFS_NSS "librfs_nss.so"
 
 /* wait time in usec, allow the background process to run
- * before we query rfs for user and group names
+ * before we query rfs for user and group names.
+ * 10ms and 100 try for connection.
  */
 #define WAIT_FORSERVER 10000
+#define MAX_TRY        100
 
 int control_rfs_nss(const int cmd, const char *name, const char *host, uid_t *id);
 
