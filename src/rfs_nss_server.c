@@ -1121,7 +1121,7 @@ int main(int argc,char **argv)
      if ( (sock = open_socket()) < 0 )
      {
          unlink(SOCKNAME);
-         exit(1);
+         return 1;
      }
 
      signal(SIGTERM, signal_handler);
@@ -1130,23 +1130,27 @@ int main(int argc,char **argv)
      signal(SIGABRT, signal_handler);
      signal(SIGSEGV, signal_handler);
      signal(SIGBUS,  signal_handler);
-     
-	 ret = get_all_names(ip_host,avoid_dup);
-
-	 if (ret != 0)
-	{
-	unlink(SOCKNAME);
-	exit(1);
-	}
 
      /* damonize */
      if (daemonize && fork() != 0)
      {
-         return 0;
+         if ( mode == 1 && ip_host )
+         {
+             /* wait 10 ms in order to allow our background
+              * process to work
+              */
+             usleep(WAIT_FORSERVER);
+             ret = get_all_names(ip_host,avoid_dup);
+             if ( ret == 1 )
+             {
+                 uid = getuid();
+                 control_rfs_nss(DEC_CONN, NULL, ip_host, &uid);
+             }
+         }
+         return ret;
      }
 
      main_loop(sock);
-
      close(sock);
      unlink(SOCKNAME);
      unlink(PIDFILE);
