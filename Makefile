@@ -18,7 +18,7 @@ RFS_PATH = ../../trunk
 
 # include options from remotefs opt1 = ipv6, opt5 = igo
 include $(RFS_PATH)/Makefiles/options.mk
-CFLAGS_GLOB = $(OPT_1) $(OPT_5)
+CFLAGS_GLOB = $(OPT_1) $(OPT_5) -DDEBUG
 
 
 # You may put your special flags here
@@ -99,7 +99,7 @@ tgz: clean
 
 .c.o:
 	@echo compile $@
-	@$(CC) -g -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) $(CFLAGS) $(INCFLAGS) $(OS_CFLAGS)
+	@$(CC) -g -c -o $@ $< $(CFLAGS_GLOB) $(IPV6) $(CFLAGS) $(INCFLAGS) $(OS_CFLAGS) $(CFLAGS_GLOB)
 
 # Dependencies
 
