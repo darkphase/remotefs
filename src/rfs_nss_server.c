@@ -840,13 +840,12 @@ static int process_message(int sock)
            printf("Command %d ?\n",command.cmd);
            return 0;
     }
-#if defined DEBUG
+
     if ( log )
     {
         printf("    Answer: name = %s, id = %d found %d\n", command.name, command.id, command.found);
     }
-#endif
-
+    
     /* answer queries from library */
     send(sock, &command, sizeof(command),0 );
     return 1; /* all was OK */
@@ -1018,7 +1017,6 @@ int main(int argc,char **argv)
         prog_name = argv[0];
     else
         prog_name++;
-
     while ( (opt = getopt(argc, argv, "fls:e:nka")) != -1 )
     {
         switch(opt)
@@ -1133,12 +1131,6 @@ int main(int argc,char **argv)
      signal(SIGSEGV, signal_handler);
      signal(SIGBUS,  signal_handler);
 
-#if defined linux
-     /* security isssue, don't permit use of gcore */
-     #include <sys/prctl.h>
-     prctl(PR_SET_DUMPABLE,0,0,0,0);
-#endif
-
      /* damonize */
      if (daemonize && fork() != 0)
      {
@@ -1167,7 +1159,6 @@ int main(int argc,char **argv)
              }
              return ret;
          }
-         return 0;
      }
 
      main_loop(sock);
