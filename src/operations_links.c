@@ -39,7 +39,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 	pack_32(&path_len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -89,7 +89,7 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	pack_32(&path_len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -138,7 +138,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	pack_32(&bsize, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;

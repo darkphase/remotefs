@@ -52,7 +52,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	dump(users, users_len);
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, users, ans.data_len) < 0)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, users) < 0)
 	{
 		free_buffer(users);
 		return -1;
@@ -91,7 +91,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	dump(groups, groups_len);
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, groups, ans.data_len) < 0)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, groups) < 0)
 	{
 		free_buffer(groups);
 		return -1;

@@ -166,7 +166,7 @@ int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_i
 	
 	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
 	
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, instance->server.auth_salt, salt_len) == -1)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, instance->server.auth_salt) == -1)
 	{
 		return -1;
 	}

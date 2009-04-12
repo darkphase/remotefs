@@ -212,7 +212,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	pack_32(&fsize, buffer, 0
 		)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		return -ECONNABORTED;
 	}

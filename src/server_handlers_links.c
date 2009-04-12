@@ -145,7 +145,7 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 		link_buffer[ret] = '\0';
 	}
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, link_buffer, ans.data_len) == -1)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, link_buffer) == -1)
 	{
 		free_buffer(link_buffer);
 		return -1;

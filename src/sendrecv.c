@@ -340,7 +340,7 @@ size_t rfs_send_cmd(struct sendrecv_info *info, const struct command *cmd)
 	return (size_t)ret;
 }
 
-size_t rfs_send_cmd_data(struct sendrecv_info *info, const struct command *cmd, const void *data, const size_t data_len)
+size_t rfs_send_cmd_data(struct sendrecv_info *info, const struct command *cmd, const void *cmd_data)
 {
 	struct command send_command = { 0 };
 	send_command.command = htonl(cmd->command);
@@ -349,8 +349,8 @@ size_t rfs_send_cmd_data(struct sendrecv_info *info, const struct command *cmd, 
 	struct iovec iov[2] = { { 0, 0 } };
 	iov[0].iov_base = (char*)&send_command;
 	iov[0].iov_len  = sizeof(send_command);
-	iov[1].iov_base = (void*)data;
-	iov[1].iov_len  = data_len;
+	iov[1].iov_base = (void*)cmd_data;
+	iov[1].iov_len  = cmd->data_len;
 	
 #ifdef RFS_DEBUG
 	DEBUG("%s", "sending "); dump_command(cmd);
@@ -366,7 +366,12 @@ size_t rfs_send_cmd_data(struct sendrecv_info *info, const struct command *cmd, 
 	return (size_t)ret;
 }
 
-size_t rfs_send_cmd_data2(struct sendrecv_info *info, const struct command *cmd, const void *data, const size_t data_len, const void *data2, const size_t data_len2)
+size_t rfs_send_cmd_data2(struct sendrecv_info *info, 
+	const struct command *cmd, 
+	const void *cmd_data, 
+	const size_t cmd_data_len, 
+	const void *data, 
+	const size_t data_len)
 {
 	struct command send_command = { 0 };
 	send_command.command = htonl(cmd->command);
@@ -375,10 +380,10 @@ size_t rfs_send_cmd_data2(struct sendrecv_info *info, const struct command *cmd,
 	struct iovec iov[3] = { { 0, 0 } };
 	iov[0].iov_base = (char*)&send_command;
 	iov[0].iov_len  = sizeof(send_command);
-	iov[1].iov_base = (void*)data;
-	iov[1].iov_len  = data_len;
-	iov[2].iov_base = (void*)data2;
-	iov[2].iov_len  = data_len2;
+	iov[1].iov_base = (void*)cmd_data;
+	iov[1].iov_len  = cmd_data_len;
+	iov[2].iov_base = (void*)data;
+	iov[2].iov_len  = data_len;
 	
 #ifdef RFS_DEBUG
 	DEBUG("%s", "sending "); dump_command(cmd);
@@ -420,7 +425,7 @@ size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
 	return (size_t)ret;
 }
 
-size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans, const void *data, const size_t data_len)
+size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans, const void *ans_data)
 {
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);
@@ -431,8 +436,8 @@ size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans
 	struct iovec iov[2] = { { 0, 0 } };
 	iov[0].iov_base = (char*)&send_answer;
 	iov[0].iov_len  = sizeof(send_answer);
-	iov[1].iov_base = (void*)data;
-	iov[1].iov_len  = data_len;
+	iov[1].iov_base = (void*)ans_data;
+	iov[1].iov_len  = ans->data_len;
 	
 #ifdef RFS_DEBUG
 	DEBUG("%s", "sending "); dump_answer(ans);

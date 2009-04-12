@@ -192,7 +192,7 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		return reject_request(instance, cmd, pack_ret) == 0 ? 1: -1;
 	}
 	
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, ans.data_len) == -1)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -1;
@@ -301,7 +301,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		
 		dump(buffer, overall_size);
 
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, ans.data_len) == -1)
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
 		{
 			closedir(dir);
 			free_buffer(path);
@@ -388,7 +388,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	else
 	{
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle, sizeof(handle)) == -1)
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle) == -1)
 		{
 			return -1;
 		}
@@ -730,7 +730,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	pack_32(&bsize, buffer, 0
 		)))))));
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, ans.data_len) == -1)
+	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -1;

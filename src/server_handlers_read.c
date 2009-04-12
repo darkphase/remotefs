@@ -56,7 +56,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
 	}
 
-	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer, result) == -1 ? -1 : 1;
+	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
 }
 
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)

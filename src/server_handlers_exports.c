@@ -46,7 +46,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		
 		ans.data_len = overall_size;
 		
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, overall_size) < 0)
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) < 0)
 		{
 			free_buffer(buffer);
 			return -1;

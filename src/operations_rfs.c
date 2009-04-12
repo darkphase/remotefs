@@ -721,7 +721,7 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 	pack_32(&crypted_len, buffer, 0
 		)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		free(crypted);
@@ -756,7 +756,7 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 
 	unsigned path_len = strlen(path);
 	struct command cmd = { cmd_changepath, path_len + 1};
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -829,7 +829,7 @@ int rfs_setsocktimeout(struct rfs_instance *instance, const int timeout)
 	
 	struct command cmd = { cmd_setsocktimeout, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -865,7 +865,7 @@ int rfs_setsockbuffer(struct rfs_instance *instance, const int size)
 	
 	struct command cmd = { cmd_setsockbuffer, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		return -ECONNABORTED;
 	}

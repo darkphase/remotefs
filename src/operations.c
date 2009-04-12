@@ -177,7 +177,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_getattr, path_len };
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -235,7 +235,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	struct command cmd = { cmd_readdir, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -392,7 +392,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	pack_16(&fi_flags, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -465,7 +465,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, &handle, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, &handle) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -512,7 +512,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	pack_32(&foffset, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -561,7 +561,7 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 	pack_32(&fmode, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -600,7 +600,7 @@ int _rfs_unlink(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_unlink, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -636,7 +636,7 @@ int _rfs_rmdir(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_rmdir, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -684,7 +684,7 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 	pack_32(&len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -743,7 +743,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	pack_16(&is_null, buffer, 0
 	))));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -782,7 +782,7 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 
 	struct command cmd = { cmd_statfs, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path, path_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -874,7 +874,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 	pack_32(&fmode, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -932,7 +932,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 	pack_32(&fmode, buffer, 0
 		));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -1107,7 +1107,7 @@ group_ok:
 	pack_32(&user_len, buffer, 0
 	)))));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		if (local_name != NULL)
 		{
@@ -1214,7 +1214,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	struct command cmd = { cmd_lock, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, overall_size) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		return -ECONNABORTED;
 	}
