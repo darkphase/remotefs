@@ -10,6 +10,7 @@ See the file LICENSE.
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/statvfs.h>
 #include <utime.h>
@@ -24,6 +25,7 @@ See the file LICENSE.
 #include "inet.h"
 #include "instance_client.h"
 #include "list.h"
+#include "names.h"
 #include "operations.h"
 #include "operations_rfs.h"
 #include "path.h"
@@ -1014,9 +1016,80 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 			return -EINVAL;
 		}
 	}
+
+	char *local_name = NULL;
+	char *name_server = NULL;
+
+	if (user != NULL 
+	&& is_nss_name(user) != 0)
+	{
+		local_name = extract_name(user);
+		name_server = extract_server(user);
+	}
+
+	if (strcmp(name_server, instance->config.host) != 0)
+	{
+		goto user_error;
+	}
+
+	goto user_ok;
+
+user_error:
+	if (local_name != NULL)
+	{
+		free(local_name);
+	}
+
+	if (name_server != NULL)
+	{
+		free(name_server);
+	}
+
+	return -EINVAL;
+
+user_ok:
+	if (name_server != NULL)
+	{
+		free(name_server);
+	}
 	
-	uint32_t user_len = strlen(user) + 1;
-	uint32_t group_len = strlen(group) + 1;
+	char *local_group = NULL;
+	char *group_server = NULL;
+
+	if (is_nss_name(group) != 0)
+	{
+		local_group = extract_name(group);
+		group_server = extract_server(group);
+	
+		if (strcmp(group_server, instance->config.host) != 0)
+		{
+			goto group_error;
+		}
+	}
+
+	goto group_ok;
+
+group_error:
+	if (local_group != NULL)
+	{
+		free(local_group);
+	}
+
+	if (group_server != NULL)
+	{
+		free(group_server);
+	}
+
+	return -EINVAL;
+
+group_ok:
+	if (group_server != NULL)
+	{
+		free(group_server);
+	}
+	
+	uint32_t user_len = strlen(local_name != NULL ? local_name : user) + 1;
+	uint32_t group_len = strlen(local_group != NULL ? local_group : group) + 1;
 
 	unsigned overall_size = sizeof(user_len) 
 	+ sizeof(group_len) 
@@ -1027,8 +1100,8 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	struct command cmd = { cmd_chown, overall_size };
 
 	char *buffer = get_buffer(overall_size);
-	pack(group, group_len, buffer, 
-	pack(user, user_len, buffer, 
+	pack(local_group != NULL ? local_group : group, group_len, buffer, 
+	pack(local_name != NULL ? local_name : user, user_len, buffer, 
 	pack(path, path_len, buffer, 
 	pack_32(&group_len, buffer, 
 	pack_32(&user_len, buffer, 0
@@ -1036,8 +1109,28 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 
 	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
 	{
+		if (local_name != NULL)
+		{
+			free(local_name);
+		}
+		
+		if (local_group != NULL)
+		{
+			free(local_group);
+		}
+
 		free_buffer(buffer);
 		return -ECONNABORTED;
+	}
+
+	if (local_name != NULL)
+	{
+		free(local_name);
+	}
+	
+	if (local_group != NULL)
+	{
+		free(local_group);
 	}
 
 	free_buffer(buffer);

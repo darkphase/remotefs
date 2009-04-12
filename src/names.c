@@ -46,15 +46,8 @@ char* extract_name(const char *full_name)
 	return name;
 }
 
-const char *server_name(const char *full_name)
+unsigned is_nss_name(const char *name)
 {
-	const char *delim = strchr(full_name, '@');
-	return (delim == NULL ? NULL : delim + 1);
-}
-
-size_t name_len(const char *full_name)
-{
-	const char *delim = strchr(full_name, '@');
-	return (delim == NULL ? 0 : delim - full_name);
+	return (strchr(name, '@') == NULL ? 0 : 1);
 }
 

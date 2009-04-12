@@ -60,6 +60,12 @@ uid_t get_uid(const struct list *uids, const char *name)
 		entry = entry->next;
 	}
 	
+	struct passwd *pwd = getpwnam(name);
+	if (pwd != NULL)
+	{
+		return pwd->pw_uid;
+	}
+
 	return (uid_t)-1;
 }
 
@@ -76,6 +82,12 @@ const char* get_uid_name(const struct list *uids, uid_t uid)
 		}
 		
 		entry = entry->next;
+	}
+
+	struct passwd *pwd = getpwuid(uid);
+	if (pwd != NULL)
+	{
+		return pwd->pw_name;
 	}
 	
 	return NULL;
@@ -125,6 +137,12 @@ gid_t get_gid(const struct list *gids, const char *name)
 		entry = entry->next;
 	}
 	
+	struct group *grp = getgrnam(name);
+	if (grp != NULL)
+	{
+		return grp->gr_gid;
+	}
+	
 	return (gid_t)-1;
 }
 
@@ -143,6 +161,12 @@ const char* get_gid_name(const struct list *gids, gid_t gid)
 		entry = entry->next;
 	}
 	
+	struct group *grp = getgrgid(gid);
+	if (grp != NULL)
+	{
+		return grp->gr_name;
+	}
+
 	return NULL;
 }
 

@@ -17,11 +17,7 @@ char* extract_name(const char *full_name);
 /** don't forget to free() result */
 char* extract_server(const char *full_name);
 
-/** will return pointer where server name starts */
-const char *server_name(const char *full_name);
-
-/** will return len of the name (name itself is starting from full_name address) */
-size_t name_len(const char *full_name);
+unsigned is_nss_name(const char *name);
 
 #endif /* NAMES_H */
 

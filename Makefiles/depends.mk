@@ -83,6 +83,7 @@ src/operations.o:src/id_lookup_client.h
 src/operations.o:src/inet.h
 src/operations.o:src/instance_client.h
 src/operations.o:src/list.h
+src/operations.o:src/names.h
 src/operations.o:src/operations.h
 src/operations.o:src/operations_rfs.h
 src/operations.o:src/path.h
