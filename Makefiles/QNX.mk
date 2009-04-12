@@ -3,7 +3,7 @@
 ################################
 
 MAKE = make
-CC = i386-pc-nto-qnx6.3.0-gcc
+CC = gcc
 AR = ar
 RM = rm
 LN = ln -sf

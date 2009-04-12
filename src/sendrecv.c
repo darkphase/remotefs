@@ -34,6 +34,8 @@ See the file LICENSE.
 #include "ssl.h"
 #endif
 
+#include <netinet/tcp.h>
+
 int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 {
 	struct addrinfo *addr_info = NULL;
@@ -74,6 +76,8 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 		freeaddrinfo(addr_info);
 		return -errno;
 	}
+//int flag = 1;
+//setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag) );
 
 	errno = 0;
 	if (connect(sock, (struct sockaddr *)addr_info->ai_addr, addr_info->ai_addrlen) == -1)
