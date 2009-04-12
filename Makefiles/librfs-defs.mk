@@ -38,6 +38,7 @@ librfs_OBJS = src/acl_utils.o \
               src/instance_client.o \
               src/keep_alive_client.o \
               src/list.o \
+			  src/names.o \
 			  src/nss_client.o \
 			  src/nss_server.o \
               src/operations.o \

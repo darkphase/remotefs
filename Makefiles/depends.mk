@@ -58,10 +58,14 @@ src/keep_alive_server.o:src/instance_server.h
 src/list.o:src/buffer.h
 src/list.o:src/config.h
 src/list.o:src/list.h
+src/names.o:src/buffer.h
+src/names.o:src/config.h
+src/names.o:src/names.h
 src/nss_client.o:src/buffer.h
 src/nss_client.o:src/command.h
 src/nss_client.o:src/config.h
 src/nss_client.o:src/list.h
+src/nss_client.o:src/names.h
 src/nss_server.o:src/buffer.h
 src/nss_server.o:src/command.h
 src/nss_server.o:src/config.h
@@ -333,6 +337,7 @@ src/instance_server.o:src/instance_server.c
 src/keep_alive_client.o:src/keep_alive_client.c
 src/keep_alive_server.o:src/keep_alive_server.c
 src/list.o:src/list.c
+src/names.o:src/names.c
 src/nss_client.o:src/nss_client.c
 src/nss_server.o:src/nss_server.c
 src/operations_acl.o:src/operations_acl.c

@@ -19,6 +19,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "list.h"
+#include "names.h"
 
 static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 {
@@ -66,40 +67,6 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 	closedir(dir);
 
 	return ret;
-}
-
-static char* extract_server(const char *full_name)
-{
-	const char *delim = strchr(full_name, '@');
-	if (delim == NULL)
-	{
-		return NULL;
-	}
-
-	size_t server_len = strlen(delim + 1) + 1;
-
-	char *server = get_buffer(server_len);
-	memcpy(server, delim + 1, server_len);
-
-	return server;
-}
-
-static char* extract_name(const char *full_name)
-{
-	const char *delim = strchr(full_name, '@');
-
-	if (delim == NULL)
-	{
-		return NULL;
-	}
-
-	size_t name_len = (delim - full_name) + 1;
-
-	char *name = get_buffer(name_len);
-	memcpy(name, full_name, name_len - 1);
-	name[name_len - 1] = 0;
-
-	return name;
 }
 
 static int nss_connect(const char *server)
