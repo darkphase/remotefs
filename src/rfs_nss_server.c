@@ -64,6 +64,8 @@ static list_t *group_list  = NULL;
 static list_t *hosts       = NULL;
 static int     log         = 0;
 static int     connections = 1; /* number of rfs client */
+static int     global      = 0; /* all entry are private */
+static int     map_user    = 0; /* all entry are private */
 
 /**********************************************************
  *
@@ -335,7 +337,7 @@ static int add_host(char *name, int id)
         } while(host);
     }
 
-    if ( new )
+    if ( new  )
     {
         new->data = (void*)calloc(sizeof(user_host_t),1);
         if ( new->data == NULL )
@@ -349,12 +351,16 @@ static int add_host(char *name, int id)
     }
     else 
     {
-        if(host==NULL)
+        if( host==NULL )
         {
             return 0; /* error */
         }
     }
-    add_user(&(((user_host_t*)host->data)->users), id);
+
+    if ( global == 0 )
+    {
+        add_user(&(((user_host_t*)host->data)->users), id);
+    }
 
     return 1;
 }
@@ -472,8 +478,12 @@ static int remove_host(char *name, int id)
            free(h->host);
 
            /* remove users member */
-           free(h->users->data);
-           list_remove(&h->users,h->users);
+           if ( h->users )
+           {
+               if ( h->users->data )
+                   free(h->users->data);
+               list_remove(&h->users,h->users);
+           }
 
            free(h);
            list_remove(&hosts, host);
@@ -611,9 +621,13 @@ static rfs_idmap_t *get_owner_entry(list_t *list, int32_t id)
 
 static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
 {
-#if 0
     char *s = to_check   ? to_check->name   : NULL;
     char *t = proc_owner ? proc_owner->name : NULL;
+    if ( map_user == 0 )
+    {
+        return 0;
+    }
+
     if ( s && t )
     {
         for(;;)
@@ -623,7 +637,7 @@ static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
              */
             if ( *s == '@' && *t == '\0' )
             {
-                return 1;
+               return 1;
             }
             /* if  the actual characters differs we habe
              * different name so tell no the same.
@@ -649,7 +663,7 @@ static int check_is_same(rfs_idmap_t *to_check, rfs_idmap_t *proc_owner)
             t++;
         }
     }
-#endif
+
     return 0;
 }
 
@@ -722,12 +736,11 @@ static int process_message(int sock)
                    if ( ! check_is_same(map, owner_idmap_entry) )
                    {
                        /* if user is conderned don't ignore */
-                       if (  user_is_concerned((rfs_idmap_t*)list->data, command.caller_id ) )
+                       if (  global || user_is_concerned((rfs_idmap_t*)list->data, command.caller_id ) )
                        {
                            break;
                        }
                    }
-
                }
                list = list->next;
             }
@@ -764,27 +777,35 @@ static int process_message(int sock)
                 list = user_list;
 
             owner_idmap_entry = get_owner_entry(list, command.caller_id);
+
             /* search for given name */
             list = search_name(&command, list);
+
             /* if the rfs entry is misplaced (at the begin of the list
              * and we put automatically the login name into our list
              * we have to answer not found if we find an entry as root
              * in our list
              */
 
-            if ( list && ((rfs_idmap_t*)(list->data))->sys )
+            if ( list )
             {
                 if ( ! check_is_same((rfs_idmap_t*)(list->data), owner_idmap_entry) )
                 {
-                    command.found = 0;
-                    command.id    = 0;
-                    *command.name = '\0';
+                    command.found = 1;
+                    command.id = ((rfs_idmap_t*)(list->data))->id;
+                    strcpy(command.name, ((rfs_idmap_t*)(list->data))->name);
+                }
+                else if ( owner_idmap_entry )
+                {
+                    command.found = 1;
+                    command.id = owner_idmap_entry->id;
+                    strcpy(command.name, owner_idmap_entry->name);
                 }
                 else
                 {
-                   command.found = 1;
-                   command.id = owner_idmap_entry->id;
-                   strcpy(command.name, owner_idmap_entry->name);
+                    command.found = 0;
+                    command.id = ((rfs_idmap_t*)(list->data))->id;
+                    *command.name = '\0';
                 }
                 break;
             }
@@ -841,11 +862,13 @@ static int process_message(int sock)
            return 0;
     }
 
+#if defined DEBUG
     if ( log )
     {
         printf("    Answer: name = %s, id = %d found %d\n", command.name, command.id, command.found);
     }
-    
+#endif
+
     /* answer queries from library */
     send(sock, &command, sizeof(command),0 );
     return 1; /* all was OK */
@@ -975,14 +998,18 @@ static int add_to_list(list_t **root, char *name, uid_t id, int is_sys)
  *
  *
  **************************************/
+
 static void syntax(char *prog_name)
 {
-     printf("Syntax: %s [-f] [-l] -s|e host \n", prog_name);
+     printf("Syntax: %s [-f] [-l] [-a] [-g] [-m] -s|e host\n", prog_name);
+     printf("        %s [-f] [-l] [-a] [-g] [-m] -n|k\n", prog_name);
      printf("      -f, start in foreground\n");
      printf("      -l, print debug info.\n");
+     printf("      -g        imported users and groups are known from all local users\n");
+     printf("      -a        only unknown will be taken into account\n");
+     printf("      -m        map user@remote to user if user itself\n");
      printf("      -s  host  start and add name from host\n");
      printf("      -e  host  end and remove name for host\n");
-     printf("      -a        only unknown will be taken into account\n");
      printf("      -n        start a first instance\n");
      printf("      -k        kill %s\n", prog_name);
      exit(1);
@@ -1004,12 +1031,12 @@ int main(int argc,char **argv)
     int            daemonize = 1;
     int            opt;
     char           *prog_name = strrchr(argv[0],'/');
-    char           *ip_host = NULL;
-    int             mode = 1; /* 1 = start, -1 = stop */
-    int             check = 0;
-    uid_t           uid = 0;
-    int             nohost = 0;
-    int             kill_rfs = 0;
+    char           *ip_host   = NULL;
+    int             mode      = 1; /* 1 = start, -1 = stop */
+    int             check     = 0;
+    uid_t           uid       = 0;
+    int             nohost    = 0;
+    int             kill_rfs  = 0;
     int             avoid_dup = 0;
 
     /* parse arguments */
@@ -1017,7 +1044,8 @@ int main(int argc,char **argv)
         prog_name = argv[0];
     else
         prog_name++;
-    while ( (opt = getopt(argc, argv, "fls:e:nka")) != -1 )
+
+    while ( (opt = getopt(argc, argv, "fls:e:nkagm")) != -1 )
     {
         switch(opt)
         {
@@ -1028,6 +1056,8 @@ int main(int argc,char **argv)
              case 'e': ip_host      = optarg; mode = -1; break;
              case 'n': nohost       = 1; break;
              case 'k': kill_rfs     = 1; mode = -1; break;
+             case 'g': global       = 1; break;
+             case 'm': map_user     = 1; break;
              default: syntax(prog_name);
         }
     }
@@ -1131,6 +1161,14 @@ int main(int argc,char **argv)
      signal(SIGSEGV, signal_handler);
      signal(SIGBUS,  signal_handler);
 
+#if ! defined DEBUG
+# if defined linux
+     /* security isssue, don't permit use of gcore */
+# include <sys/prctl.h>
+     prctl(PR_SET_DUMPABLE,0,0,0,0);
+# endif
+#endif
+
      /* damonize */
      if (daemonize && fork() != 0)
      {
@@ -1159,6 +1197,7 @@ int main(int argc,char **argv)
              }
              return ret;
          }
+         return 0;
      }
 
      main_loop(sock);
