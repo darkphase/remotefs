@@ -1025,11 +1025,11 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	{
 		local_name = extract_name(user);
 		name_server = extract_server(user);
-	}
 
-	if (strcmp(name_server, instance->config.host) != 0)
-	{
-		goto user_error;
+		if (strcmp(name_server, instance->config.host) != 0)
+		{
+			goto user_error;
+		}
 	}
 
 	goto user_ok;
