@@ -563,6 +563,8 @@ void dump_acl_entry(struct id_lookup_info *lookup, const rfs_acl_entry_t *entry)
 	*cursor = 0;
 	
 	DEBUG("%s\n", buffer);
+
+	free_buffer(buffer);
 }
 
 void dump_acl(struct id_lookup_info *lookup, const rfs_acl_t *acl, int count)

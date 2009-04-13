@@ -2,15 +2,17 @@
 
 #include <sys/xattr.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "acl_utils.h"
+#include "acl_utils_nss.h"
+#include "buffer.h"
 #include "config.h"
 #include "command.h"
-#include "buffer.h"
-#include "acl_utils.h"
 #include "instance_client.h"
-#include "sendrecv.h"
 #include "operations_rfs.h"
+#include "sendrecv.h"
 
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
@@ -66,7 +68,6 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		return cleanup_badmsg(instance, &ans);
 	}
 	
-	
 	if (ans.data_len > 0 && ans.ret >= 0)
 	{
 		buffer = get_buffer(ans.data_len);
@@ -86,23 +87,35 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 			free_buffer(buffer);
 			return -EINVAL;
 		}
+
+		free_buffer(buffer);
 		
 #ifdef RFS_DEBUG
 		dump_acl(&instance->id_lookup, acl, count);
 #endif
-		
+
 		if (acl_ea_size(count) > size)
 		{
 			free_buffer(acl);
-			free_buffer(buffer);
 			return -ERANGE;
+		}
+
+		if (instance->nss.use_nss)
+		{
+			int patch_ret = patch_acl_from_server(acl, count, instance);
+			if (patch_ret != 0)
+			{
+				return patch_ret;
+			}
+#ifdef RFS_DEBUG
+			dump_acl(&instance->id_lookup, acl, count);
+#endif
 		}
 		
 		char *acl_value = rfs_acl_to_xattr(acl, count);
 		if (acl_value == NULL)
 		{
 			free_buffer(acl);
-			free_buffer(buffer);
 			return -EINVAL;
 		}
 		
@@ -116,7 +129,6 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		
 		free_buffer(acl);
 		free_buffer(acl_value);
-		free_buffer(buffer);
 	}
 	
 	return ans.ret >= 0 ? ans.ret : -ans.ret_errno;
@@ -169,6 +181,21 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	}
 	
 	DEBUG("acl: %s\n", text_acl);
+
+	if (acl_need_nss_patching(text_acl))
+	{
+		char *patched = patch_acl_for_server(text_acl, instance);
+		if (patched == NULL)
+		{
+			free(text_acl);
+			return -EINVAL;
+		}
+
+		DEBUG("patched acl: %s\n", patched);
+
+		free(text_acl);
+		text_acl = patched;
+	}
 	
 	uint32_t path_len = strlen(path) + 1;
 	uint32_t acl_flags = 0;

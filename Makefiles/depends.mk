@@ -5,6 +5,11 @@ src/acl_utils.o:src/id_lookup.h
 src/acl_utils.o:src/instance.h
 src/acl_utils.o:src/list.h
 src/acl_utils.o:src/acl/libacl/byteorder.h
+src/acl_utils_nss.o:src/acl_utils.h
+src/acl_utils_nss.o:src/acl_utils_nss.h
+src/acl_utils_nss.o:src/config.h
+src/acl_utils_nss.o:src/id_lookup.h
+src/acl_utils_nss.o:src/instance_client.h
 src/attr_cache.o:src/attr_cache.h
 src/attr_cache.o:src/buffer.h
 src/attr_cache.o:src/config.h
@@ -89,13 +94,14 @@ src/operations.o:src/operations_rfs.h
 src/operations.o:src/path.h
 src/operations.o:src/resume.h
 src/operations.o:src/sendrecv.h
+src/operations_acl.o:src/acl_utils.h
+src/operations_acl.o:src/acl_utils_nss.h
+src/operations_acl.o:src/buffer.h
 src/operations_acl.o:src/config.h
 src/operations_acl.o:src/command.h
-src/operations_acl.o:src/buffer.h
-src/operations_acl.o:src/acl_utils.h
 src/operations_acl.o:src/instance_client.h
-src/operations_acl.o:src/sendrecv.h
 src/operations_acl.o:src/operations_rfs.h
+src/operations_acl.o:src/sendrecv.h
 src/operations_chown.o:src/attr_cache.h
 src/operations_chown.o:src/buffer.h
 src/operations_chown.o:src/command.h
@@ -330,6 +336,7 @@ rfs_nss/src/rfs_nss_server.o:rfs_nss/src/rfs_nss.h
 rfs_nss/src/rfs_nss_server.o:rfs_nss/src/dllist.h
 rfs_nss/src/rfs_nss_server.o:rfs_nss/src/rfs_getnames.h
 src/acl_utils.o:src/acl_utils.c
+src/acl_utils_nss.o:src/acl_utils_nss.c
 src/attr_cache.o:src/attr_cache.c
 src/buffer.o:src/buffer.c
 src/cleanup.o:src/cleanup.c

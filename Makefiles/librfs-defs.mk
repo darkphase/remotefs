@@ -27,6 +27,7 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 #######################################
 
 librfs_OBJS = src/acl_utils.o \
+              src/acl_utils_nss.o \
               src/attr_cache.o \
               src/buffer.o \
               src/command.o \
