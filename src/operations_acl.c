@@ -47,7 +47,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	struct command cmd = { cmd_getxattr, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -202,7 +202,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	struct command cmd = { cmd_setxattr, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer, cmd.data_len) == -1)
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
 		free_buffer(text_acl);
 		free_buffer(buffer);

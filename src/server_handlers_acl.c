@@ -139,7 +139,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 	else
 	{
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, text_acl, ans.data_len) == -1)
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, text_acl) == -1)
 		{
 			free_buffer(text_acl);
 			return -1;
