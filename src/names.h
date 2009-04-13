@@ -11,6 +11,8 @@ See the file LICENSE.
 
 #include <sys/types.h>
 
+struct rfs_instance;
+
 /** don't forget to free() result */
 char* extract_name(const char *full_name);
 
@@ -18,6 +20,9 @@ char* extract_name(const char *full_name);
 char* extract_server(const char *full_name);
 
 unsigned is_nss_name(const char *name);
+
+/** don't forget to free() result */
+char* local_nss_name(const char *full_name, const struct rfs_instance *instance);
 
 #endif /* NAMES_H */
 

@@ -43,6 +43,7 @@ librfs_OBJS = src/acl_utils.o \
 			  src/nss_server.o \
               src/operations.o \
               src/operations_acl.o \
+              src/operations_chown.o \
               src/operations_exports.o \
               src/operations_links.o \
               src/operations_nss.o \

@@ -60,6 +60,7 @@ src/list.o:src/config.h
 src/list.o:src/list.h
 src/names.o:src/buffer.h
 src/names.o:src/config.h
+src/names.o:src/instance_client.h
 src/names.o:src/names.h
 src/nss_client.o:src/buffer.h
 src/nss_client.o:src/command.h
@@ -83,7 +84,6 @@ src/operations.o:src/id_lookup_client.h
 src/operations.o:src/inet.h
 src/operations.o:src/instance_client.h
 src/operations.o:src/list.h
-src/operations.o:src/names.h
 src/operations.o:src/operations.h
 src/operations.o:src/operations_rfs.h
 src/operations.o:src/path.h
@@ -96,6 +96,15 @@ src/operations_acl.o:src/acl_utils.h
 src/operations_acl.o:src/instance_client.h
 src/operations_acl.o:src/sendrecv.h
 src/operations_acl.o:src/operations_rfs.h
+src/operations_chown.o:src/attr_cache.h
+src/operations_chown.o:src/buffer.h
+src/operations_chown.o:src/command.h
+src/operations_chown.o:src/config.h
+src/operations_chown.o:src/id_lookup_client.h
+src/operations_chown.o:src/instance_client.h
+src/operations_chown.o:src/names.h
+src/operations_chown.o:src/operations_rfs.h
+src/operations_chown.o:src/sendrecv.h
 src/operations_exports.o:src/buffer.h
 src/operations_exports.o:src/command.h
 src/operations_exports.o:src/config.h
@@ -343,6 +352,7 @@ src/nss_client.o:src/nss_client.c
 src/nss_server.o:src/nss_server.c
 src/operations_acl.o:src/operations_acl.c
 src/operations.o:src/operations.c
+src/operations_chown.o:src/operations_chown.c
 src/operations_exports.o:src/operations_exports.c
 src/operations_links.o:src/operations_links.c
 src/operations_nss.o:src/operations_nss.c

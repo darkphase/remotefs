@@ -6,10 +6,12 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "buffer.h"
 #include "config.h"
+#include "instance_client.h"
 #include "names.h"
 
 char* extract_server(const char *full_name)
@@ -49,5 +51,32 @@ char* extract_name(const char *full_name)
 unsigned is_nss_name(const char *name)
 {
 	return (strchr(name, '@') == NULL ? 0 : 1);
+}
+
+char* local_nss_name(const char *full_name, const struct rfs_instance *instance)
+{
+	char *local_name = extract_name(full_name);
+	if (local_name == NULL)
+	{
+		return NULL;
+	}
+
+	char *name_server = extract_server(full_name);
+	if (name_server == NULL)
+	{
+		free(local_name);
+		return NULL;
+	}
+
+	if (strcmp(name_server, instance->config.host) != 0)
+	{
+		free(local_name);
+		free(name_server);
+		return NULL;
+	}
+
+	free(name_server);
+
+	return local_name;
 }
 
