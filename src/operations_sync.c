@@ -114,7 +114,7 @@ int rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *st
 
 int rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	DECORATE(_rfs_flush, instance, path, desc);
+	return _rfs_flush(instance, path, desc);
 }
 
 int rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int cmd, struct flock *fl)

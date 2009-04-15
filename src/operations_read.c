@@ -272,11 +272,8 @@ int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t
 	{
 		return -ECONNABORTED;
 	}
-	
-	if (instance->config.use_read_cache > 0) 
-	/* "> 0" matters. it's -1 by default (off) 
-	and 0 if user turned it off with cmd-line parameter 
-	so it shouldn't be "!= 0" */
+
+	if (instance->config.use_write_cache != 0)
 	{
 		/* flush this file first */
 		if (keep_alive_lock(instance) != 0)
@@ -287,7 +284,13 @@ int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t
 		flush_write(instance, path, desc);
 		
 		keep_alive_unlock(instance);
-		
+	}
+	
+	if (instance->config.use_read_cache > 0) 
+	/* "> 0" matters. it's -1 by default (off) 
+	and 0 if user turned it off with cmd-line parameter 
+	so it shouldn't be "!= 0" */
+	{		
 		return _rfs_read_cached(instance, path, buf, size, offset, desc);
 	}
 	else
