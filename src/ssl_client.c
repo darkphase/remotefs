@@ -33,47 +33,7 @@ static SSL_METHOD* choose_ssl_client_method()
 SSL* rfs_init_client_ssl(SSL_CTX **ctx, const char *key_file, const char *cert_file, const char *cipher_list)
 {
 	SSL_METHOD *method = choose_ssl_client_method();
-
-#ifndef RFS_DEBUG
-	char *home_dir = getenv("HOME");
-#else
-	char *home_dir = ".";
-#endif
-	char *key = NULL;
-	char *cert = NULL;
-
-	if (home_dir == NULL)
-	{
-		return NULL;
-	}
-	
-	size_t key_path_size = strlen(home_dir)+ strlen(key_file) + 2; /* 2 == '/' + '\0' */
-	key = get_buffer(key_path_size);
-	if (key == NULL)
-	{
-		return NULL;
-	}
-	snprintf(key, key_path_size, "%s/%s", home_dir, key_file);
-	
-	size_t cert_path_size = strlen(home_dir) + strlen(cert_file) + 2;
-	cert = get_buffer(cert_path_size);
-	if (cert == NULL)
-	{
-		return NULL;
-	}
-	snprintf(cert, cert_path_size, "%s/%s", home_dir, cert_file);
-	
-	SSL* ret = rfs_init_ssl(ctx, method, key, cert, cipher_list);
-
-	if (key != NULL)
-	{
-		free_buffer(key);
-	}
-	
-	if (cert != NULL)
-	{
-		free_buffer(cert);
-	}
+	SSL* ret = rfs_init_ssl(ctx, method, key_file, cert_file, cipher_list);
 
 	return ret;
 }

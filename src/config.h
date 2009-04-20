@@ -37,17 +37,21 @@ extern "C" {
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 
 #ifdef RFS_DEBUG
-#define DEFAULT_PASSWD_FILE     "./rfs-passwd"
-#define DEFAULT_EXPORTS_FILE    "./rfs-exports"
-#define DEFAULT_PID_FILE        "./rfsd.pid"
-#define DEFAULT_SSL_KEY_FILE    "rfs-key.pem"
-#define DEFAULT_SSL_CERT_FILE   "rfs-cert.pem"
+#define DEFAULT_PASSWD_FILE      "./rfs-passwd"
+#define DEFAULT_EXPORTS_FILE     "./rfs-exports"
+#define DEFAULT_PID_FILE         "./rfsd.pid"
+#define DEFAULT_CLIENT_KEY_FILE  "rfs-key.pem"
+#define DEFAULT_CLIENT_CERT_FILE "rfs-cert.pem"
+#define DEFAULT_SERVER_KEY_FILE  DEFAULT_CLIENT_KEY_FILE 
+#define DEFAULT_SERVER_CERT_FILE DEFAULT_CLIENT_CERT_FILE
 #else
-#define DEFAULT_PASSWD_FILE     "/etc/rfs-passwd"
-#define DEFAULT_EXPORTS_FILE    "/etc/rfs-exports"
-#define DEFAULT_PID_FILE        "/var/run/rfsd.pid"
-#define DEFAULT_SSL_KEY_FILE    ".rfs/rfs-key.pem"
-#define DEFAULT_SSL_CERT_FILE   ".rfs/rfs-cert.pem"
+#define DEFAULT_PASSWD_FILE      "/etc/rfs-passwd"
+#define DEFAULT_EXPORTS_FILE     "/etc/rfs-exports"
+#define DEFAULT_PID_FILE         "/var/run/rfsd.pid"
+#define DEFAULT_CLIENT_KEY_FILE  ".rfs/rfs-key.pem"    /* client's files will be concatenated with $HOME */
+#define DEFAULT_CLIENT_CERT_FILE ".rfs/rfs-cert.pem"
+#define DEFAULT_SERVER_KEY_FILE  "/etc/rfsd-key.pem"
+#define DEFAULT_SERVER_CERT_FILE "/etc/rfsd-cert.pem"
 #endif /* RFS_DEBUG */
 
 #ifdef RFS_DEBUG
@@ -90,9 +94,9 @@ struct rfs_config
 	unsigned transform_symlinks;
 #ifdef WITH_SSL
 	unsigned int enable_ssl;
-	const char *ssl_key_file;
-	const char *ssl_cert_file;
-	const char *ssl_ciphers;
+	char *ssl_key_file;
+	char *ssl_cert_file;
+	char *ssl_ciphers;
 #endif
 };
 
@@ -108,9 +112,9 @@ struct rfsd_config
 	char *exports_file;
 	char *passwd_file;
 #ifdef WITH_SSL
-	const char *ssl_key_file;
-	const char *ssl_cert_file;
-	const char *ssl_ciphers;
+	char *ssl_key_file;
+	char *ssl_cert_file;
+	char *ssl_ciphers;
 #endif
 };
 

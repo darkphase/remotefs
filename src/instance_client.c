@@ -6,10 +6,12 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "config.h"
 #include "instance_client.h"
 
@@ -79,9 +81,35 @@ static void init_rfs_config(struct rfs_instance *instance)
 	instance->config.socket_buffer = -1;
 #ifdef WITH_SSL
 	instance->config.enable_ssl = 0;
-	instance->config.ssl_ciphers = RFS_DEFAULT_CIPHERS;
-	instance->config.ssl_key_file = DEFAULT_SSL_KEY_FILE;
-	instance->config.ssl_cert_file = DEFAULT_SSL_CERT_FILE;
+	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);
+
+#ifndef RFS_DEBUG
+	char *home_dir = getenv("HOME");
+#else
+	char *home_dir = ".";
+#endif
+	char *key = NULL;
+	char *cert = NULL;
+
+	if (home_dir != NULL)
+	{
+		size_t key_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_KEY_FILE) + 2; /* 2 == '/' + '\0' */
+		key = get_buffer(key_path_size);
+		if (key != NULL)
+		{
+			snprintf(key, key_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_KEY_FILE);
+		}
+	
+		size_t cert_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_CERT_FILE) + 2;
+		cert = get_buffer(cert_path_size);
+		if (cert != NULL)
+		{
+			snprintf(cert, cert_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_CERT_FILE);
+		}
+	}
+
+	instance->config.ssl_key_file = key;
+	instance->config.ssl_cert_file = cert;
 #endif /* WITH_SSL */
 	/* read cache is indeed disabled by default
 	it seems ineffective after some past modifications of rfs, like sendfile() or something 
@@ -115,6 +143,8 @@ void init_rfs_instance(struct rfs_instance *instance)
 
 void release_rfs_instance(struct rfs_instance *instance)
 {
-	/* nothing to do yet */
+	free(instance->config.ssl_ciphers);
+	free(instance->config.ssl_key_file);
+	free(instance->config.ssl_cert_file);
 }
 
