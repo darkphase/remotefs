@@ -177,8 +177,42 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 			return -EBADMSG;
 		}
 
-		strncpy(link_buffer, buffer, ans.data_len);
-		link_buffer[ans.data_len] = 0;
+		size_t link_shift = 0;
+		if (instance->config.transform_symlinks != 0)
+		{
+			size_t export_len = strlen(instance->config.path);
+
+			if (ans.data_len >= export_len 
+			&& strncmp(buffer, instance->config.path, export_len) == 0)
+			{
+				link_shift = export_len;
+			}
+		}
+
+		if (link_shift != 0 
+		&& buffer[link_shift] == '/')
+		{
+			++link_shift;
+		}
+
+		size_t link_len = (ans.data_len - 1) - link_shift;
+
+		if (link_len == 0)
+		{
+			link_buffer[0] = '.';
+			link_len = 1;
+		}
+		else if (link_len == 1
+		&& buffer[link_shift] == '/')
+		{	
+			link_buffer[0] = '.';
+		}
+		else
+		{
+			strncpy(link_buffer, buffer + link_shift, link_len);
+		}
+
+		link_buffer[link_len + 1] = 0;
 		free_buffer(buffer);
 	}
 

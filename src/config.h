@@ -87,6 +87,7 @@ struct rfs_config
 	unsigned int quiet;
 	int socket_buffer;
 	int socket_timeout;
+	unsigned transform_symlinks;
 #ifdef WITH_SSL
 	unsigned int enable_ssl;
 	const char *ssl_key_file;

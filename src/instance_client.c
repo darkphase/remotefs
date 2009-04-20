@@ -92,6 +92,8 @@ static void init_rfs_config(struct rfs_instance *instance)
 	and user-specified value */
 	instance->config.use_read_cache = -1;
 	instance->config.use_write_cache = 1;
+
+	instance->config.transform_symlinks = 0;
 }
 
 void init_rfs_instance(struct rfs_instance *instance)

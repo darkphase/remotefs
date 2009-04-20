@@ -8,7 +8,9 @@
   + separating ssl code
 - man page for rfscert.sh
 - optional paths for SSL cert and key
-- translate_symlinks opt
++ transform_symlinks opt
+- tweaks opt
+- check read_as_always() correctness
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

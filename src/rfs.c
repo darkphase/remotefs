@@ -42,6 +42,7 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("rd_cache=%u", use_read_cache, 0),
 	RFS_OPT("wr_cache=%u", use_write_cache, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
+	RFS_OPT("transform_symlinks", transform_symlinks, 1),
 	RFS_OPT("socket_timeout=%d", socket_timeout, -1),
 	RFS_OPT("socket_buffer=%d", socket_buffer, -1),
 #ifdef WITH_SSL
@@ -79,6 +80,7 @@ static void usage(const char *program)
 	"    -o wr_cache=0           disable write cache\n"
 	"    -o password=filename    filename with password for auth\n"
 	"    -o port=server_port     port which the server is listening to\n"
+	"    -o transform_symlinks   transform absolute symlinks to relative\n"
 #ifdef WITH_SSL
 	"    -o ssl                  enable SSL\n"
 #endif
@@ -335,6 +337,11 @@ int main(int argc, char **argv)
 	
 	DEBUG("socket timeout: %d\n", rfs_instance.config.socket_timeout);
 	DEBUG("socket buffer: %d\n", rfs_instance.config.socket_buffer);
+
+	if (rfs_instance.config.transform_symlinks != 0)
+	{
+		DEBUG("%s\n", "transforming symlinks");
+	}
 #endif /* RFS_DEBUG */
 	
 	if (rfs_instance.config.auth_user != NULL
