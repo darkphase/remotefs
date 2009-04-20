@@ -143,8 +143,10 @@ void init_rfs_instance(struct rfs_instance *instance)
 
 void release_rfs_instance(struct rfs_instance *instance)
 {
+#ifdef WITH_SSL
 	free(instance->config.ssl_ciphers);
 	free(instance->config.ssl_key_file);
 	free(instance->config.ssl_cert_file);
+#endif
 }
 
