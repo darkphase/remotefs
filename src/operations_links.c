@@ -118,6 +118,111 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
+static unsigned count_components(const char *path)
+{
+	unsigned components = 0;
+	const char *p = path;
+
+	while (*p != 0 
+	&& *p == '/')
+	{
+		++p;
+	}
+
+	size_t path_len = strlen(p);
+	size_t i = 0; for (i = 0; i < path_len; ++i)
+	{
+		if (p[i] == '/')
+		{
+			++components;
+		}
+	}
+
+	return components;
+}
+
+static const char* common_tail(const char *mounted_path, const char *link)
+{
+	size_t path_len = strlen(mounted_path);
+
+	if (path_len > strlen(link)
+	|| memcmp(mounted_path, link, path_len) != 0)
+	{
+		return NULL;
+	}
+
+	const char *tail = link + path_len;
+
+	while (*tail != 0 
+	&& *tail == '/')
+	{
+		++tail;
+	}
+
+	return tail;
+}
+
+static char *transform_symlink(struct rfs_instance *instance, const char *path, const char *link)
+{
+	DEBUG("transforming symlink with path %s (%s)\n", path, link);
+
+	if (link[0] != '/')
+	{
+		return NULL;
+	}
+
+	const char *tail = common_tail(instance->config.path, link);
+	if (tail == NULL)
+	{
+		return NULL;
+	}
+	
+	size_t tail_len = strlen(tail);
+
+	if (tail_len == 0)
+	{
+		char *dot = get_buffer(2);
+		dot[0] = '.';
+		dot[1] = 0;
+		return dot;
+	}
+
+	DEBUG("link tail: %s\n", tail);
+
+	unsigned components = count_components(path);
+
+	DEBUG("components: %u\n", components);
+
+	if (components == 0)
+	{
+		char *tail_copy = get_buffer(tail_len + 1);
+		memcpy(tail_copy, tail, tail_len);
+		tail_copy[tail_len] = 0;
+		return tail_copy;
+	}
+
+	const char *prepend = "../";
+	size_t prepend_len = strlen(prepend);
+
+	unsigned tail_pos = components * prepend_len;
+	unsigned need_memory = tail_pos + tail_len + 1;
+
+	char *new_link = get_buffer(need_memory);
+	unsigned i = 0; for (i = 0; i < components; ++i)
+	{
+		memcpy(new_link + prepend_len * i, prepend, prepend_len);
+	}
+
+	DEBUG("tail pos: %u\n", tail_pos);
+
+	memcpy(new_link + tail_pos, tail, tail_len);
+	new_link[need_memory - 1] = 0;
+
+	DEBUG("new link: %s\n", new_link);
+
+	return new_link;
+}
+
 int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_buffer, size_t size)
 {
 	if (instance->sendrecv.socket == -1)
@@ -160,62 +265,54 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	}
 
 	/* if all was OK we will get the link info within our telegram */
-	if (ans.ret == 0)
+	if (ans.ret != 0)
 	{
-		buffer = get_buffer(ans.data_len);
-		memset(link_buffer, 0, ans.data_len);
-
-		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
-		{
-			free_buffer(buffer);
-			return -ECONNABORTED;
-		}
-	
-		if (ans.data_len >= size) /* >= to fit ending \0 into link_buffer */
-		{
-			free_buffer(buffer);
-			return -EBADMSG;
-		}
-
-		size_t link_shift = 0;
-		if (instance->config.transform_symlinks != 0)
-		{
-			size_t export_len = strlen(instance->config.path);
-
-			if (ans.data_len >= export_len 
-			&& strncmp(buffer, instance->config.path, export_len) == 0)
-			{
-				link_shift = export_len;
-			}
-		}
-
-		if (link_shift != 0 
-		&& buffer[link_shift] == '/')
-		{
-			++link_shift;
-		}
-
-		size_t link_len = (ans.data_len - 1) - link_shift;
-
-		if (link_len == 0)
-		{
-			link_buffer[0] = '.';
-			link_len = 1;
-		}
-		else if (link_len == 1
-		&& buffer[link_shift] == '/')
-		{	
-			link_buffer[0] = '.';
-		}
-		else
-		{
-			strncpy(link_buffer, buffer + link_shift, link_len);
-		}
-
-		link_buffer[link_len + 1] = 0;
-		free_buffer(buffer);
+		return -ans.ret_errno;
 	}
 
-	return ans.ret == 0 ? 0 : -ans.ret_errno;
+	buffer = get_buffer(ans.data_len);
+	memset(link_buffer, 0, ans.data_len);
+
+	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+	
+	if (ans.data_len >= size) /* >= to fit ending \0 into link_buffer */
+	{
+		free_buffer(buffer);
+		return -EBADMSG;
+	}
+			
+	char *link = buffer;
+	size_t link_len = strlen(buffer);
+		
+	if (instance->config.transform_symlinks != 0)
+	{
+		char *transformed_link = transform_symlink(instance, path, link);
+
+		if (transformed_link != NULL)
+		{
+			size_t transformed_link_len = strlen(transformed_link);
+
+			if (transformed_link_len >= size)
+			{
+				free_buffer(transformed_link);
+			}
+			else
+			{
+				free_buffer(buffer);
+				link_len = strlen(transformed_link);
+				link = transformed_link;
+			}
+		}
+	}
+
+	strncpy(link_buffer, link, link_len);
+	link_buffer[link_len] = 0;
+	free_buffer(link);
+	
+	return 0;
 }
 
