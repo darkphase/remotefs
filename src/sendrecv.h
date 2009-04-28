@@ -37,6 +37,7 @@ size_t rfs_send_cmd_data2(
 	const void *data2, 
 	const size_t data_len2);
 size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans, const void *ans_data);
+size_t rfs_send_answer_data_part(struct sendrecv_info *info, const struct answer *ans, const void *ans_data, const size_t ans_data_len);
 
 size_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len);
 

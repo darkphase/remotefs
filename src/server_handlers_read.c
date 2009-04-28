@@ -111,7 +111,7 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 #if defined DARWIN || defined QNX
 		if ( first && result > 0 )
 		{
-			if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer, result) == -1)
+			if (rfs_send_answer_data_part(&instance->sendrecv, &ans, buffer, result) == -1)
 			{
 				return -1;
 			}

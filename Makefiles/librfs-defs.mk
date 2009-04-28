@@ -39,9 +39,9 @@ librfs_OBJS = src/acl_utils.o \
               src/instance_client.o \
               src/keep_alive_client.o \
               src/list.o \
-			  src/names.o \
-			  src/nss_client.o \
-			  src/nss_server.o \
+              src/names.o \
+              src/nss_client.o \
+              src/nss_server.o \
               src/operations.o \
               src/operations_acl.o \
               src/operations_chown.o \
@@ -63,7 +63,8 @@ librfs_OBJS = src/acl_utils.o \
               src/ssl_client.o \
               src/utils.o \
               src/md5crypt/crypt_md5.o \
-              src/md5crypt/md5.o
+              src/md5crypt/md5.o  \
+              src/scheduling.o
 
 #######################################
 # Help variable for dynamic libs

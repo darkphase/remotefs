@@ -381,6 +381,8 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		return -1;
 	}
 
+	setup_socket_ndelay(sock, 1);
+
 	if (instance->config.auth_user != NULL 
 	&& instance->config.auth_passwd != NULL)
 	{

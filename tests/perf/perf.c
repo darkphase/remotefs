@@ -1084,22 +1084,22 @@ int main(int argc, char **argv)
    {
       switch(getOpts("d:f:m:M:s:t:cr:n:b:DNPS:lL:", argc, argv, &opt, &idx))
       {
-         case 'd': testDir = opt; break;
-         case 'f': maxFile = atoi(opt); break;
-         case 'n': numberOp = atoi(opt); break;
-         case 't': totalSize = stoi(opt); break;
-         case 'm': minSize = stoi(opt);break;
-         case 'M': maxSize = stoi(opt);break;
-         case 's': stepSize = sstoi(opt, &stepType); break;
-         case 'b': rwBufSize = stoi(opt); break;
+         case 'd': if ( opt) testDir = opt; else syntax(); break;
+         case 'f': if ( opt) maxFile = atoi(opt); else syntax(); break;
+         case 'n': if ( opt) numberOp = atoi(opt); else syntax(); break;
+         case 't': if ( opt) totalSize = stoi(opt); else syntax(); break;
+         case 'm': if ( opt) minSize = stoi(opt); else syntax();break;
+         case 'M': if ( opt) maxSize = stoi(opt); else syntax();break;
+         case 's': if ( opt) stepSize = sstoi(opt, &stepType); else syntax(); break;
+         case 'b': if ( opt) rwBufSize = stoi(opt); else syntax(); break;
          case 'c': csv = 1; break;
          case 'r': remount = opt; break;
          case 'D': debug = 1; break;
          case 'N': createFileBefore=0;break;
          case 'P': printCreateTime=1;break;
-         case 'S': doSleep=atoi(opt);break;
+         case 'S': if ( opt) doSleep=atoi(opt); else syntax();break;
          case 'l': loop = 1;break;
-         case 'L': loops = atoi(opt);break;
+         case 'L': if ( opt) loops = atoi(opt); else syntax();break;
          default: printf("Wrong option\n");syntax();
       }
    }

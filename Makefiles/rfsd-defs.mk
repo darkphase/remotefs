@@ -56,5 +56,6 @@ rfsd_OBJS = src/acl_utils.o \
             \
             src/rfsd.o \
             src/signals_server.o \
-            src/sug_server.o
+            src/sug_server.o \
+            src/scheduling.o
 

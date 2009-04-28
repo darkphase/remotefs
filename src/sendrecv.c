@@ -76,8 +76,6 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 		freeaddrinfo(addr_info);
 		return -errno;
 	}
-//int flag = 1;
-//setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag) );
 
 	errno = 0;
 	if (connect(sock, (struct sockaddr *)addr_info->ai_addr, addr_info->ai_addrlen) == -1)
@@ -442,6 +440,34 @@ size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans
 	iov[0].iov_len  = sizeof(send_answer);
 	iov[1].iov_base = (void*)ans_data;
 	iov[1].iov_len  = ans->data_len;
+	
+#ifdef RFS_DEBUG
+	DEBUG("%s", "sending "); dump_answer(ans);
+#endif
+
+	ssize_t ret = rfs_writev(info, iov, 2);
+	if (ret < 0)
+	{
+		return -1;
+	}
+	DEBUG("%s\n", "done");
+	
+	return (size_t)ret;
+}
+
+size_t rfs_send_answer_data_part(struct sendrecv_info *info, const struct answer *ans, const void *ans_data, const size_t ans_data_len)
+{
+	struct answer send_answer = { 0 };
+	send_answer.command = htonl(ans->command);
+	send_answer.data_len = htonl(ans->data_len);
+	send_answer.ret = htonl(ans->ret);
+	send_answer.ret_errno = hton_errno(ans->ret_errno);
+	
+	struct iovec iov[2] = { { 0, 0 } };
+	iov[0].iov_base = (char*)&send_answer;
+	iov[0].iov_len  = sizeof(send_answer);
+	iov[1].iov_base = (void*)ans_data;
+	iov[1].iov_len  = ans_data_len;
 	
 #ifdef RFS_DEBUG
 	DEBUG("%s", "sending "); dump_answer(ans);

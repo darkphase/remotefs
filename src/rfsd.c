@@ -20,6 +20,7 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "passwd.h"
 #include "rfsd.h"
+#include "scheduling.h"
 #include "server.h"
 #include "signals_server.h"
 #include "sockets.h"
@@ -197,6 +198,9 @@ static int start_server(const char *address, const unsigned port)
 		if (fork() == 0) /* child */
 		{
 			close(listen_socket);
+			setup_socket_ndelay(client_socket, 1);
+			/* for system which need a better scheduler as Mac OS X */
+			set_scheduler();
 
 			return handle_connection(&rfsd_instance, client_socket, &client_addr);
 		}

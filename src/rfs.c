@@ -19,6 +19,7 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "operations_rfs.h"
 #include "passwd.h"
+#include "scheduling.h"
 #include "sug_client.h"
 
 static DEFINE_RFS_INSTANCE(rfs_instance);
@@ -364,6 +365,8 @@ int main(int argc, char **argv)
 	{
 		suggest_client(&rfs_instance);
 	}
+
+	set_scheduler();
 	
 	if (rfs_reconnect(&rfs_instance, 1, 1) != 0)
 	{
