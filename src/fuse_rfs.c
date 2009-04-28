@@ -6,8 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "fuse_rfs.h" /* need this before config.h because of O_ASYNC defined in compat.h */
 #include "config.h"
-#include "fuse_rfs.h"
 #include "operations_rfs.h"
 #include "operations_sync.h"
 
@@ -154,7 +154,7 @@ int fuse_rfs_statfs(const char *path, struct statvfs *buf)
 
 int fuse_rfs_chmod(const char *path, mode_t mode)
 {
-FUSE_DECORATE(rfs_chmod, instance, path, mode);
+	FUSE_DECORATE(rfs_chmod, instance, path, mode);
 }
 
 int fuse_rfs_chown(const char *path, uid_t uid, gid_t gid)

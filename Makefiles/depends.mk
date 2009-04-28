@@ -39,8 +39,8 @@ src/exports.o:src/config.h
 src/exports.o:src/exports.h
 src/exports.o:src/list.h
 src/exports.o:src/utils.h
-src/fuse_rfs.o:src/config.h
 src/fuse_rfs.o:src/fuse_rfs.h
+src/fuse_rfs.o:src/config.h
 src/fuse_rfs.o:src/operations_rfs.h
 src/fuse_rfs.o:src/operations_sync.h
 src/id_lookup.o:src/config.h
@@ -51,6 +51,7 @@ src/id_lookup_client.o:src/config.h
 src/id_lookup_client.o:src/id_lookup_client.h
 src/instance.o:src/config.h
 src/instance.o:src/instance.h
+src/instance_client.o:src/buffer.h
 src/instance_client.o:src/config.h
 src/instance_client.o:src/instance_client.h
 src/instance_server.o:src/config.h

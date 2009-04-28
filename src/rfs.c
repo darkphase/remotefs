@@ -11,10 +11,10 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
+#include "fuse_rfs.h" /* need this before config.h because of O_ASYNC defined in compat.h */
 #include "buffer.h"
 #include "config.h"
 #include "crypt.h"
-#include "fuse_rfs.h"
 #include "id_lookup.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
