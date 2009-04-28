@@ -40,7 +40,7 @@ OPT_5 = -DWITH_UGO
 # For router with low CPU speed, spend other
 # some time for other applications
 
-OPT_6 = -DMAKE_PAUSE
+#OPT_6 = -DMAKE_PAUSE
 
 ###############################################
 # End of user configuration, don't change the
