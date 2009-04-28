@@ -41,6 +41,8 @@ static size_t stat_size()
 	+ sizeof(uint64_t) /* atime */
 	+ sizeof(uint64_t) /* mtime */
 	+ sizeof(uint64_t) /* ctime */
+	+ sizeof(uint32_t) /* nlink */
+	+ sizeof(uint32_t) /* blocks */
 	;
 }
 
@@ -53,10 +55,14 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	uint64_t atime = 0;
 	uint64_t mtime = 0;
 	uint64_t ctime = 0;
+	uint32_t nlink = 0;
+	uint32_t blocks = 0;
 	const char *user = NULL;
 	const char *group = NULL;
 
 	off_t last_pos = 
+	unpack_32(&blocks, buffer, 
+	unpack_32(&nlink, buffer, 
 	unpack_64(&ctime, buffer, 
 	unpack_64(&mtime, buffer, 
 	unpack_64(&atime, buffer, 
@@ -64,7 +70,7 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	unpack_32(&group_len, buffer, 
 	unpack_32(&user_len, buffer, 
 	unpack_32(&mode, buffer, 0 
-	)))))));
+	)))))))));
 	
 	user = buffer + last_pos;
 	group = buffer + last_pos + user_len;
@@ -152,7 +158,8 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	result->st_atime = (time_t)atime;
 	result->st_mtime = (time_t)mtime;
 	result->st_ctime = (time_t)ctime;
-	
+	result->st_nlink = (nlink_t)nlink;
+	result->st_blocks = (blkcnt_t)blocks;
 
 	return last_pos;
 }

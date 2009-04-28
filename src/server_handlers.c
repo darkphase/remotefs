@@ -86,6 +86,8 @@ static size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int 
 	+ sizeof(uint64_t) /* atime */
 	+ sizeof(uint64_t) /* mtime */
 	+ sizeof(uint64_t) /* ctime */
+	+ sizeof(uint32_t) /* nlink */
+	+ sizeof(uint32_t) /* blocks */
 	+ user_len
 	+ group_len;
 }
@@ -123,10 +125,14 @@ static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat
 	uint64_t atime = stbuf->st_atime;
 	uint64_t mtime = stbuf->st_mtime;
 	uint64_t ctime = stbuf->st_ctime;
+	uint32_t nlink = stbuf->st_nlink;
+	uint32_t blocks = stbuf->st_blocks;
 
 	return 
 	pack(group, group_len, buffer, 
 	pack(user, user_len, buffer, 
+	pack_32(&blocks, buffer, 
+	pack_32(&nlink, buffer, 
 	pack_64(&ctime, buffer, 
 	pack_64(&mtime, buffer, 
 	pack_64(&atime, buffer, 
@@ -134,7 +140,7 @@ static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat
 	pack_32(&group_len, buffer, 
 	pack_32(&user_len, buffer, 
 	pack_32(&mode, buffer, 0
-	)))))))));
+	)))))))))));
 }
 
 int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
