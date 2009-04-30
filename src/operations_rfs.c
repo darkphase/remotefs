@@ -31,6 +31,9 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "resume.h"
+#ifdef DARWIN
+#	include "scheduling.h"
+#endif
 #include "sendrecv.h"
 #include "sockets.h"
 #ifdef WITH_SSL
@@ -576,6 +579,10 @@ void* rfs_init(struct rfs_instance *instance)
 	{
 		instance->nss.use_nss = 0;
 	}
+#endif
+
+#ifdef DARWIN
+	set_scheduler();
 #endif
 
 	return NULL;

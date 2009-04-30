@@ -18,7 +18,7 @@ extern "C" {
 void set_scheduler(void);
 void pause_rdwr(void);
 
-#elif defined DARWIN
+#elif defined DARWIN && defined WITH_PAUSE
 
 void set_scheduler(void);
 

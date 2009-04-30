@@ -78,7 +78,7 @@ void pause_rdwr(void)
 	}
 }
 
-#elif defined DARWIN
+#elif defined DARWIN && defined WITH_PAUSE
 
 # include <pthread.h>
 # include <pthread_impl.h>
