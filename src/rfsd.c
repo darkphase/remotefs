@@ -199,7 +199,7 @@ static int start_server(const char *address, const unsigned port)
 		{
 			close(listen_socket);
 			setup_socket_ndelay(client_socket, 1);
-#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
+#if (defined SOLARIS || defined QNX || defined DARWIN) && defined WITH_PAUSE
 			set_scheduler();
 #endif
 
