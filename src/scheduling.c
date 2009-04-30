@@ -33,12 +33,13 @@ See the file LICENSE.
  *
  */
 
-#if defined __linux__ && defined MAKE_PAUSE
+#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
 
 #include <sched.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <sys/time.h>
+#include <unistd.h>
+
 #include "scheduling.h"
 
 void set_scheduler(void)
@@ -53,7 +54,7 @@ void set_scheduler(void)
 void pause_rdwr(void)
 {
 	static struct timeval last = { 0, 0 };
-	struct timeval act;
+	struct timeval act = { 0, 0 };
 	long dt = 0;
 
 	gettimeofday(&act, NULL);

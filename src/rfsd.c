@@ -199,8 +199,9 @@ static int start_server(const char *address, const unsigned port)
 		{
 			close(listen_socket);
 			setup_socket_ndelay(client_socket, 1);
-			/* for system which need a better scheduler as Mac OS X */
+#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
 			set_scheduler();
+#endif
 
 			return handle_connection(&rfsd_instance, client_socket, &client_addr);
 		}

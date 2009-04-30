@@ -13,7 +13,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#if defined __linux__ && defined MAKE_PAUSE
+#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
 
 void set_scheduler(void);
 void pause_rdwr(void);
@@ -21,12 +21,6 @@ void pause_rdwr(void);
 #elif defined DARWIN
 
 void set_scheduler(void);
-# define pause_rdwr();
-
-#else
-
-# define set_scheduler()
-# define pause_rdwr();
 
 #endif
 
@@ -35,3 +29,4 @@ void set_scheduler(void);
 #endif
 
 #endif /* SCHEDULING_H */
+

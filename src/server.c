@@ -125,7 +125,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_release(instance, client_addr, cmd);
 	
 	case cmd_read:
+#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
 		pause_rdwr();
+#endif
 		return handle_read(instance, client_addr, cmd);
 	
 	case cmd_statfs:
@@ -148,7 +150,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_truncate(instance, client_addr, cmd);
 
 	case cmd_write:
+#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
 		pause_rdwr();
+#endif
 		return handle_write(instance, client_addr, cmd);
 
 	case cmd_mkdir:
