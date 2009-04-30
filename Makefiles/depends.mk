@@ -189,10 +189,10 @@ src/resume.o:src/config.h
 src/resume.o:src/instance_client.h
 src/resume.o:src/list.h
 src/resume.o:src/resume.h
+src/rfs.o:src/fuse_rfs.h
 src/rfs.o:src/buffer.h
 src/rfs.o:src/config.h
 src/rfs.o:src/crypt.h
-src/rfs.o:src/fuse_rfs.h
 src/rfs.o:src/id_lookup.h
 src/rfs.o:src/instance_client.h
 src/rfs.o:src/operations_rfs.h
@@ -204,6 +204,7 @@ src/rfsd.o:src/instance_server.h
 src/rfsd.o:src/keep_alive_server.h
 src/rfsd.o:src/passwd.h
 src/rfsd.o:src/rfsd.h
+src/rfsd.o:src/scheduling.h
 src/rfsd.o:src/server.h
 src/rfsd.o:src/signals_server.h
 src/rfsd.o:src/sockets.h
@@ -212,6 +213,7 @@ src/rfspasswd.o:src/config.h
 src/rfspasswd.o:src/crypt.h
 src/rfspasswd.o:src/passwd.h
 src/rfspasswd.o:src/signals.h
+src/scheduling.o:src/scheduling.h
 src/sendrecv.o:src/command.h
 src/sendrecv.o:src/config.h
 src/sendrecv.o:src/error.h
@@ -226,6 +228,7 @@ src/server.o:src/id_lookup.h
 src/server.o:src/instance_server.h
 src/server.o:src/keep_alive_server.h
 src/server.o:src/passwd.h
+src/server.o:src/scheduling.h
 src/server.o:src/sendrecv.h
 src/server.o:src/server.h
 src/server.o:src/server_handlers_sync.h
@@ -374,6 +377,7 @@ src/resume.o:src/resume.c
 src/rfs.o:src/rfs.c
 src/rfsd.o:src/rfsd.c
 src/rfspasswd.o:src/rfspasswd.c
+src/scheduling.o:src/scheduling.c
 src/sendrecv.o:src/sendrecv.c
 src/server.o:src/server.c
 src/server_handlers_acl.o:src/server_handlers_acl.c
