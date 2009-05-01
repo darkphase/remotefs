@@ -33,11 +33,12 @@ See the file LICENSE.
  *
  */
 
-#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
+#if ! (defined SOLARIS || defined QNX || defined DARWIN) && defined WITH_PAUSE
 
 #include <sched.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "scheduling.h"
@@ -94,3 +95,4 @@ void set_scheduler(void)
 }
 
 #endif
+

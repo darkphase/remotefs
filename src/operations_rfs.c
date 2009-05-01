@@ -7,7 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
-#if defined SOLARIS
+#ifdef SOLARIS
 #	include <fcntl.h>
 #endif
 #include <stdlib.h>
@@ -31,7 +31,7 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "resume.h"
-#ifdef DARWIN
+#ifdef WITH_PAUSE
 #	include "scheduling.h"
 #endif
 #include "sendrecv.h"
@@ -581,7 +581,7 @@ void* rfs_init(struct rfs_instance *instance)
 	}
 #endif
 
-#ifdef DARWIN
+#if defined WITH_PAUSE && defined DARWIN
 	set_scheduler();
 #endif
 

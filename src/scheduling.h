@@ -13,7 +13,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
+#if ! (defined SOLARIS || defined QNX || defined DARWIN) && defined WITH_PAUSE
 
 void set_scheduler(void);
 void pause_rdwr(void);
@@ -22,6 +22,8 @@ void pause_rdwr(void);
 
 void set_scheduler(void);
 
+#elif defined WITH_PAUSE
+#error "rfs' scheduling is not supported for this platform"
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)

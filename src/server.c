@@ -25,7 +25,9 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "keep_alive_server.h"
 #include "passwd.h"
+#ifdef WITH_PAUSE
 #include "scheduling.h"
+#endif
 #include "sendrecv.h"
 #include "server.h"
 #include "server_handlers_sync.h"
@@ -125,7 +127,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_release(instance, client_addr, cmd);
 	
 	case cmd_read:
-#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
+#ifdef WITH_PAUSE
 		pause_rdwr();
 #endif
 		return handle_read(instance, client_addr, cmd);
@@ -150,7 +152,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_truncate(instance, client_addr, cmd);
 
 	case cmd_write:
-#if (defined SOLARIS || defined QNX) && defined WITH_PAUSE
+#ifdef WITH_PAUSE
 		pause_rdwr();
 #endif
 		return handle_write(instance, client_addr, cmd);
