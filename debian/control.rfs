@@ -5,12 +5,6 @@ Priority: optional
 Architecture: INSERT ARCH HERE, PLEASE
 Essential: no
 Depends: libfuse2 (>=2.6), libc6 (>=2.4)
-Pre-Depends: 
-Recommends: 
-Suggests: 
 Installed-Size: AND SIZE HERE
 Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
-Conflicts: 
-Replaces: 
-Provides: 
 Description: remote filesystem client
