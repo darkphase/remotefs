@@ -1,16 +1,12 @@
 0.12
 + rfs_nss support
-- librfs
 + server's exports list support
 + links support
 + making UGO as an compile option
 + separating client/server code
   + separating ssl code
 - man page for rfscert.sh
-- optional paths for SSL cert and key
 + transform_symlinks opt
-- tweaks opt
-- check read_as_always() correctness
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

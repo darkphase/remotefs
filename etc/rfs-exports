@@ -1,7 +1,7 @@
 # format:
 # [export path] [user/ip address,another user/another ip address] (option,another option)
 #
-# supported option:
+# supported options:
 #	ro - read-only export
 #	user=[username] - setting worker process uid to specified user (for this export only)
 #	group=[groupname] - setting worker process gid to specified group (for this export only)
