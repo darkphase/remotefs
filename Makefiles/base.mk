@@ -237,7 +237,7 @@ builddeb: dummy
 		mv dpkg_etc/* "dpkg/etc/";\
 		rm -fr dpkg_etc;\
 	fi;
-	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
+	sed -e "s/INSERT ARCH HERE, PLEASE/$(ARCH)/" \
 	-e "s/AND SIZE HERE/`du -sk dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
@@ -277,6 +277,7 @@ rpmbuild: dummy
 	echo '%debug_package %{nil}' >> rpmbuild/.rpmmacros
 
 buildrpm: rpmbuild redhat/$(RPMNAME).spec
+	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	mkdir -p $(RPMNAME)-$(VERSION)/src
 	mkdir -p $(RPMNAME)-$(VERSION)/Makefiles
 	mkdir -p $(RPMNAME)-$(VERSION)/init.d
@@ -290,7 +291,6 @@ buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	cp Makefile $(RPMNAME)-$(VERSION)/
 	chmod 700 $(RPMNAME)-$(VERSION)/init.d/*
 	tar -cpzf rpmbuild/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
-	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
 	$(MAKE) -f Makefiles/base.mk clean_bins

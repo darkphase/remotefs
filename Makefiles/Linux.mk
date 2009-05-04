@@ -2,7 +2,6 @@
 # The executables
 ################################
 
-ARCH = i386
 MAKE = make
 CC = cc
 AR = ar
