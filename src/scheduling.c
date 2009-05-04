@@ -33,7 +33,7 @@ See the file LICENSE.
  *
  */
 
-#if ! (defined SOLARIS || defined QNX || defined DARWIN) && defined WITH_PAUSE
+#if defined __linux__ && defined WITH_PAUSE
 
 #include <sched.h>
 #include <stdio.h>
@@ -55,7 +55,7 @@ void set_scheduler(void)
 void pause_rdwr(void)
 {
 	static struct timeval last = { 0, 0 };
-	struct timeval act = { 0, 0 };
+	struct timeval act;
 	long dt = 0;
 
 	gettimeofday(&act, NULL);
@@ -67,19 +67,20 @@ void pause_rdwr(void)
 
 	dt = ((act.tv_sec - last.tv_sec) * 1000000) +
 	     act.tv_usec - last.tv_usec;
-	if ( dt > 100000 && dt < 200000 )
+	if ( dt > 100000 && dt < 120000 )
 	{
+		struct timespec ts = { 0, 10000000 };
+		nanosleep(&ts, NULL);
 		gettimeofday(&last, NULL);
-		usleep(10000);
 	}
-	else if ( dt > 200000 )
+	else if ( dt >= 120000 )
 	{
-		last.tv_sec = act.tv_sec;
+		last.tv_sec  = act.tv_sec;
 		last.tv_usec = act.tv_usec;
 	}
 }
 
-#elif defined DARWIN && defined WITH_PAUSE
+#elif defined DARWIN
 
 # include <pthread.h>
 # include <pthread_impl.h>
@@ -95,4 +96,3 @@ void set_scheduler(void)
 }
 
 #endif
-
