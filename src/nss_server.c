@@ -206,12 +206,12 @@ static int send_names(int sock, const struct list *names, enum server_commands c
 
 static int process_getusers(struct rfs_instance *instance, int sock, struct command *cmd)
 {
-	return send_names(sock, instance->nss.users_storage, cmd->command);
+	return send_names(sock, instance->nss.users_storage, (enum server_commands)cmd->command);
 }
 
 static int process_getgroups(struct rfs_instance *instance, int sock, struct command *cmd)
 {
-	return send_names(sock, instance->nss.groups_storage, cmd->command);
+	return send_names(sock, instance->nss.groups_storage, (enum server_commands)cmd->command);
 }
 
 static int process_command(struct rfs_instance *instance, int sock, struct command *cmd)

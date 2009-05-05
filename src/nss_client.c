@@ -129,20 +129,25 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		free_buffer(server);
 		return sock;
 	}
-			
+
 	free_buffer(server);
 		
 	int saved_errno = 0;
-	
+
 	char *name = extract_name(full_name);
+
+	size_t overall_size;
+	struct command cmd;
+	struct answer ans = { 0 };
+
 	if (name == NULL)
 	{
 		saved_errno = -EINVAL;
 		goto error;
 	}
 
-	size_t overall_size = strlen(name) + 1;
-	struct command cmd = { cmd_id, overall_size };
+	overall_size = strlen(name) + 1;
+	cmd = (struct command) { cmd_id, overall_size };
 
 #ifdef RFS_DEBUG
 	dump_command(&cmd);
@@ -163,11 +168,9 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		free_buffer(name);
 		goto error;
 	}
-		
+
 	free_buffer(name);
-		
-	struct answer ans = { 0 };
-	
+
 	if (recv(sock, &ans, sizeof(ans), 0) != sizeof(ans))
 	{
 		saved_errno = errno;
@@ -222,6 +225,7 @@ static int get_names(const char *server, struct list **names, enum server_comman
 	int saved_errno = 0;
 	
 	struct command cmd = { cmd_id, 0 };
+	struct answer ans = { 0 };
 
 #ifdef RFS_DEBUG
 	dump_command(&cmd);
@@ -232,8 +236,6 @@ static int get_names(const char *server, struct list **names, enum server_comman
 		saved_errno = errno;
 		goto error;
 	}
-
-	struct answer ans = { 0 };
 
 	do
 	{
