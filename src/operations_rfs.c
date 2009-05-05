@@ -581,7 +581,7 @@ void* rfs_init(struct rfs_instance *instance)
 	}
 #endif
 
-#if defined WITH_PAUSE && defined DARWIN
+#if defined DARWIN
 	set_scheduler();
 #endif
 

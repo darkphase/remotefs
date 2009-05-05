@@ -95,4 +95,6 @@ void set_scheduler(void)
 	pthread_setschedparam(pthread_self(), SCHED_RR, &param);
 }
 
+#else
+int scheduling_not_used;
 #endif

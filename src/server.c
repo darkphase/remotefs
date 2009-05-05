@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "keep_alive_server.h"
 #include "passwd.h"
-#ifdef WITH_PAUSE
+#if defined DARWIN || ( defined __linux__ && defined WITH_PAUSE )
 #include "scheduling.h"
 #endif
 #include "sendrecv.h"
@@ -127,7 +127,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_release(instance, client_addr, cmd);
 	
 	case cmd_read:
-#ifdef WITH_PAUSE
+#if defined WITH_PAUSE && defined __linux__
 		pause_rdwr();
 #endif
 		return handle_read(instance, client_addr, cmd);
@@ -152,7 +152,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return handle_truncate(instance, client_addr, cmd);
 
 	case cmd_write:
-#ifdef WITH_PAUSE
+#if defined WITH_PAUSE && defined __linux__
 		pause_rdwr();
 #endif
 		return handle_write(instance, client_addr, cmd);

@@ -13,21 +13,12 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+#if defined DARWIN || defined __linux__ && defined WITH_PAUSE
+void set_scheduler(void);
+#endif
+
 #if defined __linux__ && defined WITH_PAUSE
-
-void set_scheduler(void);
 void pause_rdwr(void);
-
-#elif defined DARWIN
-
-void set_scheduler(void);
-# define pause_rdwr();
-
-#else
-
-# define set_scheduler()
-# define pause_rdwr();
-
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
