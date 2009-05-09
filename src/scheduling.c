@@ -33,54 +33,47 @@ See the file LICENSE.
  *
  */
 
-#if defined __linux__ && defined WITH_PAUSE
-
-#include <sched.h>
-#include <stdio.h>
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
-
 #include "scheduling.h"
 
-void set_scheduler(void)
-{
-	struct sched_param param;
-	int priority = sched_get_priority_max(SCHED_RR);
-	sched_getparam(0,&param);
-	param.sched_priority = priority;
-	sched_setscheduler(0,SCHED_RR,&param);
-}
+#if defined WITH_PAUSE
 
-void pause_rdwr(void)
+#include <sys/time.h>
+#include <time.h>
+
+#include "instance_server.h"
+
+void pause_rdwr(struct rfsd_instance *instance)
 {
-	static struct timeval last = { 0, 0 };
-	struct timeval act;
+	struct timeval act = { 0 }; /* all variables are must be initialized */
 	long dt = 0;
 
 	gettimeofday(&act, NULL);
-	if ( last.tv_sec == 0 )
+	if ( instance->pause.last.tv_sec == 0 )
 	{
-		last.tv_sec = act.tv_sec;
-		last.tv_usec = act.tv_usec;
+		instance->pause.last.tv_sec = act.tv_sec;
+		instance->pause.last.tv_usec = act.tv_usec;
 	}
 
-	dt = ((act.tv_sec - last.tv_sec) * 1000000) +
-	     act.tv_usec - last.tv_usec;
+	dt = ((act.tv_sec - instance->pause.last.tv_sec) * 1000000) +
+	     act.tv_usec - instance->pause.last.tv_usec;
 	if ( dt > 100000 && dt < 120000 )
 	{
 		struct timespec ts = { 0, 10000000 };
 		nanosleep(&ts, NULL);
-		gettimeofday(&last, NULL);
+		gettimeofday(&(instance->pause.last), NULL);
 	}
 	else if ( dt >= 120000 )
 	{
-		last.tv_sec  = act.tv_sec;
-		last.tv_usec = act.tv_usec;
+		instance->pause.last.tv_sec  = act.tv_sec;
+		instance->pause.last.tv_usec = act.tv_usec;
 	}
 }
 
-#elif defined DARWIN
+#endif /* WITH_PAUSE */
+
+#ifdef WITH_SCHEDULING
+
+#if defined DARWIN
 
 # include <pthread.h>
 # include <pthread_impl.h>
@@ -96,5 +89,12 @@ void set_scheduler(void)
 }
 
 #else
-int scheduling_not_used;
+#error Scheduling is not supported for this platform
+#endif /* DARWIN*/
+
+#endif /* WITH_SCHEDULING */
+
+#if ! (defined WITH_PAUSE || defined WITH_SCHEDULING)
+int scheduling_not_used = 0;
 #endif
+

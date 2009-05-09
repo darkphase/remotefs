@@ -136,8 +136,8 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 
 	char *name = extract_name(full_name);
 
-	size_t overall_size;
-	struct command cmd;
+	size_t overall_size = 0;
+	struct command cmd = { 0 };
 	struct answer ans = { 0 };
 
 	if (name == NULL)
@@ -147,7 +147,8 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	}
 
 	overall_size = strlen(name) + 1;
-	cmd = (struct command) { cmd_id, overall_size };
+	cmd.command = cmd_id;
+	cmd.data_len = overall_size;
 
 #ifdef RFS_DEBUG
 	dump_command(&cmd);

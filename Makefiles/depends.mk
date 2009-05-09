@@ -160,6 +160,7 @@ src/operations_rfs.o:src/nss_server.h
 src/operations_rfs.o:src/operations.h
 src/operations_rfs.o:src/operations_rfs.h
 src/operations_rfs.o:src/resume.h
+src/operations_rfs.o:src/scheduling.h
 src/operations_rfs.o:src/sendrecv.h
 src/operations_rfs.o:src/sockets.h
 src/operations_rfs.o:src/ssl_client.h
@@ -214,6 +215,7 @@ src/rfspasswd.o:src/crypt.h
 src/rfspasswd.o:src/passwd.h
 src/rfspasswd.o:src/signals.h
 src/scheduling.o:src/scheduling.h
+src/scheduling.o:src/instance_server.h
 src/sendrecv.o:src/command.h
 src/sendrecv.o:src/config.h
 src/sendrecv.o:src/error.h

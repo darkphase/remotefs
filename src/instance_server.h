@@ -27,6 +27,9 @@ extern "C" {
 #endif
 
 struct rfs_export;
+#ifdef WITH_PAUSE
+struct timeval;
+#endif
 
 struct rfsd_instance
 {
@@ -75,6 +78,13 @@ struct rfsd_instance
 #ifdef WITH_SSL
 	/* ssl */
 	struct ssl_info ssl;
+#endif
+
+#ifdef WITH_PAUSE
+	struct
+	{
+		struct timeval last;
+	} pause;
 #endif
 
 	/* server's config */

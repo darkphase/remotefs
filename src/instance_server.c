@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "config.h"
@@ -45,6 +46,13 @@ static void init_exports(struct rfsd_instance *instance)
 	instance->exports.list = NULL;
 }
 
+#ifdef WITH_PAUSE
+static void init_pause(struct rfsd_instance *instance)
+{
+	gettimeofday(&(instance->pause.last), NULL);
+}
+#endif
+
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
 #ifndef WITH_IPV6
@@ -79,6 +87,9 @@ void init_rfsd_instance(struct rfsd_instance *instance)
 	init_sendrecv(&instance->sendrecv);
 #ifdef WITH_SSL
 	init_ssl(&instance->ssl);
+#endif
+#ifdef WITH_PAUSE
+	init_pause(instance);
 #endif
 	
 	init_rfsd_config(instance);

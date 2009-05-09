@@ -40,14 +40,19 @@ OPT_5 = -DWITH_UGO
 # For router with low CPU speed, spend other
 # some time for other applications
 
-#OPT_6 = -DWITH_PAUSE
+OPT_6 = -DWITH_PAUSE
+
+###############################################
+# Experimental scheduling for MacOS only
+#
+#OPT_7 = -DWITH_SCHEDULING
 
 ###############################################
 # End of user configuration, don't change the
 # following lines
 
-CFLAGS_OPTS = $(CFLAGS) $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5) $(OPT_6)
-LDFLAGS_OPTS = $(LDFLAGS) $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT_6_LD)
+CFLAGS_OPTS = $(CFLAGS) $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5) $(OPT_6) $(OPT_7)
+LDFLAGS_OPTS = $(LDFLAGS) $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT_6_LD) $(OPT_7_LD)
 
 # Default entry for main Makefile
 help:

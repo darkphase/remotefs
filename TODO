@@ -7,6 +7,8 @@
   + separating ssl code
 - man page for rfscert.sh
 + transform_symlinks opt
+- remove cmd_setsocktimeout and cmd_setsockopt
+- check and remove read-ahead if needed
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

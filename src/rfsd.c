@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "passwd.h"
 #include "rfsd.h"
-#if defined DARWIN || ( defined __linux__ && defined WITH_PAUSE )
+#ifdef WITH_SCHEDULING
 #include "scheduling.h"
 #endif
 #include "server.h"
@@ -201,7 +201,7 @@ static int start_server(const char *address, const unsigned port)
 		{
 			close(listen_socket);
 			setup_socket_ndelay(client_socket, 1);
-#if defined DARWIN || ( defined __linux__ && defined WITH_PAUSE )
+#if WITH_SCHEDULING
 			set_scheduler();
 #endif
 

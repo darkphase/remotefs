@@ -13,12 +13,20 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#if defined DARWIN || defined __linux__ && defined WITH_PAUSE
+#ifdef WITH_SCHEDULING
+
+#	ifdef DARWIN
 void set_scheduler(void);
+#	else
+#error Scheduling is not supported for this platform
+#	endif /* DARWIN */
+
 #endif
 
-#if defined __linux__ && defined WITH_PAUSE
-void pause_rdwr(void);
+#ifdef WITH_PAUSE
+struct rfsd_instance;
+
+void pause_rdwr(struct rfsd_instance *instance);
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
