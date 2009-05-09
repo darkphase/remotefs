@@ -306,7 +306,9 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			return -ECONNABORTED;
 		}
 		
+#ifdef RFS_DEBUG
 		dump(buffer, ans.data_len);
+#endif
 		
 		int stat_ret = 0;
 		off_t last_pos = unpack_stat(instance, buffer, &stbuf, &stat_ret);

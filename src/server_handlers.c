@@ -305,7 +305,9 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		pack_16(&stat_failed, buffer, last_offset
 		));
 		
+#ifdef RFS_DEBUG
 		dump(buffer, overall_size);
+#endif
 
 		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
 		{
