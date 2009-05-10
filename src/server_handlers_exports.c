@@ -46,7 +46,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		
 		ans.data_len = overall_size;
 		
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) != 0)
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
 		{
 			free_buffer(buffer);
 			return -1;
@@ -59,7 +59,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 	
 	ans.data_len = 0;
 	
-	return (rfs_send_answer(&instance->sendrecv, &ans) != 0 ? -1 : 0);
+	return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
 }
 #else
 int server_handlers_exports_c_empty_module_makes_suncc_angry = 0;

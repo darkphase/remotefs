@@ -54,3 +54,4 @@ void install_signal_handlers_server()
 	install_signal_handler(SIGPIPE, signal_handler_server);
 	install_signal_handler(SIGHUP, signal_handler_server);
 }
+

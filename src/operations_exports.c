@@ -26,7 +26,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 	
 	struct command cmd = { cmd_listexports, 0 };
 	
-	if (rfs_send_cmd(&instance->sendrecv, &cmd) != 0)
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -37,7 +37,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 	
 	do
 	{
-		if (rfs_receive_answer(&instance->sendrecv, &ans) != 0)
+		if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 		{
 			return -ECONNABORTED;
 		}
@@ -61,7 +61,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 		
 		char *buffer = get_buffer(ans.data_len);
 		
-		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) != 0)
+		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 		{
 			free_buffer(buffer);
 			return -ECONNABORTED;

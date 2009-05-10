@@ -26,14 +26,14 @@ int rfs_getnames(struct rfs_instance *instance)
 	
 	struct command cmd = { cmd_getnames, 0 };
 	
-	if (rfs_send_cmd(&instance->sendrecv, &cmd) != 0)
+	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
 		return -ECONNABORTED;
 	}
 	
 	struct answer ans = { 0 };
 	
-	if (rfs_receive_answer(&instance->sendrecv, &ans) != 0)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -54,7 +54,7 @@ int rfs_getnames(struct rfs_instance *instance)
 	{
 		char *users = get_buffer(ans.data_len);
 		
-		if (rfs_receive_data(&instance->sendrecv, users, ans.data_len) != 0)
+		if (rfs_receive_data(&instance->sendrecv, users, ans.data_len) == -1)
 		{
 			free_buffer(users);
 			return -ECONNABORTED;
@@ -76,7 +76,7 @@ int rfs_getnames(struct rfs_instance *instance)
 		free_buffer(users);
 	}
 	
-	if (rfs_receive_answer(&instance->sendrecv, &ans) != 0)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -ECONNABORTED;
 	}
@@ -97,7 +97,7 @@ int rfs_getnames(struct rfs_instance *instance)
 	{
 		char *groups = get_buffer(ans.data_len);
 		
-		if (rfs_receive_data(&instance->sendrecv, groups, ans.data_len) != 0)
+		if (rfs_receive_data(&instance->sendrecv, groups, ans.data_len) == -1)
 		{
 			free_buffer(groups);
 			return -ECONNABORTED;
