@@ -15,14 +15,13 @@ extern "C" {
 
 #if defined DWITH_SCHEDULING && defined DARWIN
 void set_scheduler(void);
-#endif /* DARWIN */
 
-#endif
+#elif defined WITH_PAUSE && defined __linux__
 
-#if defined WITH_PAUSE && defined __linux__
 struct rfsd_instance;
 void set_scheduler(void);
 void pause_rdwr(struct rfsd_instance *instance);
+
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)

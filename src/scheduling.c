@@ -85,7 +85,7 @@ void pause_rdwr(struct rfsd_instance *instance)
 }
 
 
-#elif defined DARWIN && defined && defined WITH_SCHEDULING
+#elif defined DARWIN && defined WITH_SCHEDULING
 
 # include <pthread.h>
 # include <pthread_impl.h>
