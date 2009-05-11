@@ -33,14 +33,29 @@ See the file LICENSE.
  *
  */
 
+
 #include "scheduling.h"
 
-#if defined WITH_PAUSE
+#if defined WITH_PAUSE && defined __linux__
 
+#include <sched.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <time.h>
 
 #include "instance_server.h"
+
+void set_scheduler(void)
+{
+	struct sched_param param;
+	int priority = sched_get_priority_max(SCHED_RR);
+	sched_getparam(0,&param);
+	param.sched_priority = priority;
+	sched_setscheduler(0,SCHED_RR,&param);
+}
 
 void pause_rdwr(struct rfsd_instance *instance)
 {
@@ -69,11 +84,8 @@ void pause_rdwr(struct rfsd_instance *instance)
 	}
 }
 
-#endif /* WITH_PAUSE */
 
-#ifdef WITH_SCHEDULING
-
-#if defined DARWIN
+#elif defined DARWIN && defined && defined WITH_SCHEDULING
 
 # include <pthread.h>
 # include <pthread_impl.h>
@@ -89,12 +101,8 @@ void set_scheduler(void)
 }
 
 #else
-#error Scheduling is not supported for this platform
-#endif /* DARWIN*/
 
-#endif /* WITH_SCHEDULING */
-
-#if ! (defined WITH_PAUSE || defined WITH_SCHEDULING)
 int scheduling_not_used = 0;
+
 #endif
 

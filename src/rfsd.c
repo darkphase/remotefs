@@ -201,7 +201,9 @@ static int start_server(const char *address, const unsigned port)
 		{
 			close(listen_socket);
 			setup_socket_ndelay(client_socket, 1);
-#if WITH_SCHEDULING
+#if defined DARWIN && defined WITH_SCHEDULING
+			set_scheduler();
+#elif WITH_PAUSE && defined __linux__
 			set_scheduler();
 #endif
 
