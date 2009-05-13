@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "passwd.h"
 #include "rfsd.h"
 #ifdef WITH_SCHEDULING
-#include "scheduling.h"
+#	include "scheduling.h"
 #endif
 #include "server.h"
 #include "signals_server.h"
@@ -201,9 +201,7 @@ static int start_server(const char *address, const unsigned port)
 		{
 			close(listen_socket);
 			setup_socket_ndelay(client_socket, 1);
-#if defined DARWIN && defined WITH_SCHEDULING
-			set_scheduler();
-#elif WITH_PAUSE && defined __linux__
+#ifdef WITH_SCHEDULING
 			set_scheduler();
 #endif
 

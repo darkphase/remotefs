@@ -203,7 +203,6 @@ static ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigne
 		}
 #endif
 #ifdef RFS_DEBUG
-		
 		gettimeofday(&stop_time, NULL);
 		
 		info->send_susecs_used += ((stop_time.tv_sec * 1000000 + stop_time.tv_usec) 

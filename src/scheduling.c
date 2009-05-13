@@ -36,26 +36,14 @@ See the file LICENSE.
 
 #include "scheduling.h"
 
-#if defined WITH_PAUSE && defined __linux__
+#if defined WITH_PAUSE
 
-#include <sched.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/time.h>
-#include <time.h>
 
 #include "instance_server.h"
-
-void set_scheduler(void)
-{
-	struct sched_param param;
-	int priority = sched_get_priority_max(SCHED_RR);
-	sched_getparam(0,&param);
-	param.sched_priority = priority;
-	sched_setscheduler(0,SCHED_RR,&param);
-}
 
 void pause_rdwr(struct rfsd_instance *instance)
 {
@@ -83,9 +71,11 @@ void pause_rdwr(struct rfsd_instance *instance)
 		instance->pause.last.tv_usec = act.tv_usec;
 	}
 }
+#endif /* WITH_PAUSE */
 
+#ifdef WITH_SCHEDULING
 
-#elif defined DARWIN && defined WITH_SCHEDULING
+#ifdef DARWIN
 
 # include <pthread.h>
 # include <pthread_impl.h>
@@ -100,9 +90,30 @@ void set_scheduler(void)
 	pthread_setschedparam(pthread_self(), SCHED_RR, &param);
 }
 
-#else
+#endif /* DARWIN */
 
+#ifdef LINUX
+
+#include <sched.h>
+
+void set_scheduler(void)
+{
+	struct sched_param param;
+	int priority = sched_get_priority_max(SCHED_RR);
+	sched_getparam(0,&param);
+	param.sched_priority = priority;
+	sched_setscheduler(0,SCHED_RR,&param);
+}
+
+#endif /* LINUX */
+
+#if ! (defined DARWIN || defined LINUX)
+#error Scheduling is not supported for this platform
+#endif
+
+#endif /* WITH_SCHEDULING */
+
+#if ! (defined WITH_SCHEDULING || defined WITH_PAUSE)
 int scheduling_not_used = 0;
-
 #endif
 

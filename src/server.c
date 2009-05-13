@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "keep_alive_server.h"
 #include "passwd.h"
-#ifdef WITH_PAUSE
+#ifdef WITH_PAUSE 
 #include "scheduling.h"
 #endif
 #include "sendrecv.h"

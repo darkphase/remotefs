@@ -31,7 +31,7 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "resume.h"
-#ifdef WITH_PAUSE
+#ifdef WITH_SCHEDULING
 #	include "scheduling.h"
 #endif
 #include "sendrecv.h"
@@ -581,7 +581,7 @@ void* rfs_init(struct rfs_instance *instance)
 	}
 #endif
 
-#if defined WITH_SCHEDULING && defined DARWIN
+#ifdef WITH_SCHEDULING
 	set_scheduler();
 #endif
 

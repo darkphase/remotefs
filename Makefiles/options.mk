@@ -39,12 +39,16 @@ OPT_5 = -DWITH_UGO
 ###############################################
 # For router with low CPU speed, spend other
 # some time for other applications
+#
+# it's suggested to use WITH_PAUSE in combination with WITH_SCHEDULNIG
+#
 
 #OPT_6 = -DWITH_PAUSE
 
 ###############################################
 # Experimental scheduling for MacOS only
 #
+# for MacOS and Linux only
 
 #OPT_7 = -DWITH_SCHEDULING
 

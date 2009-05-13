@@ -13,19 +13,25 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#if defined DWITH_SCHEDULING && defined DARWIN
-void set_scheduler(void);
+#ifdef WITH_SCHEDULING
 
-#elif defined WITH_PAUSE && defined __linux__
-
-struct rfsd_instance;
-void set_scheduler(void);
-void pause_rdwr(struct rfsd_instance *instance);
-
+#if ! (defined DARWIN || defined LINUX)
+#error Scheduling is not supported for this platform
 #endif
+
+void set_scheduler(void);
+
+#endif /* WITH_SCHEDULING */
+
+#ifdef WITH_PAUSE
+struct rfsd_instance;
+
+void pause_rdwr(struct rfsd_instance *instance);
+#endif /* WITH_PAUSE */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
 #endif /* SCHEDULING_H */
+

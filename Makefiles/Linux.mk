@@ -12,7 +12,7 @@ LN = ln -sf
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror
+CFLAGS_OS      = -Wall -Werror -DLINUX
 CFLAGS_DEBUG   = -g -fPIC
 CFLAGS_RELEASE = -O2
 
