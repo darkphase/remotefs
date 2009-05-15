@@ -59,17 +59,6 @@ struct rfs_instance
 		struct list* locked_files;
 	} resume;
 	
-	/* read cache */
-	struct
-	{
-		size_t max_cache_size;
-		struct list *cache;
-#ifdef RFS_DEBUG
-		unsigned long hits;
-		unsigned long misses;
-#endif
-	} read_cache;
-	
 	/* write cache */
 	struct
 	{

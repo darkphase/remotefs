@@ -17,7 +17,6 @@ src/attr_cache.o:src/instance_client.h
 src/attr_cache.o:src/ratio.h
 src/buffer.o:src/buffer.h
 src/buffer.o:src/config.h
-src/buffer.o:src/inet.h
 src/cleanup.o:src/buffer.h
 src/cleanup.o:src/config.h
 src/cleanup.o:src/instance_server.h
@@ -137,14 +136,11 @@ src/operations_nss.o:src/sendrecv.h
 src/operations_read.o:src/buffer.h
 src/operations_read.o:src/command.h
 src/operations_read.o:src/config.h
-src/operations_read.o:src/data_cache.h
 src/operations_read.o:src/instance_client.h
 src/operations_read.o:src/keep_alive_client.h
 src/operations_read.o:src/list.h
 src/operations_read.o:src/operations.h
 src/operations_read.o:src/operations_rfs.h
-src/operations_read.o:src/psemaphore.h
-src/operations_read.o:src/ratio.h
 src/operations_read.o:src/resume.h
 src/operations_read.o:src/sendrecv.h
 src/operations_rfs.o:src/attr_cache.h

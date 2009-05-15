@@ -43,17 +43,6 @@ static void init_resume(struct rfs_instance *instance)
 	instance->resume.locked_files = NULL;
 }
 
-static void init_read_cache(struct rfs_instance *instance)
-{
-	/* read cache */
-	instance->read_cache.max_cache_size = DEFAULT_RW_CACHE_SIZE;
-	instance->read_cache.cache = NULL;
-#ifdef RFS_DEBUG
-	instance->read_cache.hits = 0;
-	instance->read_cache.misses = 0;
-#endif
-}
-
 static void init_write_cache(struct rfs_instance *instance)
 {
 	/* write cache */
@@ -111,16 +100,8 @@ static void init_rfs_config(struct rfs_instance *instance)
 	instance->config.ssl_key_file = key;
 	instance->config.ssl_cert_file = cert;
 #endif /* WITH_SSL */
-	/* read cache is indeed disabled by default
-	it seems ineffective after some past modifications of rfs, like sendfile() or something 
-	rfs can perform better without it on fast hardware
-	and it's still used with SSL (by default) */
-
-	/* we're using -1 here to make difference between default value 
-	and user-specified value */
-	instance->config.use_read_cache = -1;
+	
 	instance->config.use_write_cache = 1;
-
 	instance->config.transform_symlinks = 0;
 }
 
@@ -129,7 +110,6 @@ void init_rfs_instance(struct rfs_instance *instance)
 	init_client(instance);
 	init_attr_cache(instance);
 	init_resume(instance);
-	init_read_cache(instance);
 	init_write_cache(instance);
 	init_sendrecv(&instance->sendrecv);
 	init_id_lookup(&instance->id_lookup);

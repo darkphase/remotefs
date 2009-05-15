@@ -8,8 +8,9 @@
 - man page for rfscert.sh
 + transform_symlinks opt
 - remove cmd_setsocktimeout and cmd_setsockopt
-- prefetch should be removed at all
++ prefetch should be removed at all
 - improval of ssl-related error messages
+- correct locking on server
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

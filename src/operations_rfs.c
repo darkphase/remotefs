@@ -495,14 +495,13 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			
 			if (show_errors != 0) /* oh, this is odd */
 			{
+				ERROR(
 #ifndef RFS_DEBUG
-				ERROR("Hello there!\n"
+				"Hello there!\n"
 				"Normally you should not be seeing this message.\n"
 				"Are you sure you are running the remotefs client you've downloaded from SourceForge? If that is the case, please notify the remotefs maintainer that you actually got this message.\n"
 				"You'll find his e-mail at http://remotefs.sourceforge.net . Thank you.\n"
 				"Anyway, here's the actual message:\n"
-#else
-				ERROR(
 #endif
 				"Error restoring remote files state after reconnect: %s\n",
 				strerror(-resume_ret));
@@ -629,7 +628,6 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 #ifdef RFS_DEBUG
 	dump_attr_stats(instance);
-	dump_read_cache_stats(instance);
 #endif
 }
 

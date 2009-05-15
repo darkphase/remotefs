@@ -465,9 +465,6 @@ int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf,
 	offset, 
 	desc);
 	
-	/* clear read cache if any */
-	clear_cache_by_desc(&instance->read_cache.cache, desc);
-	
 	keep_alive_unlock(instance);
 	
 	return ret;
