@@ -275,7 +275,7 @@ static int init_groups_for_ugo(struct rfsd_instance *instance, gid_t user_gid)
 
 static int setup_export_opts(struct rfsd_instance *instance, const struct rfs_export *export_info, uid_t user_uid, gid_t user_gid)
 {
-	/* always set gid first :)
+	/* always set gid before uid :)
 	*/
 	
 #ifdef WITH_UGO
@@ -546,6 +546,9 @@ int _handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *
 	{
 		instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
 		ERROR("Error initing SSL: %s\n", instance->ssl.last_error);
+		ERROR("Make sure that SSL certificate (%s) and key (%s) does exist\n", 
+			instance->config.ssl_cert_file, 
+			instance->config.ssl_key_file);
 		return reject_request(instance, cmd, ECANCELED) != 0 ? -1 : 1;
 	}
 	
