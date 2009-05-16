@@ -152,6 +152,8 @@ static int resume_files(struct rfs_instance *instance)
 		uint64_t desc = (uint64_t)-1;
 		uint64_t prev_desc = data->desc;
 		
+		DEBUG("reopening file %s\n", data->path);
+
 		int open_ret = _rfs_open(instance, data->path, data->flags, &desc);
 		if (open_ret < 0)
 		{
@@ -176,45 +178,95 @@ static int resume_files(struct rfs_instance *instance)
 			resume_failed = 1;
 			break;
 		}
-		
-		if (open_ret == 0)
-		{
-			const struct lock_rec *lock_info = get_lock_info(instance, data->path);
-			if (lock_info != NULL)
-			{
-				struct flock fl = { 0 };
-				fl.l_type = lock_info->type;
-				fl.l_whence = lock_info->whence;
-				fl.l_start = lock_info->start;
-				fl.l_len = lock_info->len;
-				
-				int lock_ret = _rfs_lock(instance, data->path, desc, lock_info->cmd, &fl);
-				
-				if (lock_ret < 0)
-				{
-					ret = lock_ret;
-					remove_file_from_locked_list(instance, data->path);
-				}
-			}
-		}
+
+		DEBUG("%s\n", "ok");
 		
 		open_file = open_file->next;
 	}
-	
-	/* if resume failed, then close all files marked as open */
+		
+	if (resume_failed == 0)
+	{
+		const struct list *lock_item = instance->resume.locked_files;
+		while (lock_item != NULL)
+		{
+			const struct lock_rec *lock_info = (const struct lock_rec *)lock_item->data;
+				
+			DEBUG("relocking file %s (at %ld of len %ld)\n", 
+				lock_info->path, 
+				lock_info->start, 
+				lock_info->len);
+
+			struct flock fl = { 0 };
+			fl.l_type = lock_info->type;
+			fl.l_whence = lock_info->whence;
+			fl.l_start = lock_info->start;
+			fl.l_len = lock_info->len;
+
+			uint64_t desc = is_file_in_open_list(instance, lock_info->path);
+			if (desc == (uint64_t)-1) /* we can only resume files which were opened on resume 
+			in other case, we don't know which open flags were used to lock that file and etc
+			so we can't reopen file on our own */
+			{
+				ret = -EBADF;
+				resume_failed = 1;
+
+				break;
+			}
+
+			int lock_ret = _rfs_lock(instance, lock_info->path, desc, lock_info->cmd, &fl);
+				
+			if (lock_ret < 0)
+			{
+				ret = lock_ret;
+				remove_file_from_locked_list(instance, lock_info->path);
+
+				resume_failed = 1;
+				break;
+			}
+		
+			DEBUG("%s\n", "ok");
+
+			lock_item = lock_item->next;
+		}
+	}
+		
+	/* if resume failed, then close all files marked as open 
+	and clear unlock locked files*/
 	if (resume_failed != 0)
 	{
+		DEBUG("%s\n", "resume failed");
+
+		const struct list *locked_file = instance->resume.locked_files;
+		while (locked_file != NULL)
+		{
+			struct lock_rec *data = (struct lock_rec *)locked_file->data;
+			
+			struct flock fl = { 0 };
+			fl.l_type = data->type;
+			fl.l_whence = data->whence;
+			fl.l_start = data->start;
+			fl.l_len = data->len;
+
+			uint64_t desc = is_file_in_open_list(instance, data->path);
+
+			if (desc != (uint64_t)-1)
+			{
+				_rfs_lock(instance, data->path, desc, F_UNLCK, &fl); /* ignore the result and keep going */
+			}
+				
+			remove_file_from_locked_list(instance, data->path);
+			
+			locked_file = locked_file->next;
+		}
+
 		const struct list *open_file = instance->resume.open_files;
 		while (open_file != NULL)
 		{
 			struct open_rec *data = (struct open_rec *)open_file->data;
 			
-			_rfs_release(instance, data->path, data->desc);
-			
-			/* ignore the result and keep going */
-			
+			_rfs_release(instance, data->path, data->desc); /* ignore the result and keep going */
+
 			remove_file_from_open_list(instance, data->path);
-			remove_file_from_locked_list(instance, data->path);
 			
 			open_file = open_file->next;
 		}
@@ -471,7 +523,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		}
 	}
 
-	DEBUG("%s\n", "all ok");
 	return 0;
 }
 

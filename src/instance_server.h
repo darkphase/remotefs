@@ -47,7 +47,6 @@ struct rfsd_instance
 	struct
 	{
 		struct list *open_files;
-		struct list *locked_files;
 	} cleanup;
 	
 	/* keep-alive */

@@ -18,7 +18,6 @@ See the file LICENSE.
 static void init_cleanup(struct rfsd_instance *instance)
 {
 	instance->cleanup.open_files = NULL;
-	instance->cleanup.locked_files = NULL;
 }
 
 static void init_keep_alive(struct rfsd_instance *instance)

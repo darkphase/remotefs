@@ -1012,18 +1012,6 @@ int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	struct answer ans = { cmd_lock, 0, ret, errno };
 	
-	if (errno == 0)
-	{
-		if (lock_type == F_UNLCK)
-		{
-			remove_file_from_locked_list(instance, (int)fd);
-		}
-		else if (lock_type == F_RDLCK || lock_type == F_WRLCK)
-		{
-			add_file_to_locked_list(instance, (int)fd);
-		}
-	}
-	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -1;

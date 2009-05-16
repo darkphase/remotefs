@@ -1047,17 +1047,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	if (ans.ret == 0)
 	{
-		if (lock_cmd == F_SETLK)
-		{
-			if (fl->l_type == F_UNLCK)
-			{
-				remove_file_from_locked_list(instance, path);
-			}
-			else
-			{
-				add_file_to_locked_list(instance, path, lock_cmd, fl->l_type, fl->l_whence, fl->l_start, fl->l_len);
-			}
-		}
+		update_file_lock_status(instance, path, lock_cmd, fl); 
 	}
 	
 	return ans.ret != 0 ? -ans.ret_errno : 0;

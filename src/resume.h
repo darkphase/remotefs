@@ -19,6 +19,7 @@ extern "C" {
 
 struct list;
 struct rfs_instance;
+struct flock;
 
 /** record about open file */
 struct open_rec
@@ -46,14 +47,14 @@ int add_file_to_open_list(struct rfs_instance *instance, const char *path, int f
 /** remove file from list of open */
 int remove_file_from_open_list(struct rfs_instance *instance, const char *path);
 
-/** add file to list of locked */
-int add_file_to_locked_list(struct rfs_instance *instance, const char *path, int cmd, short type, short whence, off_t start, off_t len);
+/** return file descriptor if file is recorder as open or -1 if not */
+uint64_t is_file_in_open_list(struct rfs_instance *instance, const char *path);
 
 /** remove file from list of locked */
 int remove_file_from_locked_list(struct rfs_instance *instance, const char *path);
 
-/** get list of locked files */
-const struct lock_rec* get_lock_info(struct rfs_instance *instance, const char *path);
+/** clear lock info or add lock info for path depend on lock_cmd and */
+int update_file_lock_status(struct rfs_instance *instance, const char *path, int lock_cmd, struct flock *fl);
 
 /** delete lists of open and locked files */
 void destroy_resume_lists(struct rfs_instance *instance);
@@ -63,3 +64,4 @@ void destroy_resume_lists(struct rfs_instance *instance);
 #endif
 
 #endif /* RESUME_H */
+
