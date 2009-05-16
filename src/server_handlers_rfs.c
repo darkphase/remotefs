@@ -476,62 +476,6 @@ int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_
 	return (instance->server.mounted_export != NULL ? 0 : 1);
 }
 
-int handle_setsocktimeout(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	int32_t timeout;
-#define overall_size sizeof(timeout)
-	char buffer[overall_size] = { 0 };
-
-	if (rfs_receive_data(&instance->sendrecv, buffer, overall_size) == -1)
-	{
-		return -1;
-	}
-#undef overall_size
-
-	unpack_32_s(&timeout, buffer, 0);
-	
-	DEBUG("client requested to set socket timeout to %d\n", timeout);
-	
-	int ret = setup_socket_timeout(instance->sendrecv.socket, (int)timeout);
-	
-	struct answer ans = { cmd_setsocktimeout, 0, ret == 0 ? 0 : -1, ret };
-	
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return 0;
-}
-
-int handle_setsockbuffer(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	int32_t buffer_size;
-#define overall_size sizeof(buffer_size)
-	char buffer[overall_size] = { 0 };
-
-	if (rfs_receive_data(&instance->sendrecv, buffer, overall_size) == -1)
-	{
-		return -1;
-	}
-#undef overall_size
-
-	unpack_32_s(&buffer_size, buffer, 0);
-	
-	DEBUG("client requested to set socket buffer to %d\n", buffer_size);
-	
-	int ret = setup_socket_buffer(instance->sendrecv.socket, (int)buffer_size);
-	
-	struct answer ans = { cmd_setsockbuffer, 0, ret == 0 ? 0 : -1, ret };
-	
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return 0;
-}
-
 #ifdef WITH_SSL
 int _handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

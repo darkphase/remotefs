@@ -22,8 +22,6 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_changepath:                    return "changepath";
 	case cmd_keepalive:                     return "keepalive";
 	case cmd_getexportopts:                 return "getexportopts";
-	case cmd_setsocktimeout:                return "setsocktimeout";
-	case cmd_setsockbuffer:                 return "setsockbuffer";
 	case cmd_enablessl:                     return "enablessl";
 	case cmd_listexports:                   return "listexports";
 	

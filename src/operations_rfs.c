@@ -417,53 +417,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		}
 	}
 	
-	if (instance->config.socket_timeout != -1)
-	{
-		int server_settimeout_ret = rfs_setsocktimeout(instance, instance->config.socket_timeout);
-		if (server_settimeout_ret != 0)
-		{
-			if (show_errors != 0)
-			{
-			ERROR("Error setting socket timeout on remote: %s\n", strerror(-server_settimeout_ret));
-			}
-			return -1;
-		}
-		
-		int local_settimeout_ret = setup_socket_timeout(instance->sendrecv.socket, instance->config.socket_timeout);
-		if (local_settimeout_ret != 0)
-		{
-			if (show_errors != 0)
-			{
-				ERROR("Error setting socket timeout: %s\n", strerror(-local_settimeout_ret));
-			}
-			return -1;
-		}
-	}
-	
-	if (instance->config.socket_buffer != -1)
-	{
-		int server_setbuf_ret = rfs_setsockbuffer(instance, instance->config.socket_buffer);
-		if (server_setbuf_ret != 0)
-		{
-			if (show_errors != 0)
-			{
-				ERROR("Error setting socket buffer on remote: %s\n", strerror(-server_setbuf_ret));
-			}
-			return -1;
-		}
-		
-		int local_setbuf_ret = setup_socket_buffer(instance->sendrecv.socket, instance->config.socket_buffer);
-		if (local_setbuf_ret != 0)
-		{
-			if (show_errors != 0)
-			{
-				ERROR("Error setting socket buffer: %s\n", strerror(-local_setbuf_ret));
-			}
-			return -1;
-		}
-		
-	}
-
 	if (change_path != 0)
 	{
 		DEBUG("mounting %s\n", instance->config.path);
@@ -494,7 +447,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		if (resume_ret != 0)
 		{
 			/* we're not supposed to show error, since resume should happend
-			only on reconnect, when rfs is in background */
+			only on reconnect when rfs is in background */
 			
 			if (show_errors != 0) /* oh, this is odd */
 			{
@@ -822,78 +775,6 @@ int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts)
 	}
 	
 	return ans.ret >= 0 ? 0 : -ans.ret_errno;
-}
-
-int rfs_setsocktimeout(struct rfs_instance *instance, const int timeout)
-{
-	if (instance->sendrecv.socket == -1)
-	{
-		return -ECONNABORTED;
-	}
-	
-	int32_t sock_timeout = (int32_t)timeout;
-#define overall_size sizeof(sock_timeout)
-	char buffer[overall_size] = { 0 };
-
-	pack_32_s(&sock_timeout, buffer, 0);
-	
-	struct command cmd = { cmd_setsocktimeout, overall_size };
-	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
-	{
-		return -ECONNABORTED;
-	}
-#undef overall_size
-
-	struct answer ans = { 0 };
-	
-	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -ECONNABORTED;
-	}
-	
-	if (ans.command != cmd_setsocktimeout)
-	{
-		return cleanup_badmsg(instance, &ans);
-	}
-	
-	return ans.ret != 0 ? -ans.ret_errno : ans.ret;
-}
-
-int rfs_setsockbuffer(struct rfs_instance *instance, const int size)
-{
-	if (instance->sendrecv.socket == -1)
-	{
-		return -ECONNABORTED;
-	}
-	
-	int32_t buffer_size = (int32_t)size;
-#define overall_size sizeof(buffer_size)
-	char buffer[overall_size] = { 0 };
-
-	pack_32_s(&buffer_size, buffer, 0);
-	
-	struct command cmd = { cmd_setsockbuffer, overall_size };
-	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
-	{
-		return -ECONNABORTED;
-	}
-#undef overall_size
-	
-	struct answer ans = { 0 };
-	
-	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -ECONNABORTED;
-	}
-	
-	if (ans.command != cmd_setsockbuffer)
-	{
-		return cleanup_badmsg(instance, &ans);;
-	}
-	
-	return ans.ret < 0 ? -ans.ret_errno : ans.ret;
 }
 
 int rfs_keep_alive(struct rfs_instance *instance)

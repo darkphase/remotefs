@@ -86,12 +86,6 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_getexportopts:
 		return handle_getexportopts(instance, client_addr, cmd);
 	
-	case cmd_setsocktimeout:
-		return handle_setsocktimeout(instance, client_addr, cmd);
-	
-	case cmd_setsockbuffer:
-		return handle_setsockbuffer(instance, client_addr, cmd);
-	
 	case cmd_enablessl:
 #ifdef WITH_SSL
 		return handle_enablessl(instance, client_addr, cmd);

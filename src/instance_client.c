@@ -66,8 +66,6 @@ static void init_rfs_config(struct rfs_instance *instance)
 {
 	instance->config.server_port = DEFAULT_SERVER_PORT;
 	instance->config.quiet = 0;
-	instance->config.socket_timeout = -1;
-	instance->config.socket_buffer = -1;
 #ifdef WITH_SSL
 	instance->config.enable_ssl = 0;
 	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);

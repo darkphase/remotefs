@@ -88,8 +88,6 @@ struct rfs_config
 	unsigned int use_write_cache;
 	unsigned int server_port;
 	unsigned int quiet;
-	int socket_buffer;
-	int socket_timeout;
 	unsigned transform_symlinks;
 #ifdef WITH_SSL
 	unsigned int enable_ssl;
