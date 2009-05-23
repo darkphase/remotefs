@@ -14,9 +14,6 @@ rfspasswd_LDFLAGS = $(LDFLAGS_MAIN) \
                     $(LDFLAGS_NET) \
                     $(LDFLAGS_OPTS)
 
-
-OS_LIBS = $(rfspasswd_LDFLAGS)
-
 #######################################
 # Define target and object files
 #######################################

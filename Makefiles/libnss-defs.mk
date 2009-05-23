@@ -9,15 +9,13 @@ libnss_TARGET = $(SO_NAME_NSS)
 libnss_CFLAGS  = $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
                  $(CFLAGS_SO_NSS) \
-                 $(CFLAGS_OPTS) \
-                 $(OPTS)
+                 $(CFLAGS_OPTS)
 
 libnss_LDFLAGS = $(LDFLAGS_MAIN) \
                  $(LDFLAGS_SO_NSS) \
                  $(LDFLAGS_OS) \
                  $(LDFLAGS_NET) \
-                 $(LDFLAGS_OPTS) \
-                 $(OS_LIBS)
+                 $(LDFLAGS_OPTS)
 
 #######################################
 # Define target and object files

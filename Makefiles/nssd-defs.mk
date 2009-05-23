@@ -10,7 +10,6 @@ rfs_INCLUDES= -Isrc/
 nssd_CFLAGS  =  $(CFLAGS_MAIN) \
                 $(CFLAGS_OS) \
                 $(CFLAGS_OPTS) \
-                $(OPTS) \
 				$(rfs_INCLUDES)
 
 nssd_LDFLAGS = $(LDFLAGS_MAIN) \

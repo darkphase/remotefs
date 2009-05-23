@@ -9,8 +9,7 @@ rfsd_TARGET = "rfsd"
 rfsd_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
                 $(CFLAGS_MAIN) \
                 $(CFLAGS_OS) \
-                $(CFLAGS_OPTS) \
-                $(OPTS)
+                $(CFLAGS_OPTS)
 
 rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
                $(LDFLAGS_OS) \

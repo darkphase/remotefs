@@ -78,14 +78,14 @@ rpms: rfsrpm rfsdrpm
 
 rfsdeb: dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdeb $(TGTARCH)
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdeb
 rfsddeb: dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb $(TGTARCH)
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb
 debs: rfsdeb rfsddeb
 
 rfsdipk: dummy
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdipk $(TGTARCH)
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdipk
 	
 ipks: rfsdipk
 
@@ -106,6 +106,8 @@ packages: tbz ebuilds
 	@ALT=T-PPC    	$(MAKE) -s ipks
 	@ALT=T-ARM    	$(MAKE) -s ipks
 	@ALT=T-ARMEB  	$(MAKE) -s ipks
+	@				$(MAKE) -s debs
+	@				$(MAKE) -s rpms
 
 install_client:
 	@$(MAKE) -sf Makefiles/librfs.mk install_librfs
