@@ -1,0 +1,43 @@
+_rfs()
+{
+	local cur prev rfs_opts rfs_short_opts
+	COMREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	rfs_opts="transform_symlinks ssl"
+	rfs_param_opts="port= username= password= wr_cache="
+	fuse_opts="allow_other allow_root nonempty"
+	
+	rfs_short_opts="-h -q -l"
+	fuse_short_opts="-f -o"
+
+	o_opts=""
+	for opt in ${rfs_opts}; do
+		o_opts+="-o${opt} "
+	done
+	for opt in ${fuse_opts}; do
+		o_opts+="-o${opt} "
+	done
+
+	if [[ ${prev} == -o ]] ; then
+		COMPREPLY=( $(compgen -W "${rfs_opts} ${fuse_opts}" -- "${cur}") )
+		return 0
+	fi
+	
+	if [[ ${cur} == -o* ]] ; then
+		COMPREPLY=( $(compgen -W "${o_opts}" -- "${cur}") )
+		return 0
+	fi
+
+	if [[ ${cur} == -* ]] ; then
+		COMPREPLY=( $(compgen -W "${rfs_short_opts} ${fuse_short_opts}" -- "${cur}") )
+		return 0
+	fi
+
+	# TODO: complete host:/export mount_point/
+	# TODO: complete exports from rfs -l host
+}
+
+complete -F _rfs rfs
+

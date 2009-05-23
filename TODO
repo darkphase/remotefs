@@ -11,6 +11,8 @@
 + prefetch should be removed at all
 + improval of ssl-related error messages
 + correct locking on server
+- bash completion for rfs?
+- state clearly in rfsd man page that it need to be run under root
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
