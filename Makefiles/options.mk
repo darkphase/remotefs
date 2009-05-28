@@ -40,7 +40,7 @@ OPT_5 = -DWITH_UGO
 # For router with low CPU speed, spend other
 # some time for other applications
 #
-# it's suggested to use WITH_PAUSE in combination with WITH_SCHEDULNIG
+# it's strongly suggested to use WITH_PAUSE in combination with WITH_SCHEDULING
 #
 
 #OPT_6 = -DWITH_PAUSE
