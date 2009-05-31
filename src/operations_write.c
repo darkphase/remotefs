@@ -207,14 +207,7 @@ int flush_write(struct rfs_instance *instance, const char *path, uint64_t descri
 
 int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	if (keep_alive_lock(instance) != 0)
-	{
-		return -EIO;
-	}
-
 	flush_write(instance, path, desc);
-
-	keep_alive_unlock(instance);
 
 	return 0;
 }

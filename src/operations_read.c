@@ -39,7 +39,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	pack_64(&handle, buffer, 
 	pack_64(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
-		)));
+	)));
 
 	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
 	{
@@ -53,7 +53,8 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_read || ans.data_len > size)
+	if (ans.command != cmd_read 
+	|| ans.data_len > size)
 	{
 		rfs_ignore_incoming_data(&instance->sendrecv, ans.data_len);
 		return -EBADMSG;
@@ -79,7 +80,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 			return -ECONNABORTED;
 		}
 		
-		if (ans.command != cmd_read || ans.data_len > size)
+		if (ans.command != cmd_read)
 		{
 			return -EBADMSG;
 		}

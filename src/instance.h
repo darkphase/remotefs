@@ -35,8 +35,6 @@ struct sendrecv_info
 #ifdef RFS_DEBUG
 	unsigned long bytes_sent;
 	unsigned long bytes_recv;
-	suseconds_t send_susecs_used;
-	suseconds_t recv_susecs_used;
 #endif
 };
 

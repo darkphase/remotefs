@@ -9,6 +9,7 @@ See the file LICENSE.
 #include <errno.h>
 #include <netdb.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #if defined SOLARIS
 #include <sys/sockio.h>
 #endif
@@ -184,12 +185,6 @@ static ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigne
 		int done = 0;
 		
 		errno = 0;
-#ifdef RFS_DEBUG
-		struct timeval start_time = { 0 };
-		struct timeval stop_time = { 0 };
-		
-		gettimeofday(&start_time, NULL);
-#endif
 #ifdef WITH_SSL
 		if (info->ssl_enabled != 0)
 		{
@@ -201,12 +196,6 @@ static ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigne
 			done = writev(info->socket, iov, count);
 #ifdef WITH_SSL
 		}
-#endif
-#ifdef RFS_DEBUG
-		gettimeofday(&stop_time, NULL);
-		
-		info->send_susecs_used += ((stop_time.tv_sec * 1000000 + stop_time.tv_usec) 
-		- (start_time.tv_sec * 1000000 + start_time.tv_usec));
 #endif
 		if (done <= 0)
 		{
@@ -246,12 +235,6 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size)
 	{
 		errno = 0;
 		ssize_t done = 0;
-#ifdef RFS_DEBUG
-		struct timeval start_time = { 0 };
-		struct timeval stop_time = { 0 };
-		
-		gettimeofday(&start_time, NULL);
-#endif
 #ifdef WITH_SSL
 		if (info->ssl_enabled != 0)
 		{
@@ -265,12 +248,23 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size)
 #ifdef WITH_SSL
 		}
 #endif
-#ifdef RFS_DEBUG
-		gettimeofday(&stop_time, NULL);
-		
-		info->recv_susecs_used += ((stop_time.tv_sec * 1000000 + stop_time.tv_usec) 
-		- (start_time.tv_sec * 1000000 + start_time.tv_usec));
-#endif
+
+		if (done < size_recv)
+		{
+			int atmark = 0;
+			ioctl(info->socket, SIOCATMARK, &atmark);
+
+			if (atmark != 0)
+			{
+				info->oob_received = 1;
+
+				char oob = 0;
+				recv(info->socket, (char *)&oob, 1, MSG_OOB | MSG_PEEK);
+
+				return -EIO;
+			}
+		}
+
 		if (done <= 0)
 		{
 			if (errno == EAGAIN || errno == EINTR)
@@ -639,12 +633,6 @@ void dump_sendrecv_stats(struct sendrecv_info *info)
 	DEBUG("%s\n", "dumping transfer statistics");
 	DEBUG("bytes sent: %lu (%.2fM, %.2fK)\n", info->bytes_sent, (float)info->bytes_sent / (1024 * 1024), (float)info->bytes_sent / 1024);
 	DEBUG("bytes recv: %lu (%.2fM, %.2fK)\n", info->bytes_recv, (float)info->bytes_recv / (1024 * 1024), (float)info->bytes_recv / 1024);
-	DEBUG("secs used for sending: %.2f (%.2fMb/s, %.2fKb/s)\n", info->send_susecs_used / 1000000.0, 
-	info->send_susecs_used != 0 ? (info->bytes_sent / (1024 * 1024)) / (info->send_susecs_used / 1000000.0) : 0,
-	info->send_susecs_used != 0 ? (info->bytes_sent / 1024) / (info->send_susecs_used / 1000000.0) : 0);
-	DEBUG("secs used for receiving: %.2f (%.2fMb/s, %.2fKb/s)\n", info->recv_susecs_used / 1000000.0, 
-	info->recv_susecs_used != 0 ? (info->bytes_recv / (1024 * 1024)) / (info->recv_susecs_used / 1000000.0) : 0,
-	info->recv_susecs_used != 0 ? (info->bytes_recv / 1024) / (info->recv_susecs_used / 1000000.0) : 0);
 }
 #endif
 

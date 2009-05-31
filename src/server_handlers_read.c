@@ -33,7 +33,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 
 	if (size > SENDFILE_LIMIT)
 	{
-		return -EOVERFLOW;
+		return reject_request(instance, cmd, EOVERFLOW) == 0 ? 1 : -1;
 	}
 	
 	int fd = (int)handle;
@@ -72,14 +72,8 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 	}
 	
 	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
-#if ! (defined DARWIN || defined QNX )
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-#else
-	int first = 1;
-#endif
+	
+	int first_block = 1;
 	char buffer[RFS_READ_BLOCK] = { 0 };
 	
 	size_t done = 0;
@@ -90,42 +84,40 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 		errno = 0;
 		ssize_t result = read(fd, buffer, current_block);
 		
-#if defined DARWIN || defined QNX
-		if ( first && result < 0)
-		{
-			ans.ret_errno = errno;
-			ans.ret = done;
-			ans.data_len = done;
-			return rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 1;
-		}
-		else
-#endif
 		if (result < 0)
 		{
 			ans.ret_errno = errno;
-			ans.ret = done;
-			ans.data_len = done;
-			return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
-		}
-		
-#if defined DARWIN || defined QNX
-		if ( first && result > 0 )
-		{
-			if (rfs_send_answer_data_part(&instance->sendrecv, &ans, buffer, result) == -1)
-			{
-				return -1;
-			}
+			ans.ret = result;
+			ans.data_len = 0;
 
-			first = 0;
+			if (first_block != 0)
+			{
+				return rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 1;
+			}
+			else
+			{
+				return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
+			}
 		}
 		else
-#endif
-		if (result > 0)
 		{
-			if (rfs_send_data(&instance->sendrecv, buffer, result) == -1)
+			if (first_block != 0)
 			{
-				return -1;
+				if (rfs_send_answer_data_part(&instance->sendrecv, &ans, buffer, result) == -1)
+				{
+					return -1;
+				}
+			
+				first_block = 0;
 			}
+			else
+			{
+				if (rfs_send_data(&instance->sendrecv, buffer, result) == -1)
+				{
+					return -1;
+				}
+			}
+
 		}
 		
 		done += result;
@@ -158,12 +150,6 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	{
 		errno = 0;
 		
-#ifdef RFS_DEBUG
-		struct timeval start_time = { 0 };
-		struct timeval stop_time = { 0 };
-		
-		gettimeofday(&start_time, NULL);
-#endif
 #if defined FREEBSD
 		off_t sbytes = 0;
 		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size, NULL, &sbytes, 0);
@@ -174,17 +160,12 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 #else
 		ssize_t result = sendfile(instance->sendrecv.socket, fd, &offset, size);
 #endif
-#ifdef RFS_DEBUG
-		gettimeofday(&stop_time, NULL);
-		
-		instance->sendrecv.send_susecs_used += ((stop_time.tv_sec * 1000000 + stop_time.tv_usec) 
-		- (start_time.tv_sec * 1000000 + start_time.tv_usec));
-#endif
 		if (result < 0)
 		{
 			ans.ret_errno = errno;
-			ans.ret = done;
+			ans.ret = -1;
 			ans.data_len = done;
+
 			return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
 		}
 		
@@ -261,16 +242,18 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	if (size == 0)
 	{
 		struct answer ans = { cmd_read, 0, 0, 0 };
+		
 		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 		{
 			return -1;
 		}
+
 		return 0;
 	}
 
 	if (size <= SENDFILE_LIMIT)
 	{
-	return read_small_block(instance, cmd, handle, (off_t)offset, (size_t)size);
+		return read_small_block(instance, cmd, handle, (off_t)offset, (size_t)size);
 	}
 	
 #if ! ( defined DARWIN || defined QNX )

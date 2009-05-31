@@ -12,7 +12,8 @@
 + improval of ssl-related error messages
 + correct locking on server
 - bash completion for rfs?
-- state clearly in rfsd man page that it need to be run under root
+- refuse to run rfsd if getuid() is not root's
+- remove -g option and use ugo-like groups setup based on -u instead 
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

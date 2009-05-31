@@ -20,8 +20,6 @@ void init_sendrecv(struct sendrecv_info *sendrecv)
 #ifdef RFS_DEBUG
 	sendrecv->bytes_sent = 0;
 	sendrecv->bytes_recv = 0;
-	sendrecv->send_susecs_used = (suseconds_t)0;
-	sendrecv->recv_susecs_used = (suseconds_t)0;
 #endif
 }
 
