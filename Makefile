@@ -101,13 +101,13 @@ tbz: dummy
 packages: tbz ebuilds
 	@ALT=ML-i386 	$(MAKE) -s debs
 	@ALT=ML-i386 	$(MAKE) -s rpms
+	@ALT=ML-AMD64   $(MAKE) -s debs
+	@ALT=ML-AMD64	$(MAKE) -s rpms
 	@ALT=T-MIPS   	$(MAKE) -s ipks
 	@ALT=T-MIPSEL 	$(MAKE) -s ipks
 	@ALT=T-PPC    	$(MAKE) -s ipks
 	@ALT=T-ARM    	$(MAKE) -s ipks
 	@ALT=T-ARMEB  	$(MAKE) -s ipks
-	@				$(MAKE) -s debs
-	@				$(MAKE) -s rpms
 
 install_client:
 	@$(MAKE) -sf Makefiles/librfs.mk install_librfs

@@ -85,6 +85,11 @@ void clear_cache(struct rfs_instance *instance)
 void* cache_file(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
 	struct tree_item *key = get_buffer(sizeof(*key));
+
+	if (key == NULL)
+	{
+		return NULL;
+	}
 	
 	key->path = strdup(path);
 	key->time = time(NULL);
