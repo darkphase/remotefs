@@ -12,8 +12,9 @@
 + improval of ssl-related error messages
 + correct locking on server
 - bash completion for rfs?
-- refuse to run rfsd if getuid() is not root's
++ refuse to run rfsd if getuid() is not root's
 - remove -g option and use ugo-like groups setup based on -u instead 
+- remove id lookup tables from client?
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

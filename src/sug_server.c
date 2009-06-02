@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <errno.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -75,6 +77,20 @@ static int check_modes(const char *exports_file, const char *passwd_file)
 	return ret;
 }
 
+static int check_root_uid()
+{
+	if (getuid() != 0) /* i'm sorry Dave, but i can't do that */
+	{
+		WARN("WARNING: You can't run rfsd without root privileges: they are required to chroot to export directory. " \
+		"However, this warning can be disabled with -q option (`rfsd -q`) if you believe your OS will let you chroot without root privileges, but be prepared to get \"%s\" on client of remotefs.\n", 
+		strerror(EPERM));
+
+		return -1;
+	}
+
+	return 0;
+}
+
 int suggest_server(const struct rfsd_instance *instance)
 {
 	int ret = 0;
@@ -90,6 +106,11 @@ int suggest_server(const struct rfsd_instance *instance)
 	}
 	
 	if (check_modes(instance->config.exports_file, instance->config.passwd_file) != 0)
+	{
+		ret = -1;
+	}
+
+	if (check_root_uid() != 0)
 	{
 		ret = -1;
 	}

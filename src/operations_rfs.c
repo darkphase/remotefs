@@ -293,7 +293,7 @@ int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors)
 		{
 			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
 			ERROR("Error initing SSL: %s\n", instance->ssl.last_error);
-			ERROR("Make sure that SSL certificate (%s) and key (%s) does exist\n", 
+			ERROR("Make sure that SSL certificate (%s) and key (%s) do exist\n", 
 				instance->config.ssl_cert_file, 
 				instance->config.ssl_key_file);
 			if (instance->ssl.last_error != NULL)
