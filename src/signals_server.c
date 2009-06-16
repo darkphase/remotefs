@@ -25,16 +25,8 @@ static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontex
 		{
 		int status = -1;
 
-		do
+		while (waitpid(-1, &status, WNOHANG) > 0)
 		{
-			int wait_ret = waitpid(sig_info->si_pid, &status, 1);
-
-			if (wait_ret == -1)
-			{
-				DEBUG("something bad happened while waiting for pid %d :(\n", sig_info->si_pid);
-				break;
-			}
-
 			if (WIFEXITED(status))
 			{
 				DEBUG("child process (%d) terminated with exit code %d\n", sig_info->si_pid, WEXITSTATUS(status));
@@ -44,10 +36,8 @@ static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontex
 				DEBUG("child process (%d) killed by signal %d\n", sig_info->si_pid, WTERMSIG(status));
 			}
 		}
-		while (!WIFEXITED(status) 
-		|| !WIFSIGNALED(status));
-		}
 
+		}
 		break;
 	
 	case SIGHUP:
