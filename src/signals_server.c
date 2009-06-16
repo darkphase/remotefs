@@ -6,10 +6,10 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#if defined FREEBSD || defined DARWIN || defined QNX
-#       include <sys/wait.h>
-#else
+#ifdef SOLARIS
 #       include <wait.h>
+#else
+#       include <sys/wait.h>
 #endif
 #include <stdlib.h>
 
@@ -24,10 +24,30 @@ static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontex
 	case SIGCHLD:
 		{
 		int status = -1;
-		waitpid(sig_info->si_pid, &status, 1);
-		
-		DEBUG("child process (%d) terminated with exit code %d\n", sig_info->si_pid, status);
+
+		do
+		{
+			int wait_ret = waitpid(sig_info->si_pid, &status, 1);
+
+			if (wait_ret == -1)
+			{
+				DEBUG("something bad happened while waiting for pid %d :(\n", sig_info->si_pid);
+				break;
+			}
+
+			if (WIFEXITED(status))
+			{
+				DEBUG("child process (%d) terminated with exit code %d\n", sig_info->si_pid, WEXITSTATUS(status));
+			}
+			else if (WIFSIGNALED(status))
+			{
+				DEBUG("child process (%d) killed by signal %d\n", sig_info->si_pid, WTERMSIG(status));
+			}
 		}
+		while (!WIFEXITED(status) 
+		|| !WIFSIGNALED(status));
+		}
+
 		break;
 	
 	case SIGHUP:
