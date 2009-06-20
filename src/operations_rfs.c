@@ -191,7 +191,7 @@ static int resume_files(struct rfs_instance *instance)
 		{
 			const struct lock_rec *lock_info = (const struct lock_rec *)lock_item->data;
 				
-			DEBUG("relocking file %s (at %ld of len %ld)\n", 
+			DEBUG("relocking file %s (at %lld of len %lld)\n", 
 				lock_info->path, 
 				lock_info->start, 
 				lock_info->len);
