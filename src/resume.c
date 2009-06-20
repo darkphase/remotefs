@@ -102,10 +102,10 @@ int update_file_lock_status(struct rfs_instance *instance, const char *path, int
 		&& data->len == fl->l_len)
 		{
 			/* remove old entry */
-			DEBUG("removing lock for file %s (at %lld of len %lld)\n", 
+			DEBUG("removing lock for file %s (at %llu of len %llu)\n", 
 				data->path, 
-				data->start, 
-				data->len);
+				(long long unsigned)data->start, 
+				(long long unsigned)data->len);
 
 			free(data->path);
 			
@@ -139,10 +139,10 @@ int update_file_lock_status(struct rfs_instance *instance, const char *path, int
 			return -1;
 		}
 			
-		DEBUG("added lock for file %s (at %lld of len %lld)\n", 
+		DEBUG("added lock for file %s (at %llu of len %llu)\n", 
 			new_item->path, 
-			new_item->start, 
-			new_item->len);
+			(long long unsigned)new_item->start, 
+			(long long unsigned)new_item->len);
 	}
 
 	return 0;
