@@ -83,8 +83,7 @@ int rfs_write(struct rfs_instance *instance, const char *path, const char *buf, 
 
 int rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	/* see comments for rfs_write */
-	return _rfs_read(instance, path, buf, size, offset, desc);
+	DECORATE(_rfs_read, instance, path, buf, size, offset, desc);
 }
 
 int rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)

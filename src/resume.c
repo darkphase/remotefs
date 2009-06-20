@@ -106,6 +106,8 @@ int update_file_lock_status(struct rfs_instance *instance, const char *path, int
 				data->path, 
 				data->start, 
 				data->len);
+
+			free(data->path);
 			
 			remove_from_list(&instance->resume.locked_files, item);
 			break;

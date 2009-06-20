@@ -26,8 +26,12 @@ struct list
 /** add data to list */
 struct list* add_to_list(struct list **head, void *data);
 
-/** remove node from list */
+/** remove node from list 
+\return next item*/
 struct list* remove_from_list(struct list **head, struct list *item);
+
+/** remove node from list, but not delete associated data */
+void* extract_from_list(struct list **head, struct list *item);
 
 /** delete whole list */
 void destroy_list(struct list **head);

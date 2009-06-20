@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <stdlib.h>
+
 #include <string.h>
 
 #include "attr_cache.h"
@@ -38,6 +39,11 @@ static void reset_write_behind(struct rfs_instance *instance)
 	instance->write_cache.write_behind_request.block = NULL;
 	instance->write_cache.write_behind_request.please_die = 0;
 	instance->write_cache.write_behind_request.last_ret = 0;
+
+	if (instance->write_cache.write_behind_request.path != NULL)
+	{
+		free(instance->write_cache.write_behind_request.path);
+	}
 	instance->write_cache.write_behind_request.path = NULL;
 }
 
@@ -149,8 +155,12 @@ static void* write_behind(void *void_instance)
 	write_behind_request->block->used,
 	write_behind_request->block->offset,
 	write_behind_request->block->descriptor);
-	
-	delete_block_from_cache(&instance->write_cache.cache, write_behind_request->block);
+
+	free_buffer(write_behind_request->block->data);
+	free_buffer(write_behind_request->block);
+
+	write_behind_request->block = NULL;
+
 	free(write_behind_request->path);
 	write_behind_request->path = NULL;
 	
@@ -166,7 +176,7 @@ int flush_write(struct rfs_instance *instance, const char *path, uint64_t descri
 	DEBUG("flushing file %llu\n", (unsigned long long)descriptor);
 	
 	struct write_behind_request *write_behind_request = &instance->write_cache.write_behind_request;
-	
+
 	const struct list *cache_item = instance->write_cache.cache;
 	
 	while (cache_item != NULL)
@@ -189,17 +199,22 @@ int flush_write(struct rfs_instance *instance, const char *path, uint64_t descri
 			{
 				return ret;
 			}
-			
-			delete_block_from_cache(&instance->write_cache.cache, block);
+
+			cache_item = cache_item->next; /* fix list pointer before deletion */
+
+			if (block == write_behind_request->block)
+			{
+				reset_write_behind(instance);
+			}
+			else
+			{
+				delete_block_from_cache(&instance->write_cache.cache, block);
+			}
+
+			continue; /* since list pointer is already fixed */
 		}
 		
 		cache_item = cache_item->next;
-	}
-	
-	if (write_behind_request->block != NULL
-	&& write_behind_request->block->descriptor == descriptor)
-	{
-		reset_write_behind(instance);
 	}
 	
 	return 0;
@@ -207,9 +222,54 @@ int flush_write(struct rfs_instance *instance, const char *path, uint64_t descri
 
 int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	flush_write(instance, path, desc);
+	return flush_write(instance, path, desc);
+}
 
-	return 0;
+static int _rfs_flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
+{
+	if (keep_alive_lock(instance) != 0)
+	{
+		return -EIO;
+	}
+		
+	int ret = flush_write(instance, path, desc);
+	if (ret < 0)
+	{
+		keep_alive_unlock(instance);
+		return ret;
+	}
+		
+	keep_alive_unlock(instance);
+
+	return ret;
+}
+
+static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
+{
+	if (keep_alive_lock(instance) != 0)
+	{
+		return -EIO;
+	}
+		
+	int flush_ret = flush_write(instance, path, desc);
+	if (flush_ret < 0)
+	{
+		keep_alive_unlock(instance);
+		return flush_ret;
+	}
+		
+	int ret = 0;
+	PARTIALY_DECORATE(ret, 
+	_write, 
+	instance, 
+	path, 
+	buf, 
+	size, 
+	offset, 
+	desc);
+		
+	keep_alive_unlock(instance);
+	return ret;
 }
 
 static int _rfs_write_cached(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
@@ -218,88 +278,51 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	
 	if (size > instance->write_cache.max_cache_size)
 	{
-		if (keep_alive_lock(instance) != 0)
-		{
-			return -EIO;
-		}
-		
-		int flush_ret = flush_write(instance, path, desc);
-		if (flush_ret < 0)
-		{
-			keep_alive_unlock(instance);
-			return flush_ret;
-		}
-		
-		int ret = 0;
-		PARTIALY_DECORATE(ret, 
-		_write, 
-		instance, 
-		path, 
-		buf, 
-		size, 
-		offset, 
-		desc);
-		
-		keep_alive_unlock(instance);
-		return ret;
+		return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
 	}
 	
 	struct cache_block *block = find_suitable_cache_block(instance->write_cache.cache, size, offset, desc);
 	DEBUG("cache block: %p\n", block);
 	
-	/* check if cache is full */
+	/* check if cache is full and so no appropriate cache block found */
 	if (block == NULL 
 	&& cache_size(instance->write_cache.cache) >= instance->write_cache.max_cache_size)
 	{
-		if (keep_alive_lock(instance) != 0)
-		{
-			return -EIO;
-		}
-		
-		int flush_ret = flush_write(instance, path, desc);
+		int flush_ret = _rfs_flush_write(instance, path, desc);
 		if (flush_ret < 0)
 		{
-			keep_alive_unlock(instance);
 			return flush_ret;
 		}
-		
-		keep_alive_unlock(instance);
 	}
-	
-	if (block == NULL  
-	|| block->used >= block->allocated
-	|| offset != block->offset + block->used) /* no suitable block exist yet */
+
+	/* if block found - check if it fits for current data */
+	if (block != NULL  
+	&& (block->used >= block->allocated
+	|| offset != block->offset + block->used)) /* no suitable block exist yet */
 	{
-		if (block != NULL) /* block is found, but offset doesn't match required */
+		/* flush before farther writes. write order matters */
+		int flush_ret = _rfs_flush_write(instance, path, desc);
+		if (flush_ret < 0)
 		{
-			if (keep_alive_lock(instance) != 0)
-			{
-				return -EIO;
-			}
-			
-			int flush_ret = flush_write(instance, path, desc);
-			if (flush_ret < 0)
-			{
-				keep_alive_unlock(instance);
-				return flush_ret;
-			}
-			
-			keep_alive_unlock(instance);
+			return flush_ret;
 		}
-		
-		/* try to reserve new block */
-		block = NULL;
-		block = reserve_cache_block(&instance->write_cache.cache, 
-		instance->write_cache.max_cache_size / 2, 
-		offset, desc);
 	}
-	
-	size_t free_space = (block != NULL ? block->allocated - block->used : 0);
-	
-	while (1)
+
+	/* no suitable block found */
+	if (block == NULL)
 	{
-	
-	if (free_space >= size)
+		/* try to reserve new block */
+		block = reserve_cache_block(&instance->write_cache.cache, 
+			instance->write_cache.max_cache_size / 2, 
+			offset, 
+			desc);
+	}
+		
+	size_t free_space = (block != NULL ? block->allocated - block->used : 0);
+
+	/* suitable block found or new block is reserved */
+	if (block != NULL
+	&& free_space >= size)
 	{
 		DEBUG("*** writing data to cache (%p)\n", block);
 		memcpy(block->data + block->used, buf, size);
@@ -307,7 +330,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 		
 		if (block->used >= block->allocated)
 		{
-			/* no place left in existing block, fire write behind */
+			/* no place left in existing block after write - fire write behind */
 			
 			if (keep_alive_lock(instance) != 0)
 			{
@@ -316,17 +339,34 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 			
 			if (write_behind_request->path != NULL)
 			{
-				free(write_behind_request->path);
-				write_behind_request->path = NULL;
+				/* check last write error and if there is any - return it as current write error */
 				if (write_behind_request->last_ret < 0)
 				{
+					clear_cache_by_desc(&instance->write_cache.cache, desc);
+					
 					keep_alive_unlock(instance);
 					return write_behind_request->last_ret;
 				}
+				
+				free(write_behind_request->path);
+				write_behind_request->path = NULL;
 			}
 			
 			write_behind_request->path = strdup(path);
 			write_behind_request->block = block;
+
+			/* extract cache block from cache to avoid race */
+			struct list *item = instance->write_cache.cache;
+			while (item != NULL)
+			{
+				if (item->data == block)
+				{
+					extract_from_list(&instance->write_cache.cache, item);
+					break;
+				}
+
+				item = item->next;
+			}
 			
 			if (rfs_sem_post(&instance->write_cache.write_behind_sem) != 0)
 			{
@@ -343,34 +383,8 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 		return size;
 	}
 	
-	break;
-	}
-	
 	/* oops. we've missed cache */
-	if (keep_alive_lock(instance) != 0)
-	{
-		return -EIO;
-	}
-
-	int flush_ret = flush_write(instance, path, desc);
-	if (flush_ret < 0)
-	{
-		keep_alive_unlock(instance);
-		return flush_ret;
-	}
-	
-	int write_ret = 0;
-	PARTIALY_DECORATE(write_ret, 
-	_write, 
-	instance, 
-	path, 
-	buf, 
-	size, 
-	offset, 
-	desc);
-	
-	keep_alive_unlock(instance);
-	return write_ret;
+	return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
 }
 
 static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)

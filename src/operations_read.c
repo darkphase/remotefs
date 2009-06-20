@@ -103,29 +103,11 @@ int _rfs_read(struct rfs_instance *instance, const char *path, char *buf, size_t
 		return -ECONNABORTED;
 	}
 
-	unsigned keep_alive_locked = 0;
 	if (instance->config.use_write_cache != 0)
 	{
-		/* flush this file first */
-		if (keep_alive_lock(instance) != 0)
-		{
-			return -EIO;
-		}
-
-		keep_alive_locked = 1;
 		flush_write(instance, path, desc);
 	}
 
-	if (keep_alive_locked == 0
-	&& keep_alive_lock(instance) != 0)
-	{
-		return -EIO;
-	}
-		
-	int ret = 0;
-	PARTIALY_DECORATE(ret, _read, instance, buf, size, offset, desc);
-	
-	keep_alive_unlock(instance);
-	return ret;
+	return _read(instance, buf, size, offset, desc);
 }
 

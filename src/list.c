@@ -41,7 +41,7 @@ struct list* add_to_list(struct list **head, void *data)
 	return new_item;
 }
 
-struct list* remove_from_list(struct list **head, struct list *item)
+void* extract_from_list(struct list **head, struct list *item)
 {
 	if (item == *head)
 	{
@@ -65,10 +65,22 @@ struct list* remove_from_list(struct list **head, struct list *item)
 		*head = ret;
 	}
 
-	free_buffer(item->data);
+	void *data = item->data;
+
 	free_buffer(item);
 
-	return ret;
+	return data;
+}
+
+struct list* remove_from_list(struct list **head, struct list *item)
+{
+	struct list *next = item->next;
+
+	void *data = extract_from_list(head, item);
+	
+	free_buffer(data);
+
+	return next;
 }
 
 void destroy_list(struct list **head)

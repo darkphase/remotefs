@@ -29,11 +29,11 @@ static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontex
 		{
 			if (WIFEXITED(status))
 			{
-				DEBUG("child process (%d) terminated with exit code %d\n", sig_info->si_pid, WEXITSTATUS(status));
+				DEBUG("child process terminated with exit code %d\n", WEXITSTATUS(status));
 			}
 			else if (WIFSIGNALED(status))
 			{
-				DEBUG("child process (%d) killed by signal %d\n", sig_info->si_pid, WTERMSIG(status));
+				DEBUG("child process killed by signal %d\n", WTERMSIG(status));
 			}
 		}
 
