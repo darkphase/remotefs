@@ -306,6 +306,8 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 		{
 			return flush_ret;
 		}
+
+		block = NULL;
 	}
 
 	/* no suitable block found */
