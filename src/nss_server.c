@@ -39,7 +39,7 @@ static char* nss_socket_name(struct rfs_instance *instance)
 
 	if (snprintf(name, 
 		FILENAME_MAX, 
-		"%s%d-%s.%d", 
+		"%srfs_nss-%d-%s.%d", 
 		NSS_SOCKETS_DIR, 
 		uid, 
 		instance->config.host, 

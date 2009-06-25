@@ -355,7 +355,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 			write_behind_request->path = strdup(path);
 			write_behind_request->block = block;
 
-			/* extract cache block from cache to avoid race */
+			/* extract block from cache to avoid race */
 			struct list *item = instance->write_cache.cache;
 			while (item != NULL)
 			{

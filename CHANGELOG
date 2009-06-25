@@ -9,6 +9,9 @@
 [*] fixed packages default build arch for x86_64
 [*] flush support is back
 [*] new rfscert.sh
+[*] files locking update
+[*] fixed files size for du and ls
+[*] fixed number of hardlinks
 
 rfsd:
 
@@ -16,14 +19,17 @@ rfsd:
 [*] pid file correctly deleted if rfsd can't start
 [*] more friendly error messages on exports parsing
 [*] fixed memory leak in readdir()
+[*] fixed zombies spawning
+[*] rfsd will warn user if ran without root privileges
 
 rfs:
 
+[+] transform_symlinks option
+
 [*] prefetch is disabled by default if SSL isn't used
 [*] removed -ordwr_cache option
-[*] fixed 
-
-[+] transform_symlinks option
+[*] fixed memory leak
+[*] fixed segfault on writing
 
 0.11
 

@@ -1,3 +1,8 @@
+1.0
+- bash completion for rfs?
+- rfscp utility
+- librfs?
+
 0.12
 + rfs_nss support
 + server's exports list support
@@ -11,13 +16,14 @@
 + prefetch should be removed at all
 + improval of ssl-related error messages
 + correct locking on server
-- bash completion for rfs?
 + refuse to run rfsd if getuid() is not root's
 - remove -g option and use ugo-like groups setup based on -u instead 
 - remove id lookup tables from client?
 - new packaging for Gentoo using /etc/conf.d/
+- more clear ssl-related error messages: move them to suggestions
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
 + rfsd crashes if no username (or ip-address) is specified in export line
++ autoreconnect constantly failing (and rfs craches?) if can't resume connection
 

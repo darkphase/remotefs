@@ -43,11 +43,6 @@ struct list* add_to_list(struct list **head, void *data)
 
 void* extract_from_list(struct list **head, struct list *item)
 {
-	if (item == *head)
-	{
-		*head = item->next;
-	}
-
 	if (item->prev != NULL)
 	{
 		item->prev->next = item->next;
@@ -58,11 +53,11 @@ void* extract_from_list(struct list **head, struct list *item)
 		item->next->prev = item->prev;
 	}
 
-	struct list *ret = item->next;
+	struct list *next = item->next;
 	
 	if (item == *head)
 	{
-		*head = ret;
+		*head = next;
 	}
 
 	void *data = item->data;

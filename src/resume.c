@@ -64,6 +64,7 @@ int remove_file_from_open_list(struct rfs_instance *instance, const char *path)
 		{
 			free(data->path);
 			remove_from_list(&instance->resume.open_files, item);
+
 			return 0;
 		}
 		item = item->next;
@@ -157,10 +158,8 @@ int remove_file_from_locked_list(struct rfs_instance *instance, const char *path
 		struct lock_rec *data = (struct lock_rec *)item->data;
 		if (strcmp(data->path, path) == 0)
 		{
-			item = item->next;
-
 			free(data->path);
-			remove_from_list(&instance->resume.locked_files, item);
+			item = remove_from_list(&instance->resume.locked_files, item);
 
 			continue;
 		}
