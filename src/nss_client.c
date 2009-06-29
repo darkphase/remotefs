@@ -32,7 +32,7 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 	struct dirent *entry = NULL;
 
 	char socket_pattern[FILENAME_MAX + 1] =  { 0 };
-	snprintf(socket_pattern, sizeof(socket_pattern), "%d-%s", uid, rfsd_host);
+	snprintf(socket_pattern, sizeof(socket_pattern), "rfs_nss-%d-%s", uid, rfsd_host);
 
 	DEBUG("socket pattern: %s\n", socket_pattern);
 
@@ -210,8 +210,6 @@ int nss_check_group(const char *full_name)
 
 static int get_names(const char *server, struct list **names, enum server_commands cmd_id)
 {
-	/* 419-9086 */
-
 	if (*names != NULL)
 	{
 		destroy_list(names);

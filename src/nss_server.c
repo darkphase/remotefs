@@ -326,10 +326,11 @@ int start_nss_server(struct rfs_instance *instance)
 
 	snprintf(cmd_line, 
 		sizeof(cmd_line) - 1, 
-		"%s %s %s >/dev/null 2>&1", 
+		"%s %s %s %s >/dev/null 2>&1", 
 		RFS_NSS_BIN, 
-		RFS_NSS_START_OPTION, 
-		instance->config.host);
+		RFS_NSS_RFSHOST_OPTION, 
+		instance->config.host, 
+		RFS_NSS_START_OPTION);
 
 	DEBUG("trying to start rfs_nss: %s\n", cmd_line);
 
@@ -361,10 +362,11 @@ int stop_nss_server(struct rfs_instance *instance)
 
 		snprintf(cmd_line, 
 			sizeof(cmd_line) - 1, 
-			"%s %s %s >/dev/null 2>&1", 
+			"%s %s %s %s >/dev/null 2>&1", 
 			RFS_NSS_BIN, 
-			RFS_NSS_STOP_OPTION, 
-			instance->config.host);
+			RFS_NSS_RFSHOST_OPTION, 
+			instance->config.host, 
+			RFS_NSS_STOP_OPTION);
 
 		DEBUG("trying to stop rfs_nss: %s\n", cmd_line);
 
