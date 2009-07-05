@@ -111,6 +111,10 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 				uid = pw->pw_uid;
 			}
 		}
+		else
+		{
+			uid = instance->client.my_uid;
+		}
 
 		size_t group_len = strlen(group);
 		size_t overall_group_len = group_len + host_len + 1 + 1;
