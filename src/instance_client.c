@@ -102,6 +102,8 @@ static void init_rfs_config(struct rfs_instance *instance)
 	
 	instance->config.use_write_cache = 1;
 	instance->config.transform_symlinks = 0;
+	instance->config.allow_other = 0;
+	instance->config.set_fsname = 1;
 }
 
 void init_rfs_instance(struct rfs_instance *instance)

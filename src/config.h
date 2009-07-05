@@ -91,6 +91,8 @@ struct rfs_config
 	unsigned int server_port;
 	unsigned int quiet;
 	unsigned transform_symlinks;
+	unsigned allow_other;
+	unsigned set_fsname;
 #ifdef WITH_SSL
 	unsigned int enable_ssl;
 	char *ssl_key_file;
@@ -182,16 +184,6 @@ enum rfs_acl_flags
 	RFS_XATTR_REPLACE         = 2
 };
 #endif
-
-/** prefetch control struct */
-struct prefetch_request
-{
-	size_t size;
-	off_t offset;
-	uint64_t descriptor;
-	unsigned int please_die;
-	unsigned int inprogress;
-};
 
 /** write-behind control struct */
 struct write_behind_request

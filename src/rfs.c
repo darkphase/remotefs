@@ -81,12 +81,20 @@ static void usage(const char *program)
 	program);
 }
 
-static void rfs_fix_options()
-{
-}
-
 static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
 {
+	DEBUG("opt passed: %s\n", arg);
+
+	if (strcmp(arg, "allow_other") == 0)
+	{
+		rfs_instance.config.allow_other = 1;
+	}
+
+	if (strstr(arg, "fsname=") == arg)
+	{
+		rfs_instance.config.set_fsname = 0;
+	}
+
 	switch (key)
 	{	
 	case FUSE_OPT_KEY_NONOPT:
@@ -286,8 +294,6 @@ int main(int argc, char **argv)
 	fuse_opt_add_arg(&args, "-s");
 	++argc;
 	
-	rfs_fix_options();
-	
 	if (rfs_instance.config.host == NULL)
 	{
 		ERROR("%s\n", "Remote host is not specified");
@@ -320,6 +326,11 @@ int main(int argc, char **argv)
 	{
 		DEBUG("%s\n", "transforming symlinks");
 	}
+
+	if (rfs_instance.config.allow_other != 0)
+	{
+		DEBUG("%s\n", "sharing mount with other users");
+	}
 #endif /* RFS_DEBUG */
 	
 	if (rfs_instance.config.auth_user != NULL
@@ -348,16 +359,20 @@ int main(int argc, char **argv)
 		fuse_opt_free_args(&args);
 		return 1;
 	}
-	
-	char opt_tmpl[] = "-ofsname=rfs@";
-	size_t fsname_len = strlen(opt_tmpl) + strlen(rfs_instance.config.host) + 1;
-	char *opt = get_buffer(fsname_len);
-	memset(opt, 0, fsname_len);
-	memcpy(opt, opt_tmpl, strlen(opt_tmpl));
-	memcpy(opt + strlen(opt_tmpl), rfs_instance.config.host, strlen(rfs_instance.config.host));
 
-	fuse_opt_add_arg(&args, opt);
-	++argc;
+	char *fsname_opt = NULL;
+	if (rfs_instance.config.set_fsname != 0)
+	{
+		char opt_tmpl[] = "-ofsname=rfs@";
+		size_t fsname_len = strlen(opt_tmpl) + strlen(rfs_instance.config.host) + 1;
+		fsname_opt = get_buffer(fsname_len);
+		snprintf(fsname_opt, fsname_len, "%s%s", opt_tmpl, rfs_instance.config.host);
+		
+		DEBUG("setting fsname: %s\n", fsname_opt);
+
+		fuse_opt_add_arg(&args, fsname_opt);
+		++argc;
+	}
 
 #if FUSE_USE_VERSION >= 26
 	int ret = fuse_main(args.argc, args.argv, &fuse_rfs_operations, NULL);
@@ -369,7 +384,10 @@ int main(int argc, char **argv)
 	
 	fuse_opt_free_args(&args);
 
-	free_buffer(opt);
+	if (fsname_opt != NULL)
+	{
+		free_buffer(fsname_opt);
+	}
 
 	free_buffer(rfs_instance.config.host);
 	free_buffer(rfs_instance.config.path);
