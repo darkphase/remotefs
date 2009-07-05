@@ -60,8 +60,10 @@ extern "C" {
 #define RFS_NSS_BIN             "rfs_nssd"
 #endif
 #define NSS_SOCKETS_DIR         "/tmp/"
+#define RFS_NSS_RFSHOST_OPTION  "-r"
 #define RFS_NSS_START_OPTION    "-s"
-#define RFS_NSS_STOP_OPTION     "-e"
+#define RFS_NSS_STOP_OPTION     "-k"
+#define RFS_NSS_SHARED_OPTION   "-a"
 
 #ifdef RFS_DEBUG
 #        define DEBUG(format, args...) do { printf(format, args); } while (0)

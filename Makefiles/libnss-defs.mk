@@ -5,23 +5,32 @@
 #######################################
 
 libnss_TARGET = $(SO_NAME_NSS)
+rfs_INCLUDES= -Isrc/
 
 libnss_CFLAGS  = $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
                  $(CFLAGS_SO_NSS) \
-                 $(CFLAGS_OPTS)
+                 $(CFLAGS_OPTS) \
+				 $(rfs_INCLUDES)
 
 libnss_LDFLAGS = $(LDFLAGS_MAIN) \
                  $(LDFLAGS_SO_NSS) \
                  $(LDFLAGS_OS) \
                  $(LDFLAGS_NET) \
-                 $(LDFLAGS_OPTS)
+                 $(LDFLAGS_OPTS) \
+				 -L. -lrfs
 
 #######################################
 # Define target and object files
 #######################################
 
-libnss_OBJS = rfs_nss/src/rfs_nss_client.o
+libnss_OBJS = rfs_nss/src/client.o \
+			  rfs_nss/src/client_common.o \
+			  rfs_nss/src/client_ent.o \
+			  rfs_nss/src/client_for_server.o \
+			  rfs_nss/src/common.o \
+			  rfs_nss/src/libnss.o \
+			  rfs_nss/src/nss_cmd.o 
 
 #######################################
 # Help variable for dynamic libs
