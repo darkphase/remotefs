@@ -125,22 +125,7 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 			}
 			else if (strstr(opt_str, "group=") == opt_str)
 			{
-				if (opts_export->export_gid != (gid_t)-1)
-				{
-					ERROR("%s", "Group option for export is set twice\n");
-					return -1;
-				}
-				
-				const char *export_groupname = opt_str + strlen("group=");
-				
-				struct group *grp = getgrnam(export_groupname);
-				if (grp == NULL)
-				{
-					ERROR("Group %s is not found in *system* group database\n", export_groupname);
-					return -1;
-				}
-				
-				opts_export->export_gid = grp->gr_gid;
+				WARN("%s\n", "WARNING: group= option is deprecated and ineffective now. It will be removed in next release.");
 			}
 			else
 			{
@@ -301,8 +286,7 @@ static int validate_export(const struct rfs_export *line_export)
 	if ((line_export->options & OPT_UGO) != 0)
 	{
 		if ((line_export->options & OPT_RO) != 0
-		|| line_export->export_uid != -1
-		|| line_export->export_gid != -1)
+		|| line_export->export_uid != -1)
 		{
 			ERROR("%s\n", "Export validation error: you can't specify \"ro\", \"user=\" or \"group=\" options simultaneously with \"ugo\" option. \"ugo\" will handle all security related issues for this export.");
 			return -1;
@@ -326,7 +310,7 @@ static int validate_export(const struct rfs_export *line_export)
 	return 0;
 }
 
-int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid)
+int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid)
 {
 	FILE *fd = fopen(exports_file, "rt");
 	if (fd == 0)
@@ -382,7 +366,6 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
 		memset(line_export, 0, sizeof(*line_export));
 		line_export->export_uid = (uid_t)-1;
-		line_export->export_gid = (gid_t)-1;
 		
 		next_line = parse_line(buffer, (unsigned)((buffer + size) - next_line), next_line - buffer, line_export);
 		if (next_line == (char *)-1)
@@ -404,11 +387,6 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		if (line_export->export_uid == (uid_t)-1)
 		{
 			line_export->export_uid = worker_uid;
-		}
-		
-		if (line_export->export_gid == (gid_t)-1)
-		{
-			line_export->export_gid = worker_gid;
 		}
 		
 		if (line_export->path == NULL 

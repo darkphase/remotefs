@@ -61,7 +61,6 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 #endif
 	instance->config.listen_port = DEFAULT_SERVER_PORT;
 	instance->config.worker_uid = geteuid();
-	instance->config.worker_gid = getegid();
 	instance->config.quiet = 0;
 	
 	instance->config.pid_file = strdup(DEFAULT_PID_FILE);

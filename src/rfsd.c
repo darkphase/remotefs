@@ -244,7 +244,6 @@ static void usage(const char *app_name)
 	"-a [address]\t\tlisten to connections on [address]\n"
 	"-p [port number]\tlisten to connections on [port number]\n"
 	"-u [username]\t\trun worker process with privileges of [username]\n"
-	"-g [groupname]\t\trun worker process with privileges of [groupname]\n"
 	"-r [path]\t\tchange pidfile path from default to [path]\n"
 	"-f \t\t\tstay foreground\n"
 	"-e [path]\t\texports file\n"
@@ -280,15 +279,10 @@ static int parse_opts(int argc, char **argv)
 				rfsd_instance.config.worker_uid = pwd->pw_uid;
 				break;
 			}
+			/* TODO: remove in next release */
 			case 'g':
 			{
-				struct group *grp = getgrnam(optarg);
-				if (grp == NULL)
-				{
-					ERROR("Can not get gid for group %s from *system* passwd database: %s\n", optarg, errno == 0 ? "not found" : strerror(errno));
-					return -1;
-				}
-				rfsd_instance.config.worker_gid = grp->gr_gid;
+				WARN("%s\n", "WARNING: -g option is deprecated and ineffective now. It will be removed in next release.");
 				break;
 			}
 			case 'a':
@@ -332,8 +326,7 @@ int main(int argc, char **argv)
 
 	int parse_ret = parse_exports(rfsd_instance.config.exports_file, 
 	&rfsd_instance.exports.list, 
-	rfsd_instance.config.worker_uid, 
-	rfsd_instance.config.worker_gid);
+	rfsd_instance.config.worker_uid);
 
 	if (parse_ret > 0)
 	{

@@ -108,7 +108,6 @@ struct rfsd_config
 	char *pid_file;
 	unsigned int listen_port;
 	uid_t worker_uid;
-	gid_t worker_gid;
 	unsigned int quiet;
 	char *exports_file;
 	char *passwd_file;

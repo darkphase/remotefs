@@ -26,14 +26,13 @@ struct rfs_export
 	struct list *users;
 	unsigned options;
 	uid_t export_uid;
-	gid_t export_gid;
 };
 
 /** parse exports files. data will be stored in static variable
 @see exports.c 
 @return 0 on success, -errno on system error, line number on parsing error
 */
-int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid, gid_t worker_gid);
+int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid);
 
 /** delete parsed exports info and free memory allocated for exports */
 void release_exports(struct list **exports);
