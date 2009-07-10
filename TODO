@@ -12,7 +12,6 @@
 + making UGO as an compile option
 + separating client/server code
   + separating ssl code
-- man page for rfscert.sh
 + transform_symlinks opt
 + remove cmd_setsocktimeout and cmd_setsockopt
 + prefetch should be removed at all
@@ -21,10 +20,12 @@
 + refuse to run rfsd if getuid() is not root's
 + more clear ssl-related error messages: move them to suggestions
 + remove -g option and use ugo-like groups setup based on -u instead 
++ show reasonable explanation for build-dependent options rather than
+  just saying "unknown option" on -ossl and etc
+- man page for rfscert.sh
+- updated man page for rfs_nssd
 - remove id lookup tables from client?
 - new packaging for Gentoo using /etc/conf.d/
-- show reasonable explanation for build-dependent options rather than
-  just saying "unknown option"
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

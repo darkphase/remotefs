@@ -123,9 +123,7 @@ enum
 {
 	KEY_HELP
 	, KEY_QUIET
-#ifdef WITH_EXPORTS_LIST 
 	, KEY_LISTEXPORTS
-#endif
 };
 
 /** on/off export options */

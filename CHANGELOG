@@ -7,11 +7,11 @@
 [*] remotefs may be built without UGO support
 [*] fixed segfault if certificate file(s) isn't exist
 [*] fixed packages default build arch for x86_64
-[*] flush support is back
+[*] flush() support is back
 [*] new rfscert.sh
 [*] files locking update
-[*] fixed files size for du and ls
-[*] fixed number of hardlinks
+[*] fixed buf with files size for du and ls
+[*] fixed bug with number of hardlinks
 
 rfsd:
 

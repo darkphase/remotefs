@@ -23,9 +23,7 @@ See the file LICENSE.
 
 static DEFINE_RFS_INSTANCE(rfs_instance);
 
-#ifdef WITH_EXPORTS_LIST
 static unsigned just_list_exports = 0;
-#endif
 
 #define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
 
@@ -33,9 +31,7 @@ struct fuse_opt rfs_opts[] =
 {
 	FUSE_OPT_KEY("-h", KEY_HELP),
 	FUSE_OPT_KEY("-q", KEY_QUIET),
-#ifdef WITH_EXPORTS_LIST
 	FUSE_OPT_KEY("-l", KEY_LISTEXPORTS),
-#endif
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
@@ -83,7 +79,7 @@ static void usage(const char *program)
 
 static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs)
 {
-	DEBUG("opt passed: %s\n", arg);
+	DEBUG("opt passed: '%s'\n", arg);
 
 	if (strcmp(arg, "allow_other") == 0)
 	{
@@ -94,6 +90,17 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	{
 		rfs_instance.config.set_fsname = 0;
 	}
+
+#ifndef WITH_SSL
+	if (strcmp(arg, "ssl") == 0
+	|| strstr(arg, "ciphers=") == arg)
+	{
+		ERROR("%s\n\n", "SSL options aren't supported in this remotefs build");
+		
+		usage(outargs->argv[0]);
+		exit(1);
+	}
+#endif
 
 	switch (key)
 	{	
@@ -109,7 +116,8 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 				delimiter = strchr(arg, ']');
 				if (delimiter == NULL)
 				{
-					return 1;
+					ERROR("%s\n", "No matching ']' in IPv6 host");
+					exit(1);
 				}
 				
 				rfs_instance.config.host = get_buffer(delimiter - arg);
@@ -163,11 +171,9 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		rfs_instance.config.quiet = 1;
 		return 0;
 	
-#ifdef WITH_EXPORTS_LIST
 	case KEY_LISTEXPORTS:
 		just_list_exports = 1;
 		return 0;
-#endif
 	}
 	
 	return 1;
@@ -306,6 +312,15 @@ int main(int argc, char **argv)
 	{
 		fuse_opt_free_args(&args);
 		exit(list_exports_main());
+	}
+#else
+	if (just_list_exports != 0)
+	{
+		ERROR("%s\n\n", "Exports list isn't supported in this build of remotefs");
+
+		fuse_opt_free_args(&args);
+		usage(argv[0]);
+		exit(1);
 	}
 #endif
 	
