@@ -23,7 +23,7 @@
 + show reasonable explanation for build-dependent options rather than
   just saying "unknown option" on -ossl and etc
 - man page for rfscert.sh
-- updated man page for rfs_nssd
++ updated man page for rfs_nssd
 - remove id lookup tables from client?
 - new packaging for Gentoo using /etc/conf.d/
 
