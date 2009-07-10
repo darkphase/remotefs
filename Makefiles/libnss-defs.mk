@@ -27,7 +27,6 @@ libnss_LDFLAGS = $(LDFLAGS_MAIN) \
 libnss_OBJS = rfs_nss/src/client.o \
 			  rfs_nss/src/client_common.o \
 			  rfs_nss/src/client_ent.o \
-			  rfs_nss/src/client_for_server.o \
 			  rfs_nss/src/common.o \
 			  rfs_nss/src/libnss.o \
 			  rfs_nss/src/nss_cmd.o 
