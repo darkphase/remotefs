@@ -17,10 +17,10 @@
 + improval of ssl-related error messages
 + correct locking on server
 + refuse to run rfsd if getuid() is not root's
++ more clear ssl-related error messages: move them to suggestions
 - remove -g option and use ugo-like groups setup based on -u instead 
 - remove id lookup tables from client?
 - new packaging for Gentoo using /etc/conf.d/
-- more clear ssl-related error messages: move them to suggestions
 
 bugs:
 + pid-file isn't deleted if rfsd can't start

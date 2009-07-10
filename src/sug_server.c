@@ -14,6 +14,10 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_server.h"
 #include "passwd.h"
+#ifdef WITH_SSL
+#	include "ssl_server.h"
+#endif
+#include "sug_common.h"
 #include "utils.h"
 
 static int check_listen_address(const char *address)
@@ -91,6 +95,16 @@ static int check_root_uid()
 	return 0;
 }
 
+#ifdef WITH_SSL
+int check_server_ssl(const struct rfsd_instance *instance)
+{
+	return check_ssl(choose_ssl_server_method(), 
+		instance->config.ssl_key_file, 
+		instance->config.ssl_cert_file, 
+		instance->config.ssl_ciphers);
+}
+#endif
+
 int suggest_server(const struct rfsd_instance *instance)
 {
 	int ret = 0;
@@ -114,6 +128,13 @@ int suggest_server(const struct rfsd_instance *instance)
 	{
 		ret = -1;
 	}
+
+#ifdef WITH_SSL
+	if (check_server_ssl(instance) != 0)
+	{
+		ret = -1;
+	}
+#endif
 	
 	if (ret != 0)
 	{

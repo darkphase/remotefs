@@ -318,11 +318,17 @@ src/ssl_server.o:src/config.h
 src/ssl_server.o:src/ssl_server.h
 src/sug_client.o:src/config.h
 src/sug_client.o:src/instance_client.h
+src/sug_client.o:src/ssl_client.h
+src/sug_client.o:src/sug_common.h
 src/sug_client.o:src/sug_client.h
 src/sug_client.o:src/utils.h
+src/sug_common.o:src/config.h
+src/sug_common.o:src/ssl.h
 src/sug_server.o:src/config.h
 src/sug_server.o:src/instance_server.h
 src/sug_server.o:src/passwd.h
+src/sug_server.o:src/ssl_server.h
+src/sug_server.o:src/sug_common.h
 src/sug_server.o:src/utils.h
 src/utils.o:src/config.h
 src/utils.o:src/sendrecv.h
@@ -359,7 +365,6 @@ rfs_nss/src/libnss.o:rfs_nss/src/config.h
 rfs_nss/src/manage_server.o:rfs_nss/src/config.h
 rfs_nss/src/manage_server.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/manage_server.o:rfs_nss/src/get_id.h
-rfs_nss/src/manage_server.o:rfs_nss/src/global_lock.h
 rfs_nss/src/manage_server.o:rfs_nss/src/manage_server.h
 rfs_nss/src/nss_cmd.o:rfs_nss/src/nss_cmd.h
 rfs_nss/src/processing.o:rfs_nss/src/config.h
@@ -375,14 +380,11 @@ rfs_nss/src/processing_ent.o:rfs_nss/src/cookies.h
 rfs_nss/src/processing_ent.o:rfs_nss/src/nss_cmd.h
 rfs_nss/src/processing_ent.o:rfs_nss/src/processing_common.h
 rfs_nss/src/processing_ent.o:rfs_nss/src/processing_ent.h
+rfs_nss/src/rfs_nssd.o:rfs_nss/src/client_common.h
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/config.h
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/global_lock.h
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/server.h
-rfs_nss/src/rfsnss_test.o:rfs_nss/src/client.h
-rfs_nss/src/rfsnss_test.o:rfs_nss/src/client_ent.h
-rfs_nss/src/rfsnss_test.o:rfs_nss/src/client_for_server.h
-rfs_nss/src/rfsnss_test.o:rfs_nss/src/config.h
 rfs_nss/src/server.o:rfs_nss/src/common.h
 rfs_nss/src/server.o:rfs_nss/src/config.h
 rfs_nss/src/server.o:rfs_nss/src/global_lock.h
@@ -450,6 +452,7 @@ src/ssl.o:src/ssl.c
 src/ssl_client.o:src/ssl_client.c
 src/ssl_server.o:src/ssl_server.c
 src/sug_client.o:src/sug_client.c
+src/sug_common.o:src/sug_common.c
 src/sug_server.o:src/sug_server.c
 src/utils.o:src/utils.c
 rfs_nss/src/client.o:rfs_nss/src/client.c
@@ -468,5 +471,4 @@ rfs_nss/src/processing.o:rfs_nss/src/processing.c
 rfs_nss/src/processing_common.o:rfs_nss/src/processing_common.c
 rfs_nss/src/processing_ent.o:rfs_nss/src/processing_ent.c
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/rfs_nssd.c
-rfs_nss/src/rfsnss_test.o:rfs_nss/src/rfsnss_test.c
 rfs_nss/src/server.o:rfs_nss/src/server.c

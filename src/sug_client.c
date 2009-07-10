@@ -15,11 +15,15 @@ See the file LICENSE.
 
 #include "config.h"
 #include "instance_client.h"
+#ifdef WITH_SSL
+#	include "ssl_client.h"
+#endif
+#include "sug_common.h"
 #include "sug_client.h"
 #include "utils.h"
 
 #ifdef WITH_SSL
-static void check_ssl(const char *host)
+static void check_protected_connection(const char *host)
 {
 	int addr_family = AF_UNSPEC;
 	char *real_host = host_ip(host, &addr_family);
@@ -56,6 +60,14 @@ static void check_ssl(const char *host)
 		WARN("%s\n", "WARNING: BTW, check out SECURITY NOTES section in rfs man page (`man rfs`) for default security policy of remotefs");
 	}
 }
+
+static int check_client_ssl(const struct rfs_instance *instance)
+{
+	return check_ssl(choose_ssl_client_method(), 
+		instance->config.ssl_key_file, 
+		instance->config.ssl_cert_file, 
+		instance->config.ssl_ciphers);
+}
 #endif
 
 static void check_passwd_file(const char *path)
@@ -81,7 +93,11 @@ void suggest_client(const struct rfs_instance *instance)
 #ifdef WITH_SSL
 	if (instance->config.enable_ssl == 0)
 	{
-		check_ssl(instance->config.host);
+		check_protected_connection(instance->config.host);
+	}
+	else
+	{
+		check_client_ssl(instance);
 	}
 #endif
 	if (instance->config.auth_user != NULL 

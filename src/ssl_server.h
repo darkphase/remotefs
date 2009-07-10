@@ -25,6 +25,9 @@ SSL* rfs_init_server_ssl(SSL_CTX **ctx, const char *key_file, const char *cert_f
 /** accept SSLed connection */
 int rfs_accept_ssl(SSL *socket);
 
+/** return supported SSL method (v23, v3, v2) */
+SSL_METHOD* choose_ssl_server_method();
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

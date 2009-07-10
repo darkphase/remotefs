@@ -10,7 +10,7 @@ See the file LICENSE.
 #include "config.h"
 #include "ssl_server.h"
 
-static SSL_METHOD* choose_ssl_server_method()
+SSL_METHOD* choose_ssl_server_method()
 {
 #if ! defined (OPENSSL_NO_SSL2) && ! defined (OPENSSL_NO_SSL3)
 	DEBUG("%s\n", "using OpenSSL v2 and v3");
