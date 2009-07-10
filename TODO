@@ -22,10 +22,11 @@
 + remove -g option and use ugo-like groups setup based on -u instead 
 + show reasonable explanation for build-dependent options rather than
   just saying "unknown option" on -ossl and etc
-- man page for rfscert.sh
++ man page for rfscert.sh
 + updated man page for rfs_nssd
 - remove id lookup tables from client?
 - new packaging for Gentoo using /etc/conf.d/
+- packaging for rfs_nss
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
