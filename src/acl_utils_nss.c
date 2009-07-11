@@ -85,7 +85,7 @@ char* patch_acl_for_server(const char *acl_text, const struct rfs_instance *inst
 	{
 		size_t last_len = strlen(start);
 
-		DEBUG("done: %ld, left: %ld, expected: %ld\n", done, last_len, patched_size);
+		DEBUG("done: %lu, left: %lu, expected: %lu\n", (long unsigned)done, (long unsigned)last_len, (long unsigned)patched_size);
 
 		if (done + last_len >= patched_size)
 		{
@@ -99,7 +99,7 @@ char* patch_acl_for_server(const char *acl_text, const struct rfs_instance *inst
 	
 	patched[done] = 0;
 
-	DEBUG("done patched: %ld, expected: %ld\n", done, patched_size - 1);
+	DEBUG("done patched: %lu, expected: %lu\n", (long unsigned)done, (long unsigned)patched_size - 1);
 
 	if (done < patched_size - 1)
 	{
