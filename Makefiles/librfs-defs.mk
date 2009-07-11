@@ -6,8 +6,7 @@
 
 librfs_TARGET = librfs
 
-librfs_CFLAGS  = $(CFLAGS_FUSE) \
-                 $(CFLAGS_MAIN) \
+librfs_CFLAGS  = $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
                  $(CFLAGS_SO) \
                  $(CFLAGS_OPTS)

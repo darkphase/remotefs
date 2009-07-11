@@ -59,6 +59,8 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
 }
 
+#if ! ( defined DARWIN || defined QNX )
+#ifdef WITH_SSL /* we don't need this on Linux/Solaris/FreeBSD if SSL isn't enabled */
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading as always");
@@ -125,6 +127,8 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 
 	return 0;
 }
+#endif /* WITH_SSL */
+#endif /* ! (defined DARWIN || defined QNX) */
 
 #if ! ( defined DARWIN || defined QNX )
 static int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
@@ -180,18 +184,30 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	
 	return 0;
 }
+#endif /* ! (defined DARWIN || defined QNX) */
 
-static unsigned use_sendfile(struct rfsd_instance *instance, size_t block_size)
+typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
+
+#if ! ( defined DARWIN || defined QNX )
+static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
 {
 #ifdef WITH_SSL
-	if (instance->sendrecv.ssl_enabled != 0)
+	if (read_size <= SENDFILE_LIMIT)
 	{
-		return 0;
+		return read_small_block;
 	}
-#endif
-	return 1;
+
+	return (instance->sendrecv.ssl_enabled != 0 ? read_as_always : read_with_sendfile);
+#else
+	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_with_sendfile);
+#endif /* WITH_SSL */
 }
-#endif
+#else /* DARWIN */
+static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
+{
+	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_as_always);
+}
+#endif /* ! (defined DARWIN || defined QNX) */
 
 int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
@@ -251,18 +267,6 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		return 0;
 	}
 
-	if (size <= SENDFILE_LIMIT)
-	{
-		return read_small_block(instance, cmd, handle, (off_t)offset, (size_t)size);
-	}
-	
-#if ! ( defined DARWIN || defined QNX )
-	return (use_sendfile(instance, size) != 0
-	? read_with_sendfile
-	: read_as_always)
-	(instance, cmd, handle, (off_t)offset, (size_t)size);
-#else
-	return read_as_always(instance, cmd, handle, (off_t)offset, (size_t)size);
-#endif
+	return choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
 }
 
