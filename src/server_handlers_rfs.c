@@ -280,73 +280,28 @@ static int setup_groups_by_uid(uid_t uid)
 	return 0;
 }
 
-static int setup_export_user(struct rfsd_instance *instance, const struct rfs_export *export_info, uid_t user_uid)
+static int setup_export_user(uid_t user_uid, gid_t user_gid)
 {
 	/* always setup groups before setting uid :) */
 	
-#ifdef WITH_UGO
-	if ((export_info->options & OPT_UGO) != 0)
+	DEBUG("setting process uid and gid according to uid %d\n", user_uid);
+
+	if (setregid(user_gid, user_gid) != 0
+	|| setreuid(user_uid, user_uid) != 0)
 	{
-		DEBUG("setting process uid according to UGO. uid: %d\n", user_uid);
-		if (instance->server.auth_user != NULL)
-		{
-			if (setreuid(user_uid, user_uid) != 0)
-			{
-				return -EACCES;
-			}
-		}
-		else
-		{
-			return -EACCES;
-		}
-	}
-	else
-#endif
-	{
-		DEBUG("setting process uid according to user=. uid: %d\n", export_info->export_uid);
-		if (export_info->export_uid != (uid_t)(-1)
-		&& export_info->export_uid != getuid())
-		{
-			if (setreuid(export_info->export_uid, export_info->export_uid) != 0)
-			{
-				return -EACCES;
-			}
-		}
+		return -EACCES;
 	}
 	
 	return 0;
 }
 
-static int setup_export_groups(struct rfsd_instance *instance, const struct rfs_export *export_info, uid_t user_uid)
+static int setup_export_groups(uid_t user_uid)
 {
-#ifdef WITH_UGO
-	if ((export_info->options & OPT_UGO) != 0)
+	DEBUG("setting process groups according to uid %d\n", user_uid);
+
+	if (setup_groups_by_uid(user_uid) != 0)
 	{
-		DEBUG("setting process groups according to UGO. uid: %d\n", user_uid);
-		if (instance->server.auth_user != NULL)
-		{
-			if (setup_groups_by_uid(user_uid) != 0)
-			{
-				return -EACCES;
-			}
-		}
-		else
-		{
-			return -EACCES;
-		}
-	}
-	else
-#endif
-	{
-		DEBUG("setting process groups according to user=. uid: %d\n", export_info->export_uid);
-		if (export_info->export_uid != (uid_t)(-1)
-		&& export_info->export_uid != getuid())
-		{
-			if (setup_groups_by_uid(export_info->export_uid) != 0)
-			{
-				return -EACCES;
-			}
-		}
+		return -EACCES;
 	}
 	
 	return 0;
@@ -410,12 +365,27 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	}
 #endif
 
+	/* by default use running process uid and gid */
 	uid_t user_uid = geteuid();
+	gid_t user_gid = getegid();
+
+	/* if user= is specified, use that uid and primary gid of that user */
+	if (export_info->export_uid != -1)
+	{
+		struct passwd *pwd = getpwuid(export_info->export_uid);
+		if (pwd == NULL)
+		{
+			free_buffer(buffer);
+			return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
+		}
+
+		user_uid = pwd->pw_uid;
+		user_gid = pwd->pw_gid;
+	}
 
 #ifdef WITH_UGO
 	/* if we're going into UGO, then user_uid and user_gid should 
 	point to logged user */
-
 	if (instance->server.auth_user != NULL 
 	&& (export_info->options & OPT_UGO) != 0)
 	{
@@ -423,6 +393,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		if (pwd != NULL)
 		{
 			user_uid = pwd->pw_uid;
+			user_gid = pwd->pw_gid;
 		}
 		else
 		{
@@ -436,7 +407,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 #endif
 
 	/* we need to setup groups before chroot() */
-	if (setup_export_groups(instance, export_info, user_uid) != 0)
+	if (setup_export_groups(user_uid) != 0)
 	{
 		free_buffer(buffer);
 
@@ -455,7 +426,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	
 	if (result == 0)
 	{
-		int setup_errno = setup_export_user(instance, export_info, user_uid);
+		int setup_errno = setup_export_user(user_uid, user_gid);
 		if (setup_errno != 0)
 		{
 			destroy_uids_lookup(&instance->id_lookup.uids);
