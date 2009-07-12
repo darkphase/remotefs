@@ -1,48 +1,21 @@
+include Makefiles/Linux.mk
+
 ################################
 # The executables
 ################################
 
 ARCH = i386
-MAKE = make
-CC = cc
-AR = ar
-RM = rm
-LN = ln -sf
 
 ################################
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror -m32 -I/usr/i486-linux-gnu/include
-CFLAGS_DEBUG   = -g -fPIC
-CFLAGS_RELEASE = -O2
-
-###############################
-# Flags needed for Fuse
-###############################
-
-CFLAGS_FUSE  = `pkg-config --cflags fuse` -DFUSE_USE_VERSION=26
-LDFLAGS_FUSE = `pkg-config --libs fuse`
+CFLAGS_OS      += -m32 -I/usr/i486-linux-gnu/include
 
 ###############################
 # Flags for linking
 ###############################
 
-LDFLAGS_DEBUG   = -g -m32 -L/usr/i486-linux-gnu/lib/
-LDFLAGS_RELEASE = -s -O2 -m32 -L/usr/i486-linux-gnu/lib/
-LDFLAGS_SSL     = -lssl
+LDFLAGS_DEBUG   += -m32 -L/usr/i486-linux-gnu/lib/
+LDFLAGS_RELEASE += -m32 -L/usr/i486-linux-gnu/lib/
 
-###############################
-# Flags for dymamic libraries
-###############################
-
-CFLAGS_SO    = -fPIC
-LDFLAGS_SO   = -shared -Wl,-soname,$(SO_NAME) -fPIC
-SO_EXT       = so
-SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
-
-###############################
-# Optional OS dependent program
-###############################
-
-RFS_NSS = rfs_nss

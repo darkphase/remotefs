@@ -5,3 +5,4 @@ include Makefiles/Linux.mk
 # QA_NOTICE or something
 #
 LDFLAGS_RELEASE = -O2
+
