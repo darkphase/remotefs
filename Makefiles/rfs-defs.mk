@@ -12,12 +12,12 @@ rfs_CFLAGS  = $(CFLAGS_FUSE) \
               $(CFLAGS_OPTS)
 
 rfs_LDFLAGS = $(LDFLAGS_MAIN) \
-              -L. -lrfs \
               $(LDFLAGS_OS) \
               $(LDFLAGS_FUSE) \
               $(LDFLAGS_NET) \
               $(LDFLAGS_PTHR) \
-              $(LDFLAGS_OPTS)
+              $(LDFLAGS_OPTS) \
+              -L. -lrfs 
 
 
 #######################################

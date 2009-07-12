@@ -15,6 +15,7 @@ nssd_CFLAGS  =  $(CFLAGS_MAIN) \
 nssd_LDFLAGS = $(LDFLAGS_MAIN) \
                $(LDFLAGS_OS) \
                $(LDFLAGS_NET) \
+               $(LDFLAGS_PTHR) \
                $(LDFLAGS_OPTS) \
 			   -L. -lrfs
 

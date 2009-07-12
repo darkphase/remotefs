@@ -30,6 +30,7 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 LDFLAGS_DEBUG   = -g
 LDFLAGS_RELEASE = -s -O2
 LDFLAGS_SSL     = -lssl
+LDFLAGS_PTHR	= -pthread
 
 ###############################
 # Flags for dymamic libraries

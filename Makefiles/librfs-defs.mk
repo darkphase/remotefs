@@ -15,9 +15,7 @@ librfs_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
 librfs_LDFLAGS = $(LDFLAGS_MAIN) \
                  $(LDFLAGS_SO) \
                  $(LDFLAGS_OS) \
-                 $(LDFLAGS_FUSE) \
                  $(LDFLAGS_NET) \
-                 $(LDFLAGS_PTHR) \
                  $(LDFLAGS_OPTS)
 
 #######################################
