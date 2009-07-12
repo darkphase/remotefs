@@ -59,7 +59,6 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
 }
 
-#if ! ( defined DARWIN || defined QNX )
 #ifdef WITH_SSL /* we don't need this on Linux/Solaris/FreeBSD if SSL isn't enabled */
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
@@ -128,7 +127,6 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 	return 0;
 }
 #endif /* WITH_SSL */
-#endif /* ! (defined DARWIN || defined QNX) */
 
 #if ! ( defined DARWIN || defined QNX )
 static int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
@@ -148,7 +146,7 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	{
 		return -1;
 	}
-	
+
 	size_t done = 0;
 	while (done < size)
 	{
@@ -243,13 +241,13 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	
 	struct stat st = { 0 };
-	fstat(handle, &st);
+	fstat(handle, &st); /* this is a bug. fstat() result should be checked */
 	
 	if (offset > st.st_size)
 	{
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
-	
+
 	if (size + offset > st.st_size)
 	{
 		size = st.st_size - offset;

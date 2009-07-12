@@ -67,7 +67,8 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 
 	if (ans.data_len > 0)
 	{
-		if (rfs_receive_data(&instance->sendrecv, buf, ans.data_len) == -1)
+		if (rfs_receive_data_oob(&instance->sendrecv, buf, ans.data_len) == -1
+		&& instance->sendrecv.oob_received == 0)
 		{
 			return -ECONNABORTED;
 		}
@@ -75,6 +76,10 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	
 	if (instance->sendrecv.oob_received != 0)
 	{
+		DEBUG("%s\n", "something is wrong, reading fixed answer");
+
+		instance->sendrecv.oob_received = 0;
+
 		if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 		{
 			return -ECONNABORTED;

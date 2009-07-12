@@ -200,8 +200,8 @@ static int start_server(const char *address, const unsigned port)
 		if (fork() == 0) /* child */
 		{
 			close(listen_socket);
-			setup_socket_ndelay(client_socket, 1);
 #ifdef WITH_SCHEDULING
+			setup_socket_ndelay(client_socket, 1);
 			set_scheduler();
 #endif
 

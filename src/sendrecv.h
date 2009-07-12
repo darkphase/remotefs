@@ -23,7 +23,6 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 
 size_t rfs_send_cmd(struct sendrecv_info *info, const struct command *cmd);
 size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans);
-size_t rfs_send_answer_oob(struct sendrecv_info *info, const struct answer *ans);
 size_t rfs_send_data(struct sendrecv_info *info, const void *data, const size_t data_len);
 size_t rfs_receive_cmd(struct sendrecv_info *info, struct command *cmd);
 size_t rfs_receive_answer(struct sendrecv_info *info, struct answer *ans);
@@ -40,6 +39,9 @@ size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans
 size_t rfs_send_answer_data_part(struct sendrecv_info *info, const struct answer *ans, const void *ans_data, const size_t ans_data_len);
 
 size_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len);
+
+size_t rfs_send_answer_oob(struct sendrecv_info *info, const struct answer *ans);
+size_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len);
 
 #ifdef RFS_DEBUG
 void dump_sendrecv_stats(struct sendrecv_info *info);

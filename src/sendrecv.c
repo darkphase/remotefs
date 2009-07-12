@@ -228,7 +228,27 @@ static ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigne
 	return size_sent;
 }
 
-static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size)
+static inline int is_mark(int socket)
+{
+	int atmark = 0;
+
+	if (ioctl(socket, SIOCATMARK, &atmark) < 0)
+	{
+		return -1;
+	}
+
+	DEBUG("atmark: %d\n", atmark);
+
+	if (atmark != 0)
+	{
+		char oob = 0;
+		return (recv(socket, (char *)&oob, 1, MSG_OOB) < 0 ? -1 : 1);
+	}
+
+	return 0;
+}
+
+static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
 {
 	ssize_t size_recv = 0;
 	while (size_recv < size)
@@ -244,27 +264,29 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size)
 		else
 		{
 #endif
+			if (check_oob != 0)
+			{
+				/* is_mark() will clear stream from OOB message */
+				int check_mark = is_mark(info->socket);
+
+				DEBUG("is mark: %d\n", check_mark);
+
+				if (check_mark < 0)
+				{
+					return -EIO;
+				}
+				else if (check_mark != 0)
+				{
+					info->oob_received = 1;
+					return -EIO;
+				}
+			}
+			
 			done = recv(info->socket, buffer + size_recv, size - size_recv, 0);
 #ifdef WITH_SSL
 		}
 #endif
-
-		if (done < size_recv)
-		{
-			int atmark = 0;
-			ioctl(info->socket, SIOCATMARK, &atmark);
-
-			if (atmark != 0)
-			{
-				info->oob_received = 1;
-
-				char oob = 0;
-				recv(info->socket, (char *)&oob, 1, MSG_OOB | MSG_PEEK);
-
-				return -EIO;
-			}
-		}
-
+	
 		if (done <= 0)
 		{
 			if (errno == EAGAIN || errno == EINTR)
@@ -294,10 +316,10 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size)
 	return (size_t)size_recv;
 }
 
-static ssize_t rfs_readv(struct sendrecv_info *info, struct iovec *iov, unsigned count)
+static ssize_t rfs_readv(struct sendrecv_info *info, struct iovec *iov, unsigned count, unsigned check_oob)
 {
 	/* readv is somewhat strange 
-	it's receiving data by chunks of 1460 bytes (wtf?) and sometimes hangs
+	it's receiving data by chunks of 1460 bytes and sometimes hangs
 	not sure if hanging isn't remotefs fault 
 	
 	but it's better to use rfs_recv for now, since we're not using
@@ -305,7 +327,7 @@ static ssize_t rfs_readv(struct sendrecv_info *info, struct iovec *iov, unsigned
 	
 	if (count == 1)
 	{
-		return rfs_recv(info, iov[0].iov_base, iov[0].iov_len);
+		return rfs_recv(info, iov[0].iov_base, iov[0].iov_len, check_oob);
 	}
 
 	return -EINVAL;
@@ -394,7 +416,7 @@ size_t rfs_send_cmd_data2(struct sendrecv_info *info,
 	return (size_t)ret;
 }
 
-size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
+inline size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
 {
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);
@@ -484,31 +506,8 @@ size_t rfs_send_answer_oob(struct sendrecv_info *info, const struct answer *ans)
 	{
 		return -1;
 	}
-	
-	size_t size_sent = 0;
 
-	struct answer send_answer = { 0 };
-	send_answer.command = htonl(ans->command);
-	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = htonl(ans->ret);
-	send_answer.ret_errno = hton_errno(ans->ret_errno);
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_answer;
-	iov[0].iov_len  = sizeof(send_answer);
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_answer(ans);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 1);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-
-	return size_sent;
+	return rfs_send_answer(info, ans);
 }
 
 size_t rfs_send_data(struct sendrecv_info *info, const void *data, const size_t data_len)
@@ -540,7 +539,7 @@ size_t rfs_receive_answer(struct sendrecv_info *info, struct answer *ans)
 	iov[0].iov_len  = sizeof(recv_answer);
 
 	DEBUG("%s\n", "receiving answer");
-	ssize_t ret = rfs_readv(info, iov, 1);
+	ssize_t ret = rfs_readv(info, iov, 1, 0);
 	if (ret < 0)
 	{
 		return -1;
@@ -567,7 +566,7 @@ size_t rfs_receive_cmd(struct sendrecv_info *info, struct command *cmd)
 	iov[0].iov_len  = sizeof(recv_command);
 	
 	DEBUG("%s\n", "receiving command");
-	ssize_t ret = rfs_readv(info, iov, 1);
+	ssize_t ret = rfs_readv(info, iov, 1, 0);
 	if (ret < 0)
 	{
 		return -1;
@@ -583,7 +582,7 @@ size_t rfs_receive_cmd(struct sendrecv_info *info, struct command *cmd)
 	return (size_t)ret;
 }
 
-size_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len)
+static inline size_t _rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len, unsigned check_oob)
 {
 	if (data_len < 1)
 	{
@@ -594,13 +593,23 @@ size_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t dat
 	iov[0].iov_base = (char*)data;
 	iov[0].iov_len  = data_len;
 
-	ssize_t ret = rfs_readv(info, iov, 1);
+	ssize_t ret = rfs_readv(info, iov, 1, check_oob);
 	if (ret < 0)
 	{
 		return -1;
 	}
 	
 	return (size_t)ret;
+}
+
+size_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len)
+{
+	return _rfs_receive_data(info, data, data_len, 0);
+}
+
+size_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len)
+{
+	return _rfs_receive_data(info, data, data_len, 1);
 }
 
 size_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len)
@@ -615,7 +624,7 @@ size_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_le
 	{
 		iov[0].iov_len = (data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored);
 		
-		ssize_t ret = rfs_readv(info, iov, 1);
+		ssize_t ret = rfs_readv(info, iov, 1, 0);
 		if (ret < 1)
 		{
 			return -1;
