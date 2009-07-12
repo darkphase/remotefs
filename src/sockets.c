@@ -19,39 +19,6 @@ See the file LICENSE.
 #endif
 #include <netinet/tcp.h>
 
-int setup_socket_timeout(int socket, const int timeout)
-{
-	struct timeval socket_timeout = { timeout, 0 };
-	errno = 0;
-	if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &socket_timeout, sizeof(socket_timeout)) != 0)
-	{
-		return -errno;
-	}
-
-	errno = 0;
-	if (setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &socket_timeout, sizeof(socket_timeout)) != 0)
-	{
-		return -errno;
-	}
-	
-	return 0;
-}
-
-int setup_socket_buffer(int socket, const int size)
-{
-	errno = 0;
-	if (setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) != 0)
-	{
-		return -errno;
-	}
-
-	if (setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) != 0)
-	{
-		return -errno;
-	}
-	return 0;
-}
-
 int setup_socket_reuse(int socket, const char reuse)
 {
 	int reuse_copy = reuse;

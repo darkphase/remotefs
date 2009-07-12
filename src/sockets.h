@@ -15,12 +15,6 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** set socket timeout */
-int setup_socket_timeout(int socket, const int timeout);
-
-/** set socket buffer */
-int setup_socket_buffer(int socket, const int size);
-
 /** set socket to reuse address */
 int setup_socket_reuse(int socket, const char reuse);
 
