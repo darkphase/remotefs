@@ -33,6 +33,7 @@ nssd_OBJS = rfs_nss/src/client_common.o \
 			rfs_nss/src/processing.o \
 			rfs_nss/src/processing_common.o \
 			rfs_nss/src/processing_ent.o \
+			rfs_nss/src/maintenance.o \
 			rfs_nss/src/manage_server.o \
 			rfs_nss/src/nss_cmd.o \
 			rfs_nss/src/rfs_nssd.o \

@@ -362,6 +362,8 @@ rfs_nss/src/libnss.o:rfs_nss/src/client_common.h
 rfs_nss/src/libnss.o:rfs_nss/src/client_ent.h
 rfs_nss/src/libnss.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/libnss.o:rfs_nss/src/config.h
+rfs_nss/src/maintenance.o:rfs_nss/src/config.h
+rfs_nss/src/maintenance.o:rfs_nss/src/maintenance.h
 rfs_nss/src/manage_server.o:rfs_nss/src/config.h
 rfs_nss/src/manage_server.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/manage_server.o:rfs_nss/src/get_id.h
@@ -388,6 +390,7 @@ rfs_nss/src/rfs_nssd.o:rfs_nss/src/server.h
 rfs_nss/src/server.o:rfs_nss/src/common.h
 rfs_nss/src/server.o:rfs_nss/src/config.h
 rfs_nss/src/server.o:rfs_nss/src/global_lock.h
+rfs_nss/src/server.o:rfs_nss/src/maintenance.h
 rfs_nss/src/server.o:rfs_nss/src/manage_server.h
 rfs_nss/src/server.o:rfs_nss/src/nss_cmd.h
 rfs_nss/src/server.o:rfs_nss/src/processing.h
@@ -465,6 +468,7 @@ rfs_nss/src/cookies.o:rfs_nss/src/cookies.c
 rfs_nss/src/get_id.o:rfs_nss/src/get_id.c
 rfs_nss/src/global_lock.o:rfs_nss/src/global_lock.c
 rfs_nss/src/libnss.o:rfs_nss/src/libnss.c
+rfs_nss/src/maintenance.o:rfs_nss/src/maintenance.c
 rfs_nss/src/manage_server.o:rfs_nss/src/manage_server.c
 rfs_nss/src/nss_cmd.o:rfs_nss/src/nss_cmd.c
 rfs_nss/src/processing.o:rfs_nss/src/processing.c
