@@ -61,9 +61,9 @@ check_cert() {
 _UID=`id | sed 's/uid=\([0-9]*\)(.*/\1/'`
 if [ $_UID -eq 0 ]; then
 	echo "You're may want to:";
-	echo "[1]\t\t - Create server's ceritficate";
-	echo "[2]\t\t - Create client's certificate";
-	echo "[anything else]\t - Quit";
+	echo "[1]               - Create server's ceritficate";
+	echo "[2]               - Create client's certificate";
+	echo "[anything else]   - Quit";
 	echo "";
 
 	read "CHOICE"

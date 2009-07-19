@@ -16,7 +16,7 @@ install_nssd:
 	    cp $(nssd_TARGET) $(INSTALL_DIR)/bin; \
 	fi
 	
-uninstall_rfsd:
+uninstall_nssd:
 	if [ -f $(INSTALL_DIR)/bin/$(nssd_TARGET) ]; then \
 	    rm -f $(INSTALL_DIR)/bin/$(nssd_TARGET); \
 	fi

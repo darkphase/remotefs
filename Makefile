@@ -96,7 +96,11 @@ rfsdebuild: dummy
 	@$(MAKE) -sf Makefiles/base.mk rfsdebuild
 rfsebuild: dummy
 	@$(MAKE) -sf Makefiles/base.mk rfsebuild
-ebuilds: rfsdebuild rfsebuild
+rfssslebuild: dummy
+	@$(MAKE) -sf Makefiles/base.mk rfssslebuild
+rfsnssebuild: dummy
+	@$(MAKE) -sf Makefiles/base.mk rfsnssebuild
+ebuilds: rfsdebuild rfsebuild rfssslebuild rfsnssebuild
 
 tbz: dummy
 	@$(MAKE) -sf Makefiles/base.mk tbz
@@ -121,6 +125,11 @@ install_server:
 install: dummy install_client install_server
 	@$(MAKE) -sf Makefiles/base.mk install_man
 
+install_nss: dummy 
+	@$(MAKE) -sf Makefiles/libnss.mk install_libnss
+	@$(MAKE) -sf Makefiles/nssd.mk install_nssd
+	@$(MAKE) -sf Makefiles/base.mk install_man
+
 uninstall_client:
 	@$(MAKE) -sf Makefiles/librfs.mk uninstall_librfs
 	@$(MAKE) -sf Makefiles/rfs.mk uninstall_rfs
@@ -130,9 +139,16 @@ uninstall_server:
 uninstall: dummy uninstall_client uninstall_server
 	@$(MAKE) -sf Makefiles/base.mk uninstall_man
 
+uninstall_nss: dummy
+	@$(MAKE) -sf Makefiles/nssd.mk uninstall_nssd
+	@$(MAKE) -sf Makefiles/libnss.mk uninstall_libnss
+	@$(MAKE) -sf Makefiles/base.mk uninstall_man
+
 rfs_man:
 	@$(MAKE) -sf Makefiles/base.mk rfs_man
 rfsd_man:
 	@$(MAKE) -sf Makefiles/base.mk rfsd_man
 man: dummy rfs_man rfsd_man
 
+nss_man:
+	@$(MAKE) -sf Makefiles/base.mk rfsnss_man

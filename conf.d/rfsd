@@ -15,9 +15,6 @@ PORT="5001"
 # Run rfsd as this user
 RFSD_USER="root"
 
-# Run rfsd in this group
-RFSD_GROUP="root"
-
 # Where the pidfile sould live
 PIDFILE="/var/run/rfsd.pid"
 

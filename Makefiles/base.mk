@@ -381,10 +381,18 @@ rfsdebuild: dummy
 rfsebuild: dummy
 	TARGET="rfs" $(MAKE) -f Makefiles/base.mk genebuild
 
+rfssslebuild: dummy
+	TARGET="rfs-ssl" $(MAKE) -f Makefiles/base.mk genebuild
+
+rfsnssebuild: dummy
+	TARGET="rfsnss" $(MAKE) -f Makefiles/base.mk genebuild
+
 genebuild: dummy
 	echo "Creating $(TARGET)-${VERSION}-r${RELEASE}.ebuild"
 	sed -e "s/INSERT BUILDDIR HERE/\"remotefs-${VERSION}-${RELEASE}\"/" \
 	-e "s/VERSION HERE/${VERSION}-${RELEASE}/" \
+	-e "s/JUST VERSION/${VERSION}/" \
+	-e "s/GENTOO VERSION/${VERSION}-r${RELEASE}/" \
 	"gentoo/$(TARGET).ebuild" > "$(TARGET)-${VERSION}-r${RELEASE}.ebuild";
 
 dummy:

@@ -8,7 +8,7 @@ librfs_TARGET = librfs
 
 librfs_CFLAGS  = -D_FILE_OFFSET_BITS=64 \
                  $(CFLAGS_MAIN) \
-				 $(CFLAGS_OS) \
+                 $(CFLAGS_OS) \
                  $(CFLAGS_SO) \
                  $(CFLAGS_OPTS)
 

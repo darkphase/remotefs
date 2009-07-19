@@ -37,7 +37,7 @@ start() {
       ebegin "Starting rfsd"
       start-stop-daemon --start --quiet --oknodo \
         --pidfile ${PIDFILE} --exec /usr/bin/rfsd -- \
-        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE} ${QUIET}
+        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
       eend $?
 }
 
@@ -55,7 +55,7 @@ restart() {
 reload() {
       ebegin "Reloading rfsd"
       kill -HUP `cat ${PIDFILE}` && \
-        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE} ${QUIET}
+        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
       eend $?
 }
 
