@@ -111,7 +111,11 @@ rfsd_man:
 	gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
 	gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
 
-man: dummy rfs_man rfsd_man
+rfsnss_man: dummy
+	mkdir -p man/gz/man1
+	gzip -c < man/rfs_nssd.1 > man/gz/man1/rfs_nssd.1.gz
+
+man: dummy rfs_man rfsd_man rfsnss_man
 
 #############################
 # Build tarball
@@ -125,6 +129,8 @@ tbz:
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/src/"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/sbin/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
 	cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/"
@@ -132,23 +138,29 @@ tbz:
 	cp CHANGELOG "remotefs-$(VERSION)-$(RELEASE)/"
 	cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src/"
 	cp src/md5crypt/*.c src/md5crypt/*.h "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
-	cp src/md5crypt/LSM src/md5crypt/ORIGIN src/md5crypt/README "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
+	cp src/md5crypt/ORIGIN src/md5crypt/README "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
 	cp src/acl/include/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
 	cp src/acl/doc/* "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
 	cp src/acl/libacl/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
 	cp src/acl/ORIGIN "remotefs-$(VERSION)-$(RELEASE)/src/acl/"
+	cp rfs_nss/LICENSE "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/"
+	cp rfs_nss/AUTHORS "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/"
+	cp rfs_nss/src/*.c rfs_nss/src/*.h "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/src/"
 	cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/"
 	cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/debian"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/redhat"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/kamikaze"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/gentoo"
+	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/conf.d"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
 	cp debian/* "remotefs-$(VERSION)-$(RELEASE)/debian/"
 	cp redhat/* "remotefs-$(VERSION)-$(RELEASE)/redhat/"
 	cp kamikaze/* "remotefs-$(VERSION)-$(RELEASE)/kamikaze/"
 	cp gentoo/* "remotefs-$(VERSION)-$(RELEASE)/gentoo/"
+	cp conf.d/* "remotefs-$(VERSION)-$(RELEASE)/conf.d/"
+	cp sbin/* "remotefs-$(VERSION)-$(RELEASE)/sbin/"
 	cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/"
 	cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/"
 	cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
@@ -175,8 +187,6 @@ uninstall_man: dummy
 #############################
 # Build deb packages
 #############################
-
-debrelease: rfsdeb rfsddeb
 
 debbase:
 	mkdir -p "dpkg$(INSTALL_DIR)";
@@ -225,6 +235,23 @@ rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	NAME="rfsd" \
 	$(MAKE) -f Makefiles/base.mk builddeb
 
+rfsnssmanpages: dummy
+	$(MAKE) -sf Makefiles/base.mk rfsnss_man
+	mkdir -p dpkg_man/man1/
+	cp man/gz/man1/rfs_nssd.1.gz dpkg_man/man1/
+
+rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages
+	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	$(MAKE) -f Makefiles/base.mk clean_build
+	$(MAKE) -f Makefiles/base.mk libnss >/dev/null
+	$(MAKE) -f Makefiles/base.mk nss >/dev/null
+	mkdir -p "dpkg/lib";
+	cp rfs_nssd "dpkg$(INSTALL_DIR)/bin/";
+	cp libnss_rfs.so.2 "dpkg/lib/";
+	CONTROL_TEMPLATE="debian/control.rfsnss" \
+	NAME="rfsnss" \
+	$(MAKE) -f Makefiles/base.mk builddeb
+
 builddeb: dummy
 	if [ -d dpkg_man ];\
 	then\
@@ -250,8 +277,6 @@ builddeb: dummy
 #############################
 # Build RPM
 #############################
-
-rpm: rpm-rfsd rpm-rfs
 
 rfsrpm: dummy
 	$(MAKE) -sf Makefiles/base.mk clean_tmp

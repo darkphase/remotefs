@@ -82,7 +82,10 @@ rfsdeb: dummy
 rfsddeb: dummy
 	@ARCH=`dpkg --print-architecture` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb
-debs: rfsdeb rfsddeb
+rfsnssdeb: dummy
+	@ARCH=`dpkg --print-architecture` \
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsnssdeb
+debs: rfsdeb rfsddeb rfsnssdeb
 
 rfsdipk: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdipk
