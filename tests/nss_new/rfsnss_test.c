@@ -105,7 +105,9 @@ int main()
 
 		printf(">>> %s, %d, %d\n", pwd->pw_name, pwd->pw_uid, pwd->pw_gid);
 	}
+	/*
 	endpwent();
+	*/
 	
 	return 0;
 }
