@@ -243,6 +243,7 @@ rfsnssmanpages: dummy
 rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	$(MAKE) -f Makefiles/base.mk clean_build
+	$(MAKE) -f Makefiles/base.mk librfs >/dev/null
 	$(MAKE) -f Makefiles/base.mk libnss >/dev/null
 	$(MAKE) -f Makefiles/base.mk nss >/dev/null
 	mkdir -p "dpkg/lib";
