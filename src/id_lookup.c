@@ -16,48 +16,44 @@ See the file LICENSE.
 #include "buffer.h"
 #include "list.h"
 
-static int put_to_uids(struct list **uids, const char *name, const uid_t uid)
+typedef const void* (*compare_func)(const void *entry, const void *value);
+typedef void (*destroy_func)(void *data);
+typedef void* (*alloc_func)(char *name, const void *id);
+
+static inline const void* compare_uid_name(const void *entry, const void *name)
 {
-	struct uid_look_ent *entry = get_buffer(sizeof(*entry));
-	if (entry == NULL)
-	{
-		return -1;
-	}
+	return (strcmp(((struct uid_look_ent *)entry)->name, (const char *)name) == 0 ? &((struct uid_look_ent *)entry)->uid : NULL) ;
+}
+
+static inline const void* compare_gid_name(const void *entry, const void *name)
+{
+	return (strcmp(((struct gid_look_ent *)entry)->name, (const char *)name) == 0 ? &((struct gid_look_ent *)entry)->gid : NULL) ;
+}
+
+static const void* get_id(const struct list *ids, const char *name, compare_func comparator)
+{
+	const struct list *entry = ids;
 	
-	const char *dup_name = strdup(name);
-	if (dup_name == NULL)
+	while (entry != NULL)
 	{
-		free_buffer(entry);
-		return -1;
-	}
-	
-	entry->name = dup_name;
-	entry->uid = uid;
-	
-	if (add_to_list(uids, entry) == NULL)
-	{
-		free((void*)entry->name);
-		free_buffer(entry);
+		const void *id = comparator(entry->data, name);
+		if (id != NULL)
+		{
+			return id;
+		}
 		
-		return -1;
+		entry = entry->next;
 	}
-	
-	return 0;
+
+	return NULL;
 }
 
 uid_t get_uid(const struct list *uids, const char *name)
 {
-	const struct list *entry = uids;
-	
-	while (entry != NULL)
+	const void *uid = get_id(uids, name, compare_uid_name);
+	if (uid != NULL)
 	{
-		const struct uid_look_ent *item = (const struct uid_look_ent *)entry->data;
-		if (strcmp(item->name, name) == 0)
-		{
-			return item->uid;
-		}
-		
-		entry = entry->next;
+		return *(uid_t *)uid;
 	}
 	
 	struct passwd *pwd = getpwnam(name);
@@ -69,72 +65,12 @@ uid_t get_uid(const struct list *uids, const char *name)
 	return (uid_t)-1;
 }
 
-const char* get_uid_name(const struct list *uids, uid_t uid)
-{
-	const struct list *entry = uids;
-	
-	while (entry != NULL)
-	{
-		const struct uid_look_ent *item = (const struct uid_look_ent *)entry->data;
-		if (item->uid == uid)
-		{
-			return item->name;
-		}
-		
-		entry = entry->next;
-	}
-
-	struct passwd *pwd = getpwuid(uid);
-	if (pwd != NULL)
-	{
-		return pwd->pw_name;
-	}
-	
-	return NULL;
-}
-
-static int put_to_gids(struct list **gids, const char *name, const gid_t gid)
-{
-	struct gid_look_ent *entry = get_buffer(sizeof(*entry));
-	if (entry == NULL)
-	{
-		return -1;
-	}
-	
-	const char *dup_name = strdup(name);
-	if (dup_name == NULL)
-	{
-		free_buffer(entry);
-		return -1;
-	}
-	
-	entry->name = dup_name;
-	entry->gid = gid;
-	
-	if (add_to_list(gids, entry) == NULL)
-	{
-		free((void*)entry->name);
-		free_buffer(entry);
-		
-		return -1;
-	}
-	
-	return 0;
-}
-
 gid_t get_gid(const struct list *gids, const char *name)
 {
-	const struct list *entry = gids;
-	
-	while (entry != NULL)
+	const void *gid = get_id(gids, (void *)name, compare_gid_name);
+	if (gid != NULL)
 	{
-		const struct gid_look_ent *item = (const struct gid_look_ent *)entry->data;
-		if (strcmp(item->name, name) == 0)
-		{
-			return item->gid;
-		}
-		
-		entry = entry->next;
+		return *(gid_t *)gid;
 	}
 	
 	struct group *grp = getgrnam(name);
@@ -146,19 +82,58 @@ gid_t get_gid(const struct list *gids, const char *name)
 	return (gid_t)-1;
 }
 
-const char* get_gid_name(const struct list *gids, gid_t gid)
+static inline const void* compare_gids(const void *entry, const void *gid)
 {
-	const struct list *entry = gids;
+	return (((struct gid_look_ent *)entry)->gid == *(gid_t *)gid ? ((struct gid_look_ent *)entry)->name : NULL) ;
+}
+
+static inline const void* compare_uids(const void *entry, const void *uid)
+{
+	return (((struct uid_look_ent *)entry)->uid == *(uid_t *)uid ? ((struct uid_look_ent *)entry)->name : NULL) ;
+}
+
+static const void* get_name(const struct list *uids, void *id, compare_func comparator)
+{
+	const struct list *entry = uids;
 	
 	while (entry != NULL)
 	{
-		const struct gid_look_ent *item = (const struct gid_look_ent *)entry->data;
-		if (item->gid == gid)
+		const void *name = comparator(entry->data, id);
+		if (name != NULL)
 		{
-			return item->name;
+			return name;
 		}
 		
 		entry = entry->next;
+	}
+
+	return NULL;
+}
+
+const char* get_uid_name(const struct list *uids, uid_t uid)
+{
+	const void *name = get_name(uids, &uid, compare_uids);
+	if (name != NULL)
+	{
+		return (const char *)name;
+	}
+	
+	struct passwd *pwd = getpwuid(uid);
+	if (pwd != NULL)
+	{
+		return pwd->pw_name;
+	}
+	
+	return NULL;
+}
+
+const char* get_gid_name(const struct list *gids, gid_t gid)
+{
+	const void *name = get_name(gids, &gid, compare_gids);
+
+	if (name != NULL)
+	{
+		return (const char *)name;
 	}
 	
 	struct group *grp = getgrgid(gid);
@@ -170,14 +145,68 @@ const char* get_gid_name(const struct list *gids, gid_t gid)
 	return NULL;
 }
 
+static inline void* alloc_uid_ent(char *name, const void *id)
+{
+	struct uid_look_ent *entry = get_buffer(sizeof(*entry));
+	if (entry == NULL)
+	{
+		return NULL;
+	}
+
+	entry->name = name;
+	entry->uid = *(uid_t *)id;
+
+	return entry;
+}
+
+static inline void* alloc_gid_ent(char *name, const void *id)
+{
+	struct gid_look_ent *entry = get_buffer(sizeof(*entry));
+	if (entry == NULL)
+	{
+		return NULL;
+	}
+
+	entry->name = name;
+	entry->gid = *(gid_t *)id;
+
+	return entry;
+}
+
+static int put_to_ids(struct list **ids, const char *name, const void *id, alloc_func allocator)
+{
+	char *dup_name = strdup(name);
+	if (dup_name == NULL)
+	{
+		return -1;
+	}
+
+	void *entry = allocator(dup_name, id);
+	if (entry == NULL)
+	{
+		free(dup_name);
+		return -1;
+	}
+	
+	if (add_to_list(ids, entry) == NULL)
+	{
+		free(dup_name);
+		free_buffer(entry);
+		
+		return -1;
+	}
+
+	return 0;
+}
+
 int create_uids_lookup(struct list **uids)
 {
 	DEBUG("%s\n", "creating uid lookup table");
 
 	struct passwd *pwd = NULL;
-#if defined FREEBSD
+	
 	setpwent();
-#endif
+
 	do
 	{
 		pwd = getpwent();
@@ -186,16 +215,15 @@ int create_uids_lookup(struct list **uids)
 			break;
 		}
 		
-		if (put_to_uids(uids, pwd->pw_name, pwd->pw_uid) != 0)
+		if (put_to_ids(uids, pwd->pw_name, (const void *)&(pwd->pw_uid), alloc_uid_ent) != 0)
 		{
 			return -1;
 		}
 	}
 	while (pwd != NULL);
 	
-#if defined FREEBSD
 	endpwent();
-#endif
+
 	return 0;
 }
 
@@ -204,9 +232,9 @@ int create_gids_lookup(struct list **gids)
 	DEBUG("%s\n", "creating gid lookup table");
 	
 	struct group *grp = NULL;
-#if defined FREEBSD
+
 	setgrent();
-#endif
+
 	do
 	{
 		grp = getgrent();
@@ -215,53 +243,54 @@ int create_gids_lookup(struct list **gids)
 			break;
 		}
 		
-		if (put_to_gids(gids, grp->gr_name, grp->gr_gid) != 0)
+		if (put_to_ids(gids, grp->gr_name, (const void *)&(grp->gr_gid), alloc_gid_ent) != 0)
 		{
 			return -1;
 		}
 	}
 	while (grp != NULL);
 	
-#if defined FREEBSD
 	endgrent();
-#endif
+
 	return 0;
+}
+
+static inline void destroy_uid(void *entry)
+{
+	free(((struct uid_look_ent *)entry)->name);
+}
+
+static inline void destroy_gid(void *entry)
+{
+	free(((struct gid_look_ent *)entry)->name);
+}
+
+static inline void destroy_ids(struct list **ids, destroy_func destroyer)
+{
+	struct list *entry = *ids;
+
+	while (entry != NULL)
+	{
+		destroyer(entry->data);
+		
+		entry = entry->next;
+	}
+	
+	destroy_list(ids);
+	*ids = NULL;
 }
 
 void destroy_uids_lookup(struct list **uids)
 {
 	DEBUG("%s\n", "destroying uid lookup table");
-	
-	struct list *entry = *uids;
-	
-	while (entry != NULL)
-	{
-		struct uid_look_ent *item = (struct uid_look_ent *)entry->data;
-		free((void*)item->name);
-		item->name = NULL;
-		
-		entry = entry->next;
-	}
-	
-	destroy_list(uids);
-	*uids = NULL;
+
+	destroy_ids(uids, destroy_uid);
 }
 
 void destroy_gids_lookup(struct list **gids)
 {
 	DEBUG("%s\n", "destroying gid lookup table");
 	
-	struct list *entry = *gids;
-	
-	while (entry != NULL)
-	{
-		struct gid_look_ent *item = (struct gid_look_ent *)(entry->data);
-		free((void*)item->name);
-		
-		entry = entry->next;
-	}
-	
-	destroy_list(gids);
-	*gids = NULL;
+	destroy_ids(gids, destroy_gid);
 }
 

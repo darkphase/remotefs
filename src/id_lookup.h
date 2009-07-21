@@ -19,13 +19,13 @@ struct list;
 
 struct uid_look_ent
 {
-	const char *name;
+	char *name;
 	uid_t uid;
 };
 
 struct gid_look_ent
 {
-	const char *name;
+	char *name;
 	gid_t gid;
 };
 
