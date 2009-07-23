@@ -247,7 +247,7 @@ int handle_connection(struct rfsd_instance *instance, int client_socket, const s
 		
 		if (instance->sendrecv.connection_lost != 0)
 		{
-			if (((struct sockaddr_in*)&client_addr)->sin_family == AF_INET)
+			if (((struct sockaddr_in*)client_addr)->sin_family == AF_INET)
 			{
 				char straddr[INET_ADDRSTRLEN + 1] = { 0 };
 				struct sockaddr_in *sa = (struct sockaddr_in*) client_addr;

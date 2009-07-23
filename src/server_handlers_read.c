@@ -203,7 +203,10 @@ static inline read_method choose_read_method(struct rfsd_instance *instance, siz
 #else /* DARWIN */
 static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
 {
+#if 0 /* This is mot OK */
 	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_as_always);
+#endif
+	return read_small_block;
 }
 #endif /* ! (defined DARWIN || defined QNX) */
 

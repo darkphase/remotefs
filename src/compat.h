@@ -19,7 +19,9 @@ See the file LICENSE.
 #endif /* SOLARIS */
 
 #if defined QNX
-#	define AI_ADDRCONFIG 0
+#       if ! defined AI_ADDRCONFIG
+#               define AI_ADDRCONFIG 0
+#       endif
 #endif /* QNX */
 
 #if ! defined O_ASYNC

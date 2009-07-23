@@ -12,11 +12,14 @@ See the file LICENSE.
 #include <sys/ioctl.h>
 #if defined SOLARIS
 #include <sys/sockio.h>
+#include <unistd.h>
+#include <stropts.h>
 #endif
 #if defined FREEBSD || defined DARWIN || defined QNX
 #include <sys/socket.h>
 #endif
 #if defined FREEBSD || defined DARWIN
+#include <string.h>
 #include <netinet/in.h>
 #include <sys/uio.h>
 #endif
@@ -416,7 +419,7 @@ size_t rfs_send_cmd_data2(struct sendrecv_info *info,
 	return (size_t)ret;
 }
 
-inline size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
+size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
 {
 	struct answer send_answer = { 0 };
 	send_answer.command = htonl(ans->command);
