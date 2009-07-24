@@ -287,9 +287,6 @@ int main(int argc, char **argv)
 	init_rfs_instance(&rfs_instance);
 	instance = &rfs_instance;
 
-	/* for the cache utility */
-	umask(0600); /* alex: what is this? */
-
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	if (fuse_opt_parse(&args, &rfs_instance.config, rfs_opts, rfs_opt_proc) == -1)
