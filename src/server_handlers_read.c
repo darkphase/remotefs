@@ -59,7 +59,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
 }
 
-#ifdef WITH_SSL /* we don't need this on Linux/Solaris/FreeBSD if SSL isn't enabled */
+#if defined WITH_SSL || defined QNX || defined DARWIN /* we don't need this on Linux/Solaris/FreeBSD if SSL isn't enabled */
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading as always");
@@ -203,10 +203,7 @@ static inline read_method choose_read_method(struct rfsd_instance *instance, siz
 #else /* DARWIN */
 static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
 {
-#if 0 /* This is mot OK */
 	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_as_always);
-#endif
-	return read_small_block;
 }
 #endif /* ! (defined DARWIN || defined QNX) */
 
