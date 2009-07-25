@@ -241,7 +241,11 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	
 	struct stat st = { 0 };
-	fstat(handle, &st); /* this is a bug. fstat() result should be checked */
+	errno = 0;
+	if (fstat(handle, &st) != 0)
+	{
+		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
+	}
 	
 	if (offset > st.st_size)
 	{
@@ -257,12 +261,7 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	{
 		struct answer ans = { cmd_read, 0, 0, 0 };
 		
-		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-		{
-			return -1;
-		}
-
-		return 0;
+		return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
 	}
 
 	return choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
