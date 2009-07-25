@@ -1,4 +1,4 @@
-The following tags are provided:
+The following targets are provided:
 --------------------------------
 debs:      Create packages for Debian/Ubuntu
 rfsdeb:    Create client package for Debian/Ubuntu
@@ -44,3 +44,4 @@ the feature you want to include.
 
 If you want IPv6 support, remove the fisrt '#' from the line
 #OPT_1=-DWITH_IPV6
+
