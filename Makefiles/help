@@ -1,24 +1,26 @@
 The following tags are provided:
 --------------------------------
-rfsdeb:    Create client package for Debian
-rfsddeb:   Create server package for Debian
-rpm:       Create packages for Redhat/Fedora
+debs:      Create packages for Debian/Ubuntu
+rfsdeb:    Create client package for Debian/Ubuntu
+rfsddeb:   Create server package for Debian/Ubuntu
+rpms:      Create packages for Redhat/Fedora
 rpm-rfs:   Create client package for Redhat/Fedora
 rpm-rfsd:  Create server package for Redhat/Fedora
+ebuild:    Create Gentoo-ebuilds
 
 release:   Create all binaries
 all:       Create all binaries
 
-rfs:       Create the clien
-rfsd:      Create the server daemon
-rfspasswd: Create the utility for managing rfsd passwords
+rfs:       Build client
+rfsd:      Build server
+rfspasswd: Build utility for managing server passwords
 
 tbz:       Create the versioned remotefs tarball
 
 clean:     Remove all temporary files
 depends:   Rebuild the dependency file Makefiles/depends.mk
 
-help:      This, the default
+help:      Show this message
 
 debug:     Create all binaries with debug code
 
@@ -26,20 +28,19 @@ Creating binaries with an alternative compiler:
 -----------------------------------------------
 
 The following with compile with the Sun Studio Compiler
-suite under Linux:
-make release ALT=SunGcc
+suite under Linux: make release ALT=SunGcc
+
 If you want to use the Intel Compiler, make sure that icc
-is within your PATH and call;
-make release ALT=Icc
+is within your PATH and call: make release ALT=Icc
 
 The following with cross compile for an arm processor:
 make release ALT=LS-GLv2
 
-Build remotefs with new features as for example IPv6 support:
+Build remotefs with different features as for example IPv6 support:
 -------------------------------------------------------------
 
-In order to include non standard features, edit the file
-Makefiles/options.mk and uncomment the lines corresponding to
+Edit the file Makefiles/options.mk and uncomment the lines corresponding to
 the feature you want to include.
+
 If you want IPv6 support, remove the fisrt '#' from the line
-#OPT_1 -DWITH_IPV6 # allow use of IPv6
+#OPT_1=-DWITH_IPV6
