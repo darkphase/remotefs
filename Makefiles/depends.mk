@@ -362,8 +362,12 @@ rfs_nss/src/libnss.o:rfs_nss/src/client_common.h
 rfs_nss/src/libnss.o:rfs_nss/src/client_ent.h
 rfs_nss/src/libnss.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/libnss.o:rfs_nss/src/config.h
+rfs_nss/src/libnss.o:rfs_nss/src/rfs_nss_solaris.c
+rfs_nss/src/libnss.o:rfs_nss/src/rfs_nss_freebsd.c
 rfs_nss/src/maintenance.o:rfs_nss/src/config.h
+rfs_nss/src/maintenance.o:rfs_nss/src/cookies.h
 rfs_nss/src/maintenance.o:rfs_nss/src/maintenance.h
+rfs_nss/src/maintenance.o:rfs_nss/src/server.h
 rfs_nss/src/manage_server.o:rfs_nss/src/config.h
 rfs_nss/src/manage_server.o:rfs_nss/src/client_for_server.h
 rfs_nss/src/manage_server.o:rfs_nss/src/get_id.h
@@ -475,4 +479,6 @@ rfs_nss/src/processing.o:rfs_nss/src/processing.c
 rfs_nss/src/processing_common.o:rfs_nss/src/processing_common.c
 rfs_nss/src/processing_ent.o:rfs_nss/src/processing_ent.c
 rfs_nss/src/rfs_nssd.o:rfs_nss/src/rfs_nssd.c
+rfs_nss/src/rfs_nss_freebsd.o:rfs_nss/src/rfs_nss_freebsd.c
+rfs_nss/src/rfs_nss_solaris.o:rfs_nss/src/rfs_nss_solaris.c
 rfs_nss/src/server.o:rfs_nss/src/server.c

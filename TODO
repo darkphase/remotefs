@@ -24,9 +24,9 @@
   just saying "unknown option" on -ossl and etc
 + man page for rfscert.sh
 + updated man page for rfs_nssd
-- packaging for rfs_nss
 + new packaging for Gentoo using /etc/conf.d/
   + full build options support including ugo, ipv6, ssl, exports list
+- packaging for rfs_nss
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
