@@ -15,7 +15,8 @@ LN = ln -sf
 CFLAGS_OS      = -DSOLARIS \
                  -D_REENTRANT \
                  -D_XPG5 \
-                 -D__FUNCTION__=__func__
+                 -D__FUNCTION__=__func__ \
+                 -D_LONGLONG_TYPE
                  
 CFLAGS_RELEASE = -O3
 CFLAGS_DEBUG   = -g

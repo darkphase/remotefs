@@ -18,14 +18,7 @@ extern "C" {
 #include <netinet/in.h>
 
 #if defined SOLARIS
-#        include <sys/byteorder.h>
-#        define RFS_BSWAP_FUNC BSWAP_64
-#
-#        if defined _BIG_ENDIAN
-#                define RFS_BIG_ENDIAN
-#        elif defined _LITTLE_ENDIAN
-#                define RFS_LITTLE_ENDIAN
-#        endif
+#        include <inttypes.h>
 
 #elif defined FREEBSD
 #        include <sys/endian.h>
@@ -71,21 +64,25 @@ extern "C" {
 
 /* actual htonll support */
 
+#if ! defined SOLARIS
+
 #if defined RFS_BIG_ENDIAN
-#	define rfs_htonll(x) (x)
+#	define htonll(x) (x)
 #elif defined RFS_LITTLE_ENDIAN
-#	define rfs_htonll(x) RFS_BSWAP_FUNC(x)
+#	define htonll(x) RFS_BSWAP_FUNC(x)
 #else
 #	error "unsupported BYTE_ORDER"
 #endif
 
 #if defined RFS_BIG_ENDIAN
-#	define rfs_ntohll(x) (x)
+#	define ntohll(x) (x)
 #elif defined RFS_LITTLE_ENDIAN
-#	define rfs_ntohll(x) RFS_BSWAP_FUNC(x)
+#	define ntohll(x) RFS_BSWAP_FUNC(x)
 #else
 #	error "unsupported BYTE_ORDER"
 #endif
+
+#endif /* if ! defined SOLARIS */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

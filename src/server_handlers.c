@@ -372,7 +372,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	errno = 0;
 	int fd = open(path, flags);
-	uint64_t handle = rfs_htonll((uint64_t)fd);
+	uint64_t handle = htonll((uint64_t)fd);
 	
 	struct answer ans = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
 	
