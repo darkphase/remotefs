@@ -71,25 +71,21 @@ extern "C" {
 
 /* actual htonll support */
 
-#ifndef htonll
-#	if defined RFS_BIG_ENDIAN
-#		define htonll(x) (x)
-#	elif defined RFS_LITTLE_ENDIAN
-#		define htonll(x) RFS_BSWAP_FUNC(x)
-#	else
-#		error "unsupported BYTE_ORDER"
-#	endif
-#endif /* htonll */
+#if defined RFS_BIG_ENDIAN
+#	define rfs_htonll(x) (x)
+#elif defined RFS_LITTLE_ENDIAN
+#	define rfs_htonll(x) RFS_BSWAP_FUNC(x)
+#else
+#	error "unsupported BYTE_ORDER"
+#endif
 
-#ifndef ntohll
-#	if defined RFS_BIG_ENDIAN
-#		define ntohll(x) (x)
-#	elif defined RFS_LITTLE_ENDIAN
-#		define ntohll(x) RFS_BSWAP_FUNC(x)
-#	else
-#		error "unsupported BYTE_ORDER"
-#	endif
-#endif /* ntohll */
+#if defined RFS_BIG_ENDIAN
+#	define rfs_ntohll(x) (x)
+#elif defined RFS_LITTLE_ENDIAN
+#	define rfs_ntohll(x) RFS_BSWAP_FUNC(x)
+#else
+#	error "unsupported BYTE_ORDER"
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

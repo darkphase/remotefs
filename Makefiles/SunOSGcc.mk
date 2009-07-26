@@ -14,7 +14,8 @@ LN = ln -sf
 
 CFLAGS_OS      = -DSOLARIS \
                  -D_XPG5 \
-                 -D_REENTRANT
+                 -D_REENTRANT \
+                 -fpic
 
 CFLAGS_RELEASE = -O3
 CFLAGS_DEBUG   = -g -Wall

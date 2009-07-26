@@ -475,7 +475,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	clear_cache_by_desc(&instance->write_cache.cache, desc);
 	
-	uint64_t handle = htonll(desc);
+	uint64_t handle = rfs_htonll(desc);
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 

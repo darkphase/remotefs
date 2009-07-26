@@ -71,7 +71,7 @@ static inline off_t pack_32_s(const int32_t *data, char *buffer, const off_t off
 */
 static inline off_t pack_64(const uint64_t *data, char *buffer, const off_t offset)
 {
-	*((uint64_t *)(buffer + offset)) = htonll(*data);
+	*((uint64_t *)(buffer + offset)) = rfs_htonll(*data);
 	return offset + sizeof(*data);
 }
 
@@ -114,7 +114,7 @@ static inline off_t unpack_32_s(int32_t *data, const char *buffer, const off_t o
 */
 static inline off_t unpack_64(uint64_t *data, const char *buffer, const off_t offset)
 {
-	*data = ntohll(*((uint64_t *)(buffer + offset)));
+	*data = rfs_ntohll(*((uint64_t *)(buffer + offset)));
 	return offset + sizeof(*data);
 }
 
