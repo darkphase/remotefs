@@ -441,7 +441,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 			return -ECONNABORTED;
 		}
 		
-		*desc = ntohll(handle);
+		*desc = rfs_ntohll(handle);
 	}
 
 	if (ans.ret == -1)
