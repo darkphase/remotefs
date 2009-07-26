@@ -41,7 +41,7 @@ static int create_pidfile(const char *pidfile)
 		return -1;
 	}
 	
-	if (fprintf(fp, "%d", getpid()) < 1)
+	if (fprintf(fp, "%lu", (long unsigned)getpid()) < 1)
 	{
 		fclose(fp);
 		return -1;
