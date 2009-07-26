@@ -18,7 +18,9 @@ CFLAGS_OS      = -Wall \
                  -Wno-abi \
                  -std=gnu89 \
                  -w1 \
-                 -D_GNU_SOURCE
+                 -D_GNU_SOURCE \
+                 -DLINUX
+
 CFLAGS_DEBUG   = -g
 CFLAGS_RELEASE = -O3 -s
 

@@ -14,7 +14,8 @@ LN = ln -sf
 # SunStudio V 11 !
 CFLAGS_OS      = -D_GNU_SOURCE \
                  -D"bswap_64(x)=(long long)((long long)htonl(x)<<32)|((long long)htonl((x)>>32))" \
-                 -D__FUNCTION__=__func__  -xalias_level=weak
+                 -D__FUNCTION__=__func__  -xalias_level=weak -DLINUX
+
 CFLAGS_DEBUG   = -g
 CFLAGS_RELEASE = -O3
 
