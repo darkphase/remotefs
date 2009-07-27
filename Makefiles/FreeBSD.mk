@@ -34,7 +34,8 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 # Flags for linking
 ###############################
 
-LDFLAGS_SSL = -lssl
+LDFLAGS_SSL  = -lssl
+LDFLAGS_PTHR = -lpthread
 
 ###############################
 # Flags for dymamic libraries
