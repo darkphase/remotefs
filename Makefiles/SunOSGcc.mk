@@ -14,4 +14,3 @@ CFLAGS_OS      = -DSOLARIS \
                  -D_XPG5 \
                  -D_REENTRANT \
                  -fPIC \
-                 -D_LONGLONG_TYPE
