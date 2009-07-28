@@ -26,7 +26,7 @@ See the file LICENSE.
 	{                                                           \
 		ret = -EIO;                                             \
 	}                                                           \
-	return ret;
+	return ret
 
 int rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev_t dev)
 {

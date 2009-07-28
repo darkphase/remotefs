@@ -184,7 +184,11 @@ static int start_server(const char *address, const unsigned port)
 			continue;
 		}
 		
+#ifndef WITH_IPV6
+		if (client_addr.sin_family == AF_INET)
+#else
 		if (client_addr.ss_family == AF_INET)
+#endif
 		{
 			DEBUG("incoming connection from %s\n", inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
 		}

@@ -57,7 +57,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 	if (ans.command != cmd_link 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 	
 	if (ans.ret == 0)
@@ -107,7 +107,7 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	if (ans.command != cmd_symlink 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
@@ -261,7 +261,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	if (ans.command != cmd_readlink
 	|| ans.data_len > bsize)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	/* if all was OK we will get the link info within our telegram */

@@ -815,7 +815,7 @@ int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts)
 	
 	if (ans.command != cmd_getexportopts)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 	
 	if (ans.ret >= 0)

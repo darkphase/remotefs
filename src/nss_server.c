@@ -297,6 +297,7 @@ static void* nss_server_proc(void *void_instance)
 	}
 
 	pthread_exit(NULL);
+	return NULL;
 }
 
 int start_nss_server(struct rfs_instance *instance)

@@ -19,18 +19,15 @@ extern "C" {
 
 #if defined SOLARIS
 #        include <sys/byteorder.h>
-#if (defined(_LP64) || defined(_LONGLONG_TYPE)) \
- && (!defined(_XPG4_2) || defined(__EXTENSIONS__))
-#	define RFS_SKIP_HTONLL_INIT
-#else
-#        define RFS_BSWAP_FUNC BSWAP_64
-#
-#        if defined _BIG_ENDIAN
+#        if defined (_BIG_ENDIAN)
 #                define RFS_BIG_ENDIAN
-#        elif defined _LITTLE_ENDIAN
+#                define  ntohll(x) (x)
+#                define  htonll(x) (x)
+#        else
 #                define RFS_LITTLE_ENDIAN
+#                define  htonll(x) BSWAP_64(x)
+#                define  ntohll(x) htonll(x)
 #        endif
-#endif /* extern htonll stuff */
 
 #elif defined FREEBSD
 #        include <sys/endian.h>
@@ -76,31 +73,30 @@ extern "C" {
 
 /* actual htonll support */
 
-#ifndef RFS_SKIP_HTONLL_INIT
-#ifndef htonll
-#	if defined RFS_BIG_ENDIAN
-#		define htonll(x) (x)
-#	elif defined RFS_LITTLE_ENDIAN
-#		define htonll(x) RFS_BSWAP_FUNC(x)
-#	else
-#		error "unsupported BYTE_ORDER"
-#	endif
-#endif /* htonll */
+#if ! defined htonll
+#   if defined RFS_BIG_ENDIAN
+#               define htonll(x) (x)
+#   elif defined RFS_LITTLE_ENDIAN
+#               define htonll(x) RFS_BSWAP_FUNC(x)
+#   else
+#               error "unsupported BYTE_ORDER"
+#   endif
+#endif
 
-#ifndef ntohll
-#	if defined RFS_BIG_ENDIAN
-#		define ntohll(x) (x)
-#	elif defined RFS_LITTLE_ENDIAN
-#		define ntohll(x) RFS_BSWAP_FUNC(x)
-#	else
-#		error "unsupported BYTE_ORDER"
-#	endif
-#endif /* ntohll */
+#if ! defined ntohll
+#   if defined RFS_BIG_ENDIAN
+#               define ntohll(x) (x)
+#   elif defined RFS_LITTLE_ENDIAN
+#               define ntohll(x) RFS_BSWAP_FUNC(x)
+#   else
+#               error "unsupported BYTE_ORDER"
+#   endif
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
+
 
 #endif /* INET_H */
 

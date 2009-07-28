@@ -158,7 +158,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 
 	if (ans.command != cmd_chown)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if ( ans.ret_errno == 0 )

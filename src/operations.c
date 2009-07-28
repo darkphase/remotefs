@@ -593,7 +593,7 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 	if (ans.command != cmd_mkdir 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
@@ -629,7 +629,7 @@ int _rfs_unlink(struct rfs_instance *instance, const char *path)
 	if (ans.command != cmd_unlink 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
@@ -716,7 +716,7 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 	if (ans.command != cmd_rename 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret == 0)
@@ -775,7 +775,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	if (ans.command != cmd_utime 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if (ans.ret==0)
@@ -832,7 +832,7 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 	if (ans.command != cmd_statfs 
 	|| ans.data_len != overall_size)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	char *buffer = get_buffer(ans.data_len);
@@ -963,7 +963,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	if (ans.command != cmd_chmod)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 
 	if ( ans.ret_errno == 0 )
@@ -1049,7 +1049,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	if (ans.command != cmd_lock 
 	|| ans.data_len != 0)
 	{
-		return cleanup_badmsg(instance, &ans);;
+		return cleanup_badmsg(instance, &ans);
 	}
 	
 	if (ans.ret == 0)

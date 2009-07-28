@@ -5,7 +5,7 @@
 # If you want IPv6 connectivity remove
 # the '#' character before OPT_1
 
-OPT_1 = -DWITH_IPV6
+#OPT_1 = -DWITH_IPV6
 
 ###############################################
 # If you want support for hard and symbolic links

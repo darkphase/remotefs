@@ -39,7 +39,7 @@ LDFLAGS_SSL   = -lssl -lcrypto
 # Flags for dymamic libraries
 ###############################
 
-LDFLAGS_SO   = -shared -Wl,-soname,$(@)
+LDFLAGS_SO   = -shared
 SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
 
