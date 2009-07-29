@@ -284,14 +284,10 @@ static int setup_export_user(uid_t user_uid, gid_t user_gid)
 {
 	/* always setup groups before setting uid :) */
 	
-	DEBUG("setting process uid and gid according to uid %d\n", user_uid);
+	DEBUG("setting process uid and gid according to uid %d, gid: %d\n", user_uid, user_gid);
 
-	if (setregid(user_gid, user_gid) != 0
-#if !defined DARWIN
-	|| setreuid(user_uid, user_uid) != 0)
-#else
+	if (setgid(user_gid) != 0
 	|| setuid(user_uid) != 0)
-#endif
 	{
 		return -EACCES;
 	}
