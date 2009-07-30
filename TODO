@@ -26,6 +26,7 @@
 + updated man page for rfs_nssd
 + new packaging for Gentoo using /etc/conf.d/
   + full build options support including ugo, ipv6, ssl, exports list
+- WITH_SCHEDULING should be available for Mac only
 - packaging for rfs_nss
 
 bugs:

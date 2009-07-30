@@ -147,11 +147,10 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 		return -1;
 	}
 
+	errno = 0;
 	size_t done = 0;
 	while (done < size)
-	{
-		errno = 0;
-		
+	{	
 #if defined FREEBSD
 		off_t sbytes = 0;
 		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size, NULL, &sbytes, 0);

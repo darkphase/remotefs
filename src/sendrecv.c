@@ -285,11 +285,18 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, u
 				}
 			}
 			
-			done = recv(info->socket, buffer + size_recv, size - size_recv, 0);
+			done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
 #ifdef WITH_SSL
 		}
 #endif
-	
+
+#ifdef RFS_DEBUG
+		if (done != size - size_recv)
+		{
+			DEBUG("recv call has been interrupted with %s (%d), recv result is %ld\n", strerror(errno), errno, done);
+		}
+#endif
+
 		if (done <= 0)
 		{
 			if (errno == EAGAIN || errno == EINTR)
@@ -310,6 +317,37 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, u
 		}
 		
 		size_recv += (size_t)done;
+
+#ifdef WITH_SSL
+		if (info->ssl_enabled == 0)
+		{
+#endif
+
+		/* wait for further data become ready to not miss OOB byte at next read iteration */
+		if (check_oob != 0 
+		&& size_recv < size)
+		{
+			DEBUG("%s\n", "waiting for further data");
+
+			fd_set read_set;
+			FD_SET(info->socket, &read_set);
+
+			int select_ret = 0;
+			do
+			{
+				select_ret = select(info->socket + 1, &read_set, NULL, NULL, NULL);
+
+				if (select_ret < 0)
+				{
+					return -errno;
+				}
+			}
+			while (select_ret < 1);
+		}
+
+#ifdef WITH_SSL
+		}
+#endif
 	}
 	
 #ifdef RFS_DEBUG
