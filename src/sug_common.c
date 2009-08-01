@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>

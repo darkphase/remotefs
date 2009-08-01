@@ -47,3 +47,10 @@ SO_NAME      = $(TARGET).$(VERSION).$(SO_EXT)
 ###############################
 
 RFS_NSS = 
+
+###############################
+# Components which can be build
+###############################
+
+ALL = client server
+

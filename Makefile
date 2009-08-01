@@ -5,6 +5,10 @@
 OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
+
+# reset component to build
+
+ALL = server client libnss nss
 include Makefiles/$(OS)$(ALT).mk
 include Makefiles/options.mk
 
@@ -23,7 +27,7 @@ help:
 debug:
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
-all release: server client libnss nss
+all release: $(ALL) #server client libnss nss
 
 server: rfsd rfspasswd
 

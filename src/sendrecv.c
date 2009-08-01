@@ -29,7 +29,11 @@ See the file LICENSE.
 #ifdef RFS_DEBUG
 #include <sys/time.h>
 #endif
-
+#if defined DARWIN
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 #include "command.h"
 #include "config.h"
 #include "error.h"
