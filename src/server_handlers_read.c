@@ -135,12 +135,6 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	
 	int fd = (int)handle;
 	
-	errno = 0;
-	if (lseek(fd, offset, SEEK_SET) != offset)
-	{
-		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
-	}
-	
 	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
@@ -153,15 +147,16 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	{	
 #if defined FREEBSD
 		off_t sbytes = 0;
-		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size, NULL, &sbytes, 0);
-		if ( result == 0 )
+		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size - done, NULL, &sbytes, 0);
+		if (result == 0)
 		{
   			result = sbytes;
 		}
+		offset += result;
 #else
-		ssize_t result = sendfile(instance->sendrecv.socket, fd, &offset, size);
+		ssize_t result = sendfile(instance->sendrecv.socket, fd, &offset, size - done);
 #endif
-		if (result < 0)
+		if (result <= 0)
 		{
 			ans.ret_errno = errno;
 			ans.ret = -1;
@@ -172,9 +167,9 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 		
 		done += result;
 #ifdef RFS_DEBUG
-		if (done > 0)
+		if (result > 0)
 		{
-			instance->sendrecv.bytes_sent += done;
+			instance->sendrecv.bytes_sent += result;
 		}
 #endif
 	}
