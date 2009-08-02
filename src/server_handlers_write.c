@@ -34,7 +34,7 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	unpack_64(&handle, buffer, 
 	unpack_64(&offset, buffer, 
 	unpack_32(&size, buffer, 0
-		)));
+	)));
 	
 	if (handle == (uint64_t)-1)
 	{
@@ -44,16 +44,6 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	DEBUG("handle: %llu, offset: %llu, size: %u\n", (unsigned long long)handle, (unsigned long long)offset, size);
 
 	int fd = (int)handle;
-	
-	if (lseek(fd, offset, SEEK_SET) != offset)
-	{
-		if (rfs_ignore_incoming_data(&instance->sendrecv, size) == -1)
-		{
-			return -1;
-		}
-		
-		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
-	}
 	
 	size_t done = 0;
 	errno = 0;
@@ -70,7 +60,7 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 			return -1;
 		}
 		
-		ssize_t result = write(fd, data, current_block_size);
+		ssize_t result = pwrite(fd, data, current_block_size, offset + done);
 		
 		if (result == (size_t)-1)
 		{

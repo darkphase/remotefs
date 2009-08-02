@@ -11,6 +11,9 @@ See the file LICENSE.
 #if ! defined FREEBSD && ! defined DARWIN && ! defined QNX
 #	include <sys/sendfile.h>
 #endif
+#ifdef RFS_DEBUG
+#	include <sys/time.h>
+#endif
 #include <unistd.h>
 
 #include "buffer.h"
@@ -19,9 +22,6 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "sendrecv.h"
 #include "server.h"
-#ifdef RFS_DEBUG
-#	include <sys/time.h>
-#endif
 
 #if defined DARWIN
 extern int sendfile(int, int, off_t, size_t,  void *, off_t *, int);
@@ -38,16 +38,10 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	
 	int fd = (int)handle;
 	
-	errno = 0;
-	if (lseek(fd, offset, SEEK_SET) != offset)
-	{
-		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
-	}
-	
 	char buffer[SENDFILE_LIMIT] = { 0 };
 
 	errno = 0;
-	ssize_t result = read(fd, buffer, size);
+	ssize_t result = pread(fd, buffer, size, offset);
 	
 	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno};
 
@@ -66,15 +60,9 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 	
 	int fd = (int)handle;
 	
-	errno = 0;
-	if (lseek(fd, offset, SEEK_SET) != offset)
-	{
-		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
-	}
-	
 	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
 	
-	int first_block = 1;
+	int first_block = 1; /* TODO: this part is probably can be done without first_block flag */
 	char buffer[RFS_READ_BLOCK] = { 0 };
 	
 	size_t done = 0;
@@ -83,7 +71,7 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 		unsigned current_block = ((size - done) >= RFS_READ_BLOCK ? RFS_READ_BLOCK : (size - done));
 		
 		errno = 0;
-		ssize_t result = read(fd, buffer, current_block);
+		ssize_t result = pread(fd, buffer, current_block, offset + done);
 		
 		if (result < 0)
 		{
