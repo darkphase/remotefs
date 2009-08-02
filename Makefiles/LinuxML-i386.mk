@@ -1,5 +1,7 @@
 include Makefiles/Linux.mk
 
+ARCH=i386
+
 ################################
 # OS / CC specifics flags
 ################################
