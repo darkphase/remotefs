@@ -67,7 +67,7 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 	instance->config.exports_file = strdup(DEFAULT_EXPORTS_FILE);
 	instance->config.passwd_file = strdup(DEFAULT_PASSWD_FILE);
 #ifdef WITH_IPV6
-	instance->config.use_ipv4 = 0;
+	instance->config.force_ipv4 = 0;
 #endif
 #ifdef WITH_SSL
 	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);

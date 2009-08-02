@@ -61,7 +61,7 @@ static void release_server(struct rfsd_instance *instance)
 	release_rfsd_instance(&rfsd_instance);
 }
 
-static int start_server(const char *address, const unsigned port, unsigned use_ipv4)
+static int start_server(const char *address, const unsigned port, unsigned force_ipv4)
 {
 	install_signal_handlers_server();
 	
@@ -70,16 +70,28 @@ static int start_server(const char *address, const unsigned port, unsigned use_i
 	struct sockaddr_in addr = { 0 };
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
-	inet_pton(AF_INET, address, &(addr.sin_addr));
+	if (inet_pton(AF_INET, address, &(addr.sin_addr)) == 0)
+	{
+		if (force_ipv4 != 0)
+		{
+			ERROR("ERROR: Not valid IPv4 address for listening: %s\n", address);
+			return 1;
+		}
+	}
 	
 #if defined WITH_IPV6
 	struct sockaddr_in6 addr6 = { 0 };
 	addr6.sin6_family = AF_INET6;
 	addr6.sin6_port = htons(port);
 
-	if (use_ipv4 == 0
-	&& inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 1)
+	if (force_ipv4 == 0)
 	{
+		if (inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 0)
+		{
+			ERROR("ERROR: Not valid IPv6 address for listening: %s\n", address);
+			return 1;
+		}
+			
 		listen_family = AF_INET6;
 	}
 #endif
@@ -144,7 +156,7 @@ static int start_server(const char *address, const unsigned port, unsigned use_i
 		inet_ntop(AF_INET, &addr.sin_addr, straddr, sizeof(straddr)), 
 		port);
 	}
-#	ifdef WITH_IPV6
+#ifdef WITH_IPV6
 	else
 	{
 		char straddr[INET6_ADDRSTRLEN + 1] = { 0 };
@@ -152,8 +164,8 @@ static int start_server(const char *address, const unsigned port, unsigned use_i
 		inet_ntop(AF_INET6, &addr6.sin6_addr, straddr, sizeof(straddr)), 
 		port);
 	}
-#	endif
-#endif
+#endif /* WITH_IPV6 */
+#endif /* RFS_DEBUG */
 	
 	/* the server should not apply it own mask while mknod
 	file or directory creation is called. These settings
@@ -324,7 +336,7 @@ static int parse_opts(int argc, char **argv)
 				break;
 #ifdef WITH_IPV6
 			case '4':
-				rfsd_instance.config.use_ipv4 = 1;
+				rfsd_instance.config.force_ipv4 = 1;
 				if (strcmp(rfsd_instance.config.listen_address, DEFAULT_IPV6_ADDRESS) == 0)
 				{
 					free(rfsd_instance.config.listen_address);
@@ -404,7 +416,7 @@ int main(int argc, char **argv)
 	int ret = start_server(rfsd_instance.config.listen_address, 
 		rfsd_instance.config.listen_port, 
 #ifdef WITH_IPV6
-		rfsd_instance.config.use_ipv4
+		rfsd_instance.config.force_ipv4
 #else
 		1
 #endif

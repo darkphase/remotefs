@@ -116,7 +116,7 @@ struct rfsd_config
 	char *exports_file;
 	char *passwd_file;
 #ifdef WITH_IPV6
-	unsigned use_ipv4;
+	unsigned force_ipv4;
 #endif
 #ifdef WITH_SSL
 	char *ssl_key_file;
