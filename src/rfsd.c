@@ -268,7 +268,11 @@ static void usage(const char *app_name)
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
+#ifdef WITH_IPV6
 	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f4")) != -1)
+#else
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
+#endif
 	{
 		switch (opt)
 		{	
@@ -399,7 +403,12 @@ int main(int argc, char **argv)
 
 	int ret = start_server(rfsd_instance.config.listen_address, 
 		rfsd_instance.config.listen_port, 
-		rfsd_instance.config.use_ipv4);
+#ifdef WITH_IPV6
+		rfsd_instance.config.use_ipv4
+#else
+		1
+#endif
+		);
 	
 	release_server(&rfsd_instance);
 	
