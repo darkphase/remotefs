@@ -35,6 +35,10 @@ extern "C" {
 #define SSL_READ_BLOCK          8 * 1024    /* bytes */
 #define SSL_WRITE_BLOCK         8 * 1024    /* bytes */
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
+#define DEFAULT_IPV4_ADDRESS    "0.0.0.0"
+#ifdef WITH_IPV6
+#define DEFAULT_IPV6_ADDRESS    "::"
+#endif
 
 #ifdef RFS_DEBUG
 #define DEFAULT_PASSWD_FILE      "./rfs-passwd"
@@ -111,6 +115,9 @@ struct rfsd_config
 	unsigned int quiet;
 	char *exports_file;
 	char *passwd_file;
+#ifdef WITH_IPV6
+	unsigned use_ipv4;
+#endif
 #ifdef WITH_SSL
 	char *ssl_key_file;
 	char *ssl_cert_file;

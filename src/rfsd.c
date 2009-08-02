@@ -61,7 +61,7 @@ static void release_server(struct rfsd_instance *instance)
 	release_rfsd_instance(&rfsd_instance);
 }
 
-static int start_server(const char *address, const unsigned port)
+static int start_server(const char *address, const unsigned port, unsigned use_ipv4)
 {
 	install_signal_handlers_server();
 	
@@ -76,7 +76,9 @@ static int start_server(const char *address, const unsigned port)
 	struct sockaddr_in6 addr6 = { 0 };
 	addr6.sin6_family = AF_INET6;
 	addr6.sin6_port = htons(port);
-	if (inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 1)
+
+	if (use_ipv4 == 0
+	&& inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 1)
 	{
 		listen_family = AF_INET6;
 	}
@@ -85,11 +87,13 @@ static int start_server(const char *address, const unsigned port)
 	errno = 0;
 	if (listen_family == AF_INET)
 	{
+		DEBUG("%s\n", "listening to IPv4 interface");
 		listen_socket = socket(PF_INET, SOCK_STREAM, 0);
 	}
 #if defined WITH_IPV6
 	else
 	{
+		DEBUG("%s\n", "listening to IPv6 interface");
 		listen_socket = socket(PF_INET6, SOCK_STREAM, 0);
 	}
 #endif
@@ -254,6 +258,9 @@ static void usage(const char *app_name)
 	"-s [path]\t\tpasswd file\n"
 	"-q \t\t\tquite mode - supress warnings\n"
 	"\t\t\t(and don't treat them as errors)\n"
+#ifdef WITH_IPV6
+	"-4 \t\t\tforce listen to IPv4 connections\n"
+#endif
 	"\n"
 	, app_name);
 }
@@ -261,7 +268,7 @@ static void usage(const char *app_name)
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f4")) != -1)
 	{
 		switch (opt)
 		{	
@@ -311,6 +318,16 @@ static int parse_opts(int argc, char **argv)
 			case 'f':
 				daemonize = 0;
 				break;
+#ifdef WITH_IPV6
+			case '4':
+				rfsd_instance.config.use_ipv4 = 1;
+				if (strcmp(rfsd_instance.config.listen_address, DEFAULT_IPV6_ADDRESS) == 0)
+				{
+					free(rfsd_instance.config.listen_address);
+					rfsd_instance.config.listen_address = strdup(DEFAULT_IPV4_ADDRESS);
+				}
+				break;
+#endif
 			default:
 				return -1;
 		}
@@ -380,7 +397,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	int ret = start_server(rfsd_instance.config.listen_address, rfsd_instance.config.listen_port);
+	int ret = start_server(rfsd_instance.config.listen_address, 
+		rfsd_instance.config.listen_port, 
+		rfsd_instance.config.use_ipv4);
 	
 	release_server(&rfsd_instance);
 	

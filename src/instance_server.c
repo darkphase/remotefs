@@ -55,9 +55,9 @@ static void init_pause(struct rfsd_instance *instance)
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
 #ifndef WITH_IPV6
-	instance->config.listen_address = strdup("0.0.0.0");
+	instance->config.listen_address = strdup(DEFAULT_IPV4_ADDRESS);
 #else
-	instance->config.listen_address = strdup("::");
+	instance->config.listen_address = strdup(DEFAULT_IPV6_ADDRESS);
 #endif
 	instance->config.listen_port = DEFAULT_SERVER_PORT;
 	instance->config.worker_uid = geteuid();
@@ -66,7 +66,9 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 	instance->config.pid_file = strdup(DEFAULT_PID_FILE);
 	instance->config.exports_file = strdup(DEFAULT_EXPORTS_FILE);
 	instance->config.passwd_file = strdup(DEFAULT_PASSWD_FILE);
-
+#ifdef WITH_IPV6
+	instance->config.use_ipv4 = 0;
+#endif
 #ifdef WITH_SSL
 	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);
 	instance->config.ssl_key_file = strdup(DEFAULT_SERVER_KEY_FILE);
