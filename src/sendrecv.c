@@ -315,7 +315,7 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, u
 #ifdef RFS_DEBUG
 		if (done != size - size_recv)
 		{
-			DEBUG("recv call has been interrupted with %s (%d), recv result is %ld\n", strerror(errno), errno, done);
+			DEBUG("recv call has been interrupted with %s (%d), recv result is %ld\n", strerror(errno), errno, (long int)done);
 		}
 #endif
 
