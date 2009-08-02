@@ -66,6 +66,9 @@ static int start_server(const char *address, const unsigned port, unsigned force
 	install_signal_handlers_server();
 	
 	int listen_family = AF_INET;
+#ifdef WITH_IPV6
+	unsigned have_valid_ipv4_address = 0;
+#endif
 	
 	struct sockaddr_in addr = { 0 };
 	addr.sin_family = AF_INET;
@@ -78,8 +81,12 @@ static int start_server(const char *address, const unsigned port, unsigned force
 			return 1;
 		}
 	}
+#ifdef WITH_IPV6
+	else
+	{
+		have_valid_ipv4_address = 1;
+	}
 	
-#if defined WITH_IPV6
 	struct sockaddr_in6 addr6 = { 0 };
 	addr6.sin6_family = AF_INET6;
 	addr6.sin6_port = htons(port);
@@ -88,11 +95,16 @@ static int start_server(const char *address, const unsigned port, unsigned force
 	{
 		if (inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 0)
 		{
-			ERROR("ERROR: Not valid IPv6 address for listening: %s\n", address);
-			return 1;
+			if (have_valid_ipv4_address == 0)
+			{
+				ERROR("ERROR: Not valid IPv6 address for listening: %s\n", address);
+				return 1;
+			}
 		}
-			
-		listen_family = AF_INET6;
+		else
+		{	
+			listen_family = AF_INET6;
+		}
 	}
 #endif
 	
