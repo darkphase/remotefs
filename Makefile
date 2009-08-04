@@ -51,10 +51,10 @@ rfspasswd: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfspasswd
 	@$(MAKE) -sf Makefiles/base.mk clean_build
 
-libnss:
+libnss: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk libnss
 
-nss:
+nss: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk nss
 
 dummy:
@@ -78,7 +78,10 @@ rfsrpm: dummy
 rfsdrpm: dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdrpm
-rpms: rfsrpm rfsdrpm
+rfs_nssrpm: dummy
+	@ARCH=`rpm --eval "%{_arch}"` \
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfs_nssrpm
+rpms: rfsrpm rfsdrpm rfs_nssrpm
 
 rfsdeb: dummy
 	@ARCH=`dpkg --print-architecture` \

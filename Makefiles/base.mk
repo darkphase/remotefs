@@ -282,6 +282,13 @@ rfsdrpm: dummy
 	RPMNAME=rfsd $(MAKE) -f Makefiles/base.mk buildrpm
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
+rfs_nssrpm: dummy
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk man
+	RPMNAME=rfs_nss $(MAKE) -sf Makefiles/base.mk  buildrpm
+	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	
+
 redhat/%.spec: dummy Makefiles/version.mk
 	sed -e "s/Version:.*/Version:$(VERSION)/"  \
 	-e "s/Release:.*/Release:$(RELEASE)/" $@ \
@@ -296,23 +303,21 @@ rpmbuild: dummy
 
 buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
-	mkdir -p $(RPMNAME)-$(VERSION)/src
-	mkdir -p $(RPMNAME)-$(VERSION)/Makefiles
-	mkdir -p $(RPMNAME)-$(VERSION)/init.d
-	mkdir -p $(RPMNAME)-$(VERSION)/etc
-	mkdir -p $(RPMNAME)-$(VERSION)/man
-	cp -r src/* $(RPMNAME)-$(VERSION)/src
-	cp Makefiles/* $(RPMNAME)-$(VERSION)/Makefiles/
-	cp init.d/* $(RPMNAME)-$(VERSION)/init.d/
-	cp etc/* $(RPMNAME)-$(VERSION)/etc/
-	cp -r man/gz/* $(RPMNAME)-$(VERSION)/man/
-	cp Makefile $(RPMNAME)-$(VERSION)/
+	mkdir -p $(RPMNAME)-$(VERSION)/man/man1
+	mkdir -p $(RPMNAME)-$(VERSION)/man/man8
+	tar --exclude .svn -cf - src rfs_nss init.d etc  Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
+	cp  man/*.1 $(RPMNAME)-$(VERSION)/man/man1/
+	cd $(RPMNAME)-$(VERSION)/man/man1/; gzip *
+	cp man/*.8 $(RPMNAME)-$(VERSION)/man/man8/
+	cd $(RPMNAME)-$(VERSION)/man/man8/; gzip *
 	chmod 700 $(RPMNAME)-$(VERSION)/init.d/*
 	tar -cpzf rpmbuild/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
+	rm -fr $(RPMNAME)-$(VERSION)
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
 	$(MAKE) -f Makefiles/base.mk clean_bins
 	$(MAKE) -f Makefiles/base.mk clean_packages_tmp
+	
 
 #############################
 # Build ipkg
