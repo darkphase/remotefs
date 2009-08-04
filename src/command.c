@@ -29,6 +29,7 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_readdir:                       return "readdir";
 	case cmd_getattr:                       return "getattr";
 	case cmd_mknod:                         return "mknod";
+	case cmd_create:                        return "create";
 	case cmd_open:                          return "open";
 	case cmd_release:                       return "release";
 	case cmd_truncate:                      return "truncate";

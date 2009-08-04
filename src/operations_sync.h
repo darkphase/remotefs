@@ -30,6 +30,7 @@ int rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_readd
 /* files */
 int rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf);
 int rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev_t dev);
+int rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc);
 int rfs_unlink(struct rfs_instance *instance, const char *path);
 int rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path);
 int rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf);

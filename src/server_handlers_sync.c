@@ -64,6 +64,11 @@ int handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	DECORATE(_handle_mknod)
 }
 
+int handle_create(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_create)
+}
+
 int handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	DECORATE(_handle_chmod)

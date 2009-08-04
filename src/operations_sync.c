@@ -153,5 +153,10 @@ int rfs_setxattr(struct rfs_instance *instance, const char *path, const char *na
 }
 #endif
 
+int rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc)
+{
+	DECORATE(_rfs_create, instance, path, mode, flags, desc);
+}
+
 #undef DECORATE
 

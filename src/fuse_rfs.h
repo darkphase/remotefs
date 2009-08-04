@@ -41,6 +41,7 @@ int fuse_rfs_utime(const char *path, struct utimbuf *buf);
 int fuse_rfs_utimens(const char *path, const struct timespec tv[2]);
 #endif
 int fuse_rfs_mknod(const char *path, mode_t mode, dev_t dev);
+int fuse_rfs_create(const char *path, mode_t mode, struct fuse_file_info *fi);
 int fuse_rfs_open(const char *path, struct fuse_file_info *fi);
 int fuse_rfs_release(const char *path, struct fuse_file_info *fi);
 int fuse_rfs_truncate(const char *path, off_t offset);

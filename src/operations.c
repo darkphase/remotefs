@@ -32,7 +32,7 @@ See the file LICENSE.
 #include "resume.h"
 #include "sendrecv.h"
 
-static size_t stat_size()
+static inline size_t stat_size()
 {
 	return 0
 	+ sizeof(uint32_t) /* mode */
@@ -47,7 +47,7 @@ static size_t stat_size()
 	;
 }
 
-static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, struct stat *result, int *ret)
+static inline off_t unpack_stat(struct rfs_instance *instance, const char *buffer, struct stat *result, int *ret)
 {
 	uint32_t mode = 0;
 	uint32_t user_len = 0;
@@ -170,6 +170,34 @@ static off_t unpack_stat(struct rfs_instance *instance, const char *buffer, stru
 	result->st_blocks = (blkcnt_t)blocks;
 
 	return last_pos;
+}
+
+static inline uint16_t rfs_file_flags(int os_flags)
+{
+	uint16_t flags = 0;
+	
+	if (os_flags & O_APPEND)       { flags |= RFS_APPEND; }
+	if (os_flags & O_ASYNC)        { flags |= RFS_ASYNC; }
+	if (os_flags & O_CREAT)        { flags |= RFS_CREAT; }
+	if (os_flags & O_EXCL)         { flags |= RFS_EXCL; }
+	if (os_flags & O_NONBLOCK)     { flags |= RFS_NONBLOCK; }
+	if (os_flags & O_NDELAY)       { flags |= RFS_NDELAY; }
+	if (os_flags & O_SYNC)         { flags |= RFS_SYNC; }
+	if (os_flags & O_TRUNC)        { flags |= RFS_TRUNC; }
+#if defined DARWIN /* is ok for linux too */
+	switch (os_flags & O_ACCMODE)
+	{
+		case O_RDONLY: flags |= RFS_RDONLY; break;
+		case O_WRONLY: flags |= RFS_WRONLY; break;
+		case O_RDWR:   flags |= RFS_RDWR;   break;
+	}
+#else
+	if (os_flags & O_RDONLY)       { flags |= RFS_RDONLY; }
+	if (os_flags & O_WRONLY)       { flags |= RFS_WRONLY; }
+	if (os_flags & O_RDWR)         { flags |= RFS_RDWR; }
+#endif
+
+	return flags;
 }
 
 int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
@@ -377,27 +405,8 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	}
 
 	unsigned path_len = strlen(path) + 1;
-	uint16_t fi_flags = 0;
-	if (flags & O_APPEND)       { fi_flags |= RFS_APPEND; }
-	if (flags & O_ASYNC)        { fi_flags |= RFS_ASYNC; }
-	if (flags & O_CREAT)        { fi_flags |= RFS_CREAT; }
-	if (flags & O_EXCL)         { fi_flags |= RFS_EXCL; }
-	if (flags & O_NONBLOCK)     { fi_flags |= RFS_NONBLOCK; }
-	if (flags & O_NDELAY)       { fi_flags |= RFS_NDELAY; }
-	if (flags & O_SYNC)         { fi_flags |= RFS_SYNC; }
-	if (flags & O_TRUNC)        { fi_flags |= RFS_TRUNC; }
-#if defined DARWIN /* is ok for linux too */
-	switch (flags & O_ACCMODE)
-	{
-		case O_RDONLY: fi_flags |= RFS_RDONLY; break;
-		case O_WRONLY: fi_flags |= RFS_WRONLY; break;
-		case O_RDWR:   fi_flags |= RFS_RDWR;   break;
-	}
-#else
-	if (flags & O_RDONLY)       { fi_flags |= RFS_RDONLY; }
-	if (flags & O_WRONLY)       { fi_flags |= RFS_WRONLY; }
-	if (flags & O_RDWR)         { fi_flags |= RFS_RDWR; }
-#endif
+	uint16_t fi_flags = rfs_file_flags(flags);
+	
 	unsigned overall_size = sizeof(fi_flags) + path_len;
 
 	struct command cmd = { cmd_open, overall_size };
@@ -975,15 +984,17 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	unsigned path_len = strlen(path) + 1;
 	uint32_t fmode = mode;
+
 	if ((fmode & 0777) == 0)
 	{
 		fmode |= 0600;
 	}
+
 	unsigned overall_size = sizeof(fmode) + path_len;
 
 	struct command cmd = { cmd_mknod, overall_size };
 
-	char *buffer = get_buffer(overall_size);
+	char *buffer = get_buffer(cmd.data_len);
 
 	pack(path, path_len, buffer, 
 	pack_32(&fmode, buffer, 0
@@ -1009,12 +1020,79 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 		return cleanup_badmsg(instance, &ans);
 	}
 
-	if ( ans.ret == 0 )
+	if (ans.ret == 0)
 	{
 		delete_from_cache(instance, path);
 	}
 
-	return ans.ret == 0 ? 0 : -ans.ret_errno;
+	return (ans.ret == 0 ? 0 : -ans.ret_errno);
+}
+
+int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc)
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	unsigned path_len = strlen(path) + 1;
+	uint32_t fmode = mode;
+	uint16_t fi_flags = rfs_file_flags(flags);
+
+	if ((fmode & 0777) == 0)
+	{
+		fmode |= 0600;
+	}
+
+	unsigned overall_size = sizeof(fmode) + sizeof(fi_flags) + path_len;
+
+	struct command cmd = { cmd_create, overall_size };
+
+	char *buffer = get_buffer(cmd.data_len);
+
+	pack(path, path_len, buffer, 
+	pack_16(&fi_flags, buffer, 
+	pack_32(&fmode, buffer, 0
+	)));
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (ans.command != cmd_create)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if (ans.ret == 0)
+	{
+		uint64_t handle = (uint64_t)(-1);
+
+		if (ans.data_len != sizeof(handle))
+		{
+			return cleanup_badmsg(instance, &ans);
+		}
+
+		if (rfs_receive_data(&instance->sendrecv, &handle, ans.data_len) == -1)
+		{
+			return -ECONNABORTED;
+		}
+
+		*desc = ntohll(handle);
+	}
+
+	return (ans.ret == 0 ? 0 : -ans.ret_errno);
 }
 
 int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)

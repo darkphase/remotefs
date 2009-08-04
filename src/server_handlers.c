@@ -33,7 +33,7 @@ See the file LICENSE.
 #include "sendrecv.h"
 #include "server.h"
 
-static int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)
+static inline int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)
 {
 	errno = 0;
 
@@ -53,7 +53,7 @@ static int stat_file(struct rfsd_instance *instance, const char *path, struct st
 	return 0;
 }
 
-static size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int *ret)
+static inline size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int *ret)
 {
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
@@ -93,7 +93,7 @@ static size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int 
 	+ group_len;
 }
 
-static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat *stbuf, int *ret)
+static inline off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat *stbuf, int *ret)
 {
 	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
 	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
@@ -142,6 +142,25 @@ static off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat
 	pack_32(&user_len, buffer, 
 	pack_32(&mode, buffer, 0
 	)))))))))));
+}
+
+static inline int os_file_flags(uint16_t rfs_flags)
+{
+	int flags = 0;
+
+	if (rfs_flags & RFS_APPEND)   { flags |= O_APPEND; }
+	if (rfs_flags & RFS_ASYNC)    { flags |= O_ASYNC; }
+	if (rfs_flags & RFS_CREAT)    { flags |= O_CREAT; }
+	if (rfs_flags & RFS_EXCL)     { flags |= O_EXCL; }
+	if (rfs_flags & RFS_NONBLOCK) { flags |= O_NONBLOCK; }
+	if (rfs_flags & RFS_NDELAY)   { flags |= O_NDELAY; }
+	if (rfs_flags & RFS_SYNC)     { flags |= O_SYNC; }
+	if (rfs_flags & RFS_TRUNC)    { flags |= O_TRUNC; }
+	if (rfs_flags & RFS_RDONLY)   { flags |= O_RDONLY; }
+	if (rfs_flags & RFS_WRONLY)   { flags |= O_WRONLY; }
+	if (rfs_flags & RFS_RDWR)     { flags |= O_RDWR; }
+
+	return flags;
 }
 
 int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
@@ -347,35 +366,24 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		return -1;
 	}
 	
-	uint16_t fi_flags = 0;
+	uint16_t rfs_flags = 0;
 	const char *path = buffer +
-	unpack_16(&fi_flags, buffer, 0);
+	unpack_16(&rfs_flags, buffer, 0);
 	
-	if (sizeof(fi_flags) 
+	if (sizeof(rfs_flags) 
 	+ strlen(path) + 1 != cmd->data_len)
 	{
 		free_buffer(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
-	int flags = 0;
-	if (fi_flags & RFS_APPEND) { flags |= O_APPEND; }
-	if (fi_flags & RFS_ASYNC) { flags |= O_ASYNC; }
-	if (fi_flags & RFS_CREAT) { flags |= O_CREAT; }
-	if (fi_flags & RFS_EXCL) { flags |= O_EXCL; }
-	if (fi_flags & RFS_NONBLOCK) { flags |= O_NONBLOCK; }
-	if (fi_flags & RFS_NDELAY) { flags |= O_NDELAY; }
-	if (fi_flags & RFS_SYNC) { flags |= O_SYNC; }
-	if (fi_flags & RFS_TRUNC) { flags |= O_TRUNC; }
-	if (fi_flags & RFS_RDONLY) { flags |= O_RDONLY; }
-	if (fi_flags & RFS_WRONLY) { flags |= O_WRONLY; }
-	if (fi_flags & RFS_RDWR) { flags |= O_RDWR; }
+	int flags = os_file_flags(rfs_flags);
+	uint64_t handle = (uint64_t)(-1);
 	
 	errno = 0;
 	int fd = open(path, flags);
-	uint64_t handle = htonll((uint64_t)fd);
 	
-	struct answer ans = { cmd_open, sizeof(handle), fd == -1 ? -1 : 0, errno };
+	struct answer ans = { cmd_open, (fd == -1 ? 0 : sizeof(handle)), (fd == -1 ? -1 : 0), errno };
 	
 	free_buffer(buffer);
 	
@@ -397,6 +405,8 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	else
 	{
+		handle = htonll((uint64_t)fd);
+		
 		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle) == -1)
 		{
 			return -1;
@@ -1005,6 +1015,75 @@ int _handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		return -1;
 	}
 	
+	return 0;
+}
+
+int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	char *buffer = get_buffer(cmd->data_len);
+	if (buffer == NULL)
+	{
+		return -1;
+	}
+	
+	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -1;
+	}
+	
+	uint32_t mode = 0;
+	uint16_t rfs_flags = 0;
+
+	const char *path = buffer +
+	unpack_16(&rfs_flags, buffer, 
+	unpack_32(&mode, buffer, 0
+	));
+	
+	if (sizeof(mode) 
+	+ sizeof(rfs_flags) 
+	+ strlen(path) + 1 != cmd->data_len)
+	{
+		free_buffer(buffer);
+		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
+	}
+
+	int flags = os_file_flags(rfs_flags);
+	uint64_t handle = (uint64_t)(-1);
+
+	errno = 0;
+	int fd = open(path, flags, mode & 0777);
+
+	struct answer ans = { cmd_create, (fd == -1 ? 0 : sizeof(handle)), (fd == -1 ? -1 : 0), errno };
+	
+	free_buffer(buffer);
+	
+	if (fd != -1)
+	{
+		if (add_file_to_open_list(instance, fd) != 0)
+		{
+			close(fd);
+			return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
+		}
+	}
+
+	if (ans.ret == -1)
+	{
+		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		handle = htonll(fd);
+		
+		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle) == -1)
+		{
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

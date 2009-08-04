@@ -142,6 +142,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_mknod:
 		return handle_mknod(instance, client_addr, cmd);
 
+	case cmd_create:
+		return handle_create(instance, client_addr, cmd);
+
 	case cmd_truncate:
 		return handle_truncate(instance, client_addr, cmd);
 

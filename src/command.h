@@ -59,6 +59,7 @@ enum server_commands
 	cmd_getxattr,                /* 46 */
 	cmd_setxattr,                /* 47 */
 	cmd_utimens,                 /* 48 */
+	cmd_create,                  /* 49 */
 
 	/* reserved */
 

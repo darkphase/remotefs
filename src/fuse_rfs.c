@@ -30,6 +30,7 @@ struct fuse_operations fuse_rfs_operations = {
 	.utimens    = fuse_rfs_utimens, 
 #endif
 	.mknod		= fuse_rfs_mknod, /* regular files only */
+	.create     = fuse_rfs_create, /* it's supported only by kernels > 2.6.15, so we still need mknod() and open() */
 	.open 		= fuse_rfs_open,
 	.release	= fuse_rfs_release,
 	.read 		= fuse_rfs_read,
@@ -209,6 +210,11 @@ int fuse_rfs_setxattr(const char *path, const char *name, const char *value, siz
 	FUSE_DECORATE(rfs_setxattr, instance, path, name, value, size, flags);
 }
 #endif
+
+int fuse_rfs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
+{
+	FUSE_DECORATE(rfs_create, instance, path, mode, fi->flags, &fi->fh);
+}
 
 #undef FUSE_DECORATE
 
