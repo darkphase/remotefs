@@ -14,6 +14,7 @@ See the file LICENSE.
 #endif
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <sys/time.h>
 #include <string.h>
 #include <unistd.h>
 #include <utime.h>
@@ -618,13 +619,14 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	}
 	
 	uint16_t is_null = 0;
-	uint32_t modtime = 0;
-	uint32_t actime = 0;	
+	uint64_t modtime = 0;
+	uint64_t actime = 0;
+
 	const char *path = buffer + 
-	unpack_32(&actime, buffer, 
-	unpack_32(&modtime, buffer, 
+	unpack_64(&actime, buffer, 
+	unpack_64(&modtime, buffer, 
 	unpack_16(&is_null, buffer, 0
-		)));
+	)));
 	
 	if (sizeof(actime)
 	+ sizeof(modtime)
@@ -637,7 +639,7 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	struct utimbuf *buf = NULL;
 	
-	if (is_null != 0)
+	if (is_null == 0)
 	{
 		buf = get_buffer(sizeof(*buf));
 		buf->modtime = modtime;
@@ -661,7 +663,79 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		return -1;
 	}
 	
-	return result != 0 ? 1 : 0;
+	return (result == 0 ? 0 : 1);
+}
+
+int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	char *buffer = get_buffer(cmd->data_len);
+	if (buffer == NULL)
+	{
+		return -1;
+	}
+	
+	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
+	{
+		free_buffer(buffer);
+		return -1;
+	}
+	
+	uint16_t is_null = 0;
+	uint64_t modtime_sec = 0;
+	uint64_t modtime_nsec = 0;
+	uint64_t actime_sec = 0;
+	uint64_t actime_nsec = 0;
+
+	const char *path = buffer +  
+	unpack_16(&is_null, buffer, 
+	unpack_64(&actime_nsec, buffer, 
+	unpack_64(&actime_sec, buffer, 
+	unpack_64(&modtime_nsec, buffer, 
+	unpack_64(&modtime_sec, buffer, 0
+	)))));
+
+	if (sizeof(actime_sec)
+	+ sizeof(actime_nsec)
+	+ sizeof(modtime_sec)
+	+ sizeof(modtime_nsec)
+	+ sizeof(is_null)
+	+ strlen(path) + 1 != cmd->data_len)
+	{
+		free_buffer(buffer);
+		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
+	}
+	
+	DEBUG("is_null: %u\n", (unsigned)is_null);
+	
+	struct timeval *tv = NULL;
+	
+	if (is_null == 0)
+	{
+		tv = get_buffer(sizeof(*tv) * 2);
+		tv[0].tv_sec  = (long)(actime_sec);
+		tv[0].tv_usec = (long)(actime_nsec / 1000);
+		tv[1].tv_sec  = (long)(modtime_sec);
+		tv[1].tv_usec = (long)(modtime_nsec / 1000);
+	}
+	
+	errno = 0;
+	int result = utimes(path, tv);
+	
+	struct answer ans = { cmd_utimens, 0, result, errno };
+	
+	if (tv != NULL)
+	{
+		free_buffer(tv);
+	}
+	
+	free_buffer(buffer);
+	
+	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -1;
+	}
+	
+	return (result == 0 ? 0 : 1);
 }
 
 int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

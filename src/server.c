@@ -165,6 +165,9 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 
 	case cmd_utime:
 		return handle_utime(instance, client_addr, cmd);
+
+	case cmd_utimens:
+		return handle_utimens(instance, client_addr, cmd);
 	
 	case cmd_lock:
 		return handle_lock(instance, client_addr, cmd);

@@ -60,6 +60,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 int _rfs_unlink(struct rfs_instance *instance, const char *path);
 int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path);
 int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf);
+int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct timespec tv[2]);
 int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset);
 int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode);
 int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid);

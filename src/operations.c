@@ -13,6 +13,7 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 #include <sys/statvfs.h>
+#include <sys/time.h>
 #include <utime.h>
 
 #include "attr_cache.h"
@@ -727,6 +728,25 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
 
+static inline int flush_for_utime(struct rfs_instance *instance, const char *path)
+{
+	/* yes, it's strange indeed, that file is flushing during utime and utimens calls
+	however, remotefs may cache write operations until release call
+	so if utime[ns] is called before release() (just like for `cp -p`)
+	then folowing release() and included flush() will invalidate modification time and etc
+
+	so flushing is here */
+
+	uint64_t desc = is_file_in_open_list(instance, path);
+
+	if (desc != (uint64_t)-1)
+	{
+		return flush_write(instance, path, desc);
+	}
+
+	return 0;
+}
+
 int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf)
 {
 	if (instance->sendrecv.socket == -1)
@@ -734,10 +754,15 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 		return -ECONNABORTED;
 	}
 
+	if (flush_for_utime(instance, path) < 0)
+	{
+		return -ECANCELED;
+	}
+
 	unsigned path_len = strlen(path) + 1;
-	uint32_t actime = 0;
-	uint32_t modtime = 0;
-	uint16_t is_null = (uint16_t)(buf == 0 ? (uint16_t)1 : (uint16_t)0);
+	uint64_t actime = 0;
+	uint64_t modtime = 0;
+	uint16_t is_null = (buf == NULL ? 1 : 0);
 
 	if (buf != 0)
 	{
@@ -752,8 +777,8 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	char *buffer = get_buffer(cmd.data_len);
 
 	pack(path, path_len, buffer, 
-	pack_32(&actime, buffer, 
-	pack_32(&modtime, buffer, 
+	pack_64(&actime, buffer, 
+	pack_64(&modtime, buffer, 
 	pack_16(&is_null, buffer, 0
 	))));
 
@@ -778,11 +803,87 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 		return cleanup_badmsg(instance, &ans);
 	}
 
-	if (ans.ret==0)
+	if (ans.ret == 0)
 	{
 		delete_from_cache(instance, path);
 	}
-	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
+
+	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);
+}
+
+int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct timespec tv[2])
+{
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (flush_for_utime(instance, path) < 0)
+	{
+		return -ECANCELED;
+	}
+	
+	unsigned path_len = strlen(path) + 1;
+	uint64_t actime_sec = 0;
+	uint64_t actime_nsec = 0;
+	uint64_t modtime_sec = 0;
+	uint64_t modtime_nsec = 0;
+	uint16_t is_null = (tv == NULL ? 1 : 0);
+
+	if (tv != NULL)
+	{
+		actime_sec   = (uint64_t)tv[0].tv_sec;
+		actime_nsec  = (uint64_t)tv[0].tv_nsec;
+		modtime_sec  = (uint64_t)tv[1].tv_sec;
+		modtime_nsec = (uint64_t)tv[1].tv_nsec;
+	}
+
+	unsigned overall_size = path_len 
+		+ sizeof(actime_sec) 
+		+ sizeof(actime_nsec) 
+		+ sizeof(modtime_sec) 
+		+ sizeof(modtime_nsec)
+		+ sizeof(is_null);
+
+	struct command cmd = { cmd_utimens, overall_size };
+
+	char *buffer = get_buffer(cmd.data_len);
+
+	pack(path, path_len, buffer, 
+	pack_16(&is_null, buffer, 
+	pack_64(&actime_nsec, buffer, 
+	pack_64(&actime_sec, buffer, 
+	pack_64(&modtime_nsec, buffer, 
+	pack_64(&modtime_sec, buffer, 0
+	))))));
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (ans.command != cmd_utimens 
+	|| ans.data_len != 0)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if (ans.ret == 0)
+	{
+		delete_from_cache(instance, path);
+	}
+
+	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);
 }
 
 int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs *buf)

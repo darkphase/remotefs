@@ -89,6 +89,11 @@ int handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	DECORATE(_handle_utime)
 }
 
+int handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_utimens)
+}
+
 int handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
 {
 	DECORATE(_handle_rename)

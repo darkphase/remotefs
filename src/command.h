@@ -58,6 +58,7 @@ enum server_commands
 	cmd_readlink,                /* 45 */
 	cmd_getxattr,                /* 46 */
 	cmd_setxattr,                /* 47 */
+	cmd_utimens,                 /* 48 */
 
 	/* reserved */
 

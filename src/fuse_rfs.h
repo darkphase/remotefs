@@ -34,7 +34,12 @@ int fuse_rfs_mkdir(const char *path, mode_t mode);
 int fuse_rfs_unlink(const char *path);
 int fuse_rfs_rmdir(const char *path);
 int fuse_rfs_rename(const char *path, const char *new_path);
+#if FUSE_USE_VERSION < 26
 int fuse_rfs_utime(const char *path, struct utimbuf *buf);
+#endif
+#if FUSE_USE_VERSION >= 26
+int fuse_rfs_utimens(const char *path, const struct timespec tv[2]);
+#endif
 int fuse_rfs_mknod(const char *path, mode_t mode, dev_t dev);
 int fuse_rfs_open(const char *path, struct fuse_file_info *fi);
 int fuse_rfs_release(const char *path, struct fuse_file_info *fi);

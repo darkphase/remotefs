@@ -39,6 +39,7 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_rmdir:                         return "rmdir";
 	case cmd_rename:                        return "rename";
 	case cmd_utime:                         return "utime";
+	case cmd_utimens:                       return "utimens";
 	case cmd_statfs:                        return "statfs";
 	case cmd_chmod:                         return "chmod";
 	case cmd_chown:                         return "chown";

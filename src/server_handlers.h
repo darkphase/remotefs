@@ -45,6 +45,7 @@ int _handle_unlink(struct rfsd_instance *instance, const struct sockaddr_in *cli
 int _handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);

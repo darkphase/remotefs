@@ -23,7 +23,12 @@ struct fuse_operations fuse_rfs_operations = {
 	.unlink		= fuse_rfs_unlink,
 	.rmdir		= fuse_rfs_rmdir,
 	.rename		= fuse_rfs_rename,
+#if FUSE_USE_VERSION < 26
 	.utime		= fuse_rfs_utime,
+#endif
+#if FUSE_USE_VERSION >= 26
+	.utimens    = fuse_rfs_utimens, 
+#endif
 	.mknod		= fuse_rfs_mknod, /* regular files only */
 	.open 		= fuse_rfs_open,
 	.release	= fuse_rfs_release,
@@ -112,10 +117,19 @@ int fuse_rfs_rename(const char *path, const char *new_path)
 	FUSE_DECORATE(rfs_rename, instance, path, new_path);
 }
 
+#if FUSE_USE_VERSION < 26
 int fuse_rfs_utime(const char *path, struct utimbuf *buf)
 {
 	FUSE_DECORATE(rfs_utime, instance, path, buf);
 }
+#endif
+
+#if FUSE_USE_VERSION >= 26
+int fuse_rfs_utimens(const char *path, const struct timespec tv[2])
+{
+	FUSE_DECORATE(rfs_utimens, instance, path, tv);
+}
+#endif
 
 int fuse_rfs_open(const char *path, struct fuse_file_info *fi)
 {

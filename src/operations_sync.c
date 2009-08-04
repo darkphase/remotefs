@@ -53,6 +53,11 @@ int rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *b
 	DECORATE(_rfs_utime, instance, path, buf);
 }
 
+int rfs_utimens(struct rfs_instance *instance, const char *path, const struct timespec tv[2])
+{
+	DECORATE(_rfs_utimens, instance, path, tv);
+}
+
 int rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path)
 {
 	DECORATE(_rfs_rename, instance, path, new_path);
