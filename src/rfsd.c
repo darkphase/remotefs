@@ -61,7 +61,7 @@ static void release_server(struct rfsd_instance *instance)
 	release_rfsd_instance(&rfsd_instance);
 }
 
-static int start_server(const char *address, const unsigned port, unsigned force_ipv4)
+static int start_server(const char *address, const unsigned port, unsigned force_ipv4, unsigned force_ipv6)
 {
 	install_signal_handlers_server();
 	
@@ -133,6 +133,19 @@ static int start_server(const char *address, const unsigned port, unsigned force
 		ERROR("Error setting proper option to socket: %s\n", strerror(errno));
 		return 1;
 	}
+
+#if defined WITH_IPV6 && defined IPV6_V6ONLY
+	if ( force_ipv6 )
+	{
+		errno = 0;
+		int on  = 1;
+		if (setsockopt(listen_socket, IPPROTO_IPV6,  IPV6_V6ONLY, &on, sizeof(on) ) != 0)
+		{
+			ERROR("Error setting proper option to socket: %s\n", strerror(errno));
+			return 1;
+		}
+	}
+#endif
 	
 	errno = 0;
 	if (listen_family == AF_INET)
@@ -284,6 +297,7 @@ static void usage(const char *app_name)
 	"\t\t\t(and don't treat them as errors)\n"
 #ifdef WITH_IPV6
 	"-4 \t\t\tforce listen to IPv4 connections\n"
+	"-6 \t\t\tforce listen to IPv6 connections\n"
 #endif
 	"\n"
 	, app_name);
@@ -293,7 +307,7 @@ static int parse_opts(int argc, char **argv)
 {
 	int opt;
 #ifdef WITH_IPV6
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f4")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f46")) != -1)
 #else
 	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
 #endif
@@ -353,6 +367,14 @@ static int parse_opts(int argc, char **argv)
 				{
 					free(rfsd_instance.config.listen_address);
 					rfsd_instance.config.listen_address = strdup(DEFAULT_IPV4_ADDRESS);
+				}
+				break;
+			case '6':
+				rfsd_instance.config.force_ipv6 = 1;
+				if (strcmp(rfsd_instance.config.listen_address, DEFAULT_IPV4_ADDRESS) == 0)
+				{
+					free(rfsd_instance.config.listen_address);
+					rfsd_instance.config.listen_address = strdup(DEFAULT_IPV6_ADDRESS);
 				}
 				break;
 #endif
@@ -428,9 +450,9 @@ int main(int argc, char **argv)
 	int ret = start_server(rfsd_instance.config.listen_address, 
 		rfsd_instance.config.listen_port, 
 #ifdef WITH_IPV6
-		rfsd_instance.config.force_ipv4
+		rfsd_instance.config.force_ipv4, rfsd_instance.config.force_ipv6
 #else
-		1
+		1, 0
 #endif
 		);
 	

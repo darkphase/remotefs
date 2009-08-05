@@ -119,6 +119,7 @@ struct rfsd_config
 	char *passwd_file;
 #ifdef WITH_IPV6
 	unsigned force_ipv4;
+	unsigned force_ipv6;
 #endif
 #ifdef WITH_SSL
 	char *ssl_key_file;
