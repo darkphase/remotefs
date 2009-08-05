@@ -32,6 +32,8 @@ struct fuse_opt rfs_opts[] =
 	FUSE_OPT_KEY("-h", KEY_HELP),
 	FUSE_OPT_KEY("-q", KEY_QUIET),
 	FUSE_OPT_KEY("-l", KEY_LISTEXPORTS),
+	FUSE_OPT_KEY("-4", KEY_IPV4),
+	FUSE_OPT_KEY("-6", KEY_IPV6),
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
@@ -61,6 +63,8 @@ static void usage(const char *program)
 	"\n"
 	"RFS options:\n"
 	"    -q                      suppress warnings\n"
+	"    -4                      force use of IPv4\n"
+	"    -6                      force use of IPv6\n"
 #ifdef WITH_EXPORTS_LIST
 	"    -l                      list exports of specified host (and exit)\n"
 #endif
@@ -84,11 +88,6 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	if (strcmp(arg, "allow_other") == 0)
 	{
 		rfs_instance.config.allow_other = 1;
-	}
-
-	if (strstr(arg, "fsname=") == arg)
-	{
-		rfs_instance.config.set_fsname = 0;
 	}
 
 #ifndef WITH_SSL
@@ -171,6 +170,13 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		rfs_instance.config.quiet = 1;
 		return 0;
 	
+	case KEY_IPV4:
+		((struct rfs_config*)data)->force_ipv4 = 1;
+		return 0;
+
+	case KEY_IPV6:
+		((struct rfs_config*)data)->force_ipv6 = 1;
+		return 0;
 	case KEY_LISTEXPORTS:
 		just_list_exports = 1;
 		return 0;

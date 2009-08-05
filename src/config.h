@@ -97,6 +97,8 @@ struct rfs_config
 	unsigned transform_symlinks;
 	unsigned allow_other;
 	unsigned set_fsname;
+	unsigned force_ipv4;
+	unsigned force_ipv6;
 #ifdef WITH_SSL
 	unsigned int enable_ssl;
 	char *ssl_key_file;
@@ -131,6 +133,8 @@ enum
 	KEY_HELP
 	, KEY_QUIET
 	, KEY_LISTEXPORTS
+	, KEY_IPV4
+	, KEY_IPV6
 };
 
 /** on/off export options */

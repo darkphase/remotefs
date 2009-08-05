@@ -19,7 +19,7 @@ struct answer;
 struct command;
 struct sendrecv_info;
 
-int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port);
+int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port, const unsigned int ipv4, const unsigned int ipv5);
 
 size_t rfs_send_cmd(struct sendrecv_info *info, const struct command *cmd);
 size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans);

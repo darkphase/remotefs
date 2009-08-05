@@ -10,6 +10,7 @@ See the file LICENSE.
 #include <netdb.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #if defined SOLARIS
 #include <sys/sockio.h>
 #include <unistd.h>
@@ -44,7 +45,7 @@ See the file LICENSE.
 
 #include <netinet/tcp.h>
 
-int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
+int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port, const unsigned int force_ipv4, const unsigned int force_ipv6)
 {
 	struct addrinfo *addr_info = NULL;
 	struct addrinfo hints = { 0 };
@@ -53,7 +54,14 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 	hints.ai_family    = AF_UNSPEC;
 	hints.ai_socktype  = SOCK_STREAM; 
 	hints.ai_flags     = AI_ADDRCONFIG;
-	
+	if ( force_ipv4 )
+	{
+		hints.ai_family = AF_INET;
+	}
+	else if ( force_ipv6 )
+	{
+		hints.ai_family = AF_INET6;
+	}
 	int result = getaddrinfo(ip, NULL, &hints, &addr_info);
 	if (result != 0)
 	{
@@ -63,37 +71,49 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port)
 	
 	errno = 0;
 	int sock = -1;
-
-	if (addr_info->ai_family == AF_INET)
+	struct addrinfo *next = addr_info;
+	while(next)
 	{
-		struct sockaddr_in *addr = (struct sockaddr_in *)addr_info->ai_addr;
-		addr->sin_port = htons(port);
-		sock = socket(AF_INET, SOCK_STREAM, 0);
-	}
+		if (addr_info->ai_family == AF_INET)
+		{
+			struct sockaddr_in *addr = (struct sockaddr_in *)addr_info->ai_addr;
+			addr->sin_port = htons(port);
+			sock = socket(AF_INET, SOCK_STREAM, 0);
+		}
 #ifdef WITH_IPV6
-	else
-	{
-		struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr_info->ai_addr;
-		addr6->sin6_port = htons(port);
-		sock = socket(AF_INET6, SOCK_STREAM, 0);
-	}
+		else
+		{
+			struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr_info->ai_addr;
+			addr6->sin6_port = htons(port);
+			sock = socket(AF_INET6, SOCK_STREAM, 0);
+		}
 #endif
-	
-	if (sock == -1)
+		if (sock == -1)
+		{
+			printf("sock = %d, errno %s\n",sock, strerror(errno));
+			next = next->ai_next;
+		}
+		else
+		{
+			errno = 0;
+			if (connect(sock, (struct sockaddr *)addr_info->ai_addr, addr_info->ai_addrlen) == -1)
+			{
+				close(sock);
+				sock = -1;
+			}
+			else
+			{
+				break;
+			}
+		}
+		next = next->ai_next;
+	}
+	freeaddrinfo(addr_info);
+	if ( sock == -1 )
 	{
-		freeaddrinfo(addr_info);
 		return -errno;
 	}
 
-	errno = 0;
-	if (connect(sock, (struct sockaddr *)addr_info->ai_addr, addr_info->ai_addrlen) == -1)
-	{
-		freeaddrinfo(addr_info);
-		return -errno;
-	}
-	
-	freeaddrinfo(addr_info);
-	
 	info->socket = sock;
 	info->connection_lost = 0;
 	
