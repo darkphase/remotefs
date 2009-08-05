@@ -90,6 +90,11 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		rfs_instance.config.allow_other = 1;
 	}
 
+	if (strstr(arg, "fsname=") == arg)
+	{
+		rfs_instance.config.set_fsname = 0;
+	}
+
 #ifndef WITH_SSL
 	if (strcmp(arg, "ssl") == 0
 	|| strstr(arg, "ciphers=") == arg)
