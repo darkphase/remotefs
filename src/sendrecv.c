@@ -62,6 +62,7 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 	{
 		hints.ai_family = AF_INET6;
 	}
+
 	int result = getaddrinfo(ip, NULL, &hints, &addr_info);
 	if (result != 0)
 	{
@@ -74,16 +75,16 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 	struct addrinfo *next = addr_info;
 	while(next)
 	{
-		if (addr_info->ai_family == AF_INET)
+		if (next->ai_family == AF_INET)
 		{
-			struct sockaddr_in *addr = (struct sockaddr_in *)addr_info->ai_addr;
+			struct sockaddr_in *addr = (struct sockaddr_in *)next->ai_addr;
 			addr->sin_port = htons(port);
 			sock = socket(AF_INET, SOCK_STREAM, 0);
 		}
 #ifdef WITH_IPV6
 		else
 		{
-			struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr_info->ai_addr;
+			struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)next->ai_addr;
 			addr6->sin6_port = htons(port);
 			sock = socket(AF_INET6, SOCK_STREAM, 0);
 		}
@@ -96,7 +97,7 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 		else
 		{
 			errno = 0;
-			if (connect(sock, (struct sockaddr *)addr_info->ai_addr, addr_info->ai_addrlen) == -1)
+			if (connect(sock, (struct sockaddr *)next->ai_addr, next->ai_addrlen) == -1)
 			{
 				close(sock);
 				sock = -1;
@@ -109,6 +110,7 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 		next = next->ai_next;
 	}
 	freeaddrinfo(addr_info);
+
 	if ( sock == -1 )
 	{
 		return -errno;
