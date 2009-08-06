@@ -5,7 +5,7 @@
 #######################################
 
 libnss_TARGET = $(SO_NAME_NSS)
-rfs_INCLUDES= -Isrc/
+rfs_INCLUDES= -Isrc/ -I.
 
 libnss_CFLAGS  = $(CFLAGS_MAIN) \
                  $(CFLAGS_OS) \
@@ -24,7 +24,8 @@ libnss_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-libnss_OBJS = rfs_nss/src/client.o \
+libnss_OBJS = rfs_nss/src/check_options.o \
+              rfs_nss/src/client.o \
 			  rfs_nss/src/client_common.o \
 			  rfs_nss/src/client_ent.o \
 			  rfs_nss/src/common.o \

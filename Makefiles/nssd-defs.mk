@@ -5,7 +5,7 @@
 #######################################
 
 nssd_TARGET = rfs_nssd
-rfs_INCLUDES= -Isrc/
+rfs_INCLUDES= -Isrc/ -I.
 
 nssd_CFLAGS  =  $(CFLAGS_MAIN) \
                 $(CFLAGS_OS) \
@@ -23,7 +23,8 @@ nssd_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-nssd_OBJS = rfs_nss/src/client_common.o \
+nssd_OBJS = rfs_nss/src/check_options.o \
+            rfs_nss/src/client_common.o \
             rfs_nss/src/client_for_server.o \
             rfs_nss/src/cookies.o \
             rfs_nss/src/common.o \
