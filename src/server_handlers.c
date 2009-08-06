@@ -1076,7 +1076,7 @@ int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	}
 	else
 	{
-		handle = htonll(fd);
+		handle = htonll((uint64_t)fd);
 		
 		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle) == -1)
 		{
