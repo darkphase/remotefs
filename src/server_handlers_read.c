@@ -20,6 +20,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
+#include "options.h"
 #include "sendrecv.h"
 #include "server.h"
 
@@ -53,7 +54,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
 }
 
-#if defined WITH_SSL || defined QNX || defined DARWIN /* we don't need this on Linux/Solaris/FreeBSD if SSL isn't enabled */
+#if (defined WITH_SSL || (! defined SENDFILE_AVAILABLE)) /* we don't need this on Linux/Solaris/FreeBSD/Darwin if SSL isn't enabled */
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading as always");
@@ -114,9 +115,9 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 
 	return 0;
 }
-#endif /* WITH_SSL */
+#endif /* defined WITH_SSL || ! defined SENDFILE_AVAILABLE */
 
-#if ! ( defined DARWIN || defined QNX )
+#if defined SENDFILE_AVAILABLE
 static int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading with sendfile");
@@ -133,7 +134,7 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	size_t done = 0;
 	while (done < size)
 	{	
-#if defined FREEBSD
+#if (defined FREEBSD || defined DARWIN)
 		off_t sbytes = 0;
 		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size - done, NULL, &sbytes, 0);
 		if (result == 0)
@@ -164,11 +165,11 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	
 	return 0;
 }
-#endif /* ! (defined DARWIN || defined QNX) */
+#endif /* defined SENDFILE_AVAILABLE */
 
 typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
 
-#if ! ( defined DARWIN || defined QNX )
+#if defined SENDFILE_AVAILABLE
 static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
 {
 #ifdef WITH_SSL
@@ -180,14 +181,14 @@ static inline read_method choose_read_method(struct rfsd_instance *instance, siz
 	return (instance->sendrecv.ssl_enabled != 0 ? read_as_always : read_with_sendfile);
 #else
 	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_with_sendfile);
-#endif /* WITH_SSL */
+#endif /* SENDFILE_AVAILABLE */
 }
-#else /* DARWIN */
+#else /* sendfile isn't available */
 static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
 {
 	return (read_size <= SENDFILE_LIMIT ? read_small_block : read_as_always);
 }
-#endif /* ! (defined DARWIN || defined QNX) */
+#endif /* defined SENDFILE_AVAILABLE */
 
 int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

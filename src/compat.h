@@ -9,6 +9,8 @@ See the file LICENSE.
 #ifndef COMPAT_H
 #define COMPAT_H
 
+/** OS-dependent defines */
+
 #if defined FREEBSD
 #endif /* FREEBSD */
 

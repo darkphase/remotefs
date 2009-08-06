@@ -6,7 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifdef WITH_UGO
+#include "options.h"
+
+#if defined RFSNSS_AVAILABLE
 
 #include <dirent.h>
 #include <errno.h>
@@ -298,5 +300,5 @@ int nss_get_groups(const char *server, struct list **groups)
 
 #else
 int nss_client_c_empty_module_makes_suncc_feel_bad = 0;
-#endif /* WITH_UGO */
+#endif /* RFSNSS_AVAILABLE */
 

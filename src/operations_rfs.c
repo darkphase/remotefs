@@ -30,6 +30,7 @@ See the file LICENSE.
 #endif
 #include "operations.h"
 #include "operations_rfs.h"
+#include "options.h"
 #include "resume.h"
 #ifdef WITH_SCHEDULING
 #	include "scheduling.h"
@@ -531,7 +532,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	return 0;
 }
 
-#ifdef WITH_UGO
+#if defined RFSNSS_AVAILABLE
 static int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
 {
 	if ((instance->client.export_opts & OPT_UGO) != 0)
@@ -586,11 +587,13 @@ void* rfs_init(struct rfs_instance *instance)
 		create_gids_lookup(&instance->id_lookup.gids);
 	}
 
+#if defined RFSNSS_AVAILABLE 
 	if (init_nss_server(instance, 0) != 0)
 	{
 		instance->nss.use_nss = 0;
 	}
-#endif
+#endif /* RFSNSS_AVAILABLE */
+#endif /* WITH_UGO */
 
 #ifdef WITH_SCHEDULING
 	set_scheduler();
@@ -603,7 +606,7 @@ void rfs_destroy(struct rfs_instance *instance)
 {
 	keep_alive_lock(instance);
 
-#ifdef WITH_UGO
+#if defined RFSNSS_AVAILABLE
 	if (is_nss_running(instance))
 	{
 		stop_nss_server(instance);

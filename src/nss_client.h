@@ -6,7 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifdef WITH_UGO
+#include "options.h"
+
+#if defined RFSNSS_AVAILABLE
 
 #ifndef NSS_CLIENT_H
 #define NSS_CLIENT_H
@@ -30,5 +32,5 @@ int nss_get_groups(const char *server, struct list **groups);
 
 #endif /* NSS_CLIENT_H */
 
-#endif /* WITH_UGO */
+#endif /* RFSNSS_AVAILABLE */
 
