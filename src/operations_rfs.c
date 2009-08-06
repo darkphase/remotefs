@@ -391,7 +391,12 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 {
 	DEBUG("(re)connecting to %s:%d\n", instance->config.host, instance->config.server_port);
 	
-	int sock = rfs_connect(&instance->sendrecv, instance->config.host, instance->config.server_port, instance->config.force_ipv4, instance->config.force_ipv6);
+	int sock = rfs_connect(&instance->sendrecv, instance->config.host, instance->config.server_port,
+#if defined WITH_IPV6
+	                       instance->config.force_ipv4, instance->config.force_ipv6);
+#else
+	                       0, 0);
+#endif
 	if (sock < 0)
 	{
 		if (show_errors != 0)

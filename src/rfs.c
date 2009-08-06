@@ -32,8 +32,10 @@ struct fuse_opt rfs_opts[] =
 	FUSE_OPT_KEY("-h", KEY_HELP),
 	FUSE_OPT_KEY("-q", KEY_QUIET),
 	FUSE_OPT_KEY("-l", KEY_LISTEXPORTS),
+#if defined WITH_IPV6
 	FUSE_OPT_KEY("-4", KEY_IPV4),
 	FUSE_OPT_KEY("-6", KEY_IPV6),
+#endif
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
@@ -174,7 +176,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	case KEY_QUIET:
 		rfs_instance.config.quiet = 1;
 		return 0;
-	
+#if defined WITH_IPV6
 	case KEY_IPV4:
 		((struct rfs_config*)data)->force_ipv4 = 1;
 		return 0;
@@ -182,6 +184,8 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	case KEY_IPV6:
 		((struct rfs_config*)data)->force_ipv6 = 1;
 		return 0;
+#endif
+
 	case KEY_LISTEXPORTS:
 		just_list_exports = 1;
 		return 0;

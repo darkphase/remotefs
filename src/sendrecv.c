@@ -51,9 +51,14 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 	struct addrinfo hints = { 0 };
 
 	/* resolve name or address */
+#if defined WITH_IPV6
+	hints.ai_family    = AF_INET;
+#else
 	hints.ai_family    = AF_UNSPEC;
+#endif
 	hints.ai_socktype  = SOCK_STREAM; 
 	hints.ai_flags     = AI_ADDRCONFIG;
+#if defined WITH_IPV6
 	if ( force_ipv4 )
 	{
 		hints.ai_family = AF_INET;
@@ -62,6 +67,7 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 	{
 		hints.ai_family = AF_INET6;
 	}
+#endif
 
 	int result = getaddrinfo(ip, NULL, &hints, &addr_info);
 	if (result != 0)
