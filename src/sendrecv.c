@@ -45,16 +45,16 @@ See the file LICENSE.
 
 #include <netinet/tcp.h>
 
-int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port, const unsigned int force_ipv4, const unsigned int force_ipv6)
+int rfs_connect(struct sendrecv_info *info, const char *host, const unsigned port, const unsigned int force_ipv4, const unsigned int force_ipv6)
 {
 	struct addrinfo *addr_info = NULL;
 	struct addrinfo hints = { 0 };
 
 	/* resolve name or address */
 #if defined WITH_IPV6
-	hints.ai_family    = AF_INET;
-#else
 	hints.ai_family    = AF_UNSPEC;
+#else
+	hints.ai_family    = AF_INET;
 #endif
 	hints.ai_socktype  = SOCK_STREAM; 
 	hints.ai_flags     = AI_ADDRCONFIG;
@@ -69,18 +69,20 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 	}
 #endif
 
-	int result = getaddrinfo(ip, NULL, &hints, &addr_info);
-	if (result != 0)
+	int resolve_result = getaddrinfo(host, NULL, &hints, &addr_info);
+	if (resolve_result != 0)
 	{
-		/*ERROR("Can't resolve address for %s : %s\n", ip, gai_strerror(result));*/
+		DEBUG("Can't resolve address for %s : %s\n", host, gai_strerror(resolve_result));
 		return -EHOSTUNREACH;
 	}
 	
-	errno = 0;
 	int sock = -1;
 	struct addrinfo *next = addr_info;
-	while(next)
+
+	while (next != NULL)
 	{
+		errno = 0;
+
 		if (next->ai_family == AF_INET)
 		{
 			struct sockaddr_in *addr = (struct sockaddr_in *)next->ai_addr;
@@ -113,8 +115,10 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port,
 				break;
 			}
 		}
+
 		next = next->ai_next;
 	}
+
 	freeaddrinfo(addr_info);
 
 	if ( sock == -1 )
