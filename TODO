@@ -4,6 +4,7 @@
 - librfs?
 
 - remove and restrict -g and group= options
+- there should be memory limit for attrs cache
 
 0.12
 + rfs_nss support

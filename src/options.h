@@ -15,7 +15,7 @@ See the file LICENSE.
 #	define RFSNSS_AVAILABLE
 #endif
 
-#if (defined LINUX || defined SOLARIS || defined FREEBSD || defined DARWIN)
+#if (defined LINUX || defined SOLARIS)
 #	define SENDFILE_AVAILABLE
 #endif
 
