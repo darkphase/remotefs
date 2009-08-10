@@ -5,12 +5,11 @@ START=50
 LISTEN="0.0.0.0"
 PORT="5001"
 RFSD_USER="root"
-RFSD_GROUP="root"
 PIDFILE="/var/run/rfsd.pid"
 
 start()
 {
-	rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -g ${RFSD_GROUP} -r ${PIDFILE}
+	rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
 }
 
 stop()
