@@ -155,7 +155,6 @@ rfs_man:
 	@$(MAKE) -sf Makefiles/base.mk rfs_man
 rfsd_man:
 	@$(MAKE) -sf Makefiles/base.mk rfsd_man
-man: dummy rfs_man rfsd_man
-
-nss_man:
+rfsnss_man:
 	@$(MAKE) -sf Makefiles/base.mk rfsnss_man
+man: dummy rfs_man rfsd_man rfsnss_man

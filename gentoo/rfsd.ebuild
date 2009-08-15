@@ -56,6 +56,7 @@ src_install() {
     setup_install
 
     make -C "${BUILDDIR}/" install
+    
     cp "${BUILDDIR}/etc/rfs-exports" "${D}/etc/"
     chmod 600 "${D}/etc/rfs-exports"
     chown root:root "${D}/etc/rfs-exports"
@@ -66,5 +67,5 @@ src_install() {
     
     cp "${BUILDDIR}/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
     chmod 644 "${D}/etc/conf.d/rfsd"
-    chown root:root "${D}/etc/conf.d/rfsd"    
+    chown root:root "${D}/etc/conf.d/rfsd"
 }
