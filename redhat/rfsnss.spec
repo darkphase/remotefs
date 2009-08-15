@@ -1,6 +1,6 @@
-Name: rfs_nss
-Summary:A fast remote file system, server
-Version:0.10
+Name: rfsnss
+Summary:remote file system, NSS modules
+Version:
 Release:1
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net
@@ -12,7 +12,7 @@ Requires: %__find_requires
 Provides: %__find_provides
 
 %description
-remotefs nss component
+remotefs NSS module
 
 
 # -------------------------    prep     -----------------------------------
@@ -32,6 +32,9 @@ mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
 cp libnss_rfs.so.2 $RPM_BUILD_ROOT%{_prefix}/lib
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
 cp man/man1/rfs_nssd.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+cp man/man1/rfsnsswitch.sh.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/sbin
+cp sbin/rfsnsswitch.sh $RPM_BUILD_ROOT%{_prefix}/sbin/
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -46,8 +49,14 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755, root,root) %{_prefix}/bin/rfs_nssd
 %attr(755, root,root) %{_prefix}/lib/libnss_rfs.so.2
 %attr(644, root,root) %{_prefix}/share/man/man1/rfs_nssd.1.gz
+%attr(700, root,root) %{_prefix}/sbin/rfsnsswitch.sh
+%attr(644, root,root) %{_prefix}/share/man/man1/rfsnsswitch.sh.1.gz
 
 %post
+%{_prefix}/sbin/rfsnsswitch.sh install
+
+%preun
+%{_prefix}/sbin/rfsnsswitch.sh uninstall
 
 # -------------------------    changelog    --------------------------------
 %changelog

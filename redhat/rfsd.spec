@@ -1,6 +1,6 @@
 Name: rfsd
-Summary:A fast remote file system, server
-Version:0.10
+Summary:remote file system, server
+Version:
 Release:1
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net

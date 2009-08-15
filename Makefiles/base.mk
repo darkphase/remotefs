@@ -283,22 +283,22 @@ builddeb: dummy
 #############################
 
 rfsrpm: dummy
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 	$(MAKE) -f Makefiles/base.mk man
 	RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk buildrpm
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 	
 rfsdrpm: dummy
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 	$(MAKE) -f Makefiles/base.mk man
 	RPMNAME=rfsd $(MAKE) -f Makefiles/base.mk buildrpm
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 
-rfs_nssrpm: dummy
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+rfsnssrpm: dummy
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 	$(MAKE) -f Makefiles/base.mk man
-	RPMNAME=rfs_nss $(MAKE) -sf Makefiles/base.mk  buildrpm
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	RPMNAME=rfsnss $(MAKE) -f Makefiles/base.mk buildrpm
+	$(MAKE) -f Makefiles/base.mk clean_tmp
 	
 
 redhat/%.spec: dummy Makefiles/version.mk
@@ -317,7 +317,7 @@ buildrpm: rpmbuild redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	mkdir -p $(RPMNAME)-$(VERSION)/man/man1
 	mkdir -p $(RPMNAME)-$(VERSION)/man/man8
-	tar --exclude .svn -cf - src rfs_nss init.d etc  Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
+	tar --exclude .svn -cf - src rfs_nss init.d etc sbin Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
 	cp  man/*.1 $(RPMNAME)-$(VERSION)/man/man1/
 	cd $(RPMNAME)-$(VERSION)/man/man1/; gzip *
 	cp man/*.8 $(RPMNAME)-$(VERSION)/man/man8/
@@ -370,7 +370,7 @@ buildipk: dummy
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	"kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
 	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)";
-	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . 2>&1 >/dev/null;
+	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . >/dev/null;
 	
 	if [ -z "$(EXPERIMENTAL)" ]; then \
 	    mv "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH).ipk" "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk";\

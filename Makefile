@@ -78,9 +78,9 @@ rfsrpm: dummy
 rfsdrpm: dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdrpm
-rfs_nssrpm: dummy
+rfsnssrpm: dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfs_nssrpm
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsnssrpm
 rpms: rfsrpm rfsdrpm rfs_nssrpm
 
 rfsdeb: dummy
