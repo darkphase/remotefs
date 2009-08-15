@@ -59,7 +59,7 @@ clean_bins: dummy
 clean_packages_tmp: dummy
 	# debs
 	$(RM) -fr man/gz
-	$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/
+	$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/ dpkg_sbin/
 	
 	# ipkg
 	$(RM) -fr ipkg/
@@ -114,6 +114,7 @@ rfsd_man:
 rfsnss_man: dummy
 	mkdir -p man/gz/man1
 	gzip -c < man/rfs_nssd.1 > man/gz/man1/rfs_nssd.1.gz
+	gzip -c < man/rfsnsswitch.sh.1 > man/gz/man1/rfsnsswitch.sh.1.gz
 
 man: dummy rfs_man rfsd_man rfsnss_man
 
@@ -180,7 +181,6 @@ uninstall_man: dummy
 #############################
 
 debbase:
-	mkdir -p "dpkg$(INSTALL_DIR)";
 	mkdir -p "dpkg$(INSTALL_DIR)/bin";
 	mkdir -p "dpkg/DEBIAN";
 
@@ -230,9 +230,15 @@ rfsnssmanpages: dummy
 	$(MAKE) -sf Makefiles/base.mk rfsnss_man
 	mkdir -p dpkg_man/man1/
 	cp man/gz/man1/rfs_nssd.1.gz dpkg_man/man1/
+	cp man/gz/man1/rfsnsswitch.sh.1.gz dpkg_man/man1/
 
-rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages
+rfsnsssbin: dummy
+	mkdir -p "dpkg_sbin/"	
+	cp sbin/rfsnsswitch.sh "dpkg_sbin/";
+
+rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
+	cp debian/rfs_nss/post* debian/rfs_nss/pre* dpkg/DEBIAN/
 	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk librfs >/dev/null
 	$(MAKE) -f Makefiles/base.mk libnss >/dev/null
@@ -256,6 +262,12 @@ builddeb: dummy
 		mkdir -p "dpkg/etc";\
 		mv dpkg_etc/* "dpkg/etc/";\
 		rm -fr dpkg_etc;\
+	fi;
+	if [ -d dpkg_sbin ];\
+	then\
+		mkdir -p "dpkg$(INSTALL_DIR)/sbin/";\
+		mv dpkg_sbin/* "dpkg$(INSTALL_DIR)/sbin/";\
+		rm -fr dpkg_sbin;\
 	fi;
 	sed -e "s/INSERT ARCH HERE, PLEASE/$(ARCH)/" \
 	-e "s/AND SIZE HERE/`du -sk dpkg | awk '$$1~/^([0-9])/ { print $$1 }'`/" \

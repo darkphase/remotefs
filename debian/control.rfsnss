@@ -7,4 +7,4 @@ Essential: no
 Depends: libc6 (>=2.4)
 Installed-Size: AND SIZE HERE
 Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
-Description: remote filesystem server and passwd utility
+Description: remote filesystem NSS

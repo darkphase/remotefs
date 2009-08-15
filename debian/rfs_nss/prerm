@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+	remove|upgrade|deconfigure)
+		rfsnsswitch.sh uninstall
+	;;
+esac
+
+exit 0
+
