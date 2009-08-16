@@ -113,8 +113,6 @@ int walk_acl(const rfs_acl_t *acl, size_t count, walk_acl_callback callback, voi
 		uint16_t perm = acl->a_entries[i].e_perm;
 		uint32_t id = acl->a_entries[i].e_id;
 
-		DEBUG("ACL entry: type: %u, perm: %u, id: %lu\n", (unsigned)type, (unsigned)perm, (unsigned long) id);
-		
 		int callback_ret = callback(type, perm, id, data);
 		if (callback_ret != 0)
 		{
