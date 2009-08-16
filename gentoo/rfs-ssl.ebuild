@@ -6,6 +6,7 @@ LICENSE="GPL"
 
 IUSE=""
 DEPEND="dev-libs/openssl"
+RDEPEND="${DEPEND}"
 SLOT="0"
 
 KEYWORDS="~x86 ~mips ~mipsel ~ppc ~arm ~armeb ~ai64 ~amd64 ~x86_64"

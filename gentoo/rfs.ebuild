@@ -9,6 +9,7 @@ DEPEND="ssl? ( net-fs/rfs-ssl )
 	acl? ( sys-apps/acl )
 	>=sys-fs/fuse-2.6
 	virtual/libc"
+RDEPEND="${DEPEND}"
 SLOT="0"
 
 KEYWORDS="~x86 ~mips ~mipsel ~ppc ~arm ~armeb ~ai64 ~amd64 ~x86_64"

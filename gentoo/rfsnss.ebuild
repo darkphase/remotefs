@@ -8,6 +8,7 @@ IUSE=""
 DEPEND="=net-fs/rfs-GENTOO VERSION
 	virtual/libc
 	sys-apps/sed"
+RDEPEND="${DEPEND}"
 SLOT="0"
 
 KEYWORDS="~x86 ~mips ~mipsel ~ppc ~arm ~armeb ~ai64 ~amd64 ~x86_64"
