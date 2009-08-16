@@ -583,16 +583,16 @@ void* rfs_init(struct rfs_instance *instance)
 #ifdef WITH_UGO
 	if ((instance->client.export_opts & OPT_UGO) != 1)
 	{
+#if defined RFSNSS_AVAILABLE 
+	    if (init_nss_server(instance, 0) != 0)
+	    {
+		    instance->nss.use_nss = 0;
+	    }
+#endif /* RFSNSS_AVAILABLE */
+	
 		create_uids_lookup(&instance->id_lookup.uids);
 		create_gids_lookup(&instance->id_lookup.gids);
 	}
-
-#if defined RFSNSS_AVAILABLE 
-	if (init_nss_server(instance, 0) != 0)
-	{
-		instance->nss.use_nss = 0;
-	}
-#endif /* RFSNSS_AVAILABLE */
 #endif /* WITH_UGO */
 
 #ifdef WITH_SCHEDULING

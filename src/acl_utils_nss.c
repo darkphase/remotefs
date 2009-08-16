@@ -114,7 +114,7 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted)
 	char *fixed_name = malloc(fixed_name_len + 1);
 
 	memcpy(fixed_name, name, fixed_name_len);
-	fixed_name[fixed_name_len + 1] = 0;
+	fixed_name[fixed_name_len] = 0;
 
 	return fixed_name;
 }
