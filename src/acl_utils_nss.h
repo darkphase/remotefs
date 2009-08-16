@@ -15,14 +15,16 @@ See the file LICENSE.
 
 #include "acl_utils.h"
 
-struct rfs_instance;
+struct id_lookup_info;
 
-unsigned acl_need_nss_patching(const char *acl_text);
+struct resolve_params
+{
+	const char *host;
+	const struct id_lookup_info *lookup;
+};
 
-/** don't forget to free() result */
-char* patch_acl_for_server(const char *acl_text, const struct rfs_instance *instance);
-
-int patch_acl_from_server(rfs_acl_t *acl, int count, const struct rfs_instance *instance);
+uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *params_casted);
+char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted);
 
 #endif /* ACL_UTILS_NSS_H */
 

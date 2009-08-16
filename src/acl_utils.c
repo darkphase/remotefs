@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #ifdef WITH_ACL
 
+#include <errno.h>
 #include <sys/acl.h>
 #include <sys/xattr.h>
 #include <string.h>
@@ -20,10 +21,15 @@ See the file LICENSE.
 #include "list.h"
 #include "acl/libacl/byteorder.h"
 
-static inline void write_text(char **cursor, const char *text, size_t len)
+static inline size_t write_text(char **cursor, const char *text, size_t len)
 {
-	memcpy(*cursor, text, len);
-	*cursor += len;
+	if (cursor != NULL && *cursor != NULL)
+	{
+		memcpy(*cursor, text, len);
+		*cursor += len;
+	}
+
+	return len;
 }
 
 char* rfs_acl_to_xattr(const rfs_acl_t* acl, int count)
@@ -97,9 +103,286 @@ rfs_acl_t* rfs_acl_from_xattr(const char *value, size_t size)
 	return acl;
 }
 
-char* rfs_acl_to_text(struct id_lookup_info *lookup, 
+int walk_acl(const rfs_acl_t *acl, size_t count, walk_acl_callback callback, void *data)
+{
+	DEBUG("walking ACL, count: %lu\n", (unsigned long)count);
+
+	size_t i = 0; for (i = 0; i < count; ++i)
+	{
+		uint16_t type = acl->a_entries[i].e_tag;
+		uint16_t perm = acl->a_entries[i].e_perm;
+		uint32_t id = acl->a_entries[i].e_id;
+
+		DEBUG("ACL entry: type: %u, perm: %u, id: %lu\n", (unsigned)type, (unsigned)perm, (unsigned long) id);
+		
+		int callback_ret = callback(type, perm, id, data);
+		if (callback_ret != 0)
+		{
+			return callback_ret;
+		}
+	}
+
+	return 0;
+}
+
+int walk_acl_text(const char *acl_text, walk_acl_text_callback callback, void *data)
+{
+	const char *cursor = acl_text;
+	const char *name = NULL;
+	size_t name_len = 0;
+	uint16_t type = ACL_UNDEFINED_TAG;
+	uint16_t perm = 0;
+
+	DEBUG("%s\n", "walking ACL text");
+
+	while (*cursor != 0)
+	{
+		DEBUG("%s\n", cursor);
+
+		name = NULL;
+		name_len = 0;
+		type = ACL_UNDEFINED_TAG;
+		perm = 0;
+
+		if (memcmp(cursor, STR_USER_TAG, strlen(STR_USER_TAG)) == 0)
+		{
+			cursor += strlen(STR_USER_TAG);
+			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
+			{
+				name = cursor;
+				
+				cursor = strstr(cursor, STR_ACL_DELIMITER);
+				if (cursor == NULL)
+				{
+					return -EINVAL;
+				}
+
+				name_len = cursor - name; 
+			}
+			cursor += strlen(STR_ACL_DELIMITER);
+			type = (name_len == 0 ? ACL_USER_OBJ : ACL_USER);
+		}
+		else if (memcmp(cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG)) == 0)
+		{
+			cursor += strlen(STR_GROUP_TAG);
+			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
+			{
+				name = cursor;
+
+				cursor = strstr(cursor, STR_ACL_DELIMITER);
+				if (cursor == NULL)
+				{
+					return -EINVAL;
+				}
+
+				name_len = cursor - name;
+			}
+			cursor += strlen(STR_ACL_DELIMITER);
+			type = (name_len == 0 ? ACL_GROUP_OBJ : ACL_GROUP);
+		}
+		else if (memcmp(cursor, STR_MASK_TAG, strlen(STR_MASK_TAG)) == 0)
+		{
+			cursor += strlen(STR_MASK_TAG);
+			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
+			{
+				return -EINVAL;
+			}
+			cursor += strlen(STR_ACL_DELIMITER);
+			type = ACL_MASK;
+		}
+		else if (memcmp(cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG)) == 0)
+		{
+			cursor += strlen(STR_OTHER_TAG);
+			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
+			{
+				return -EINVAL;
+			}
+			cursor += strlen(STR_ACL_DELIMITER);
+			type = ACL_OTHER;
+		}
+		else
+		{
+			return -EINVAL;
+		}
+			
+		uint16_t perm = 0;
+		
+		/* next should be rwx and delimiter */
+		if (*cursor != 'r' && *cursor != '-')
+		{
+			return -EINVAL;
+		}
+		
+		if (*cursor == 'r')
+		{
+			perm |= ACL_READ;
+		}
+		++cursor;
+
+		if (*cursor != 'w' && *cursor != '-')
+		{
+			return -EINVAL;
+		}
+		
+		if (*cursor == 'w')
+		{
+			perm |= ACL_WRITE;
+		}
+		++cursor;
+
+		if (*cursor != 'x' && *cursor != '-')
+		{
+			return -EINVAL;
+		}
+
+		if (*cursor == 'x')
+		{
+			perm |= ACL_EXECUTE;
+		}
+		++cursor;
+		
+		if (*cursor != 0)
+		{
+			cursor += strlen(STR_ACL_DELIMITER);
+		}
+			
+		int callback_ret = callback(type, perm, name, name_len, data);
+		if (callback_ret != 0)
+		{
+			return callback_ret;
+		}
+	}
+
+	return 0;
+}
+
+struct acl_to_text_params
+{
+	const struct id_lookup_info *lookup;
+	size_t len;
+	char *text;
+	reverse_resolve custom_resolve;
+	void *custom_resolve_data;
+};
+
+static char* default_reverse_resolve(uint16_t type, uint32_t id, void *lookup_casted)
+{
+	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
+
+	switch (type)
+	{
+	case ACL_USER:
+		{
+		DEBUG("resolving username with id: %lu\n", (unsigned long)id);
+		
+		const char *username = get_uid_name(lookup->uids, (uid_t)id);
+				
+		if (username == NULL)
+		{
+			return NULL;
+		}
+
+		return strdup(username);
+		}
+	case ACL_GROUP:
+		{
+		DEBUG("resolving groupname with id: %lu\n", (unsigned long)id);
+
+		const char *groupname = get_gid_name(lookup->gids, (gid_t)id);
+				
+		if (groupname == NULL)
+		{
+			return NULL;
+		}
+		
+		return strdup(groupname);
+		}
+	}
+
+	return NULL;
+}
+
+static int acl_to_text_callback(uint16_t type, uint16_t perm, uint32_t id, void *params_casted)
+{
+	DEBUG("acl_to_text: type: %d, perm: %d, id: %d\n", type, perm, id);
+
+	struct acl_to_text_params *params = (struct acl_to_text_params *)(params_casted);
+	char *cursor = params->text;
+	reverse_resolve resolve_func = (params->custom_resolve == NULL ? default_reverse_resolve : params->custom_resolve);
+	void *resolve_data = (params->custom_resolve == NULL ? (void *)params->lookup : params->custom_resolve_data);
+
+	switch (type)
+	{
+	case ACL_USER_OBJ:
+	case ACL_USER:
+		params->len += write_text(&cursor, STR_USER_TAG, strlen(STR_USER_TAG));
+
+		if (type == ACL_USER)
+		{	
+			char *username = resolve_func(type, id, resolve_data);
+			if (username == NULL)
+			{
+				return -EINVAL;
+			}
+
+			params->len += write_text(&cursor, username, strlen(username));
+			free(username);
+		}
+		break;
+	case ACL_GROUP_OBJ:
+	case ACL_GROUP:
+		params->len += write_text(&cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG));
+		if (type == ACL_GROUP)
+		{
+			char *groupname = resolve_func(type, id, resolve_data);
+			if (groupname == NULL)
+			{
+				return -EINVAL;
+			}
+			
+			params->len += write_text(&cursor, groupname, strlen(groupname));
+			free(groupname);
+		}
+		break;
+	case ACL_MASK:
+		params->len += write_text(&cursor, STR_MASK_TAG, strlen(STR_MASK_TAG));
+		break;
+	case ACL_OTHER:
+		params->len += write_text(&cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG));
+		break;
+	default:
+		return -EINVAL;
+	}
+		
+	params->len += write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
+	
+	if (cursor != NULL)
+	{
+		*cursor = ((perm & ACL_READ)    != 0 ? 'r' : '-'); ++cursor;
+		*cursor = ((perm & ACL_WRITE)   != 0 ? 'w' : '-'); ++cursor;
+		*cursor = ((perm & ACL_EXECUTE) != 0 ? 'x' : '-'); ++cursor;
+		params->len += 3;
+	}
+	else
+	{
+		params->len += strlen(STR_ACL_RWX);
+	}
+
+	params->len += write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
+
+	if (cursor != NULL)
+	{
+		params->text = cursor;
+	}
+	
+	return 0;
+}
+
+char* rfs_acl_to_text(const struct id_lookup_info *lookup, 
 	const rfs_acl_t *acl, 
-	int count, 
+	size_t count, 
+	reverse_resolve custom_resolve, 
+	void *custom_resolve_data, 
 	size_t *len)
 {
 	if (len != NULL)
@@ -108,138 +391,138 @@ char* rfs_acl_to_text(struct id_lookup_info *lookup,
 	}
 
 	/* at first pass just calc resulting size */
-	size_t total_len = 0;
-	unsigned i = 0; for (i = 0; i < count; ++i)
+	struct acl_to_text_params len_params = { lookup, 0, NULL, custom_resolve, custom_resolve_data };
+	int len_ret = walk_acl(acl, count, acl_to_text_callback, (void *)&len_params);
+	if (len_ret != 0)
 	{
-		uint16_t type = acl->a_entries[i].e_tag;
-		uint32_t id = acl->a_entries[i].e_id;
-		
-		switch (type)
-		{
-		case ACL_USER_OBJ:
-		case ACL_USER:
-			total_len += strlen(STR_USER_TAG);
-			if (type == ACL_USER)
-			{
-				const char *username = get_uid_name(lookup->uids, (uid_t)id);
-				if (username == NULL)
-				{
-					return NULL;
-				}
-				
-				total_len += strlen(username);
-			}
-			total_len += strlen(STR_ACL_DELIMITER);
-			break;
-		case ACL_GROUP_OBJ:
-		case ACL_GROUP:
-			total_len += strlen(STR_GROUP_TAG);
-			if (type == ACL_GROUP)
-			{
-				const char *groupname = get_gid_name(lookup->gids, (gid_t)id);
-				if (groupname == NULL)
-				{
-					return NULL;
-				}
-				
-				total_len += strlen(groupname);
-			}
-			total_len += strlen(STR_ACL_DELIMITER);
-			break;
-		case ACL_MASK:
-			total_len += strlen(STR_MASK_TAG);
-			total_len += strlen(STR_ACL_DELIMITER);
-			break;
-		case ACL_OTHER:
-			total_len += strlen(STR_OTHER_TAG);
-			total_len += strlen(STR_ACL_DELIMITER);
-			break;
-		default:
-			return NULL;
-		}
-		total_len += strlen(STR_ACL_RWX);
-		total_len += strlen(STR_ACL_DELIMITER);
+		return NULL;
 	}
+
+	DEBUG("calcuated ACL text len: %lu\n", (unsigned long)len_params.len);
+
+	/* allocate memory for acl text */
+	char *text_acl = get_buffer(len_params.len + 1);
+
+	/* write to allocated entry */
+	struct acl_to_text_params write_params = { lookup, 0, text_acl, custom_resolve, custom_resolve_data };
+	int write_ret = walk_acl(acl, count, acl_to_text_callback, (void *)&write_params);
 	
-	char *text_acl = get_buffer(total_len + 1);
-	char *cursor = text_acl;
-	
-	/* second pass - fill in allocated buffer */
-	i = 0; for (i = 0; i < count; ++i)
+	DEBUG("written ACL text len: %lu\n", (unsigned long)write_params.len);
+
+	if (write_ret != 0
+	|| write_params.len != len_params.len)
 	{
-		uint16_t type = acl->a_entries[i].e_tag;
-		uint16_t perm = acl->a_entries[i].e_perm;
-		uint32_t id = acl->a_entries[i].e_id;
-		
-		switch (type)
-		{
-		case ACL_USER_OBJ:
-		case ACL_USER:
-			write_text(&cursor, STR_USER_TAG, strlen(STR_USER_TAG));
-			if (type == ACL_USER)
-			{
-				const char *username = get_uid_name(lookup->uids, (uid_t)id);
-				if (username == NULL)
-				{
-					return NULL;
-				}
-				
-				write_text(&cursor, username, strlen(username));
-			}
-			
-			write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-			break;
-		case ACL_GROUP_OBJ:
-		case ACL_GROUP:
-			write_text(&cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG));
-			if (type == ACL_GROUP)
-			{
-				const char *groupname = get_gid_name(lookup->gids, (gid_t)id);
-				if (groupname == NULL)
-				{
-					return NULL;
-				}
-				
-				write_text(&cursor, groupname, strlen(groupname));
-			}
-			
-			write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-			break;
-		case ACL_MASK:
-			write_text(&cursor, STR_MASK_TAG, strlen(STR_MASK_TAG));
-			write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-			break;
-		case ACL_OTHER:
-			write_text(&cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG));
-			write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-			break;
-		default:
-			free_buffer(text_acl);
-			return NULL;
-		}
-		
-		*cursor = ((perm & ACL_READ) != 0 ? 'r' : '-');
-		++cursor;
-		*cursor = ((perm & ACL_WRITE) != 0 ? 'w' : '-');
-		++cursor;
-		*cursor = ((perm & ACL_EXECUTE) != 0 ? 'x' : '-');
-		++cursor;
-		write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
+		free_buffer(text_acl);
+		return NULL;
 	}
-	
-	*cursor = 0; /* final zero */
+
+	text_acl[write_params.len] = 0; /* final zero */
 	
 	if (len != NULL)
 	{
-		*len = total_len;
+		*len = write_params.len;
 	}
 	
 	return text_acl;
 }
 
-rfs_acl_t* rfs_acl_from_text(struct id_lookup_info *lookup,
+struct acl_from_text_params
+{
+	const struct id_lookup_info *lookup;
+	size_t count;
+	rfs_acl_t *acl;
+	resolve custom_resolve;
+	void *custom_resolve_data;
+};
+
+static uint32_t default_resolve(uint16_t type, const char *name, size_t name_len, void *lookup_casted)
+{
+	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
+
+	switch (type)
+	{
+	case ACL_USER:
+		{
+		char *username = get_buffer(name_len + 1);
+		memcpy(username, name, name_len);
+		username[name_len] = 0;
+	
+		DEBUG("resolving username: %s\n", username);
+		
+		uid_t uid = get_uid(lookup->uids, username);
+				
+		free_buffer(username);
+				
+		if (uid == (uid_t)-1)
+		{
+			return ACL_UNDEFINED_ID;
+		}
+
+		return (uint32_t)(uid);
+		}
+	case ACL_GROUP:
+		{
+		char *groupname = get_buffer(name_len + 1);
+		memcpy(groupname, name, name_len);
+		groupname[name_len] = 0;
+				
+		DEBUG("resolving groupname: %s\n", groupname);
+
+		gid_t gid = get_gid(lookup->gids, groupname);
+				
+		free_buffer(groupname);
+				
+		if (gid == (gid_t)-1)
+		{
+			return ACL_UNDEFINED_ID;
+		}
+		
+		return (uint32_t)(gid);
+		}
+	}
+
+	return ACL_UNDEFINED_ID;
+}
+
+static int acl_from_text_callback(uint16_t type, uint16_t perm, const char *name, size_t name_len, void *params_casted)
+{
+	DEBUG("acl_from_text: type: %d, perm: %d, name: %s, name_len: %lu\n", type, perm, name, (long unsigned)name_len);
+
+	struct acl_from_text_params *params = (struct acl_from_text_params *)(params_casted);
+
+	if (params->acl != NULL)
+	{
+		resolve resolve_func = (params->custom_resolve == NULL ? default_resolve : params->custom_resolve);
+		void *resolve_data = (params->custom_resolve == NULL ? (void *)params->lookup : params->custom_resolve_data);
+
+		uint32_t id = ((name == NULL || name_len == 0) ? ACL_UNDEFINED_ID : resolve_func(type, name, name_len, resolve_data));
+
+		switch (type)
+		{
+		case ACL_USER:
+		case ACL_GROUP:
+			if (id == ACL_UNDEFINED_ID)
+			{
+				return -ENOENT;
+			}
+			break;
+		}
+
+		params->acl->a_entries[params->count].e_id = id;
+		params->acl->a_entries[params->count].e_tag = type;
+		params->acl->a_entries[params->count].e_perm = perm;
+	}
+
+	++params->count;
+
+	return 0;
+}
+
+rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup,
 	const char *text, 
-	int *count)
+	resolve custom_resolve, 
+	void *custom_resolve_data, 
+	size_t *count)
 {
 	if (count != NULL)
 	{
@@ -250,330 +533,47 @@ rfs_acl_t* rfs_acl_from_text(struct id_lookup_info *lookup,
 	{
 		return NULL;
 	}
-	
-	int ret_count = 0;
-	
-	const char *cursor = text;
-	
-	/* first pass - calc entries count (and validate input) */
-	while (*cursor != 0)
+
+	struct acl_from_text_params count_params = { lookup, 0, NULL, custom_resolve, custom_resolve_data };
+	int count_ret = walk_acl_text(text, acl_from_text_callback, (void *)&count_params);
+	if (count_ret != 0)
 	{
-		if (memcmp(cursor, STR_USER_TAG, strlen(STR_USER_TAG)) == 0)
-		{
-			cursor += strlen(STR_USER_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
-			{
-				cursor = strstr(cursor, STR_ACL_DELIMITER);
-				if (cursor == NULL)
-				{
-					return NULL;
-				}
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG)) == 0)
-		{
-			cursor += strlen(STR_GROUP_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
-			{
-				cursor = strstr(cursor, STR_ACL_DELIMITER);
-				if (cursor == NULL)
-				{
-					return NULL;
-				}
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_MASK_TAG, strlen(STR_MASK_TAG)) == 0)
-		{
-			cursor += strlen(STR_MASK_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
-			{
-				return NULL;
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG)) == 0)
-		{
-			cursor += strlen(STR_OTHER_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
-			{
-				return NULL;
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else
-		{
-			return NULL;
-		}
-		
-		/* next should be rwx and delimiter */
-		if (*cursor != 'r' && *cursor != '-')
-		{
-			return NULL;
-		}
-		++cursor;
-		if (*cursor != 'w' && *cursor != '-')
-		{
-			return NULL;
-		}
-		++cursor;
-		if (*cursor != 'x' && *cursor != '-')
-		{
-			return NULL;
-		}
-		++cursor;
-		
-		if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) != 0)
-		{
-			return NULL;
-		}
-		cursor += strlen(STR_ACL_DELIMITER);
-		
-		++ret_count;
+		return NULL;
 	}
 	
-	rfs_acl_t *acl = get_buffer(acl_ea_size(ret_count));
+	/* allocated counted number of ACL entries */
+	rfs_acl_t *acl = get_buffer(acl_ea_size(count_params.count));
 	acl->a_version = ACL_EA_VERSION;
 
-	cursor = text;
-	/* second pass - fill allocated buffer */
-	int i = 0; for (i = 0; i < ret_count; ++i)
+	struct acl_from_text_params write_params = { lookup, 0, acl, custom_resolve, custom_resolve_data };
+	int write_ret = walk_acl_text(text, acl_from_text_callback, (void *)&write_params);
+	if (write_ret != 0)
 	{
-		acl->a_entries[i].e_id = ACL_UNDEFINED_ID;
-		acl->a_entries[i].e_tag = ACL_UNDEFINED_TAG;
-		
-		if (memcmp(cursor, STR_USER_TAG, strlen(STR_USER_TAG)) == 0)
-		{
-			cursor += strlen(STR_USER_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) == 0)
-			{
-				acl->a_entries[i].e_tag = ACL_USER_OBJ;
-			}
-			else
-			{
-				const char *username_end = strstr(cursor, STR_ACL_DELIMITER);
-				unsigned username_len = username_end - cursor;
-				char *username = get_buffer(username_len + 1);
-				memcpy(username, cursor, username_len);
-				username[username_len] = 0;
-				
-				uid_t uid = get_uid(lookup->uids, username);
-				
-				free_buffer(username);
-				
-				if (uid == (uid_t)-1)
-				{
-					free_buffer(acl);
-					return NULL;
-				}
-				
-				acl->a_entries[i].e_tag = ACL_USER;
-				acl->a_entries[i].e_id = (uint32_t)uid;
-				
-				cursor = username_end;
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG)) == 0)
-		{
-			cursor += strlen(STR_GROUP_TAG);
-			if (memcmp(cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER)) == 0)
-			{
-				acl->a_entries[i].e_tag = ACL_GROUP_OBJ;
-				acl->a_entries[i].e_id = (uint32_t)-1;
-			}
-			else
-			{
-				const char *groupname_end = strstr(cursor, STR_ACL_DELIMITER);
-				unsigned groupname_len = groupname_end - cursor;
-				char *groupname = get_buffer(groupname_len + 1);
-				memcpy(groupname, cursor, groupname_len);
-				groupname[groupname_len] = 0;
-				
-				gid_t gid = get_gid(lookup->gids, groupname);
-				
-				free_buffer(groupname);
-				
-				if (gid == (gid_t)-1)
-				{
-					free_buffer(acl);
-					return NULL;
-				}
-				
-				acl->a_entries[i].e_tag = ACL_GROUP;
-				acl->a_entries[i].e_id = (uint32_t)gid;
-				
-				cursor = groupname_end;
-			}
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_MASK_TAG, strlen(STR_MASK_TAG)) == 0)
-		{
-			acl->a_entries[i].e_tag = ACL_MASK;
-			
-			cursor += strlen(STR_MASK_TAG);
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else if (memcmp(cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG)) == 0)
-		{
-			acl->a_entries[i].e_tag = ACL_OTHER;
-			
-			cursor += strlen(STR_OTHER_TAG);
-			cursor += strlen(STR_ACL_DELIMITER);
-		}
-		else
-		{
-			free_buffer(acl);
-			return NULL;
-		}
-		
-		/* next should be rwx and delimiter */
-		
-		acl->a_entries[i].e_perm = (uint16_t)0;
-		
-		if (*cursor == 'r')
-		{
-			acl->a_entries[i].e_perm |= ACL_READ;
-		}
-		++cursor;
-		if (*cursor == 'w')
-		{
-			acl->a_entries[i].e_perm |= ACL_WRITE;
-		}
-		++cursor;
-		if (*cursor == 'x')
-		{
-			acl->a_entries[i].e_perm |= ACL_EXECUTE;
-		}
-		++cursor;
-		
-		cursor += strlen(STR_ACL_DELIMITER);
+		free_buffer(acl);
+		return NULL;
 	}
 
 	if (count != NULL)
 	{
-		*count = ret_count;
+		*count = write_params.count;
 	}
 	
 	return acl;
 }
 
 #ifdef RFS_DEBUG
-void dump_acl_entry(struct id_lookup_info *lookup, const rfs_acl_entry_t *entry)
-{
-	size_t total_size = 0;
-	switch (entry->e_tag)
-	{
-	case ACL_USER_OBJ:
-	case ACL_USER:
-		total_size += strlen(STR_USER_TAG);
-		if (entry->e_id != (uint32_t)-1)
-		{
-			const char *username = get_uid_name(lookup->uids, (uid_t)entry->e_id);
-			if (username == NULL)
-			{
-				username = "NULL";
-			}
-			total_size += strlen(username);
-		}
-		total_size += strlen(STR_ACL_DELIMITER);
-		break;
-	case ACL_GROUP_OBJ:
-	case ACL_GROUP:
-		total_size += strlen(STR_GROUP_TAG);
-		if (entry->e_id != (uint32_t)-1)
-		{
-			const char *groupname = get_gid_name(lookup->gids, (gid_t)entry->e_id);
-			if (groupname == NULL)
-			{
-				groupname = "NULL";
-			}
-			total_size += strlen(groupname);
-		}
-		total_size += strlen(STR_ACL_DELIMITER);
-		break;
-	case ACL_MASK:
-		total_size += strlen(STR_MASK_TAG);
-		total_size += strlen(STR_ACL_DELIMITER);
-		break;
-	case ACL_OTHER:
-		total_size += strlen(STR_OTHER_TAG);
-		total_size += strlen(STR_ACL_DELIMITER);
-		break;
-	}
-	
-	total_size += strlen(STR_ACL_RWX);
-	total_size += strlen(STR_ACL_DELIMITER);
-	
-	char *buffer = get_buffer(total_size + 1);
-	char *cursor = buffer;
-	
-	switch (entry->e_tag)
-	{
-	case ACL_USER_OBJ:
-	case ACL_USER:
-		write_text(&cursor, STR_USER_TAG, strlen(STR_USER_TAG));
-		if (entry->e_id != (uint32_t)-1)
-		{
-			const char *username = get_uid_name(lookup->uids, (uid_t)entry->e_id);
-			if (username == NULL)
-			{
-				username = "NULL";
-			}
-			write_text(&cursor, username, strlen(username));
-		}
-		write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-		break;
-	case ACL_GROUP_OBJ:
-	case ACL_GROUP:
-		write_text(&cursor, STR_GROUP_TAG, strlen(STR_GROUP_TAG));
-		if (entry->e_id != (uint32_t)-1)
-		{
-			const char *groupname = get_gid_name(lookup->gids, (gid_t)entry->e_id);
-			if (groupname == NULL)
-			{
-				groupname = "NULL";
-			}
-			write_text(&cursor, groupname, strlen(groupname));
-		}
-		write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-		break;
-	case ACL_MASK:
-		write_text(&cursor, STR_MASK_TAG, strlen(STR_MASK_TAG));
-		write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-		break;
-	case ACL_OTHER:
-		write_text(&cursor, STR_OTHER_TAG, strlen(STR_OTHER_TAG));
-		write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-		break;
-	}
-	
-	*cursor = ((entry->e_perm & ACL_READ) != 0 ? 'r' : '-');
-	++cursor;
-	
-	*cursor = ((entry->e_perm & ACL_WRITE) != 0 ? 'w' : '-');
-	++cursor;
-	
-	*cursor = ((entry->e_perm & ACL_EXECUTE) != 0 ? 'x' : '-');
-	++cursor;
-	
-	write_text(&cursor, STR_ACL_DELIMITER, strlen(STR_ACL_DELIMITER));
-	
-	*cursor = 0;
-	
-	DEBUG("%s\n", buffer);
-
-	free_buffer(buffer);
-}
-
-void dump_acl(struct id_lookup_info *lookup, const rfs_acl_t *acl, int count)
+void dump_acl(const struct id_lookup_info *lookup, const rfs_acl_t *acl, int count)
 {
 	DEBUG("%s\n", "dumping acl entry:");
+	DEBUG("count: %d\n", count);
 	DEBUG("version: %d\n", acl->a_version);
-	int i = 0; for (i = 0; i < count; ++i)
+
+	char *acl_text = rfs_acl_to_text(lookup, acl, count, NULL, NULL, NULL);
+
+	if (acl_text != NULL)
 	{
-		dump_acl_entry(lookup, &acl->a_entries[i]);
+		DEBUG("text: %s\n", acl_text);
+		free(acl_text);
 	}
 }
 #endif

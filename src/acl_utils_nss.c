@@ -15,165 +15,108 @@ See the file LICENSE.
 
 #include "acl_utils.h"
 #include "acl_utils_nss.h"
+#include "buffer.h"
 #include "config.h"
 #include "id_lookup.h"
 #include "instance_client.h"
 
-unsigned acl_need_nss_patching(const char *acl_text)
+uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *params_casted)
 {
-	return strchr(acl_text, '@') != NULL;
+	if (name == NULL 
+	|| name_len == 0)
+	{
+		return ACL_UNDEFINED_ID;
+	}
+
+	struct resolve_params *params = (struct resolve_params *)(params_casted);
+
+	const char *fixed_name = name;
+	char *allocated_name = NULL;
+	uint32_t id = ACL_UNDEFINED_ID;
+
+	DEBUG("nss resolve: name: %s, name_len: %lu\n", name, (unsigned long)name_len);
+
+	if (strchr(name, '@') + 1 != strstr(name, params->host))
+	{
+		size_t overall_len = name_len + strlen(params->host);
+
+		allocated_name = get_buffer(overall_len + 1);
+		memcpy(allocated_name, name, name_len);
+		memcpy(allocated_name + name_len + 1, params->host, strlen(params->host));
+		allocated_name[name_len] = '@';
+		allocated_name[overall_len + 1] = 0;
+
+		fixed_name = allocated_name;
+	}
+
+	DEBUG("fixed name: %s\n", fixed_name);
+
+	switch (type)
+	{
+	case ACL_USER:
+		{
+		uid_t uid = get_uid(params->lookup->uids, fixed_name);
+		if (uid != (uid_t)(-1))
+		{
+			id = (uint32_t)uid;
+		}
+		}
+		break;
+	case ACL_GROUP:
+		{
+		gid_t gid = get_gid(params->lookup->gids, fixed_name);
+		if (gid != (gid_t)(-1))
+		{
+			id = (uint32_t)gid;
+		}
+		}
+		break;
+	}
+
+	if (allocated_name != NULL)
+	{
+		free_buffer(allocated_name);
+	}
+
+	return id;
 }
 
-char* patch_acl_for_server(const char *acl_text, const struct rfs_instance *instance)
+char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted)
 {
-	const char *start = acl_text;
-	const char *delim = NULL;
-	size_t leftovers = 0;
-	size_t host_len = strlen(instance->config.host);
+	struct resolve_params *params = (struct resolve_params *)(params_casted);
+	const char *name = NULL;
 
-	/* calc leftovers after patching and check server name */
-	while ((delim = strchr(start, '@')) != NULL)
+	DEBUG("nss reverse resolve: id: %lu\n", (unsigned long)id);
+
+	switch (type)
 	{
-		const char *server_end = strchr(delim + 1, ':');
-		if (server_end == NULL)
-		{
-			server_end = delim + 1 + strlen(delim + 1);
-		}
-
-		size_t server_len = server_end - (delim + 1);
-
-		if (server_len != host_len)
-		{
-			return NULL;
-		}
-
-		if (strncmp(instance->config.host, delim + 1, server_len) != 0)
-		{
-			return NULL;
-		}
-
-		leftovers += host_len + 1; /* +1 == strlen("@") */
-
-		start = delim + 1;
+	case ACL_USER:
+		name = get_uid_name(params->lookup->uids, (uid_t)id);
+		break;
+	case ACL_GROUP:
+		name = get_gid_name(params->lookup->gids, (gid_t)id);
+		break;
 	}
 
-	size_t acl_len = strlen(acl_text);
-	size_t patched_size = strlen(acl_text) - leftovers + 1;
-	size_t done = 0;
-
-	char *patched = malloc(patched_size);
-
-	/* patch acl */
-	start = acl_text;
-	while ((delim = strchr(start, '@')) != NULL)
+	if (name == NULL)
 	{
-		size_t text_len = delim - start;
-
-		if (done + text_len >= patched_size)
-		{
-			free(patched);
-			return NULL;
-		}
-
-		strncpy(patched + done, start, delim - start);
-
-		done += text_len;
-		start = delim + host_len + 1;
-	}
-
-	if (start < acl_text + acl_len)
-	{
-		size_t last_len = strlen(start);
-
-		DEBUG("done: %lu, left: %lu, expected: %lu\n", (long unsigned)done, (long unsigned)last_len, (long unsigned)patched_size);
-
-		if (done + last_len >= patched_size)
-		{
-			free(patched);
-			return NULL;
-		}
-
-		strncpy(patched + done, start, last_len);
-		done += last_len;
-	}
-	
-	patched[done] = 0;
-
-	DEBUG("done patched: %lu, expected: %lu\n", (long unsigned)done, (long unsigned)patched_size - 1);
-
-	if (done < patched_size - 1)
-	{
-		free(patched);
 		return NULL;
 	}
 
-	return patched;
-}
-
-int patch_acl_from_server(rfs_acl_t *acl, int count, const struct rfs_instance *instance)
-{
-	size_t host_len = strlen(instance->config.host);
-
-	int i = 0; for (i = 0; i < count; ++i)
+	if (strchr(name, '@') == NULL)
 	{
-		const char *name = NULL;
-
-		if (acl->a_entries[i].e_id == -1)
-		{
-			continue;
-		}
-		
-		DEBUG("acl id: %d\n", acl->a_entries[i].e_id);
-
-		switch (acl->a_entries[i].e_tag)
-		{
-		case ACL_USER:
-			name = get_uid_name(instance->id_lookup.uids, (uid_t)acl->a_entries[i].e_id);
-			break;
-		case ACL_GROUP:	
-			name = get_gid_name(instance->id_lookup.gids, (gid_t)acl->a_entries[i].e_id);
-			break;
-		}
-
-		DEBUG("name: %s\n", name);
-
-		/* try too lookup the same name, but with @host */
-
-		size_t full_len = strlen(name) + 1 + host_len + 1;
-		char *full_name = malloc(full_len);
-
-		if (snprintf(full_name, full_len, "%s@%s", name, instance->config.host) >= full_len)
-		{
-			free(full_name);
-			return -EINVAL;
-		}
-
-		switch (acl->a_entries[i].e_tag)
-		{
-		case ACL_USER:
-			{
-			uid_t uid = get_uid(instance->id_lookup.uids, full_name);
-			if (uid != (uid_t)-1)
-			{
-				acl->a_entries[i].e_id = (long int)uid;
-			}
-			}
-			break;
-		case ACL_GROUP:	
-			{
-			gid_t gid = get_gid(instance->id_lookup.gids, full_name);
-			if (gid != (gid_t)-1)
-			{
-				acl->a_entries[i].e_id = (long int)gid;
-			}
-			}
-			break;
-		}
-
-		free(full_name);
+		return strdup(name);
 	}
 
-	return 0;
+	char *host_pos = strchr(name, '@');
+	size_t fixed_name_len = host_pos - name;
+	
+	char *fixed_name = malloc(fixed_name_len + 1);
+
+	memcpy(fixed_name, name, fixed_name_len);
+	fixed_name[fixed_name_len + 1] = 0;
+
+	return fixed_name;
 }
 
 #else

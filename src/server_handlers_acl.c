@@ -114,6 +114,8 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 		text_acl = rfs_acl_to_text(&instance->id_lookup, 
 			acl, 
 			count,
+			NULL, 
+			NULL, 
 			&text_acl_len);
 		
 		if (text_acl == NULL)
@@ -218,9 +220,11 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	DEBUG("acl: %s\n", text_acl);
 	
-	int count = 0;
+	size_t count = 0;
 	rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, 
 		text_acl, 
+		NULL, 
+		NULL, 
 		&count);
 	
 	if (acl == NULL)

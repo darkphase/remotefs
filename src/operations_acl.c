@@ -79,17 +79,22 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		}
 		
 		DEBUG("acl: %s\n", buffer);
-		
-		int count = 0;
-		rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, buffer, &count);
-		if (acl == NULL)
-		{
-			free_buffer(buffer);
-			return -EINVAL;
-		}
+
+		size_t count = 0;
+		struct resolve_params params = { instance->config.host, &(instance->id_lookup) };
+		rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, 
+			buffer, 
+			(instance->nss.use_nss ? nss_resolve : NULL), 
+			(instance->nss.use_nss ? &params : NULL), 
+			&count);
 
 		free_buffer(buffer);
 		
+		if (acl == NULL)
+		{
+			return -EINVAL;
+		}
+
 #ifdef RFS_DEBUG
 		dump_acl(&instance->id_lookup, acl, count);
 #endif
@@ -100,18 +105,6 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 			return -ERANGE;
 		}
 
-		if (instance->nss.use_nss)
-		{
-			int patch_ret = patch_acl_from_server(acl, count, instance);
-			if (patch_ret != 0)
-			{
-				return patch_ret;
-			}
-#ifdef RFS_DEBUG
-			dump_acl(&instance->id_lookup, acl, count);
-#endif
-		}
-		
 		char *acl_value = rfs_acl_to_xattr(acl, count);
 		if (acl_value == NULL)
 		{
@@ -159,10 +152,12 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 #ifdef RFS_DEBUG
 		dump_acl(&instance->id_lookup, acl, count);
 #endif
-		
+		struct resolve_params params = { instance->config.host, &(instance->id_lookup) };
 		text_acl = rfs_acl_to_text(&instance->id_lookup, 
 			acl, 
 			count, 
+			(instance->nss.use_nss ? nss_reverse_resolve : NULL), 
+			(instance->nss.use_nss ? &params : NULL), 
 			&text_acl_len);
 	}
 	else
@@ -182,21 +177,6 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	DEBUG("acl: %s\n", text_acl);
 
-	if (acl_need_nss_patching(text_acl))
-	{
-		char *patched = patch_acl_for_server(text_acl, instance);
-		if (patched == NULL)
-		{
-			free(text_acl);
-			return -EINVAL;
-		}
-
-		DEBUG("patched acl: %s\n", patched);
-
-		free(text_acl);
-		text_acl = patched;
-	}
-	
 	uint32_t path_len = strlen(path) + 1;
 	uint32_t acl_flags = 0;
 	if ((flags & XATTR_CREATE) != 0)
