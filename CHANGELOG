@@ -8,10 +8,9 @@
 [*] remotefs may be built without UGO support
 [*] fixed segfault if certificate file(s) isn't exist
 [*] fixed packages default build arch for x86_64
-[*] flush() support is back
 [*] new rfscert.sh
 [*] files locking update
-[*] fixed buf with files size for du and ls
+[*] fixed bug with files size for du and ls
 [*] fixed bug with number of hardlinks
 [*] fixed wrong timestamps with cp -p
 [*] fixed copying of file with mode 444
@@ -26,7 +25,7 @@ rfsd:
 [*] fixed memory leak in readdir()
 [*] fixed zombies spawning
 [*] rfsd will warn user if ran without root privileges
-[*] -g option declared deprecated (gid wil be set depending on -u)
+[*] -g option declared deprecated (gid will be set depending on -u)
 
 rfs:
 
@@ -35,6 +34,7 @@ rfs:
 [*] prefetch is disabled by default if SSL isn't used
 [*] removed -ordwr_cache option
 [*] removed -ord_cache option
+[*] flush() support is back
 [*] fixed memory leak
 [*] fixed segfault on writing
 [*] filesystem name is set only if user didn't specify FUSE's -ofsname=

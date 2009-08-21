@@ -1,10 +1,14 @@
 1.0
-- bash completion for rfs?
+- IPv4/IPv6 masks in exports file
 - rfscp utility
 - librfs?
+- bash completion for rfs?
+- remove uids/gids lookup lists from client? (again)
 
 - remove and restrict -g and group= options
 - there should be memory limit for attrs cache
+- enable ACL by default
+- move redhat/debian/etc build scripts and files to build/
 
 0.12
 + rfs_nss support
@@ -29,7 +33,7 @@
   + full build options support including ugo, ipv6, ssl, exports list
 - WITH_SCHEDULING should be available for Mac only
 + rfs_nss should be available only for Linux/SunOS/FreeBSD
-- packaging for rfs_nss
++ packaging for rfs_nss
 
 bugs:
 + pid-file isn't deleted if rfsd can't start
