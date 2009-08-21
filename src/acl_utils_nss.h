@@ -15,16 +15,13 @@ See the file LICENSE.
 
 #include "acl_utils.h"
 
-struct id_lookup_info;
+/** makes names like "name@remote_host" from "name" 
+and returns its uid/gid (if available) */
+uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted);
 
-struct resolve_params
-{
-	const char *host;
-	const struct id_lookup_info *lookup;
-};
-
-uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *params_casted);
-char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted);
+/** returns name of remote user/group as in name@remote_host
+don't forget to free() result */
+char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted);
 
 #endif /* ACL_UTILS_NSS_H */
 

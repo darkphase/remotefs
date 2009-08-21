@@ -81,11 +81,10 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		DEBUG("acl: %s\n", buffer);
 
 		size_t count = 0;
-		struct resolve_params params = { instance->config.host, &(instance->id_lookup) };
 		rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, 
 			buffer, 
 			(instance->nss.use_nss ? nss_resolve : NULL), 
-			(instance->nss.use_nss ? &params : NULL), 
+			(instance->nss.use_nss ? (void *)instance : NULL), 
 			&count);
 
 		free_buffer(buffer);
@@ -152,12 +151,11 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 #ifdef RFS_DEBUG
 		dump_acl(&instance->id_lookup, acl, count);
 #endif
-		struct resolve_params params = { instance->config.host, &(instance->id_lookup) };
 		text_acl = rfs_acl_to_text(&instance->id_lookup, 
 			acl, 
 			count, 
 			(instance->nss.use_nss ? nss_reverse_resolve : NULL), 
-			(instance->nss.use_nss ? &params : NULL), 
+			(instance->nss.use_nss ? (void *)instance : NULL), 
 			&text_acl_len);
 	}
 	else

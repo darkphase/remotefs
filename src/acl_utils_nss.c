@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "id_lookup.h"
 #include "instance_client.h"
 
-uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *params_casted)
+uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted)
 {
 	if (name == NULL 
 	|| name_len == 0)
@@ -28,7 +28,15 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *par
 		return ACL_UNDEFINED_ID;
 	}
 
-	struct resolve_params *params = (struct resolve_params *)(params_casted);
+	struct rfs_instance *instance = (struct rfs_instance *)(instance_casted);
+
+	DEBUG("resolving ACL name: %s\n", name);
+
+	if (type == ACL_USER 
+	&& strncmp(name, instance->config.auth_user, name_len) == 0)
+	{
+		return instance->client.my_uid;
+	}
 
 	const char *fixed_name = name;
 	char *allocated_name = NULL;
@@ -36,13 +44,16 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *par
 
 	DEBUG("nss resolve: name: %s, name_len: %lu\n", name, (unsigned long)name_len);
 
-	if (strchr(name, '@') + 1 != strstr(name, params->host))
+	const char *host = instance->config.host;
+
+	/* if @host isn't found in name */
+	if (strchr(name, '@') + 1 != strstr(name, host))
 	{
-		size_t overall_len = name_len + strlen(params->host);
+		size_t overall_len = name_len + strlen(host);
 
 		allocated_name = get_buffer(overall_len + 1);
 		memcpy(allocated_name, name, name_len);
-		memcpy(allocated_name + name_len + 1, params->host, strlen(params->host));
+		memcpy(allocated_name + name_len + 1, host, strlen(host));
 		allocated_name[name_len] = '@';
 		allocated_name[overall_len + 1] = 0;
 
@@ -55,7 +66,7 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *par
 	{
 	case ACL_USER:
 		{
-		uid_t uid = get_uid(params->lookup->uids, fixed_name);
+		uid_t uid = get_uid(instance->id_lookup.uids, fixed_name);
 		if (uid != (uid_t)(-1))
 		{
 			id = (uint32_t)uid;
@@ -64,7 +75,7 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *par
 		break;
 	case ACL_GROUP:
 		{
-		gid_t gid = get_gid(params->lookup->gids, fixed_name);
+		gid_t gid = get_gid(instance->id_lookup.gids, fixed_name);
 		if (gid != (gid_t)(-1))
 		{
 			id = (uint32_t)gid;
@@ -81,9 +92,9 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *par
 	return id;
 }
 
-char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted)
+char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted)
 {
-	struct resolve_params *params = (struct resolve_params *)(params_casted);
+	struct rfs_instance *instance = (struct rfs_instance *)(instance_casted);
 	const char *name = NULL;
 
 	DEBUG("nss reverse resolve: id: %lu\n", (unsigned long)id);
@@ -91,10 +102,10 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted)
 	switch (type)
 	{
 	case ACL_USER:
-		name = get_uid_name(params->lookup->uids, (uid_t)id);
+		name = get_uid_name(instance->id_lookup.uids, (uid_t)id);
 		break;
 	case ACL_GROUP:
-		name = get_gid_name(params->lookup->gids, (gid_t)id);
+		name = get_gid_name(instance->id_lookup.gids, (gid_t)id);
 		break;
 	}
 
@@ -108,6 +119,8 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *params_casted)
 		return strdup(name);
 	}
 
+	/* remove @host from name, 
+	in other words, make it local (for server) */
 	char *host_pos = strchr(name, '@');
 	size_t fixed_name_len = host_pos - name;
 	
