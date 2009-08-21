@@ -4,7 +4,7 @@ Section: utilities
 Priority: optional
 Architecture: INSERT ARCH HERE, PLEASE
 Essential: no
-Depends: libc6 (>=2.4)
+Depends: libc6 (>=2.4), sed
 Installed-Size: AND SIZE HERE
 Maintainer: Aleksey Tulinov [aleksey_t@users.sourceforge.net]
-Description: remote filesystem NSS
+Description: remote filesystem NSS module
