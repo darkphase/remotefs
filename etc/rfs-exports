@@ -2,8 +2,8 @@
 # [export path] [user/ip address,another user/another ip address] (option,another option)
 #
 # supported options:
-#	ro - read-only export
-#	user=[username] - setting worker process uid to specified user (for this export only)
+#   ro - read-only export
+#   user=[username] - setting worker process uid to specified user (for this export only)
 #   ugo - enables UGO model for this export (see rfsd man page for details)
 #
 # examples:
