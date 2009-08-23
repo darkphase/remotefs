@@ -6,10 +6,11 @@ LISTEN="0.0.0.0"
 PORT="5001"
 RFSD_USER="root"
 PIDFILE="/var/run/rfsd.pid"
+#QUIET="-q"
 
 start()
 {
-	rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
+	rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
 }
 
 stop()

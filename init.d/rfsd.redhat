@@ -20,6 +20,7 @@ LISTEN="0.0.0.0"
 PORT="5001"
 RFSD_USER="root"
 PIDFILE="/var/run/rfsd.pid"
+#QUIET="-q"
 
 # Source function library (Redhat)
 if [ -f /etc/rc.d/init.d/functions ]
@@ -71,7 +72,7 @@ RETVAL=0
 case "$1" in
   start)
      echo -n $"Starting RFS daemon: "
-     daemon rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE}
+     daemon rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
      RETVAL=$?
      echo $ECHO_ARG
      [ $RETVAL -ne 0 ] && exit $RETVAL
@@ -121,3 +122,4 @@ case "$1" in
 esac
 
 exit $RETVAL
+
