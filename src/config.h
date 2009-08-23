@@ -149,8 +149,6 @@ enum rfs_export_opts
 	OPT_RO           = 1, 
 #ifdef WITH_UGO
 	OPT_UGO          = 2, 
-#else
-	RESERVER_FOR_UGO = 2,
 #endif
 	
 	/* reserved */

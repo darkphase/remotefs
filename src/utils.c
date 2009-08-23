@@ -107,7 +107,9 @@ const char* describe_option(const enum rfs_export_opts option)
 	{
 	case OPT_NONE:              return "None";
 	case OPT_RO:                return "Read-only";
+#ifdef WITH_UGO
 	case OPT_UGO:               return "UGO-compatible";
+#endif
 	case OPT_COMPAT:            break;
 	}
 	

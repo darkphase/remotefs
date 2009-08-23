@@ -87,10 +87,12 @@ int rfs_list_exports(struct rfs_instance *instance)
 			{
 				INFO("%s", describe_option(OPT_RO));
 			}
+#ifdef WITH_UGO
 			else if (((unsigned)options & OPT_UGO) > 0)
 			{
 				INFO("%s", describe_option(OPT_UGO));
 			}
+#endif
 			INFO("%s\n", ")");
 		}
 		else
