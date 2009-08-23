@@ -8,6 +8,9 @@
 - remove and restrict -g and group= options
 - there should be memory limit for attrs cache
 - enable ACL by default
+  - WITH_ACL should be available for Linux only 
+- enable scheduling by default
+  - WITH_SCHEDULING should be available for Mac only
 - move redhat/debian/etc build scripts and files to build/
 
 0.12
@@ -31,7 +34,6 @@
 + updated man page for rfs_nssd
 + new packaging for Gentoo using /etc/conf.d/
   + full build options support including ugo, ipv6, ssl, exports list
-- WITH_SCHEDULING should be available for Mac only
 + rfs_nss should be available only for Linux/SunOS/FreeBSD
 + packaging for rfs_nss
 
