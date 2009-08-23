@@ -19,12 +19,12 @@ LISTEN="0.0.0.0"
 PORT="5001"
 RFSD_USER="root"
 PIDFILE="/var/run/rfsd.pid"
-QUIET="-q"
+#QUIET="-q"
 
 case "$1" in
 	start)
 		log_daemon_msg "Starting rfsd"
-		if start-stop-daemon --start --quiet --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd -- -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}; then 
+		if start-stop-daemon --start --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd -- -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}; then 
 			log_end_msg 0
 		else
 			log_end_msg 1
@@ -32,7 +32,7 @@ case "$1" in
 		;;
 	stop)
 		log_daemon_msg "Stopping rfsd"
-		if start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/rfsd.pid; then
+		if start-stop-daemon --stop --oknodo --pidfile /var/run/rfsd.pid; then
 			log_end_msg 0
 		else
 			log_end_msg 1
