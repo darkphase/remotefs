@@ -9,6 +9,7 @@ See the file LICENSE.
 /** syncronized server handlers. will lock keep alive when it's needed */
 
 #include "keep_alive_server.h"
+#include "options.h"
 #include "server_handlers.h"
 
 /* need to define client_socket, client_addr and cmd before using this macro */
@@ -169,7 +170,7 @@ int handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client
 	DECORATE(_handle_link)
 }
 
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	DECORATE(_handle_setxattr)
@@ -179,7 +180,7 @@ int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 {
 	DECORATE(_handle_getxattr)
 }
-#endif
+#endif /* ACL_AVAILABLE */
 
 int handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

@@ -6,7 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifdef WITH_ACL
+#include "options.h"
+
+#ifdef ACL_AVAILABLE
 
 #include <errno.h>
 #include <sys/acl.h>
@@ -578,4 +580,5 @@ void dump_acl(const struct id_lookup_info *lookup, const rfs_acl_t *acl, int cou
 #else
 int acl_utils_dummy = 0;
 
-#endif /* WITH_ACL */
+#endif /* ACL_AVAILABLE */
+

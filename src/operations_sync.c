@@ -14,6 +14,7 @@ See the file LICENSE.
 #include "keep_alive_client.h"
 #include "operations.h"
 #include "operations_rfs.h"
+#include "options.h"
 
 #define DECORATE(func, instance, args...)                       \
 	int ret = -ECONNABORTED;                                    \
@@ -141,7 +142,7 @@ int rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, 
 	DECORATE(_rfs_readlink, instance, path, buffer, size);
 }
 
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 int rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
 	DECORATE(_rfs_getxattr, instance, path, name, value, size);
@@ -151,7 +152,7 @@ int rfs_setxattr(struct rfs_instance *instance, const char *path, const char *na
 {
 	DECORATE(_rfs_setxattr, instance, path, name, value, size, flags);
 }
-#endif
+#endif /* ACL_AVAILABLE */
 
 int rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc)
 {

@@ -16,6 +16,7 @@ See the file LICENSE.
 #include <sys/types.h>
 
 #include "compat.h"
+#include "options.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -188,13 +189,13 @@ enum rfs_lock_type
 	RFS_UNLCK               = 4
 };
 
-#ifdef WITH_ACL
+#ifdef ACL_AVAILABLE
 enum rfs_acl_flags
 {
 	RFS_XATTR_CREATE          = 1,
 	RFS_XATTR_REPLACE         = 2
 };
-#endif
+#endif /* ACL_AVAILABLE */
 
 /** write-behind control struct */
 struct write_behind_request

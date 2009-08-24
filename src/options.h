@@ -19,5 +19,9 @@ See the file LICENSE.
 #	define SENDFILE_AVAILABLE
 #endif
 
+#if (defined LINUX && defined WITH_ACL)
+#	define ACL_AVAILABLE
+#endif
+
 #endif /* OPTIONS_H */
 

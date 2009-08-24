@@ -15,6 +15,8 @@ extern "C" {
 
 #include <fuse.h>
 
+#include "options.h"
+
 struct rfs_instance;
 
 extern struct rfs_instance *instance;
@@ -57,7 +59,7 @@ int fuse_rfs_lock(const char *path, struct fuse_file_info *fi, int cmd, struct f
 int fuse_rfs_link(const char *path, const char *target);
 int fuse_rfs_symlink(const char *path, const char *target);
 int fuse_rfs_readlink(const char *path, char *buffer, size_t size);
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 int fuse_rfs_getxattr(const char *path, const char *name, char *value, size_t size);
 int fuse_rfs_setxattr(const char *path, const char *name, const char *vslue, size_t size, int flags);
 #endif

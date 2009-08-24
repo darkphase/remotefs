@@ -1,4 +1,6 @@
-#ifdef WITH_ACL
+#include "options.h"
+
+#ifdef ACL_AVAILABLE
 
 #include <sys/xattr.h>
 #include <errno.h>
@@ -233,5 +235,5 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 }
 #else
 int operations_acl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
-#endif /* WITH_ACL */
+#endif /* ACL_AVAILABLE */
 

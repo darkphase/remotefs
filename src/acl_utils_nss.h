@@ -8,7 +8,9 @@ See the file LICENSE.
 
 /** utilities for ACL support with NSS */
 
-#ifdef WITH_ACL
+#include "options.h"
+
+#ifdef ACL_AVAILABLE
 
 #ifndef ACL_UTILS_NSS_H
 #define ACL_UTILS_NSS_H
@@ -25,5 +27,5 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted);
 
 #endif /* ACL_UTILS_NSS_H */
 
-#endif /* WITH_ACL */
+#endif /* ACL_AVAILABLE */
 

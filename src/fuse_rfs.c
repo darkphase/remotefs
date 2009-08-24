@@ -10,6 +10,7 @@ See the file LICENSE.
 #include "config.h"
 #include "operations_rfs.h"
 #include "operations_sync.h"
+#include "options.h"
 
 struct rfs_instance *instance = NULL;
 
@@ -46,7 +47,7 @@ struct fuse_operations fuse_rfs_operations = {
 	.link		= fuse_rfs_link,
 	.symlink	= fuse_rfs_symlink,
 	.readlink	= fuse_rfs_readlink,
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 	.setxattr	= fuse_rfs_setxattr,
 	.getxattr	= fuse_rfs_getxattr,
 #endif
@@ -199,7 +200,7 @@ int fuse_rfs_readlink(const char *path, char *buffer, size_t size)
 	FUSE_DECORATE(rfs_readlink, instance, path, buffer, size);
 }
 
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 int fuse_rfs_getxattr(const char *path, const char *name, char *value, size_t size)
 {
 	FUSE_DECORATE(rfs_getxattr, instance, path, name, value, size);
@@ -209,7 +210,7 @@ int fuse_rfs_setxattr(const char *path, const char *name, const char *value, siz
 {
 	FUSE_DECORATE(rfs_setxattr, instance, path, name, value, size, flags);
 }
-#endif
+#endif /* ACL_AVAILABLE */
 
 int fuse_rfs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {

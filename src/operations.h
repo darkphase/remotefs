@@ -13,6 +13,7 @@ See the file LICENSE.
 
 #include "operations_read.h"
 #include "operations_write.h"
+#include "options.h"
 
 /* if connection lost after executing the operation
 and operation failed, then try it one more time 
@@ -79,7 +80,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *target);
 int _rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size);
 
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 /* acl */
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size);
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);

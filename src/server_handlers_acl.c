@@ -1,4 +1,6 @@
-#if defined WITH_ACL
+#include "options.h"
+
+#if defined ACL_AVAILABLE
 
 #include <errno.h>
 #include <string.h>
@@ -265,5 +267,5 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 #else
 int server_handlers_acl_c_empty_module_makes_suncc_angry = 0; /* avoid warning about empty module */
-#endif /* WITH_ACL */
+#endif /* ACL_AVAILABLE */
 

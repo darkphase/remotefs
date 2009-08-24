@@ -1,3 +1,4 @@
+src/acl_utils.o:src/options.h
 src/acl_utils.o:src/acl_utils.h
 src/acl_utils.o:src/buffer.h
 src/acl_utils.o:src/config.h
@@ -5,8 +6,10 @@ src/acl_utils.o:src/id_lookup.h
 src/acl_utils.o:src/instance.h
 src/acl_utils.o:src/list.h
 src/acl_utils.o:src/acl/libacl/byteorder.h
+src/acl_utils_nss.o:src/options.h
 src/acl_utils_nss.o:src/acl_utils.h
 src/acl_utils_nss.o:src/acl_utils_nss.h
+src/acl_utils_nss.o:src/buffer.h
 src/acl_utils_nss.o:src/config.h
 src/acl_utils_nss.o:src/id_lookup.h
 src/acl_utils_nss.o:src/instance_client.h
@@ -42,6 +45,7 @@ src/fuse_rfs.o:src/fuse_rfs.h
 src/fuse_rfs.o:src/config.h
 src/fuse_rfs.o:src/operations_rfs.h
 src/fuse_rfs.o:src/operations_sync.h
+src/fuse_rfs.o:src/options.h
 src/id_lookup.o:src/config.h
 src/id_lookup.o:src/id_lookup.h
 src/id_lookup.o:src/buffer.h
@@ -96,6 +100,7 @@ src/operations.o:src/operations_rfs.h
 src/operations.o:src/path.h
 src/operations.o:src/resume.h
 src/operations.o:src/sendrecv.h
+src/operations_acl.o:src/options.h
 src/operations_acl.o:src/acl_utils.h
 src/operations_acl.o:src/acl_utils_nss.h
 src/operations_acl.o:src/buffer.h
@@ -167,6 +172,7 @@ src/operations_sync.o:src/instance.h
 src/operations_sync.o:src/keep_alive_client.h
 src/operations_sync.o:src/operations.h
 src/operations_sync.o:src/operations_rfs.h
+src/operations_sync.o:src/options.h
 src/operations_write.o:src/attr_cache.h
 src/operations_write.o:src/buffer.h
 src/operations_write.o:src/command.h
@@ -246,6 +252,7 @@ src/server_handlers.o:src/passwd.h
 src/server_handlers.o:src/path.h
 src/server_handlers.o:src/sendrecv.h
 src/server_handlers.o:src/server.h
+src/server_handlers_acl.o:src/options.h
 src/server_handlers_acl.o:src/acl_utils.h
 src/server_handlers_acl.o:src/buffer.h
 src/server_handlers_acl.o:src/command.h
@@ -297,6 +304,7 @@ src/server_handlers_rfs.o:src/server.h
 src/server_handlers_rfs.o:src/sendrecv.h
 src/server_handlers_rfs.o:src/ssl_server.h
 src/server_handlers_sync.o:src/keep_alive_server.h
+src/server_handlers_sync.o:src/options.h
 src/server_handlers_sync.o:src/server_handlers.h
 src/server_handlers_write.o:src/buffer.h
 src/server_handlers_write.o:src/command.h
@@ -466,6 +474,7 @@ src/sug_client.o:src/sug_client.c
 src/sug_common.o:src/sug_common.c
 src/sug_server.o:src/sug_server.c
 src/utils.o:src/utils.c
+rfs_nss/src/check_options.o:rfs_nss/src/check_options.c
 rfs_nss/src/client.o:rfs_nss/src/client.c
 rfs_nss/src/client_common.o:rfs_nss/src/client_common.c
 rfs_nss/src/client_ent.o:rfs_nss/src/client_ent.c

@@ -11,6 +11,8 @@ See the file LICENSE.
 
 /** server handlers of rfs operations */
 
+#include "options.h"
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
@@ -55,7 +57,7 @@ int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *clien
 int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 #endif

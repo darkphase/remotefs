@@ -203,7 +203,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	case cmd_getnames:
 		return handle_getnames(instance, client_addr, cmd);
-#if defined WITH_ACL
+#if defined ACL_AVAILABLE
 	case cmd_getxattr:
 		return handle_getxattr(instance, client_addr, cmd);
 	case cmd_setxattr:
@@ -212,7 +212,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_getxattr:
 	case cmd_setxattr:
 		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
-#endif
+#endif /* ACL_AVAILABLE */
 	}
 #else /* without UGO */
 	switch (cmd->command)

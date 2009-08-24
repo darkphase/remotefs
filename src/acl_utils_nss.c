@@ -6,7 +6,9 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifdef WITH_ACL
+#include "options.h"
+
+#ifdef ACL_AVAILABLE
 
 #include <errno.h>
 #include <stdlib.h>
@@ -19,6 +21,43 @@ See the file LICENSE.
 #include "config.h"
 #include "id_lookup.h"
 #include "instance_client.h"
+
+static uint32_t get_id(uint16_t type, const struct rfs_instance *instance, const char *name, size_t name_len)
+{
+	char *dup_name = get_buffer(name_len + 1);
+	memcpy(dup_name, name, name_len);
+	dup_name[name_len] = 0;
+	
+	DEBUG("getting name: %s\n", dup_name);
+
+	switch (type)
+	{
+	case ACL_USER:
+		{
+		uid_t uid = get_uid(instance->id_lookup.uids, dup_name);
+		free_buffer(dup_name);
+
+		if (uid != (uid_t)(-1))
+		{
+			return (uint32_t)uid;
+		}
+		}
+		break;
+	case ACL_GROUP:
+		{
+		gid_t gid = get_gid(instance->id_lookup.gids, dup_name);
+		free_buffer(dup_name);
+
+		if (gid != (gid_t)(-1))
+		{
+			return (uint32_t)gid;
+		}
+		}
+		break;
+	}
+
+	return (uint32_t)(-1);
+}
 
 uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted)
 {
@@ -39,6 +78,7 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *ins
 	}
 
 	const char *fixed_name = name;
+	size_t fixed_name_len = 0;
 	char *allocated_name = NULL;
 	uint32_t id = ACL_UNDEFINED_ID;
 
@@ -49,44 +89,29 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *ins
 	/* if @host isn't found in name */
 	if (strchr(name, '@') + 1 != strstr(name, host))
 	{
-		size_t overall_len = name_len + strlen(host);
+		fixed_name_len = name_len + strlen(host) + 1; /* +1 == +'@' */
 
-		allocated_name = get_buffer(overall_len + 1);
+		allocated_name = get_buffer(fixed_name_len + 1);
 		memcpy(allocated_name, name, name_len);
 		memcpy(allocated_name + name_len + 1, host, strlen(host));
 		allocated_name[name_len] = '@';
-		allocated_name[overall_len + 1] = 0;
+		allocated_name[fixed_name_len + 1] = 0;
 
 		fixed_name = allocated_name;
 	}
 
-	DEBUG("fixed name: %s\n", fixed_name);
+	id = get_id(type, instance, fixed_name, fixed_name_len);
 
-	switch (type)
-	{
-	case ACL_USER:
-		{
-		uid_t uid = get_uid(instance->id_lookup.uids, fixed_name);
-		if (uid != (uid_t)(-1))
-		{
-			id = (uint32_t)uid;
-		}
-		}
-		break;
-	case ACL_GROUP:
-		{
-		gid_t gid = get_gid(instance->id_lookup.gids, fixed_name);
-		if (gid != (gid_t)(-1))
-		{
-			id = (uint32_t)gid;
-		}
-		}
-		break;
-	}
+	DEBUG("fixed name: %s, id: %lu\n", fixed_name, (unsigned long)(id));
 
 	if (allocated_name != NULL)
 	{
 		free_buffer(allocated_name);
+	}
+
+	if (id == (uint32_t)(-1))
+	{
+		id = get_id(type, instance, name, name_len);
 	}
 
 	return id;
@@ -134,6 +159,6 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted)
 
 #else
 int acl_utils_nss_c_empty_module_makes_suncc_mad = 0;
-#endif /* WITH_ACL*/
+#endif /* ACL_AVAILABLE */
 
 

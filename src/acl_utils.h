@@ -8,10 +8,12 @@ See the file LICENSE.
 
 /** ACL utilities */
 
+#include "options.h"
+
+#ifdef ACL_AVAILABLE
+
 #ifndef RFS_ACL_H
 #define RFS_ACL_H
-
-#ifdef WITH_ACL
 
 # if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -76,7 +78,7 @@ void dump_acl(const struct id_lookup_info *lookup, const rfs_acl_t *acl, int cou
 }
 #endif
 
-#endif /* WITH_ACL */
-
 #endif /* RFS_ACL_H */
+
+#endif /* ACL_AVAILABLE */
 
