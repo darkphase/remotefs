@@ -39,3 +39,13 @@ int setup_soket_pid(int socket, const pid_t pid)
 	return fcntl(socket, F_SETOWN, pid) == pid ? 0 : -errno;
 }
 
+#ifdef WITH_IPV6
+int setup_socket_ipv6_only(int socket)
+{
+	int on = 1;
+
+	errno = 0;
+	return setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on))  == 0 ? 0 : -errno;
+}
+#endif /* WITH_IPV6 */
+

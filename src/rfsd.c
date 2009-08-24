@@ -130,18 +130,16 @@ static int start_server(const char *address, const unsigned port, unsigned force
 	errno = 0;
 	if (setup_socket_reuse(listen_socket, 1) != 0)
 	{
-		ERROR("Error setting proper option to socket: %s\n", strerror(errno));
+		ERROR("Error setting reuse option to socket: %s\n", strerror(errno));
 		return 1;
 	}
 
-#if defined WITH_IPV6 && defined IPV6_V6ONLY
+#if defined WITH_IPV6
 	if ( force_ipv6 )
 	{
-		errno = 0;
-		int on  = 1;
-		if (setsockopt(listen_socket, IPPROTO_IPV6,  IPV6_V6ONLY, &on, sizeof(on) ) != 0)
+		if (setup_socket_ipv6_only(listen_socket) != 0)
 		{
-			ERROR("Error setting proper option to socket: %s\n", strerror(errno));
+			ERROR("Error setting IPv6-only option to socket: %s\n", strerror(errno));
 			return 1;
 		}
 	}

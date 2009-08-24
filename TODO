@@ -8,7 +8,7 @@
 - remove and restrict -g and group= options
 - there should be memory limit for attrs cache
 - enable ACL by default
-  - WITH_ACL should be available for Linux only 
+  + WITH_ACL should be available for Linux only 
 - enable scheduling by default
   - WITH_SCHEDULING should be available for Mac only
 - move redhat/debian/etc build scripts and files to build/
