@@ -11,8 +11,6 @@ See the file LICENSE.
 #ifdef ACL_AVAILABLE
 
 #include <errno.h>
-#include <sys/acl.h>
-#include <sys/xattr.h>
 #include <string.h>
 
 #include "acl_utils.h"

@@ -27,7 +27,7 @@ OPT_3 = -DWITH_EXPORTS_LIST
 # Support for POSIX ACL
 # Linux only
 
-#OPT_4 = -DWITH_ACL
+OPT_4 = -DWITH_ACL
 
 ###############################################
 # Support for UGO

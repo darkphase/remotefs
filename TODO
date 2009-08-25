@@ -4,13 +4,12 @@
 - librfs?
 - bash completion for rfs?
 - remove uids/gids lookup lists from client? (again)
-
-+ remove and restrict -g and group= options
 - there should be memory limit for attrs cache
-- enable ACL by default
++ remove and restrict -g and group= options
++ enable ACL by default
   + WITH_ACL should be available for Linux only 
-- enable scheduling by default
-  - WITH_SCHEDULING should be available for Mac only
++ enable scheduling by default
+  + WITH_SCHEDULING should be available for Mac only
 + move redhat/debian/etc build scripts and files to build/
 
 0.12

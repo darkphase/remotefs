@@ -13,7 +13,6 @@ See the file LICENSE.
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/acl.h>
 
 #include "acl_utils.h"
 #include "acl_utils_nss.h"

@@ -21,7 +21,9 @@ extern "C" {
 
 #include <sys/types.h>
 #include <stdint.h>
+
 #include "acl/include/acl_ea.h"
+#include "acl/include/acl.h"
 
 #define STR_USER_TAG         "u:"
 #define STR_GROUP_TAG        "g:"
