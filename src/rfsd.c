@@ -305,9 +305,9 @@ static int parse_opts(int argc, char **argv)
 {
 	int opt;
 #ifdef WITH_IPV6
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f46")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:r:e:s:f46")) != -1)
 #else
-	while ((opt = getopt(argc, argv, "hqa:p:u:g:r:e:s:f")) != -1)
+	while ((opt = getopt(argc, argv, "hqa:p:u:r:e:s:f")) != -1)
 #endif
 	{
 		switch (opt)
@@ -328,12 +328,6 @@ static int parse_opts(int argc, char **argv)
 					return -1;
 				}
 				rfsd_instance.config.worker_uid = pwd->pw_uid;
-				break;
-			}
-			/* TODO: remove in next release */
-			case 'g':
-			{
-				WARN("%s\n", "WARNING: -g option is deprecated and ineffective now. It will be removed in next release.");
 				break;
 			}
 			case 'a':

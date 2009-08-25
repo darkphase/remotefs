@@ -123,10 +123,6 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 				
 				opts_export->export_uid = pwd->pw_uid;
 			}
-			else if (strstr(opt_str, "group=") == opt_str)
-			{
-				WARN("%s\n", "WARNING: group= option is deprecated and ineffective now. It will be removed in next release.");
-			}
 			else
 			{
 				ERROR("Unknown export option: \"%s\"\n", opt_str);
@@ -288,7 +284,7 @@ static int validate_export(const struct rfs_export *line_export)
 		if ((line_export->options & OPT_RO) != 0
 		|| line_export->export_uid != -1)
 		{
-			ERROR("%s\n", "Export validation error: you can't specify \"ro\", \"user=\" or \"group=\" options simultaneously with \"ugo\" option. \"ugo\" will handle all security related issues for this export.");
+			ERROR("%s\n", "Export validation error: you can't specify \"ro\" or \"user=\" options simultaneously with \"ugo\" option. \"ugo\" will handle all security related issues for this export.");
 			return -1;
 		}
 		
