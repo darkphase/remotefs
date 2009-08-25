@@ -58,15 +58,15 @@ src_install() {
 
     make -C "${BUILDDIR}/" install
     
-    cp "${BUILDDIR}/etc/rfs-exports" "${D}/etc/"
+    cp "${BUILDDIR}/build/etc/rfs-exports" "${D}/etc/"
     chmod 600 "${D}/etc/rfs-exports"
     chown root:root "${D}/etc/rfs-exports"
     
-    cp "${BUILDDIR}/init.d/rfsd.gentoo" "${D}/etc/init.d/rfsd"
+    cp "${BUILDDIR}/build/init.d/rfsd.gentoo" "${D}/etc/init.d/rfsd"
     chmod 700 "${D}/etc/init.d/rfsd"
     chown root:root "${D}/etc/init.d/rfsd"
     
-    cp "${BUILDDIR}/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
+    cp "${BUILDDIR}/build/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
     chmod 644 "${D}/etc/conf.d/rfsd"
     chown root:root "${D}/etc/conf.d/rfsd"
 }

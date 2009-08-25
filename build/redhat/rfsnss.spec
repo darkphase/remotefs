@@ -31,10 +31,10 @@ cp rfs_nssd $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
 cp libnss_rfs.so.2 $RPM_BUILD_ROOT%{_prefix}/lib
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
-cp man/man1/rfs_nssd.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
-cp man/man1/rfsnsswitch.sh.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+cp build/man/man1/rfs_nssd.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+cp build/man/man1/rfsnsswitch.sh.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/sbin
-cp sbin/rfsnsswitch.sh $RPM_BUILD_ROOT%{_prefix}/sbin/
+cp build/sbin/rfsnsswitch.sh $RPM_BUILD_ROOT%{_prefix}/sbin/
 
 # ------------------------     clean     -----------------------------------
 %clean

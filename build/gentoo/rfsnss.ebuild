@@ -32,7 +32,7 @@ src_install() {
 
     make -C "${BUILDDIR}/" install_nss
     
-    cp "${BUILDDIR}/sbin/rfsnsswitch.sh" "${D}/usr/sbin/"
+    cp "${BUILDDIR}/build/sbin/rfsnsswitch.sh" "${D}/usr/sbin/"
     chmod 700 "${D}/usr/sbin/rfsnsswitch.sh"
     chown root:root "${D}/usr/sbin/rfsnsswitch.sh"
 }

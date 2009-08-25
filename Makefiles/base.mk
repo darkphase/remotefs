@@ -58,7 +58,7 @@ clean_bins: dummy
 
 clean_packages_tmp: dummy
 	# debs
-	$(RM) -fr man/gz
+	$(RM) -fr build/man/gz
 	$(RM) -fr dpkg/ dpkg_man/ dpkg_etc/ dpkg_sbin/
 	
 	# ipkg
@@ -103,18 +103,18 @@ depends:
 #############################
 
 rfs_man:
-	mkdir -p man/gz/man1
-	gzip -c < man/rfs.1 > man/gz/man1/rfs.1.gz
+	mkdir -p build/man/gz/man1
+	gzip -c < build/man/rfs.1 > build/man/gz/man1/rfs.1.gz
 
 rfsd_man:
-	mkdir -p man/gz/man8
-	gzip -c < man/rfsd.8 > man/gz/man8/rfsd.8.gz
-	gzip -c < man/rfspasswd.8 > man/gz/man8/rfspasswd.8.gz
+	mkdir -p build/man/gz/man8
+	gzip -c < build/man/rfsd.8 > build/man/gz/man8/rfsd.8.gz
+	gzip -c < build/man/rfspasswd.8 > build/man/gz/man8/rfspasswd.8.gz
 
 rfsnss_man: dummy
-	mkdir -p man/gz/man1
-	gzip -c < man/rfs_nssd.1 > man/gz/man1/rfs_nssd.1.gz
-	gzip -c < man/rfsnsswitch.sh.1 > man/gz/man1/rfsnsswitch.sh.1.gz
+	mkdir -p build/man/gz/man1
+	gzip -c < build/man/rfs_nssd.1 > build/man/gz/man1/rfs_nssd.1.gz
+	gzip -c < build/man/rfsnsswitch.sh.1 > build/man/gz/man1/rfsnsswitch.sh.1.gz
 
 man: dummy rfs_man rfsd_man rfsnss_man
 
@@ -124,55 +124,21 @@ man: dummy rfs_man rfsd_man rfsnss_man
 
 tbz: 	
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
-	
 	echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/src/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/sbin/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/man/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
-	cp LICENSE "remotefs-$(VERSION)-$(RELEASE)/"
-	cp AUTHORS "remotefs-$(VERSION)-$(RELEASE)/"
-	cp CHANGELOG "remotefs-$(VERSION)-$(RELEASE)/"
-	cp src/*.c src/*.h "remotefs-$(VERSION)-$(RELEASE)/src/"
-	cp src/md5crypt/*.c src/md5crypt/*.h "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
-	cp src/md5crypt/ORIGIN src/md5crypt/README "remotefs-$(VERSION)-$(RELEASE)/src/md5crypt/"
-	cp src/acl/include/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/include/"
-	cp src/acl/doc/* "remotefs-$(VERSION)-$(RELEASE)/src/acl/doc/"
-	cp src/acl/libacl/*.h "remotefs-$(VERSION)-$(RELEASE)/src/acl/libacl/"
-	cp src/acl/ORIGIN "remotefs-$(VERSION)-$(RELEASE)/src/acl/"
-	cp rfs_nss/LICENSE "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/"
-	cp rfs_nss/AUTHORS "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/"
-	cp rfs_nss/src/*.c rfs_nss/src/*.h "remotefs-$(VERSION)-$(RELEASE)/rfs_nss/src/"
-	cp man/*.1 man/*.8 "remotefs-$(VERSION)-$(RELEASE)/man/"
-	cp Makefiles/* "remotefs-$(VERSION)-$(RELEASE)/Makefiles/"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/etc"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/conf.d"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/init.d"
-	mkdir -p "remotefs-$(VERSION)-$(RELEASE)/sbin"
-	cp etc/* "remotefs-$(VERSION)-$(RELEASE)/etc/"
-	cp conf.d/* "remotefs-$(VERSION)-$(RELEASE)/conf.d/"
-	cp init.d/* "remotefs-$(VERSION)-$(RELEASE)/init.d/"
-	cp sbin/* "remotefs-$(VERSION)-$(RELEASE)/sbin/"
-	cp Makefile "remotefs-$(VERSION)-$(RELEASE)/"
-	chmod 700 remotefs-$(VERSION)-$(RELEASE)/init.d/*.*
-	tar cf - remotefs-${VERSION}-${RELEASE} | bzip2 -c > remotefs-${VERSION}-${RELEASE}.tar.bz2
-	
+	chmod 700 build/init.d/rfsd.*
+	tar --exclude .svn -cjf "remotefs-$(VERSION)-$(RELEASE).tar.bz2" src rfs_nss build Makefiles Makefile README LICENSE AUTHORS CHANGELOG
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
 
 install_man: dummy
 	mkdir -p $(INSTALL_DIR)/share/man;
-	@-INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
+	@-INSTALL_DIR=$(INSTALL_DIR) FILES="build/man/gz/*"; \
 	for GZ_FILE in "$$FILES"; \
 	do \
 		cp -r $$GZ_FILE $$INSTALL_DIR/share/man; \
 	done
 
 uninstall_man: dummy
-	@-INSTALL_DIR=$(INSTALL_DIR) FILES="man/gz/*"; \
+	@-INSTALL_DIR=$(INSTALL_DIR) FILES="build/man/gz/*"; \
 	for GZ_FILE in "$$FILES"; \
 	do \
 		rm -f $$INSTALL_DIR/share/man/$$GZ_FILE; \
@@ -189,7 +155,7 @@ debbase:
 rfsmanpages: dummy
 	$(MAKE) -sf Makefiles/base.mk man
 	mkdir -p dpkg_man/man1/
-	cp man/gz/man1/rfs.1.gz dpkg_man/man1/
+	cp build/man/gz/man1/rfs.1.gz dpkg_man/man1/
 
 rfsdeb: dummy clean_tmp debbase rfsmanpages
 	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
@@ -198,21 +164,21 @@ rfsdeb: dummy clean_tmp debbase rfsmanpages
 	cp rfs "dpkg$(INSTALL_DIR)/bin/";
 	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
 	ln -sf "librfs.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfs.$(SO_EXT)"
-	CONTROL_TEMPLATE="debian/control.rfs" \
+	CONTROL_TEMPLATE="build/debian/control.rfs" \
 	NAME="rfs" \
 	$(MAKE) -f Makefiles/base.mk builddeb
 
 rfsdmanpages: dummy
 	$(MAKE) -sf Makefiles/base.mk man
 	mkdir -p dpkg_man/man8/
-	cp man/gz/man8/rfsd.8.gz dpkg_man/man8/
-	cp man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
+	cp build/man/gz/man8/rfsd.8.gz dpkg_man/man8/
+	cp build/man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
 
 rfsdetc: dummy
 	mkdir -p "dpkg_etc/init.d/";
-	cp etc/rfs-exports "dpkg_etc/";
+	cp build/etc/rfs-exports "dpkg_etc/";
 	chmod 600 "dpkg_etc/rfs-exports";
-	cp init.d/rfsd.debian "dpkg_etc/init.d/rfsd";
+	cp build/init.d/rfsd.debian "dpkg_etc/init.d/rfsd";
 	chmod +x "dpkg_etc/init.d/rfsd"
 
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
@@ -223,24 +189,24 @@ rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null
 	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
 	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
-	cp debian/conffiles dpkg/DEBIAN/
-	CONTROL_TEMPLATE="debian/control.rfsd" \
+	cp build/debian/conffiles dpkg/DEBIAN/
+	CONTROL_TEMPLATE="build/debian/control.rfsd" \
 	NAME="rfsd" \
 	$(MAKE) -f Makefiles/base.mk builddeb
 
 rfsnssmanpages: dummy
 	$(MAKE) -sf Makefiles/base.mk rfsnss_man
 	mkdir -p dpkg_man/man1/
-	cp man/gz/man1/rfs_nssd.1.gz dpkg_man/man1/
-	cp man/gz/man1/rfsnsswitch.sh.1.gz dpkg_man/man1/
+	cp build/man/gz/man1/rfs_nssd.1.gz dpkg_man/man1/
+	cp build/man/gz/man1/rfsnsswitch.sh.1.gz dpkg_man/man1/
 
 rfsnsssbin: dummy
 	mkdir -p "dpkg_sbin/"	
-	cp sbin/rfsnsswitch.sh "dpkg_sbin/";
+	cp build/sbin/rfsnsswitch.sh "dpkg_sbin/";
 
 rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
-	cp debian/rfs_nss/post* debian/rfs_nss/pre* dpkg/DEBIAN/
+	cp build/debian/rfs_nss/post* build/debian/rfs_nss/pre* dpkg/DEBIAN/
 	$(MAKE) -f Makefiles/base.mk clean_build
 	$(MAKE) -f Makefiles/base.mk librfs >/dev/null
 	$(MAKE) -f Makefiles/base.mk libnss >/dev/null
@@ -248,7 +214,7 @@ rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	mkdir -p "dpkg/lib";
 	cp rfs_nssd "dpkg$(INSTALL_DIR)/bin/";
 	cp libnss_rfs.so.2 "dpkg/lib/";
-	CONTROL_TEMPLATE="debian/control.rfsnss" \
+	CONTROL_TEMPLATE="build/debian/control.rfsnss" \
 	NAME="rfsnss" \
 	$(MAKE) -f Makefiles/base.mk builddeb
 
@@ -303,7 +269,7 @@ rfsnssrpm: dummy
 	$(MAKE) -f Makefiles/base.mk clean_tmp
 	
 
-redhat/%.spec: dummy Makefiles/version.mk
+build/redhat/%.spec: dummy Makefiles/version.mk
 	sed -e "s/Version:.*/Version:$(VERSION)/"  \
 	-e "s/Release:.*/Release:$(RELEASE)/" $@ \
 	> rpmbuild/SPECS/$(RPMNAME).spec
@@ -315,16 +281,16 @@ rpmbuild: dummy
 	echo '%_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm' >> rpmbuild/.rpmmacros
 	echo '%debug_package %{nil}' >> rpmbuild/.rpmmacros
 
-buildrpm: rpmbuild redhat/$(RPMNAME).spec
+buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
-	mkdir -p $(RPMNAME)-$(VERSION)/man/man1
-	mkdir -p $(RPMNAME)-$(VERSION)/man/man8
-	tar --exclude .svn -cf - src rfs_nss init.d etc sbin Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
-	cp  man/*.1 $(RPMNAME)-$(VERSION)/man/man1/
-	cd $(RPMNAME)-$(VERSION)/man/man1/; gzip *
-	cp man/*.8 $(RPMNAME)-$(VERSION)/man/man8/
-	cd $(RPMNAME)-$(VERSION)/man/man8/; gzip *
-	chmod 700 $(RPMNAME)-$(VERSION)/init.d/*
+	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man1
+	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man8
+	tar --exclude .svn -cf - src rfs_nss build/init.d build/etc build/sbin Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
+	cp build/man/*.1 $(RPMNAME)-$(VERSION)/build/man/man1/
+	cd $(RPMNAME)-$(VERSION)/build/man/man1/; gzip *
+	cp build/man/*.8 $(RPMNAME)-$(VERSION)/build/man/man8/
+	cd $(RPMNAME)-$(VERSION)/build/man/man8/; gzip *
+	chmod 700 $(RPMNAME)-$(VERSION)/build/init.d/*
 	tar -cpzf rpmbuild/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
 	rm -fr $(RPMNAME)-$(VERSION)
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
@@ -359,18 +325,18 @@ rfsdipk: dummy ipkbase
 	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null;
 	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/";
 	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/";
-	cp init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
+	cp build/init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
 	chmod +x "ipkg/rfsd/etc/init.d/rfsd";
-	cp etc/rfs-exports "ipkg/rfsd/etc/";
+	cp build/etc/rfs-exports "ipkg/rfsd/etc/";
 	chmod 600 "ipkg/rfsd/etc/rfs-exports";
-	cp kamikaze/conffiles "ipkg/rfsd/CONTROL/";
+	cp build/kamikaze/conffiles "ipkg/rfsd/CONTROL/";
 	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk buildipk;
 	$(MAKE) -sf Makefiles/base.mk clean_tmp;
 	
 buildipk: dummy
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
-	"kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
+	"build/kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
 	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)";
 	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . >/dev/null;
 	
@@ -403,7 +369,7 @@ genebuild: dummy
 	-e "s/VERSION HERE/${VERSION}-${RELEASE}/" \
 	-e "s/JUST VERSION/${VERSION}/" \
 	-e "s/GENTOO VERSION/${VERSION}-r${RELEASE}/" \
-	"gentoo/$(TARGET).ebuild" > "$(TARGET)-${VERSION}-r${RELEASE}.ebuild";
+	"build/gentoo/$(TARGET).ebuild" > "$(TARGET)-${VERSION}-r${RELEASE}.ebuild";
 
 dummy:
 
@@ -412,3 +378,4 @@ dummy:
 #############################
 
 include Makefiles/depends.mk
+

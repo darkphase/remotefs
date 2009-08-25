@@ -24,7 +24,7 @@ src_install() {
     
     gzip -c < "${BUILDDIR}/man/rfscert.sh.1" > "${D}/usr/share/man/man1/rfscert.sh.1.gz"
 
-    cp "${BUILDDIR}/sbin/rfscert.sh" "${D}/usr/sbin/rfscert.sh"
+    cp "${BUILDDIR}/build/sbin/rfscert.sh" "${D}/usr/sbin/rfscert.sh"
     chmod 755 "${D}/usr/sbin/rfscert.sh"
     chown root:root "${D}/usr/sbin/rfscert.sh"
 }

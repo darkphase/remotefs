@@ -1,18 +1,19 @@
-Name: rfsd
-Summary:remote file system, server
+Name: rfs
+Summary:remote file system, client
 Version:
-Release:1
+Release:2
 License: GPL
 Packager: Jean-Jacques Sarton <jjsarton@users.sourceforge.net
-Group: System Environment/Daemons
+Group: Applications/File
 URL: http://www.sourceforge.net/projects/remotefs
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
 Requires: %__find_requires
 Provides: %__find_provides
 
+
 %description
-remotefs server
+remotefs client
 
 
 # -------------------------    prep     -----------------------------------
@@ -21,21 +22,18 @@ remotefs server
 
 # -------------------------    build    -----------------------------------
 %build
-make server
+make rfs
 
 # ------------------------    install    -----------------------------------
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
-cp rfsd $RPM_BUILD_ROOT%{_prefix}/bin/
-cp rfspasswd $RPM_BUILD_ROOT%{_prefix}/bin/
-mkdir -p $RPM_BUILD_ROOT/etc/init.d/
-cp init.d/rfsd.redhat $RPM_BUILD_ROOT/etc/init.d/rfsd
-cp etc/rfs-exports $RPM_BUILD_ROOT/etc/rfs-exports
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
-cp man/man8/rfsd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
-cp man/man8/rfspasswd.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
+cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
+cp build/man/man1/rfs.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
+cp librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib
+ln -s librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/librfs.so
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -47,25 +45,12 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-, root, root)
 #%doc homepage/* 
-%attr(755, root,root) %{_prefix}/bin/rfsd
-%attr(755, root,root) %{_prefix}/bin/rfspasswd
-%attr(755, root,root) /etc/init.d/rfsd
-%attr(600, root,root) /etc/rfs-exports
-%attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
-%attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
-%config(noreplace) /etc/init.d/rfsd
-%config(noreplace) /etc/rfs-exports
-
+%attr(755, root,root) %{_prefix}/bin/rfs
+%attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
+%attr(655, root,root) %{_prefix}/lib/librfs.so.%{version}
+%attr(777, root,root) %{_prefix}/lib/librfs.so
 
 %post
-CHKCONFIGPARM="--add rfsd"
-if [ -x "/sbin/chkconfig" ]; then
-    "/sbin/chkconfig" $CHKCONFIGPARM
-elif [ -x "/usr/sbin/chkconfig" ]; then
-    "/usr/sbin/chkconfig" $CHKCONFIGPARM
-else
-    echo "No chkconfig found. Chkconfig skipped."
-fi
 
 # -------------------------    changelog    --------------------------------
 %changelog
