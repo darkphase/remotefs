@@ -23,5 +23,9 @@ See the file LICENSE.
 #	define ACL_AVAILABLE
 #endif
 
+#if (defined DARWIN && defined WITH_SCHEDULING)
+#	define SCHEDULING_AVAILABLE
+#endif
+
 #endif /* OPTIONS_H */
 

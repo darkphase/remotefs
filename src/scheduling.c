@@ -10,31 +10,13 @@ See the file LICENSE.
  * Some OS has bad realtime features, in particular
  * Mac OS X so we try to set the sceduling type to
  * a real type and set the max. priority.
- *
- * On Mac OS X this can be done without problem
- * on other the owner must be the super user.
- *
- * For Linux we don't need such settings, Linux has
- * good capabities for us.
- *
- * If we can't set the priority, the program will work
- * the only problem is that the maximal performance can't
- * be always reached, so we ignore possibly errors.
- *
- * On a Linux system as a router the read/write calls
- * require aboout 100 % of the CPU time. In oider to
- * allow other application to run we set scheduling to
- * Real Time with Round Robin and set the rfs server
- * to the sleeping state for 10 ms if the time elapsed
- * agter the last read or write call was greater thsn
- * 100 ms. This will limit the CPU resource for refs
- * to approximately 89 % and allow other application
- * to run while as read oe write call was issued.
- *
  */
 
+#include "options.h"
 
-#include "scheduling.h"
+#ifdef SCHEDULING_AVAILABLE
+#	include "scheduling.h"
+#endif
 
 #if defined WITH_PAUSE
 
@@ -73,14 +55,12 @@ void pause_rdwr(struct rfsd_instance *instance)
 }
 #endif /* WITH_PAUSE */
 
-#ifdef WITH_SCHEDULING
+#ifdef SCHEDULING_AVAILABLE
 
-#ifdef DARWIN
-
-# include <pthread.h>
-# include <pthread_impl.h>
-# include <sched.h>
-# include <string.h>
+#include <pthread.h>
+#include <pthread_impl.h>
+#include <sched.h>
+#include <string.h>
 
 void set_scheduler(void)
 {
@@ -90,30 +70,9 @@ void set_scheduler(void)
 	pthread_setschedparam(pthread_self(), SCHED_RR, &param);
 }
 
-#endif /* DARWIN */
+#endif /* SCHEDULING_AVAILABLE */
 
-#ifdef LINUX
-
-#include <sched.h>
-
-void set_scheduler(void)
-{
-	struct sched_param param;
-	int priority = sched_get_priority_max(SCHED_RR);
-	sched_getparam(0,&param);
-	param.sched_priority = priority;
-	sched_setscheduler(0,SCHED_RR,&param);
-}
-
-#endif /* LINUX */
-
-#if ! (defined DARWIN || defined LINUX)
-#error Scheduling is not supported for this platform
-#endif
-
-#endif /* WITH_SCHEDULING */
-
-#if ! (defined WITH_SCHEDULING || defined WITH_PAUSE)
+#if ! (defined SCHEDULING_AVAILABLE || defined WITH_PAUSE)
 int scheduling_not_used = 0;
 #endif
 

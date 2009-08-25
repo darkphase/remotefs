@@ -48,10 +48,9 @@ OPT_5 = -DWITH_UGO
 
 ###############################################
 # Experimental scheduling for MacOS only
-#
-# for MacOS and Linux only
+# MacOS only
 
-#OPT_7 = -DWITH_SCHEDULING
+OPT_7 = -DWITH_SCHEDULING
 
 ###############################################
 # End of user configuration, don't change the

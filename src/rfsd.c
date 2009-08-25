@@ -18,9 +18,10 @@ See the file LICENSE.
 #include "exports.h"
 #include "instance_server.h"
 #include "keep_alive_server.h"
+#include "options.h"
 #include "passwd.h"
 #include "rfsd.h"
-#ifdef WITH_SCHEDULING
+#ifdef SCHEDULING_AVAILABLE
 #	include "scheduling.h"
 #endif
 #include "server.h"
@@ -243,7 +244,8 @@ static int start_server(const char *address, const unsigned port, unsigned force
 		if (fork() == 0) /* child */
 		{
 			close(listen_socket);
-#ifdef WITH_SCHEDULING
+
+#ifdef SCHEDULING_AVAILABLE
 			setup_socket_ndelay(client_socket, 1);
 			set_scheduler();
 #endif

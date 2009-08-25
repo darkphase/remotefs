@@ -9,19 +9,17 @@ See the file LICENSE.
 #ifndef SCHEDULING_H
 #define SCHEDULING_H
 
+#include "options.h"
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-#ifdef WITH_SCHEDULING
-
-#if ! (defined DARWIN || defined LINUX)
-#error Scheduling is not supported for this platform
-#endif
+#ifdef SCHEDULING_AVAILABLE
 
 void set_scheduler(void);
 
-#endif /* WITH_SCHEDULING */
+#endif /* SCHEDULING_AVAILABLE */
 
 #ifdef WITH_PAUSE
 struct rfsd_instance;

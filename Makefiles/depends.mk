@@ -208,6 +208,7 @@ src/rfsd.o:src/config.h
 src/rfsd.o:src/exports.h
 src/rfsd.o:src/instance_server.h
 src/rfsd.o:src/keep_alive_server.h
+src/rfsd.o:src/options.h
 src/rfsd.o:src/passwd.h
 src/rfsd.o:src/rfsd.h
 src/rfsd.o:src/scheduling.h
@@ -219,6 +220,7 @@ src/rfspasswd.o:src/config.h
 src/rfspasswd.o:src/crypt.h
 src/rfspasswd.o:src/passwd.h
 src/rfspasswd.o:src/signals.h
+src/scheduling.o:src/options.h
 src/scheduling.o:src/scheduling.h
 src/scheduling.o:src/instance_server.h
 src/sendrecv.o:src/command.h

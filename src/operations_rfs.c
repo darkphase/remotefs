@@ -32,7 +32,7 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "options.h"
 #include "resume.h"
-#ifdef WITH_SCHEDULING
+#ifdef SCHEDULING_AVAILABLE
 #	include "scheduling.h"
 #endif
 #include "sendrecv.h"
@@ -595,7 +595,7 @@ void* rfs_init(struct rfs_instance *instance)
 	}
 #endif /* WITH_UGO */
 
-#ifdef WITH_SCHEDULING
+#ifdef SCHEDULING_AVAILABLE
 	set_scheduler();
 #endif
 
