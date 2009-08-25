@@ -3,25 +3,31 @@ VER_MINOR=13
 BUILDDATETIME=`date`
 VERSION="$(VER_MAJOR).$(VER_MINOR)"
 RELEASE=1
+VERSION_FILE=src/version.h
 
 include Makefiles/install.mk
 
+force_version:
+	echo "/* Automatically generated */" > "$(VERSION_FILE)"
+	echo "" >> "$(VERSION_FILE)"
+	echo "#ifndef RFS_VERSION_H" >> "$(VERSION_FILE)"
+	echo "#define RFS_VERSION_H" >> "$(VERSION_FILE)"
+	echo "" >> "$(VERSION_FILE)"
+	echo "#define RFS_VERSION_MAJOR $(VER_MAJOR)" >> "$(VERSION_FILE)"
+	echo "#define RFS_VERSION_MINOR $(VER_MINOR)" >> "$(VERSION_FILE)"
+	echo "#define RFS_VERSION $(VERSION)f" >> "$(VERSION_FILE)"
+	echo "#define RFS_RELEASE $(RELEASE)" >> "$(VERSION_FILE)"
+	echo "#define RFS_FULL_VERSION \"$(VERSION)-$(RELEASE)\"" >> "$(VERSION_FILE)"
+	echo "#define RFS_BUILD_DATETIME \"$(BUILDDATETIME)\"" >> "$(VERSION_FILE)"
+	echo "" >> "$(VERSION_FILE)"
+	echo -n "static inline void print_version(void) { printf(\"%s (built on %s)\\" >> "$(VERSION_FILE)"
+	echo "n\", RFS_FULL_VERSION, RFS_BUILD_DATETIME); }" >> "$(VERSION_FILE)"
+	echo "" >> "$(VERSION_FILE)"
+	echo "#endif /* RFS_VERSION_H */" >> "$(VERSION_FILE)"
+	echo "" >> "$(VERSION_FILE)"
+
 make_version:
-	echo "/* Automatically generated */" > src/version.h
-	echo "" >> src/version.h
-	echo "#ifndef RFS_VERSION_H" >> src/version.h
-	echo "#define RFS_VERSION_H" >> src/version.h
-	echo "" >> src/version.h
-	echo "#define RFS_VERSION_MAJOR $(VER_MAJOR)" >> src/version.h
-	echo "#define RFS_VERSION_MINOR $(VER_MINOR)" >> src/version.h
-	echo "#define RFS_VERSION $(VERSION)f" >> src/version.h
-	echo "#define RFS_RELEASE $(RELEASE)" >> src/version.h
-	echo "#define RFS_FULL_VERSION \"$(VERSION)-$(RELEASE)\"" >> src/version.h
-	echo "#define RFS_BUILD_DATETIME \"$(BUILDDATETIME)\"" >> src/version.h
-	echo "" >> src/version.h
-	echo -n "static inline void print_version(void) { printf(\"%s (built on %s)\\" >> src/version.h
-	echo "n\", RFS_FULL_VERSION, RFS_BUILD_DATETIME); }" >> src/version.h
-	echo "" >> src/version.h
-	echo "#endif /* RFS_VERSION_H */" >> src/version.h
-	echo "" >> src/version.h
+	if [ ! -f "$(VERSION_FILE)" ]; then \
+		$(MAKE) -f Makefiles/version.mk force_version; \
+	fi
 

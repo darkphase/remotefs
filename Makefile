@@ -69,33 +69,36 @@ clean:
 depends:
 	@$(MAKE) -f Makefiles/base.mk depends
 
+force_version:
+	@$(MAKE) -sf Makefiles/version.mk force_version
+
 ########################################
 # Rules for packaging, ...
 ########################################
 
-rfsrpm: dummy
+rfsrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsrpm
-rfsdrpm: dummy
+rfsdrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdrpm
-rfsnssrpm: dummy
+rfsnssrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsnssrpm
 rpms: rfsrpm rfsdrpm rfsnssrpm
 
-rfsdeb: dummy
+rfsdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdeb
-rfsddeb: dummy
+rfsddeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsddeb
-rfsnssdeb: dummy
+rfsnssdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
 	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsnssdeb
 debs: rfsdeb rfsddeb rfsnssdeb
 
-rfsdipk: dummy
+rfsdipk: force_version dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk rfsdipk
 	
 ipks: rfsdipk
@@ -159,3 +162,4 @@ rfsd_man:
 rfsnss_man:
 	@$(MAKE) -sf Makefiles/base.mk rfsnss_man
 man: dummy rfs_man rfsd_man rfsnss_man
+
