@@ -124,7 +124,7 @@ man: dummy rfs_man rfsd_man rfsnss_man
 
 tbz: 	
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
-	echo "Building remotefs-${VERSION}-${RELEASE}.tar.bz2"
+	echo "Building remotefs-$(VERSION)-$(RELEASE).tar.bz2"
 	chmod 700 build/init.d/rfsd.*
 	tar --exclude .svn -cjf "remotefs-$(VERSION)-$(RELEASE).tar.bz2" src rfs_nss build Makefiles Makefile README LICENSE AUTHORS CHANGELOG
 	$(MAKE) -sf Makefiles/base.mk clean_tmp
