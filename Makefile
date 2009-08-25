@@ -24,7 +24,7 @@ LDFLAGS_MAIN_RELEASE = "$(LDFLAGS_RELEASE)"
 help:
 	@more Makefiles/help
 
-debug:
+debug: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
 all release: $(ALL) #server client libnss nss
@@ -58,6 +58,7 @@ nss: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf Makefiles/base.mk nss
 
 dummy:
+	@$(MAKE) -sf Makefiles/version.mk make_version
 
 #######################################
 # Rules for cleaning,and dpendencied

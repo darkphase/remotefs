@@ -20,6 +20,7 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "passwd.h"
 #include "sug_client.h"
+#include "version.h"
 
 static DEFINE_RFS_INSTANCE(rfs_instance);
 
@@ -30,6 +31,7 @@ static unsigned just_list_exports = 0;
 struct fuse_opt rfs_opts[] = 
 {
 	FUSE_OPT_KEY("-h", KEY_HELP),
+	FUSE_OPT_KEY("-v", KEY_VERSION),
 	FUSE_OPT_KEY("-q", KEY_QUIET),
 	FUSE_OPT_KEY("-l", KEY_LISTEXPORTS),
 #if defined WITH_IPV6
@@ -62,6 +64,7 @@ static void usage(const char *program)
 	"general options:\n"
 	"    -o opt,[opt...]         mount options\n"
 	"    -h   --help             print help\n"
+	"    -v                      print version and build date and time\n"
 	"\n"
 	"RFS options:\n"
 	"    -q                      suppress warnings\n"
@@ -173,6 +176,9 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 #endif
 		exit(0);
 	
+	case KEY_VERSION:
+		print_version();
+		exit(0);
 	case KEY_QUIET:
 		rfs_instance.config.quiet = 1;
 		return 0;

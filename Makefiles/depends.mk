@@ -204,6 +204,7 @@ src/rfs.o:src/instance_client.h
 src/rfs.o:src/operations_rfs.h
 src/rfs.o:src/passwd.h
 src/rfs.o:src/sug_client.h
+src/rfs.o:src/version.h
 src/rfsd.o:src/config.h
 src/rfsd.o:src/exports.h
 src/rfsd.o:src/instance_server.h
@@ -216,6 +217,7 @@ src/rfsd.o:src/server.h
 src/rfsd.o:src/signals_server.h
 src/rfsd.o:src/sockets.h
 src/rfsd.o:src/sug_server.h
+src/rfsd.o:src/version.h
 src/rfspasswd.o:src/config.h
 src/rfspasswd.o:src/crypt.h
 src/rfspasswd.o:src/passwd.h

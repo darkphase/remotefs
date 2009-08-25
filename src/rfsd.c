@@ -28,6 +28,7 @@ See the file LICENSE.
 #include "signals_server.h"
 #include "sockets.h"
 #include "sug_server.h"
+#include "version.h"
 
 static int daemonize = 1;
 static int listen_socket = -1;
@@ -285,19 +286,20 @@ static void usage(const char *app_name)
 	printf("usage: %s [options]\n"
 	"\n"
 	"Options:\n"
-	"-h \t\t\tshow this help screen\n"
-	"-a [address]\t\tlisten to connections on [address]\n"
-	"-p [port number]\tlisten to connections on [port number]\n"
-	"-u [username]\t\trun worker process with privileges of [username]\n"
-	"-r [path]\t\tchange pidfile path from default to [path]\n"
-	"-f \t\t\tstay foreground\n"
-	"-e [path]\t\texports file\n"
-	"-s [path]\t\tpasswd file\n"
-	"-q \t\t\tquite mode - supress warnings\n"
-	"\t\t\t(and don't treat them as errors)\n"
+	"-h                  print help\n"
+	"-v                  print version and build date and time\n"
+	"-a [address]        listen to connections on [address]\n"
+	"-p [port number]    listen to connections on [port number]\n"
+	"-u [username]       run worker process with privileges of [username]\n"
+	"-r [path]           change pidfile path from default to [path]\n"
+	"-f                  stay foreground\n"
+	"-e [path]           exports file\n"
+	"-s [path]           passwd file\n"
+	"-q                  quite mode - supress warnings\n"
+	"                    (and don't treat them as errors)\n"
 #ifdef WITH_IPV6
-	"-4 \t\t\tforce listen to IPv4 connections\n"
-	"-6 \t\t\tforce listen to IPv6 connections\n"
+	"-4                  force listen to IPv4 connections\n"
+	"-6                  force listen to IPv6 connections\n"
 #endif
 	"\n"
 	, app_name);
@@ -307,15 +309,19 @@ static int parse_opts(int argc, char **argv)
 {
 	int opt;
 #ifdef WITH_IPV6
-	while ((opt = getopt(argc, argv, "hqa:p:u:r:e:s:f46")) != -1)
+	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:f46")) != -1)
 #else
-	while ((opt = getopt(argc, argv, "hqa:p:u:r:e:s:f")) != -1)
+	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:f")) != -1)
 #endif
 	{
 		switch (opt)
 		{	
 			case 'h':
 				usage(argv[0]);
+				release_rfsd_instance(&rfsd_instance);
+				exit(0);
+			case 'v':
+				print_version();
 				release_rfsd_instance(&rfsd_instance);
 				exit(0);
 			case 'q':

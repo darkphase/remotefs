@@ -75,6 +75,9 @@ clean_packages_tmp: dummy
 	
 clean_tmp: dummy clean_packages_tmp clean_build
 
+clean_version: 
+	$(RM) -f src/version.h
+
 clean_packages: dummy clean_packages_tmp
 	$(RM) -f remotefs-${VERSION}-${RELEASE}.tar.bz2
 	$(RM) -f *.deb
@@ -82,7 +85,7 @@ clean_packages: dummy clean_packages_tmp
 	$(RM) -f *.ipk
 	$(RM) -f *.ebuild
 
-clean: clean_build clean_bins clean_packages
+clean: clean_build clean_bins clean_packages clean_version
 
 #############################
 # Rebuild dependency file

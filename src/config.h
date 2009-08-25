@@ -135,6 +135,7 @@ struct rfsd_config
 enum
 {
 	KEY_HELP
+	, KEY_VERSION
 	, KEY_QUIET
 	, KEY_LISTEXPORTS
 #if defined WITH_IPV6
