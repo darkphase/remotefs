@@ -8,17 +8,17 @@ See the file LICENSE.
 
 /* Solaris interface for name services */
 
-static NSS_STATUS _nss_rfs_default_destr(nss_backend_t *be, void *args);
-static NSS_STATUS _nss_rfs_not_found (nss_backend_t *be, void *args);
-static NSS_STATUS _nss_rfs_success(nss_backend_t *be, void *args);
+static NSS_RET _nss_rfs_default_destr(nss_backend_t *be, void *args);
+static NSS_RET _nss_rfs_not_found (nss_backend_t *be, void *args);
+static NSS_RET _nss_rfs_success(nss_backend_t *be, void *args);
 
 /* Wrappers which will call the _nss_rfs_getpwnam_r(), ...
  * functions,
  */
  
-static NSS_STATUS _nss_rfs_sol_getpwnam_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getpwnam_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     const char    *name   =  NSS_ARGS(args)->key.name;
     struct passwd *result =  NSS_ARGS(args)->buf.result;
     char          *buffer =  NSS_ARGS(args)->buf.buffer;
@@ -31,9 +31,9 @@ static NSS_STATUS _nss_rfs_sol_getpwnam_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_getpwuid_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getpwuid_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     uid_t          uid     =  NSS_ARGS(args)->key.uid;
     struct passwd *result  =  NSS_ARGS(args)->buf.result;
     char          *buffer  =  NSS_ARGS(args)->buf.buffer;
@@ -46,9 +46,9 @@ static NSS_STATUS _nss_rfs_sol_getpwuid_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_getpwent_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getpwent_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     const char    *name   =  NSS_ARGS(args)->key.name;
     struct passwd *result =  NSS_ARGS(args)->buf.result;
     char          *buffer =  NSS_ARGS(args)->buf.buffer;
@@ -61,24 +61,24 @@ static NSS_STATUS _nss_rfs_sol_getpwent_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_setpwent(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_setpwent(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     status = _nss_rfs_setpwent();
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_endpwent(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_endpwent(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     status = _nss_rfs_endpwent();
     return status;
 }
 
 
-static NSS_STATUS _nss_rfs_sol_getgrnam_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getgrnam_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     const char    *name    =  NSS_ARGS(args)->key.name;
     struct group  *result  =  NSS_ARGS(args)->buf.result;
     char          *buffer  =  NSS_ARGS(args)->buf.buffer;
@@ -91,9 +91,9 @@ static NSS_STATUS _nss_rfs_sol_getgrnam_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_getgrgid_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getgrgid_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     uid_t          uid     =  NSS_ARGS(args)->key.uid;
     struct group  *result  =  NSS_ARGS(args)->buf.result;
     char          *buffer  =  NSS_ARGS(args)->buf.buffer;
@@ -106,9 +106,9 @@ static NSS_STATUS _nss_rfs_sol_getgrgid_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_getgrent_r(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_getgrent_r(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     const char    *name   =  NSS_ARGS(args)->key.name;
     struct group  *result =  NSS_ARGS(args)->buf.result;
     char          *buffer =  NSS_ARGS(args)->buf.buffer;
@@ -121,16 +121,16 @@ static NSS_STATUS _nss_rfs_sol_getgrent_r(nss_backend_t *be, void *args)
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_setgrent(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_setgrent(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     status = _nss_rfs_setgrent();
     return status;
 }
 
-static NSS_STATUS _nss_rfs_sol_endgrent(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_sol_endgrent(nss_backend_t *be, void *args)
 {
-    NSS_STATUS status;
+    NSS_RET status;
     status = _nss_rfs_endgrent();
     return status;
 }
@@ -191,7 +191,7 @@ nss_backend_t *_nss_rfs_group_constr(const char *db_name,
 /* Default functions for destroying an returning some default values
  */
 
-static NSS_STATUS _nss_rfs_default_destr(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_default_destr(nss_backend_t *be, void *args)
 {
     if (be)
     {
@@ -201,7 +201,7 @@ static NSS_STATUS _nss_rfs_default_destr(nss_backend_t *be, void *args)
     return NSS_SUCCESS;
 }
 
-static NSS_STATUS _nss_rfs_not_found(nss_backend_t *be, void *args)
+static NSS_RET _nss_rfs_not_found(nss_backend_t *be, void *args)
 {
     return NSS_NOTFOUND;
 }

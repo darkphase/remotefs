@@ -17,20 +17,20 @@ NSS_METHOD_PROTOTYPE(__nss_compat_getgrent_r);
 NSS_METHOD_PROTOTYPE(__nss_compat_setgrent);
 NSS_METHOD_PROTOTYPE(__nss_compat_endgrent);
 
-NSS_STATUS _nss_rfs_getpwnam_r(const char *,
+NSS_RET _nss_rfs_getpwnam_r(const char *,
                                struct passwd *,
                                char *,
                                size_t, int *);
-NSS_STATUS _nss_rfs_getpwuid_r(uid_t,
+NSS_RET _nss_rfs_getpwuid_r(uid_t,
                                struct passwd *,
                                char *, size_t,
                                int *);
 
-NSS_STATUS _nss_rfs_getgrnam_r(const char *,
+NSS_RET _nss_rfs_getgrnam_r(const char *,
                                struct group *,
                                char *,
                                size_t, int *);
-NSS_STATUS _nss_rfs_getgrgid_r(gid_t,
+NSS_RET _nss_rfs_getgrgid_r(gid_t,
                                struct group *,
                                char *, size_t,
                                int *);
