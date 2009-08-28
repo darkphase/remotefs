@@ -11,7 +11,6 @@ src/acl_utils_nss.o:src/acl_utils.h
 src/acl_utils_nss.o:src/acl_utils_nss.h
 src/acl_utils_nss.o:src/buffer.h
 src/acl_utils_nss.o:src/config.h
-src/acl_utils_nss.o:src/id_lookup.h
 src/acl_utils_nss.o:src/instance_client.h
 src/attr_cache.o:src/attr_cache.h
 src/attr_cache.o:src/buffer.h
@@ -106,6 +105,7 @@ src/operations_acl.o:src/acl_utils_nss.h
 src/operations_acl.o:src/buffer.h
 src/operations_acl.o:src/config.h
 src/operations_acl.o:src/command.h
+src/operations_acl.o:src/id_lookup_client.h
 src/operations_acl.o:src/instance_client.h
 src/operations_acl.o:src/operations_rfs.h
 src/operations_acl.o:src/sendrecv.h

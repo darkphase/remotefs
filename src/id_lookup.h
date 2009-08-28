@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+/** server users/groups lookup routines (using id lookup lists) */
+
 #ifndef ID_LOOKUP_H
 #define ID_LOOKUP_H
 

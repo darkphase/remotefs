@@ -217,6 +217,7 @@ int create_uids_lookup(struct list **uids)
 		
 		if (put_to_ids(uids, pwd->pw_name, (const void *)&(pwd->pw_uid), alloc_uid_ent) != 0)
 		{
+			endpwent();
 			return -1;
 		}
 	}

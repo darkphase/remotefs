@@ -589,9 +589,6 @@ void* rfs_init(struct rfs_instance *instance)
 		    instance->nss.use_nss = 0;
 	    }
 #endif /* RFSNSS_AVAILABLE */
-	
-		create_uids_lookup(&instance->id_lookup.uids);
-		create_gids_lookup(&instance->id_lookup.gids);
 	}
 #endif /* WITH_UGO */
 

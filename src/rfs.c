@@ -430,8 +430,6 @@ int main(int argc, char **argv)
 		free(rfs_instance.config.auth_passwd);
 	}
 	
-	destroy_uids_lookup(&rfs_instance.id_lookup.uids);
-	destroy_gids_lookup(&rfs_instance.id_lookup.gids);
 	release_rfs_instance(&rfs_instance);
 	
 	return ret;

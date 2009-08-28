@@ -118,6 +118,12 @@ static inline off_t unpack_64(uint64_t *data, const char *buffer, const off_t of
 	return offset + sizeof(*data);
 }
 
+/** duplicate buffer using get_buffer() */
+char* buffer_dup(const char *buffer, size_t buffer_len);
+
+/** duplicate buffer using get_buffer(strlen + 1) and set trailing 0 to the str_len + 1 */
+char* buffer_dup_str(const char *buffer, size_t str_len);
+
 #ifdef RFS_DEBUG
 /** print buffer to output. debug only */
 void dump(const void *data, const size_t data_len);

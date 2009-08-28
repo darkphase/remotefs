@@ -12,9 +12,38 @@
 #include "buffer.h"
 #include "config.h"
 #include "command.h"
+#include "id_lookup_client.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
 #include "sendrecv.h"
+
+static uint32_t local_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted)
+{
+	char *dup_name = buffer_dup_str(name, name_len);
+	if (dup_name == NULL)
+	{
+		return ACL_UNDEFINED_ID;
+	}
+
+	DEBUG("locally resolving name: %s\n", dup_name);
+
+	uint32_t id = ACL_UNDEFINED_ID;
+
+	switch (type)
+	{
+	case ACL_USER:
+		id = (uint32_t)(lookup_user(dup_name));
+		break;
+	case ACL_GROUP:
+		id = (uint32_t)(lookup_group(dup_name, NULL));
+		break;
+	}
+
+	free_buffer(dup_name);
+
+	DEBUG("id: %lu\n", (unsigned long)id);
+	return id;
+}
 
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
@@ -83,10 +112,10 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		DEBUG("acl: %s\n", buffer);
 
 		size_t count = 0;
-		rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, 
+		rfs_acl_t *acl = rfs_acl_from_text(NULL, 
 			buffer, 
-			(instance->nss.use_nss ? nss_resolve : NULL), 
-			(instance->nss.use_nss ? (void *)instance : NULL), 
+			(instance->nss.use_nss ? nss_resolve : local_resolve), 
+			(void *)instance, 
 			&count);
 
 		free_buffer(buffer);
@@ -95,10 +124,6 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		{
 			return -EINVAL;
 		}
-
-#ifdef RFS_DEBUG
-		dump_acl(&instance->id_lookup, acl, count);
-#endif
 
 		if (acl_ea_size(count) > size)
 		{
@@ -128,6 +153,25 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	return ans.ret >= 0 ? ans.ret : -ans.ret_errno;
 }
 
+static char* local_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted)
+{
+	DEBUG("locally reverse resolving id: %lu\n", (unsigned long)id);
+
+	char *name = NULL;
+
+	switch (type)
+	{
+	case ACL_USER:
+		name = strdup(lookup_uid((uid_t)id));
+		break;
+	case ACL_GROUP:
+		name = strdup(lookup_gid((gid_t)id, (uid_t)(-1)));
+		break;
+	}
+
+	return name;
+}
+
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags)
 {
 	if (instance->sendrecv.socket == -1)
@@ -150,14 +194,11 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	if (acl != NULL)
 	{
-#ifdef RFS_DEBUG
-		dump_acl(&instance->id_lookup, acl, count);
-#endif
-		text_acl = rfs_acl_to_text(&instance->id_lookup, 
+		text_acl = rfs_acl_to_text(NULL, 
 			acl, 
 			count, 
-			(instance->nss.use_nss ? nss_reverse_resolve : NULL), 
-			(instance->nss.use_nss ? (void *)instance : NULL), 
+			(instance->nss.use_nss ? nss_reverse_resolve : local_reverse_resolve), 
+			(void *)instance, 
 			&text_acl_len);
 	}
 	else

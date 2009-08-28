@@ -7,9 +7,31 @@ See the file LICENSE.
 */
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "buffer.h"
 #include "config.h"
+
+char* buffer_dup(const char *buffer, size_t buffer_len)
+{
+	char *ret = get_buffer(buffer_len);
+	if (ret != NULL)
+	{
+		memcpy(ret, buffer, buffer_len);
+	}
+	return ret;
+}
+
+char* buffer_dup_str(const char *buffer, size_t str_len)
+{
+	char *ret = get_buffer(str_len + 1);
+	if (ret != NULL)
+	{
+		memcpy(ret, buffer, str_len);
+		ret[str_len] = 0;
+	}
+	return ret;
+}
 
 #ifdef RFS_DEBUG
 void dump(const void *data, const size_t data_len)

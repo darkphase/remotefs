@@ -73,9 +73,6 @@ struct rfs_instance
 	/* sendrecv */
 	struct sendrecv_info sendrecv;
 	
-	/* id lookup */
-	struct id_lookup_info id_lookup;
-	
 #ifdef WITH_SSL
 	/* ssl */
 	struct ssl_info ssl;

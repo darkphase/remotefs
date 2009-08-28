@@ -7,6 +7,8 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +45,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	const char *user = NULL;
 	if (instance->client.my_uid == uid)
 	{
-		user = instance->config.auth_user;
+		user = instance->config.auth_user; /* to tell server correct owner */
 	}
 	else if ( uid == -1 )
 	{
@@ -51,17 +53,19 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	}
 	else
 	{
-		user = get_uid_name(instance->id_lookup.uids, uid);
-		if (user == NULL)
+		struct passwd *pwd = getpwuid(uid);
+		if (pwd == NULL)
 		{
 			return -EINVAL;
 		}
+		
+		user = pwd->pw_name;
 	}
 	
 	const char *group = NULL;
 	if (instance->client.my_gid == gid)
 	{
-		group = instance->config.auth_user; /* yes, indeed, default group to auth_user */
+		group = instance->config.auth_user; /* to tell server correct group */
 	}
 	else if ( gid == -1 )
 	{
@@ -69,11 +73,13 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	}
 	else
 	{
-		group = get_gid_name(instance->id_lookup.gids, gid);
-		if (group == NULL)
+		struct group *grp = getgrgid(gid);
+		if (grp == NULL)
 		{
 			return -EINVAL;
 		}
+
+		group = grp->gr_name;
 	}
 
 	char *local_user = NULL;

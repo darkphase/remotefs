@@ -113,7 +113,6 @@ void init_rfs_instance(struct rfs_instance *instance)
 	init_resume(instance);
 	init_write_cache(instance);
 	init_sendrecv(&instance->sendrecv);
-	init_id_lookup(&instance->id_lookup);
 #ifdef WITH_SSL
 	init_ssl(&instance->ssl);
 #endif

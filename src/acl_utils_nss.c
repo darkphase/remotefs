@@ -11,6 +11,8 @@ See the file LICENSE.
 #ifdef ACL_AVAILABLE
 
 #include <errno.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,44 +20,40 @@ See the file LICENSE.
 #include "acl_utils_nss.h"
 #include "buffer.h"
 #include "config.h"
-#include "id_lookup.h"
 #include "instance_client.h"
 
-static uint32_t get_id(uint16_t type, const struct rfs_instance *instance, const char *name, size_t name_len)
+static uint32_t get_id(uint16_t type, const char *name, size_t name_len)
 {
-	char *dup_name = get_buffer(name_len + 1);
-	memcpy(dup_name, name, name_len);
-	dup_name[name_len] = 0;
+	char *dup_name = buffer_dup_str(name, name_len);
 	
 	DEBUG("getting name: %s\n", dup_name);
+
+	uint32_t id = ACL_UNDEFINED_ID;
 
 	switch (type)
 	{
 	case ACL_USER:
 		{
-		uid_t uid = get_uid(instance->id_lookup.uids, dup_name);
-		free_buffer(dup_name);
-
-		if (uid != (uid_t)(-1))
+		struct passwd *pwd = getpwnam(name);
+		if (pwd != NULL)
 		{
-			return (uint32_t)uid;
+			id = (uint32_t)(pwd->pw_uid);
 		}
 		}
 		break;
 	case ACL_GROUP:
 		{
-		gid_t gid = get_gid(instance->id_lookup.gids, dup_name);
-		free_buffer(dup_name);
-
-		if (gid != (gid_t)(-1))
+		struct group *grp = getgrnam(name);
+		if (grp != NULL)
 		{
-			return (uint32_t)gid;
+			id = (uint32_t)(grp->gr_gid);
 		}
 		}
 		break;
 	}
 
-	return (uint32_t)(-1);
+	free_buffer(dup_name);
+	return id;
 }
 
 uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted)
@@ -99,7 +97,7 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *ins
 		fixed_name = allocated_name;
 	}
 
-	id = get_id(type, instance, fixed_name, fixed_name_len);
+	id = get_id(type, fixed_name, fixed_name_len);
 
 	DEBUG("fixed name: %s, id: %lu\n", fixed_name, (unsigned long)(id));
 
@@ -108,9 +106,10 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *ins
 		free_buffer(allocated_name);
 	}
 
-	if (id == (uint32_t)(-1))
+	/* try to fallback to short name if there is error in resolving long name */   
+	if (id == ACL_UNDEFINED_ID)
 	{
-		id = get_id(type, instance, name, name_len);
+		id = get_id(type, name, name_len);
 	}
 
 	return id;
@@ -118,7 +117,6 @@ uint32_t nss_resolve(uint16_t type, const char *name, size_t name_len, void *ins
 
 char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted)
 {
-	struct rfs_instance *instance = (struct rfs_instance *)(instance_casted);
 	const char *name = NULL;
 
 	DEBUG("nss reverse resolve: id: %lu\n", (unsigned long)id);
@@ -126,10 +124,22 @@ char* nss_reverse_resolve(uint16_t type, uint32_t id, void *instance_casted)
 	switch (type)
 	{
 	case ACL_USER:
-		name = get_uid_name(instance->id_lookup.uids, (uid_t)id);
+		{
+			struct passwd *pwd = getpwuid((uid_t)(id));
+			if (pwd != NULL)
+			{
+				name = pwd->pw_name;
+			}
+		}
 		break;
 	case ACL_GROUP:
-		name = get_gid_name(instance->id_lookup.gids, (gid_t)id);
+		{
+			struct group *grp = getgrgid((gid_t)(id));
+			if (grp != NULL)
+			{
+				name = grp->gr_name;
+			}
+		}
 		break;
 	}
 

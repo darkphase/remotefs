@@ -93,8 +93,11 @@ static inline off_t unpack_stat(struct rfs_instance *instance, const char *buffe
 	{
 		size_t host_len = strlen(instance->config.host);
 
+		/* if this is file owned by auth_user, then set uid to my_uid, 
+		otherwise: */
 		if (strcmp(user, instance->config.auth_user) != 0)
 		{
+			/* rfsnss support: try to find user with @host before looking up exact user reported by server */
 			size_t user_len = strlen(user);
 			size_t overall_user_len = user_len + host_len + 1 + 1; /* + '@' + final \0 */
 
@@ -117,6 +120,7 @@ static inline off_t unpack_stat(struct rfs_instance *instance, const char *buffe
 			uid = instance->client.my_uid;
 		}
 
+		/* rfsnss support: see comments for username handling */
 		size_t group_len = strlen(group);
 		size_t overall_group_len = group_len + host_len + 1 + 1;
 
@@ -138,12 +142,12 @@ static inline off_t unpack_stat(struct rfs_instance *instance, const char *buffe
 
 		if (uid == (uid_t)-1)
 		{
-			uid = lookup_user(instance->id_lookup.uids, user);
+			uid = lookup_user(user);
 		}
 
 		if (gid == (gid_t)-1)
 		{
-			gid = lookup_group(instance->id_lookup.gids, group, user);
+			gid = lookup_group(group, user);
 		}
 	}
 

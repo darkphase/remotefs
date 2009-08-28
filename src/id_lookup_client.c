@@ -6,84 +6,116 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <grp.h>
+#include <pwd.h>
+
 #include "config.h"
 #include "id_lookup_client.h"
 
-uid_t lookup_user(const struct list *uids, const char *name)
+uid_t lookup_user(const char *name)
 {
-	uid_t uid = get_uid(uids, name);
-	if (uid == (uid_t)-1)
+	struct passwd *pwd = getpwnam(name);
+
+	if (pwd != NULL)
 	{
-		uid = get_uid(uids, "nobody");
+		return pwd->pw_uid;
+	}
+
+	pwd = getpwnam("nobody");
+	if (pwd != NULL)
+	{
+		return pwd->pw_uid;
 	}
 	
-	return uid != (uid_t)-1 ? uid : 0;
+	return 0; /* default to root */
 }
 
-gid_t lookup_group(const struct list *gids, const char *name, const char *user_name)
+gid_t lookup_group(const char *name, const char *user_name)
 {
-	gid_t gid = get_gid(gids, name);
-	
-	if (gid == (gid_t)-1
-	&& user_name != NULL)
+	struct group *grp = getgrnam(name);
+
+	if (grp != NULL)
 	{
-		gid = get_gid(gids, user_name);
+		return grp->gr_gid; 
 	}
-	
-	if (gid == (gid_t)-1)
+
+	/* next, try to find group with the same name as user 
+	(and default group to that) */
+	if (user_name != NULL)
 	{
-		gid = get_gid(gids, "nogroup");
+		grp = getgrnam(user_name);
+		if (grp != NULL)
+		{
+			return grp->gr_gid;
+		}
 	}
-	
-	if (gid == (gid_t)-1)
+
+	/* try to default to standard groups defining noone */
+	grp = getgrnam("nogroup");
+	if (grp != NULL)
 	{
-		gid = get_gid(gids, "nobody");
+		return grp->gr_gid; 
 	}
-	
-	return gid != (gid_t)-1 ? gid : 0;
+
+	grp = getgrnam("nobody");
+	if (grp != NULL)
+	{
+		return grp->gr_gid; 
+	}
+
+	return 0; /* default to root */
 }
 
-const char* lookup_uid(const struct list *uids, uid_t uid)
+const char* lookup_uid(uid_t uid)
 {
-	const char *user = get_uid_name(uids, uid);
-	if (user == NULL)
+	struct passwd *pwd = getpwuid(uid);
+	if (pwd != NULL)
 	{
-		user = "nobody";
+		return pwd->pw_name;
+	}
+
+	/* default to nobody if possible */
+	if (getpwnam("nobody") != NULL)
+	{
+		return "nobody";
 	}
 	
-	if (user == NULL)
-	{
-		user = "root";
-	}
-	
-	return user;
+	return "root"; /* default to root */
 }
 
-const char* lookup_gid(const struct list *gids, gid_t gid, const struct list *uids, uid_t uid)
+const char* lookup_gid(gid_t gid, uid_t uid)
 {
-	const char *group = get_gid_name(gids, gid);
-	if (group == NULL
-	&& get_gid(gids, "nogroup"))
+	struct group *grp = getgrgid(gid);
+	if (grp != NULL)
 	{
-		group = "nogroup";
+		return grp->gr_name;
+	}
+
+	/* try to find group with the same name as user */
+	if (uid != (uid_t)(-1))
+	{
+		struct passwd *pwd = getpwuid(uid);
+		if (pwd != NULL)
+		{
+			grp = getgrnam(pwd->pw_name);
+			if (grp != NULL)
+			{
+				return grp->gr_name;
+			}
+		}
+	}
+
+	/* try to default to standard groups defining noone */
+	if (getgrnam("nogroup") != NULL)
+	{
+		return "nogroup";
+	}
+
+	if (getgrnam("nobody") != NULL)
+	{
+		return "nobody";
 	}
 	
-	if (group == NULL
-	&& get_gid(gids, "nobody"))
-	{
-		group = "nobody";
-	}
-	
-	if (group == NULL)
-	{
-		group = get_uid_name(uids, uid);
-	}
-	
-	if (group == NULL)
-	{
-		group = "root"; 
-	}
-	
-	return group;
+	return "root"; /* default to root */
 }
 
