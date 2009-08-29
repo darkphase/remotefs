@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/rfspasswd-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/rfspasswd-defs.mk
 
 $(rfspasswd_OBJS):
 	@echo Compile $@

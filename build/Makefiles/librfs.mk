@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/librfs-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/librfs-defs.mk
 
 $(librfs_OBJS):
 	@echo Compile $@

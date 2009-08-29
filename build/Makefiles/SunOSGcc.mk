@@ -1,4 +1,4 @@
-include Makefiles/SunOS.mk
+include build/Makefiles/SunOS.mk
 
 ################################
 # The executables

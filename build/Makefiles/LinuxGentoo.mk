@@ -1,4 +1,4 @@
-include Makefiles/Linux.mk
+include build/Makefiles/Linux.mk
 
 #
 # -s removed from LD_FLAGS for Gentoo only

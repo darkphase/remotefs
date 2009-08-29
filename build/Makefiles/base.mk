@@ -6,38 +6,38 @@ OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
 
-include Makefiles/$(OS)$(ALT).mk
-include Makefiles/options.mk
-include Makefiles/version.mk
+include build/Makefiles/$(OS)$(ALT).mk
+include build/Makefiles/options.mk
+include build/Makefiles/version.mk
 
 libnss: dummy
 	@echo
-	@$(MAKE) -f Makefiles/libnss.mk flags build
+	@$(MAKE) -f build/Makefiles/libnss.mk flags build
 	@echo
 
 nss: dummy
 	@echo
-	@$(MAKE) -f Makefiles/nssd.mk flags build
+	@$(MAKE) -f build/Makefiles/nssd.mk flags build
 	@echo
 
 librfs: dummy
 	@echo
-	@$(MAKE) -f Makefiles/librfs.mk flags build
+	@$(MAKE) -f build/Makefiles/librfs.mk flags build
 	@echo
 
 rfs: dummy librfs
 	@echo
-	@$(MAKE) -f Makefiles/rfs.mk flags build
+	@$(MAKE) -f build/Makefiles/rfs.mk flags build
 	@echo
 
 rfsd: dummy
 	@echo
-	@$(MAKE) -f Makefiles/rfsd.mk flags build
+	@$(MAKE) -f build/Makefiles/rfsd.mk flags build
 	@echo
 
 rfspasswd: dummy
 	@echo
-	@$(MAKE) -f Makefiles/rfspasswd.mk flags build
+	@$(MAKE) -f build/Makefiles/rfspasswd.mk flags build
 	@echo
 
 #############################
@@ -91,11 +91,11 @@ clean: clean_build clean_bins clean_packages clean_version
 # Rebuild dependency file
 #############################
 depends:
-	@touch Makefiles/depends.mk
-	@grep -E '#\s*include[^"]+"[^"]+"' src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/src\/\1/' > Makefiles/depends.mk
-	@grep -E '#\s*include[^"]+"[^"]+"' rfs_nss/src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/rfs_nss\/src\/\1/' >> Makefiles/depends.mk
-	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
-	@ls rfs_nss/src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> Makefiles/depends.mk
+	@touch build/Makefiles/depends.mk
+	@grep -E '#\s*include[^"]+"[^"]+"' src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/src\/\1/' > build/Makefiles/depends.mk
+	@grep -E '#\s*include[^"]+"[^"]+"' rfs_nss/src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/rfs_nss\/src\/\1/' >> build/Makefiles/depends.mk
+	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
+	@ls rfs_nss/src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
 
 #######################################
 # Rules for packaging, ...
@@ -126,11 +126,11 @@ man: dummy rfs_man rfsd_man rfsnss_man
 #############################
 
 tbz: 	
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp
 	echo "Building remotefs-$(VERSION)-$(RELEASE).tar.bz2"
 	chmod 700 build/init.d/rfsd.*
 	tar --exclude .svn -cjf "remotefs-$(VERSION)-$(RELEASE).tar.bz2" src rfs_nss build Makefiles Makefile README LICENSE AUTHORS CHANGELOG
-	$(MAKE) -sf Makefiles/base.mk clean_tmp
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp
 
 install_man: dummy
 	mkdir -p $(INSTALL_DIR)/share/man;
@@ -156,23 +156,23 @@ debbase:
 	mkdir -p "dpkg/DEBIAN";
 
 rfsmanpages: dummy
-	$(MAKE) -sf Makefiles/base.mk man
+	$(MAKE) -sf build/Makefiles/base.mk man
 	mkdir -p dpkg_man/man1/
 	cp build/man/gz/man1/rfs.1.gz dpkg_man/man1/
 
 rfsdeb: dummy clean_tmp debbase rfsmanpages
 	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	mkdir -p "dpkg$(INSTALL_DIR)/lib";
-	$(MAKE) -f Makefiles/base.mk rfs >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfs >/dev/null
 	cp rfs "dpkg$(INSTALL_DIR)/bin/";
 	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
 	ln -sf "librfs.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfs.$(SO_EXT)"
 	CONTROL_TEMPLATE="build/debian/control.rfs" \
 	NAME="rfs" \
-	$(MAKE) -f Makefiles/base.mk builddeb
+	$(MAKE) -f build/Makefiles/base.mk builddeb
 
 rfsdmanpages: dummy
-	$(MAKE) -sf Makefiles/base.mk man
+	$(MAKE) -sf build/Makefiles/base.mk man
 	mkdir -p dpkg_man/man8/
 	cp build/man/gz/man8/rfsd.8.gz dpkg_man/man8/
 	cp build/man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
@@ -186,19 +186,19 @@ rfsdetc: dummy
 
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).deb"
-	$(MAKE) -f Makefiles/base.mk clean_build
-	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null
-	$(MAKE) -f Makefiles/base.mk clean_build
-	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk clean_build
+	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk clean_build
+	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null
 	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
 	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
 	cp build/debian/conffiles dpkg/DEBIAN/
 	CONTROL_TEMPLATE="build/debian/control.rfsd" \
 	NAME="rfsd" \
-	$(MAKE) -f Makefiles/base.mk builddeb
+	$(MAKE) -f build/Makefiles/base.mk builddeb
 
 rfsnssmanpages: dummy
-	$(MAKE) -sf Makefiles/base.mk rfsnss_man
+	$(MAKE) -sf build/Makefiles/base.mk rfsnss_man
 	mkdir -p dpkg_man/man1/
 	cp build/man/gz/man1/rfs_nssd.1.gz dpkg_man/man1/
 	cp build/man/gz/man1/rfsnsswitch.sh.1.gz dpkg_man/man1/
@@ -210,16 +210,16 @@ rfsnsssbin: dummy
 rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	cp build/debian/rfs_nss/post* build/debian/rfs_nss/pre* dpkg/DEBIAN/
-	$(MAKE) -f Makefiles/base.mk clean_build
-	$(MAKE) -f Makefiles/base.mk librfs >/dev/null
-	$(MAKE) -f Makefiles/base.mk libnss >/dev/null
-	$(MAKE) -f Makefiles/base.mk nss >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk clean_build
+	$(MAKE) -f build/Makefiles/base.mk librfs >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk libnss >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk nss >/dev/null
 	mkdir -p "dpkg/lib";
 	cp rfs_nssd "dpkg$(INSTALL_DIR)/bin/";
 	cp libnss_rfs.so.2 "dpkg/lib/";
 	CONTROL_TEMPLATE="build/debian/control.rfsnss" \
 	NAME="rfsnss" \
-	$(MAKE) -f Makefiles/base.mk builddeb
+	$(MAKE) -f build/Makefiles/base.mk builddeb
 
 builddeb: dummy
 	if [ -d dpkg_man ];\
@@ -246,33 +246,33 @@ builddeb: dummy
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	fakeroot chown -R 0:0 dpkg/;
 	fakeroot dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
-	$(MAKE) -f Makefiles/base.mk clean_bins
-	$(MAKE) -f Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_bins
+	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
 
 #############################
 # Build RPM
 #############################
 
 rfsrpm: dummy
-	$(MAKE) -f Makefiles/base.mk clean_tmp
-	$(MAKE) -f Makefiles/base.mk man
-	RPMNAME=rfs $(MAKE) -sf Makefiles/base.mk buildrpm
-	$(MAKE) -f Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk man
+	RPMNAME=rfs $(MAKE) -sf build/Makefiles/base.mk buildrpm
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
 	
 rfsdrpm: dummy
-	$(MAKE) -f Makefiles/base.mk clean_tmp
-	$(MAKE) -f Makefiles/base.mk man
-	RPMNAME=rfsd $(MAKE) -f Makefiles/base.mk buildrpm
-	$(MAKE) -f Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk man
+	RPMNAME=rfsd $(MAKE) -f build/Makefiles/base.mk buildrpm
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
 
 rfsnssrpm: dummy
-	$(MAKE) -f Makefiles/base.mk clean_tmp
-	$(MAKE) -f Makefiles/base.mk man
-	RPMNAME=rfsnss $(MAKE) -f Makefiles/base.mk buildrpm
-	$(MAKE) -f Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
+	$(MAKE) -f build/Makefiles/base.mk man
+	RPMNAME=rfsnss $(MAKE) -f build/Makefiles/base.mk buildrpm
+	$(MAKE) -f build/Makefiles/base.mk clean_tmp
 	
 
-build/redhat/%.spec: dummy Makefiles/version.mk
+build/redhat/%.spec: dummy build/Makefiles/version.mk
 	sed -e "s/Version:.*/Version:$(VERSION)/"  \
 	-e "s/Release:.*/Release:$(RELEASE)/" $@ \
 	> rpmbuild/SPECS/$(RPMNAME).spec
@@ -288,7 +288,7 @@ buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man1
 	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man8
-	tar --exclude .svn -cf - src rfs_nss build/init.d build/etc build/sbin Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
+	tar --exclude .svn -cf - src rfs_nss build/init.d build/etc build/sbin build/Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
 	cp build/man/*.1 $(RPMNAME)-$(VERSION)/build/man/man1/
 	cd $(RPMNAME)-$(VERSION)/build/man/man1/; gzip *
 	cp build/man/*.8 $(RPMNAME)-$(VERSION)/build/man/man8/
@@ -298,8 +298,8 @@ buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	rm -fr $(RPMNAME)-$(VERSION)
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
-	$(MAKE) -f Makefiles/base.mk clean_bins
-	$(MAKE) -f Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_bins
+	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
 	
 
 #############################
@@ -319,13 +319,13 @@ rfsdipk: dummy ipkbase
 	    echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).ipk"; \
 	fi
 	
-	$(MAKE) -sf Makefiles/base.mk clean_tmp;
-	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk ipkbase;
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp;
+	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk ipkbase;
 	mkdir -p "ipkg/rfsd/etc/init.d";
-	$(MAKE) -f Makefiles/base.mk clean_build;
-	$(MAKE) -f Makefiles/base.mk rfspasswd >/dev/null;
-	$(MAKE) -f Makefiles/base.mk clean_build;
-	$(MAKE) -f Makefiles/base.mk rfsd >/dev/null;
+	$(MAKE) -f build/Makefiles/base.mk clean_build;
+	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null;
+	$(MAKE) -f build/Makefiles/base.mk clean_build;
+	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null;
 	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/";
 	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/";
 	cp build/init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
@@ -333,8 +333,8 @@ rfsdipk: dummy ipkbase
 	cp build/etc/rfs-exports "ipkg/rfsd/etc/";
 	chmod 600 "ipkg/rfsd/etc/rfs-exports";
 	cp build/kamikaze/conffiles "ipkg/rfsd/CONTROL/";
-	IPKNAME=rfsd $(MAKE) -f Makefiles/base.mk buildipk;
-	$(MAKE) -sf Makefiles/base.mk clean_tmp;
+	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk buildipk;
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp;
 	
 buildipk: dummy
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
@@ -347,24 +347,24 @@ buildipk: dummy
 	    mv "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH).ipk" "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk";\
 	fi
 	
-	$(MAKE) -f Makefiles/base.mk clean_bins;
-	$(MAKE) -f Makefiles/base.mk clean_packages_tmp;
+	$(MAKE) -f build/Makefiles/base.mk clean_bins;
+	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp;
 
 #############################
 # Gentoo ebuilds
 #############################
 
 rfsdebuild: dummy
-	TARGET="rfsd" $(MAKE) -f Makefiles/base.mk genebuild
+	TARGET="rfsd" $(MAKE) -f build/Makefiles/base.mk genebuild
     
 rfsebuild: dummy
-	TARGET="rfs" $(MAKE) -f Makefiles/base.mk genebuild
+	TARGET="rfs" $(MAKE) -f build/Makefiles/base.mk genebuild
 
 rfssslebuild: dummy
-	TARGET="rfs-ssl" $(MAKE) -f Makefiles/base.mk genebuild
+	TARGET="rfs-ssl" $(MAKE) -f build/Makefiles/base.mk genebuild
 
 rfsnssebuild: dummy
-	TARGET="rfsnss" $(MAKE) -f Makefiles/base.mk genebuild
+	TARGET="rfsnss" $(MAKE) -f build/Makefiles/base.mk genebuild
 
 genebuild: dummy
 	echo "Creating $(TARGET)-${VERSION}-r${RELEASE}.ebuild"
@@ -380,5 +380,5 @@ dummy:
 # Dependencies for all proj.
 #############################
 
-include Makefiles/depends.mk
+include build/Makefiles/depends.mk
 

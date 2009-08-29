@@ -1,4 +1,4 @@
-include Makefiles/Linux.mk
+include build/Makefiles/Linux.mk
 
 ################################
 # OS / CC specifics flags

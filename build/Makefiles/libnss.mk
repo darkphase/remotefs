@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/libnss-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/libnss-defs.mk
 
 $(libnss_OBJS):
 	@echo Compile $@

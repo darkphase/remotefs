@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/rfsd-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/rfsd-defs.mk
 
 $(rfsd_OBJS):
 	@echo Compile $@

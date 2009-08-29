@@ -4,7 +4,7 @@ VERSION="$(VER_MAJOR).$(VER_MINOR)"
 RELEASE=1
 VERSION_FILE=src/version.h
 
-include Makefiles/install.mk
+include build/Makefiles/install.mk
 
 force_version:
 	echo "/* Automatically generated */" > "$(VERSION_FILE)"
@@ -26,6 +26,6 @@ force_version:
 
 make_version:
 	if [ ! -f "$(VERSION_FILE)" ]; then \
-		$(MAKE) -f Makefiles/version.mk force_version; \
+		$(MAKE) -f build/Makefiles/version.mk force_version; \
 	fi
 

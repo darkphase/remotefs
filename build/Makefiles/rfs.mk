@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/rfs-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/rfs-defs.mk
 
 $(rfs_OBJS):
 	@echo Compile $@

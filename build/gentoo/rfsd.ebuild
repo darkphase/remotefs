@@ -66,7 +66,7 @@ src_install() {
     chmod 700 "${D}/etc/init.d/rfsd"
     chown root:root "${D}/etc/init.d/rfsd"
     
-    cp "${BUILDDIR}/build/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
+    cp "${BUILDDIR}/build/gentoo/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
     chmod 644 "${D}/etc/conf.d/rfsd"
     chown root:root "${D}/etc/conf.d/rfsd"
 }

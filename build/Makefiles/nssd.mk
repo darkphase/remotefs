@@ -1,6 +1,6 @@
 
-include Makefiles/base.mk
-include Makefiles/nssd-defs.mk
+include build/Makefiles/base.mk
+include build/Makefiles/nssd-defs.mk
 
 $(nssd_OBJS):
 	@echo Compile $@
