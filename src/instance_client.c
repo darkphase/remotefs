@@ -31,9 +31,11 @@ static void init_attr_cache(struct rfs_instance *instance)
 	/* attrs cache */
 	instance->attr_cache.cache = NULL;
 	instance->attr_cache.last_time_checked = (time_t)(0);
+	instance->attr_cache.number_of_entries = 0;
 #ifdef RFS_DEBUG
 	instance->attr_cache.cache_hits = 0;
 	instance->attr_cache.cache_misses = 0;
+	instance->attr_cache.max_number_of_entries = 0;
 #endif
 }
 

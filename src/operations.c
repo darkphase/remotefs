@@ -262,10 +262,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -stat_ret;
 	}
 
-	if (cache_file(instance, path, stbuf) == NULL)
-	{
-		return -EIO;
-	}
+	cache_file(instance, path, stbuf); /* ignore result because cache may be already full */
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
 }
@@ -375,11 +372,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			
 			if (joined == 0)
 			{
-				if (cache_file(instance, full_path, &stbuf) == NULL)
-				{
-					free_buffer(buffer);
-					return -EIO;
-				}
+				cache_file(instance, full_path, &stbuf); /* ignore result because cache may be full */
 			}
 		}
 		

@@ -84,6 +84,11 @@ void clear_cache(struct rfs_instance *instance)
 
 void* cache_file(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
+	if (instance->attr_cache.number_of_entries >= ATTR_CACHE_MAX_ENTRIES)
+	{
+		return NULL;
+	}
+
 	struct tree_item *key = get_buffer(sizeof(*key));
 
 	if (key == NULL)
@@ -109,6 +114,13 @@ void* cache_file(struct rfs_instance *instance, const char *path, struct stat *s
 	}
 	else
 	{
+		++(instance->attr_cache.number_of_entries);
+#ifdef RFS_DEBUG
+		if (instance->attr_cache.number_of_entries > instance->attr_cache.max_number_of_entries)
+		{
+			instance->attr_cache.max_number_of_entries = instance->attr_cache.number_of_entries;
+		}
+#endif
 		return tsearch(key, &instance->attr_cache.cache, compare_path);
 	}
 }
@@ -166,6 +178,7 @@ void destroy_cache(struct rfs_instance *instance)
 		}
 		
 		instance->attr_cache.cache = NULL;
+		instance->attr_cache.number_of_entries = 0;
 	}
 }
 
@@ -181,6 +194,7 @@ void delete_from_cache(struct rfs_instance *instance, const char *path)
 	{
 		free(value->path);
 		free_buffer(value);
+		--(instance->attr_cache.number_of_entries);
 	}
 }
 
@@ -191,5 +205,6 @@ void dump_attr_stats(struct rfs_instance *instance)
 	instance->attr_cache.cache_hits, 
 	instance->attr_cache.cache_misses, 
 	ratio(instance->attr_cache.cache_hits, instance->attr_cache.cache_misses));
+	DEBUG("attr cache max number of entries: %lu\n", instance->attr_cache.max_number_of_entries);
 }
 #endif

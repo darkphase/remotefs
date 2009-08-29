@@ -40,9 +40,11 @@ struct rfs_instance
 	{
 		void *cache;
 		time_t last_time_checked;
+		unsigned long number_of_entries;
 #ifdef RFS_DEBUG
 		unsigned long cache_hits;
 		unsigned long cache_misses;
+		unsigned long max_number_of_entries;
 #endif
 	} attr_cache;
 	
