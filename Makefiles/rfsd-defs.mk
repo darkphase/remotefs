@@ -37,14 +37,19 @@ rfsd_OBJS = src/acl_utils.o \
             src/sendrecv.o \
             src/server.o \
             src/server_handlers.o \
+            src/server_handlers_access.o \
             src/server_handlers_acl.o \
+            src/server_handlers_dirs.o \
             src/server_handlers_exports.o \
+            src/server_handlers_files.o \
+            src/server_handlers_io.o \
             src/server_handlers_links.o \
             src/server_handlers_nss.o \
             src/server_handlers_read.o \
             src/server_handlers_rfs.o \
             src/server_handlers_sync.o \
             src/server_handlers_write.o \
+            src/server_handlers_utils.o \
             src/signals.o \
             src/sockets.o \
             src/ssl.o \

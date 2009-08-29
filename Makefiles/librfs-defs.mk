@@ -39,15 +39,19 @@ librfs_OBJS = src/acl_utils.o \
               src/nss_client.o \
               src/nss_server.o \
               src/operations.o \
+              src/operations_access.o \
               src/operations_acl.o \
-              src/operations_chown.o \
+              src/operations_dirs.o \
               src/operations_exports.o \
+              src/operations_files.o \
+              src/operations_io.o \
               src/operations_links.o \
               src/operations_nss.o \
               src/operations_rfs.o \
               src/operations_read.o \
               src/operations_sync.o \
               src/operations_write.o \
+              src/operations_utils.o \
               src/path.o \
               src/resume.o \
               src/error.o \

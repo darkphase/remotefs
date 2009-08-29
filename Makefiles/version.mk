@@ -7,7 +7,6 @@ VERSION_FILE=src/version.h
 include Makefiles/install.mk
 
 force_version:
-	echo "Creating $(VERSION_FILE)"
 	echo "/* Automatically generated */" > "$(VERSION_FILE)"
 	echo "" >> "$(VERSION_FILE)"
 	echo "#ifndef RFS_VERSION_H" >> "$(VERSION_FILE)"

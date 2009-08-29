@@ -17,12 +17,13 @@ extern "C" {
 
 struct rfs_instance;
 
-int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
-int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc);
-
+/** init write-behind control info */
 int init_write_behind(struct rfs_instance *instance);
+
+/** stop write-behind thread */
 void kill_write_behind(struct rfs_instance *instance);
 
+/** flush any data cached for descriptor */
 int flush_write(struct rfs_instance *instance, const char *path, uint64_t descriptor);
 
 #if defined (__cplusplus) || defined (c_plusplus)

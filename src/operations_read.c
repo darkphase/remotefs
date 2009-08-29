@@ -17,6 +17,7 @@ See the file LICENSE.
 #include "list.h"
 #include "operations.h"
 #include "operations_rfs.h"
+#include "operations_write.h"
 #include "resume.h"
 #include "sendrecv.h"
 

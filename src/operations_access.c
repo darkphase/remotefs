@@ -176,3 +176,62 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 #endif
 }
 
+int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
+{
+#ifndef WITH_UGO
+	/* actually dummy to keep some software happy. 
+	do not replace with -EACCES or something */
+	return 0; 
+#else	
+	if ((instance->client.export_opts & OPT_UGO) == 0)
+	{
+		/* do nothing, since this is not UGOed export */
+		return 0; 
+	}
+
+	if (instance->sendrecv.socket == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	unsigned path_len = strlen(path) + 1;
+	uint32_t fmode = mode;
+
+	unsigned overall_size = sizeof(fmode) + path_len;
+
+	struct command cmd = { cmd_chmod, overall_size };
+
+	char *buffer = get_buffer(overall_size);
+	pack(path, path_len, buffer, 
+	pack_32(&fmode, buffer, 0
+		));
+
+	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	{
+		free_buffer(buffer);
+		return -ECONNABORTED;
+	}
+
+	free_buffer(buffer);
+
+	struct answer ans = { 0 };
+
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -ECONNABORTED;
+	}
+
+	if (ans.command != cmd_chmod)
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
+
+	if ( ans.ret_errno == 0 )
+	{
+		delete_from_cache(instance, path);
+	}
+
+	return ans.ret == 0 ? 0 : -ans.ret_errno;
+#endif
+}
+

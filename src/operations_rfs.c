@@ -30,6 +30,7 @@ See the file LICENSE.
 #endif
 #include "operations.h"
 #include "operations_rfs.h"
+#include "operations_write.h"
 #include "options.h"
 #include "resume.h"
 #ifdef SCHEDULING_AVAILABLE
