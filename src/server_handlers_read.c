@@ -65,13 +65,11 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 {
 	DEBUG("%s\n", "reading as always");
 	
-	int fd = (int)handle;
-	
-	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
-	
-	int first_block = 1; /* TODO: this part is probably can be done without first_block flag */
+	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0 };
 	char buffer[RFS_READ_BLOCK] = { 0 };
+	int fd = (int)handle;	
 	
+	int first_block = 1;
 	size_t done = 0;
 	while (done < size)
 	{
@@ -79,43 +77,22 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 		
 		errno = 0;
 		ssize_t result = pread(fd, buffer, current_block, offset + done);
-		
+	
 		if (result < 0)
 		{
-			ans.ret_errno = errno;
-			ans.ret = result;
-			ans.data_len = 0;
-
-			if (first_block != 0)
-			{
-				return rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 1;
-			}
-			else
-			{
-				return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
-			}
+			struct answer ans_error = { cmd_read, 0, -1, errno };
+			return (first_block ? rfs_send_answer : rfs_send_answer_oob)(&instance->sendrecv, &ans_error) == -1 ? -1 : 1;
 		}
 		else
 		{
-			if (first_block != 0)
+			if (commit_send(&instance->sendrecv, 
+				queue_data(buffer, result >= 0 ? result : 0, 
+				first_block != 0 ? queue_ans(&ans, send_token(2)) : send_token(1))) < 0)
 			{
-				if (commit_send(&instance->sendrecv, 
-					queue_data(buffer, result, 
-					queue_ans(&ans, send_token(2)))) < 0)
-				{
-					return -1;
-				}
+				return -1;
+			}
 			
-				first_block = 0;
-			}
-			else
-			{
-				if (rfs_send_data(&instance->sendrecv, buffer, result) == -1)
-				{
-					return -1;
-				}
-			}
-
+			first_block = 0;
 		}
 		
 		done += result;

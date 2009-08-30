@@ -90,6 +90,9 @@ static inline send_tok* send_token(unsigned count)
 
 static inline send_tok* queue_data(const char *buffer, size_t len, send_tok *token)
 {
+#ifdef RFS_DEBUG
+	DEBUG("data of size %lu\n", (unsigned long)len);
+#endif
 	if (token != NULL)
 	{
 		token->iov[token->count].iov_base = (void *)buffer;

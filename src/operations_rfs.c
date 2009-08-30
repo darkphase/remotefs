@@ -120,7 +120,7 @@ static void* maintenance(void *void_instance)
 			keep_alive_slept = 0;
 		}
 		
-		if (attr_cache_slept >= ATTR_CACHE_TTL
+		if (attr_cache_slept >= ATTR_CACHE_TTL * 2 
 		&& keep_alive_lock(instance) == 0)
 		{
 			if (cache_is_old(instance) != 0)
