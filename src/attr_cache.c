@@ -205,6 +205,6 @@ void dump_attr_stats(struct rfs_instance *instance)
 	instance->attr_cache.cache_hits, 
 	instance->attr_cache.cache_misses, 
 	ratio(instance->attr_cache.cache_hits, instance->attr_cache.cache_misses));
-	DEBUG("attr cache max number of entries: %lu\n", instance->attr_cache.max_number_of_entries);
+	DEBUG("attr cache max number of entries: %u/%u\n", instance->attr_cache.max_number_of_entries, ATTR_CACHE_MAX_ENTRIES);
 }
 #endif
