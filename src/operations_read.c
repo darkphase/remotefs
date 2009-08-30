@@ -48,7 +48,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	token.iov[1].iov_len = overall_size;
 #undef  overall_size
 
-	if (do_send(&instance->sendrecv, (send_tok *)&token) < 0)
+	if (do_send(&instance->sendrecv, (send_tok *)(void *)&token) < 0)
 	{
 		return -ECONNABORTED;
 	}

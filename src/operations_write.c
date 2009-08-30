@@ -432,7 +432,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	token.iov[2].iov_base = (void *)buf;
 	token.iov[2].iov_len = size;
 
-	if (do_send(&instance->sendrecv, (send_tok *)&token) < 0)
+	if (do_send(&instance->sendrecv, (send_tok *)(void *)&token) < 0)
 	{
 		return -ECONNABORTED;
 	}

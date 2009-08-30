@@ -154,7 +154,7 @@ static inline ssize_t rfs_send_data(struct sendrecv_info *info, const void *data
 	MAKE_SEND_TOK(1) token = { 1, {{ 0 }} };
 	token.iov[0].iov_base = (void *)data;
 	token.iov[0].iov_len = data_len;
-	return (do_send(info, (send_tok *)&token) == data_len ? 0 : -1);
+	return (do_send(info, (send_tok *)(void *)&token) == data_len ? 0 : -1);
 }
 
 static inline ssize_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len)

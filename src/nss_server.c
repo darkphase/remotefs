@@ -25,7 +25,6 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "list.h"
 #include "nss_server.h"
-#include "sendrecv.h"
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {
