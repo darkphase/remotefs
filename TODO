@@ -1,5 +1,0 @@
-0.12
-+ dec processing should aquire global lock
-+ receving uid without breaking answer errno
-+ clear cookies in separate thread
-
