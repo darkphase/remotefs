@@ -114,8 +114,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		DEBUG("acl: %s\n", buffer);
 
 		size_t count = 0;
-		rfs_acl_t *acl = rfs_acl_from_text(NULL, 
-			buffer, 
+		rfs_acl_t *acl = rfs_acl_from_text(buffer, 
 			(instance->nss.use_nss ? nss_resolve : local_resolve), 
 			(void *)instance, 
 			&count);
@@ -208,8 +207,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	if (acl != NULL)
 	{
-		text_acl = rfs_acl_to_text(NULL, 
-			acl, 
+		text_acl = rfs_acl_to_text(acl, 
 			count, 
 			(instance->nss.use_nss ? nss_reverse_resolve : local_reverse_resolve), 
 			(void *)instance, 

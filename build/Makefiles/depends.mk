@@ -12,6 +12,12 @@ src/acl_utils_nss.o:src/acl_utils_nss.h
 src/acl_utils_nss.o:src/buffer.h
 src/acl_utils_nss.o:src/config.h
 src/acl_utils_nss.o:src/instance_client.h
+src/acl_utils_server.o:src/options.h
+src/acl_utils_server.o:src/acl_utils.h
+src/acl_utils_server.o:src/buffer.h
+src/acl_utils_server.o:src/config.h
+src/acl_utils_server.o:src/id_lookup.h
+src/acl_utils_server.o:src/instance.h
 src/attr_cache.o:src/attr_cache.h
 src/attr_cache.o:src/buffer.h
 src/attr_cache.o:src/config.h
@@ -83,7 +89,6 @@ src/nss_server.o:src/config.h
 src/nss_server.o:src/instance_client.h
 src/nss_server.o:src/list.h
 src/nss_server.o:src/nss_server.h
-src/nss_server.o:src/sendrecv.h
 src/operations.o:src/attr_cache.h
 src/operations.o:src/buffer.h
 src/operations.o:src/command.h
@@ -310,6 +315,7 @@ src/server_handlers_access.o:src/server.h
 src/server_handlers_access.o:src/server_handlers_utils.h
 src/server_handlers_acl.o:src/options.h
 src/server_handlers_acl.o:src/acl_utils.h
+src/server_handlers_acl.o:src/acl_utils_server.h
 src/server_handlers_acl.o:src/buffer.h
 src/server_handlers_acl.o:src/command.h
 src/server_handlers_acl.o:src/config.h
@@ -501,6 +507,7 @@ rfs_nss/src/server.o:rfs_nss/src/processing_ent.h
 rfs_nss/src/server.o:rfs_nss/src/server.h
 src/acl_utils.o:src/acl_utils.c
 src/acl_utils_nss.o:src/acl_utils_nss.c
+src/acl_utils_server.o:src/acl_utils_server.c
 src/attr_cache.o:src/attr_cache.c
 src/buffer.o:src/buffer.c
 src/cleanup.o:src/cleanup.c

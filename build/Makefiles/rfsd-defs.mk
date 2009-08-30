@@ -21,6 +21,7 @@ rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
 #######################################
 
 rfsd_OBJS = src/acl_utils.o \
+            src/acl_utils_server.o \
             src/buffer.o \
             src/cleanup.o \
             src/command.o \

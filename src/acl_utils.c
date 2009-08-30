@@ -256,58 +256,21 @@ int walk_acl_text(const char *acl_text, walk_acl_text_callback callback, void *d
 
 struct acl_to_text_params
 {
-	const struct id_lookup_info *lookup;
-	size_t len;
 	char *text;
+	size_t len;
 	reverse_resolve custom_resolve;
 	void *custom_resolve_data;
 };
-
-static char* default_reverse_resolve(uint16_t type, uint32_t id, void *lookup_casted)
-{
-	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
-
-	switch (type)
-	{
-	case ACL_USER:
-		{
-		DEBUG("resolving username with id: %lu\n", (unsigned long)id);
-		
-		const char *username = get_uid_name(lookup->uids, (uid_t)id);
-				
-		if (username == NULL)
-		{
-			return NULL;
-		}
-
-		return strdup(username);
-		}
-	case ACL_GROUP:
-		{
-		DEBUG("resolving groupname with id: %lu\n", (unsigned long)id);
-
-		const char *groupname = get_gid_name(lookup->gids, (gid_t)id);
-				
-		if (groupname == NULL)
-		{
-			return NULL;
-		}
-		
-		return strdup(groupname);
-		}
-	}
-
-	return NULL;
-}
 
 static int acl_to_text_callback(uint16_t type, uint16_t perm, uint32_t id, void *params_casted)
 {
 	DEBUG("acl_to_text: type: %d, perm: %d, id: %d\n", type, perm, id);
 
 	struct acl_to_text_params *params = (struct acl_to_text_params *)(params_casted);
+
 	char *cursor = params->text;
-	reverse_resolve resolve_func = (params->custom_resolve == NULL ? default_reverse_resolve : params->custom_resolve);
-	void *resolve_data = (params->custom_resolve == NULL ? (void *)params->lookup : params->custom_resolve_data);
+	reverse_resolve resolve_func = params->custom_resolve;
+	void *resolve_data = params->custom_resolve_data;
 
 	switch (type)
 	{
@@ -376,8 +339,7 @@ static int acl_to_text_callback(uint16_t type, uint16_t perm, uint32_t id, void 
 	return 0;
 }
 
-char* rfs_acl_to_text(const struct id_lookup_info *lookup, 
-	const rfs_acl_t *acl, 
+char* rfs_acl_to_text(const rfs_acl_t *acl, 
 	size_t count, 
 	reverse_resolve custom_resolve, 
 	void *custom_resolve_data, 
@@ -389,7 +351,7 @@ char* rfs_acl_to_text(const struct id_lookup_info *lookup,
 	}
 
 	/* at first pass just calc resulting size */
-	struct acl_to_text_params len_params = { lookup, 0, NULL, custom_resolve, custom_resolve_data };
+	struct acl_to_text_params len_params = { NULL, 0, custom_resolve, custom_resolve_data };
 	int len_ret = walk_acl(acl, count, acl_to_text_callback, (void *)&len_params);
 	if (len_ret != 0)
 	{
@@ -402,7 +364,7 @@ char* rfs_acl_to_text(const struct id_lookup_info *lookup,
 	char *text_acl = get_buffer(len_params.len + 1);
 
 	/* write to allocated entry */
-	struct acl_to_text_params write_params = { lookup, 0, text_acl, custom_resolve, custom_resolve_data };
+	struct acl_to_text_params write_params = { text_acl, 0, custom_resolve, custom_resolve_data };
 	int write_ret = walk_acl(acl, count, acl_to_text_callback, (void *)&write_params);
 	
 	DEBUG("written ACL text len: %lu\n", (unsigned long)write_params.len);
@@ -426,61 +388,11 @@ char* rfs_acl_to_text(const struct id_lookup_info *lookup,
 
 struct acl_from_text_params
 {
-	const struct id_lookup_info *lookup;
-	size_t count;
 	rfs_acl_t *acl;
+	size_t count;
 	resolve custom_resolve;
 	void *custom_resolve_data;
 };
-
-static uint32_t default_resolve(uint16_t type, const char *name, size_t name_len, void *lookup_casted)
-{
-	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
-
-	switch (type)
-	{
-	case ACL_USER:
-		{
-		char *username = get_buffer(name_len + 1);
-		memcpy(username, name, name_len);
-		username[name_len] = 0;
-	
-		DEBUG("resolving username: %s\n", username);
-		
-		uid_t uid = get_uid(lookup->uids, username);
-				
-		free_buffer(username);
-				
-		if (uid == (uid_t)-1)
-		{
-			return ACL_UNDEFINED_ID;
-		}
-
-		return (uint32_t)(uid);
-		}
-	case ACL_GROUP:
-		{
-		char *groupname = get_buffer(name_len + 1);
-		memcpy(groupname, name, name_len);
-		groupname[name_len] = 0;
-				
-		DEBUG("resolving groupname: %s\n", groupname);
-
-		gid_t gid = get_gid(lookup->gids, groupname);
-				
-		free_buffer(groupname);
-				
-		if (gid == (gid_t)-1)
-		{
-			return ACL_UNDEFINED_ID;
-		}
-		
-		return (uint32_t)(gid);
-		}
-	}
-
-	return ACL_UNDEFINED_ID;
-}
 
 static int acl_from_text_callback(uint16_t type, uint16_t perm, const char *name, size_t name_len, void *params_casted)
 {
@@ -490,8 +402,8 @@ static int acl_from_text_callback(uint16_t type, uint16_t perm, const char *name
 
 	if (params->acl != NULL)
 	{
-		resolve resolve_func = (params->custom_resolve == NULL ? default_resolve : params->custom_resolve);
-		void *resolve_data = (params->custom_resolve == NULL ? (void *)params->lookup : params->custom_resolve_data);
+		resolve resolve_func = params->custom_resolve;
+		void *resolve_data = params->custom_resolve_data;
 
 		uint32_t id = ((name == NULL || name_len == 0) ? ACL_UNDEFINED_ID : resolve_func(type, name, name_len, resolve_data));
 
@@ -516,8 +428,7 @@ static int acl_from_text_callback(uint16_t type, uint16_t perm, const char *name
 	return 0;
 }
 
-rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup,
-	const char *text, 
+rfs_acl_t* rfs_acl_from_text(const char *text, 
 	resolve custom_resolve, 
 	void *custom_resolve_data, 
 	size_t *count)
@@ -532,7 +443,7 @@ rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup,
 		return NULL;
 	}
 
-	struct acl_from_text_params count_params = { lookup, 0, NULL, custom_resolve, custom_resolve_data };
+	struct acl_from_text_params count_params = { NULL, 0, custom_resolve, custom_resolve_data };
 	int count_ret = walk_acl_text(text, acl_from_text_callback, (void *)&count_params);
 	if (count_ret != 0)
 	{
@@ -543,7 +454,7 @@ rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup,
 	rfs_acl_t *acl = get_buffer(acl_ea_size(count_params.count));
 	acl->a_version = ACL_EA_VERSION;
 
-	struct acl_from_text_params write_params = { lookup, 0, acl, custom_resolve, custom_resolve_data };
+	struct acl_from_text_params write_params = { acl, 0, custom_resolve, custom_resolve_data };
 	int write_ret = walk_acl_text(text, acl_from_text_callback, (void *)&write_params);
 	if (write_ret != 0)
 	{
@@ -559,24 +470,7 @@ rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup,
 	return acl;
 }
 
-#ifdef RFS_DEBUG
-void dump_acl(const struct id_lookup_info *lookup, const rfs_acl_t *acl, int count)
-{
-	DEBUG("%s\n", "dumping acl entry:");
-	DEBUG("count: %d\n", count);
-	DEBUG("version: %d\n", acl->a_version);
-
-	char *acl_text = rfs_acl_to_text(lookup, acl, count, NULL, NULL, NULL);
-
-	if (acl_text != NULL)
-	{
-		DEBUG("text: %s\n", acl_text);
-		free(acl_text);
-	}
-}
-#endif
 #else
 int acl_utils_dummy = 0;
-
 #endif /* ACL_AVAILABLE */
 

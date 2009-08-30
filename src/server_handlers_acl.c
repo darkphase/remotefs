@@ -7,6 +7,7 @@
 #include <sys/xattr.h>
 
 #include "acl_utils.h"
+#include "acl_utils_server.h"
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
@@ -99,12 +100,6 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	{
 		rfs_acl_t *acl = rfs_acl_from_xattr(value_buffer, (size_t)ret);
 		
-#ifdef RFS_DEBUG
-		dump_acl(&instance->id_lookup, 
-			acl, 
-			acl_ea_count((size_t)ret));
-#endif
-		
 		free_buffer(value_buffer);
 		
 		if (acl == NULL)
@@ -113,11 +108,10 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 		}
 		
 		int count = acl_ea_count((size_t)ret);
-		text_acl = rfs_acl_to_text(&instance->id_lookup, 
-			acl, 
+		text_acl = rfs_acl_to_text(acl, 
 			count,
-			NULL, 
-			NULL, 
+			id_lookup_reverse_resolve, 
+			(void *)&instance->id_lookup, 
 			&text_acl_len);
 		
 		if (text_acl == NULL)
@@ -228,10 +222,9 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	DEBUG("acl: %s\n", text_acl);
 	
 	size_t count = 0;
-	rfs_acl_t *acl = rfs_acl_from_text(&instance->id_lookup, 
-		text_acl, 
-		NULL, 
-		NULL, 
+	rfs_acl_t *acl = rfs_acl_from_text(text_acl, 
+		id_lookup_resolve, 
+		(void *)&instance->id_lookup, 
 		&count);
 	
 	if (acl == NULL)
@@ -239,10 +232,6 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 		free_buffer(buffer);
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 	}
-	
-#ifdef RFS_DEBUG
-	dump_acl(&instance->id_lookup, acl, count);
-#endif
 	
 	char *value = rfs_acl_to_xattr(acl, count);
 	size_t value_len = acl_ea_size(count);

@@ -12,8 +12,8 @@ See the file LICENSE.
 
 #ifdef ACL_AVAILABLE
 
-#ifndef RFS_ACL_H
-#define RFS_ACL_H
+#ifndef RFS_ACL_UTILS_H
+#define RFS_ACL_UTILS_H
 
 # if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -37,7 +37,6 @@ typedef acl_ea_header rfs_acl_t;
 typedef acl_ea_entry rfs_acl_entry_t;
 
 struct list;
-struct id_lookup_info;
 
 /* don't forget to free_buffer() result */
 rfs_acl_t* rfs_acl_from_xattr(const char *value, size_t size);
@@ -49,15 +48,13 @@ typedef uint32_t (*resolve)(uint16_t type, const char *name, size_t name_len, vo
 typedef char* (*reverse_resolve)(uint16_t type, uint32_t id, void *data);
 
 /* don't forget to free_buffer() result */
-rfs_acl_t* rfs_acl_from_text(const struct id_lookup_info *lookup, 
-	const char *text,
+rfs_acl_t* rfs_acl_from_text(const char *text,
 	resolve custom_resolve, 
 	void *custom_resolve_data, 
 	size_t *count);
 
 /* don't forget to free_buffer() result */
-char* rfs_acl_to_text(const struct id_lookup_info *lookup, 
-	const rfs_acl_t *acl, 
+char* rfs_acl_to_text(const rfs_acl_t *acl, 
 	size_t count, 
 	reverse_resolve custom_resolve, 
 	void *custom_resolve_data, 
@@ -72,15 +69,11 @@ int walk_acl(const rfs_acl_t *acl, size_t count, walk_acl_callback callback, voi
 /* walk ACL text and call callback on each entry */
 int walk_acl_text(const char *acl_text, walk_acl_text_callback callback, void *data);
 
-#ifdef RFS_DEBUG
-void dump_acl(const struct id_lookup_info *lookup, const rfs_acl_t *acl, int count);
-#endif
-
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
-#endif /* RFS_ACL_H */
+#endif /* RFS_ACL_UTILS_H */
 
 #endif /* ACL_AVAILABLE */
 
