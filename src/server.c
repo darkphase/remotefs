@@ -28,14 +28,14 @@ See the file LICENSE.
 #ifdef WITH_PAUSE 
 #include "scheduling.h"
 #endif
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_sync.h"
 
 static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
 	struct answer ans = { cmd->command, 0, -1, ret_errno };
-	
+
 	if (data_is_in_queue != 0 
 	&& rfs_ignore_incoming_data(&instance->sendrecv, cmd->data_len) != cmd->data_len)
 	{
@@ -189,7 +189,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	if (instance->server.mounted_export == NULL
 	|| (instance->server.mounted_export->options & OPT_UGO) == 0)
 	{
-		return reject_request_with_cleanup(instance, cmd, EACCES) == 0 ? 1 : -1;
+		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
 	}
 
 	/* operation which are require ugo set */

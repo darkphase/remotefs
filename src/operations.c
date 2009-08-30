@@ -28,7 +28,7 @@ See the file LICENSE.
 #include "operations_utils.h"
 #include "path.h"
 #include "resume.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
@@ -49,7 +49,9 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_getattr, path_len };
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -147,7 +149,9 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	pack_16(&is_null, buffer, 0
 	))));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -222,7 +226,9 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 	pack_64(&modtime_sec, buffer, 0
 	))))));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -262,7 +268,9 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 
 	struct command cmd = { cmd_statfs, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

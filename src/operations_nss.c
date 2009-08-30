@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "list.h"
 #include "operations_rfs.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int rfs_getnames(struct rfs_instance *instance)
 {

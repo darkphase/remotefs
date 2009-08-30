@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "cleanup.h"
 #include "exports.h"
 #include "instance_server.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_utils.h"
 
@@ -78,7 +78,9 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		return reject_request(instance, cmd, pack_ret) == 0 ? 1: -1;
 	}
 	
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -1;
@@ -295,9 +297,11 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	pack_32(&bfree, buffer, 
 	pack_32(&blocks, buffer, 
 	pack_32(&bsize, buffer, 0
-		)))))));
+	)))))));
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -1;

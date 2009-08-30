@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_server.h"
 #include "options.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 
 #if defined DARWIN
@@ -51,7 +51,13 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
 	}
 
-	return rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1 ? -1 : 1;
+	MAKE_SEND_TOK(2) token = { 2, {{ 0 }} };
+	token.iov[0].iov_base = (void *)hton_ans(&ans);
+	token.iov[0].iov_len = sizeof(ans);
+	token.iov[1].iov_base = (void *)buffer;
+	token.iov[1].iov_len = result;
+
+	return do_send(&instance->sendrecv, (send_tok *)&token) < 0 ? -1 : 0;
 }
 
 #if (defined WITH_SSL || (! defined SENDFILE_AVAILABLE)) /* we don't need this on Linux/Solaris/FreeBSD/Darwin if SSL isn't enabled */
@@ -93,7 +99,9 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 		{
 			if (first_block != 0)
 			{
-				if (rfs_send_answer_data_part(&instance->sendrecv, &ans, buffer, result) == -1)
+				if (commit_send(&instance->sendrecv, 
+					queue_data(buffer, result, 
+					queue_ans(&ans, send_token(2)))) < 0)
 				{
 					return -1;
 				}

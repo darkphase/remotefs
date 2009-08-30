@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "operations_utils.h"
 #include "path.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_readdir_callback_t callback, void *callback_data)
 {
@@ -35,7 +35,9 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	struct command cmd = { cmd_readdir, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -63,6 +65,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 		
 		if (ans.command != cmd_readdir)
 		{
+
 			if (buffer != NULL)
 			{
 				free_buffer(buffer);
@@ -172,7 +175,9 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 	pack_32(&fmode, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -211,7 +216,9 @@ int _rfs_rmdir(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_rmdir, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

@@ -54,7 +54,9 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	dump(users, users_len);
 #endif
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, users) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(users, users_len, 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		free_buffer(users);
 		return -1;
@@ -75,6 +77,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 		gid = gid->next;
 	}
 
+	ans.command = cmd_getnames;
 	ans.data_len = groups_len;
 
 	char *groups = get_buffer(groups_len);
@@ -95,7 +98,9 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	dump(groups, groups_len);
 #endif
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, groups) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(groups, groups_len, 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		free_buffer(groups);
 		return -1;

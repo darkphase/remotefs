@@ -14,7 +14,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_server.h"
 #include "list.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 
 int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

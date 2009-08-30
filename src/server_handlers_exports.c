@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "exports.h"
 #include "instance_server.h"
 #include "list.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 
 #ifdef WITH_EXPORTS_LIST
@@ -26,8 +26,6 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 	{
 		return reject_request(instance, cmd, ECANCELED);
 	}
-	
-	struct answer ans = { cmd_listexports, 0, 0, 0 };
 	
 	while (export_node != NULL)
 	{
@@ -43,10 +41,12 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		pack(export_rec->path, path_len, buffer, 
 		pack_32(&options, buffer, 0
 		));
+
+		struct answer ans = { cmd_listexports, overall_size, 0, 0 };
 		
-		ans.data_len = overall_size;
-		
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
+		if (commit_send(&instance->sendrecv, 
+			queue_data(buffer, overall_size, 
+			queue_ans(&ans, send_token(2)))) < 0)
 		{
 			free_buffer(buffer);
 			return -1;
@@ -57,9 +57,8 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		export_node = export_node->next;
 	}
 	
-	ans.data_len = 0;
-	
-	return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
+	struct answer last_ans = { cmd_listexports, 0, 0, 0 };	
+	return (rfs_send_answer(&instance->sendrecv, &last_ans) == -1 ? -1 : 0);
 }
 #else
 int server_handlers_exports_c_empty_module_makes_suncc_angry = 0;

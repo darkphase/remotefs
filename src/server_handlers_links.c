@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 
 int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
@@ -145,7 +145,9 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 		link_buffer[ret] = '\0';
 	}
 
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, link_buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(link_buffer, (ret != -1 ? ret + 1 : 0), 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		free_buffer(link_buffer);
 		return -1;

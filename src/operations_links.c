@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "list.h"
 #include "operations_rfs.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_link(struct rfs_instance *instance, const char *path, const char *target)
 {
@@ -39,7 +39,9 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 	pack_32(&path_len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -89,7 +91,9 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	pack_32(&path_len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -243,7 +247,9 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	pack_32(&bsize, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;

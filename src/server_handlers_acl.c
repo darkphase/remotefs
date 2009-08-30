@@ -11,8 +11,8 @@
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
+#include "sendrecv_server.h"
 #include "server.h"
-#include "sendrecv.h"
 
 int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
@@ -131,8 +131,11 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 		free_buffer(acl);
 	}
 	
-	struct answer ans = { cmd_getxattr, text_acl_len > 0 ? text_acl_len + 1 : 0, text_acl_len > 0 ? 0 : ret, saved_errno };
-	
+	uint32_t ans_ret = (text_acl_len > 0 ? 0 : ret);
+	uint32_t ans_data_len =  text_acl_len > 0 ? text_acl_len + 1 : 0;
+
+	struct answer ans = { cmd_getxattr, ans_data_len, ans_ret, saved_errno };
+
 	if (ans.data_len == 0)
 	{
 		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
@@ -143,7 +146,9 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 	else
 	{
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, text_acl) == -1)
+		if (commit_send(&instance->sendrecv, 
+			queue_data(text_acl, ans_data_len, 
+			queue_ans(&ans, send_token(2)))) < 0)
 		{
 			free_buffer(text_acl);
 			return -1;

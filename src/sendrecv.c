@@ -6,39 +6,28 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <string.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #if defined SOLARIS
 #include <sys/sockio.h>
+#endif
 #include <unistd.h>
-#include <stropts.h>
-#endif
-#if defined FREEBSD || defined DARWIN || defined QNX
-#include <sys/socket.h>
-#endif
-#if defined FREEBSD || defined DARWIN
-#include <string.h>
-#include <netinet/in.h>
-#include <sys/uio.h>
-#endif
-#if defined QNX
-#include <arpa/inet.h>
-#endif
-#ifdef RFS_DEBUG
-#include <sys/time.h>
-#endif
-#if defined DARWIN
-#include <sys/types.h>
-#include <sys/time.h>
-#include <unistd.h>
-#endif
+
+#include "buffer.h"
 #include "command.h"
 #include "config.h"
 #include "error.h"
 #include "instance.h"
+#include "sendrecv.h"
 #ifdef WITH_SSL
 #include "ssl.h"
 #endif
@@ -203,7 +192,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 	return ret;
 }
 
-static ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count)
+ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count)
 {
 	size_t overall_size = 0;
 	int i = 0; for (i = 0; i < count; ++i)
@@ -305,7 +294,7 @@ static inline int is_mark(int socket)
 	return 0;
 }
 
-static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
+ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
 {
 	ssize_t size_recv = 0;
 	while (size_recv < size)
@@ -377,321 +366,24 @@ static ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, u
 	info->bytes_recv += size_recv;
 #endif
 	
-	return (size_t)size_recv;
+	return size_recv;
 }
 
-static ssize_t rfs_readv(struct sendrecv_info *info, struct iovec *iov, unsigned count, unsigned check_oob)
-{
-	/* readv is somewhat strange 
-	it's receiving data by chunks of 1460 bytes and sometimes hangs
-	not sure if hanging isn't remotefs fault 
-	
-	but it's better to use rfs_recv for now, since we're not using
-	scatter input anyway. yet */
-	
-	if (count == 1)
-	{
-		return rfs_recv(info, iov[0].iov_base, iov[0].iov_len, check_oob);
-	}
-
-	return -EINVAL;
-}
-
-size_t rfs_send_cmd(struct sendrecv_info *info, const struct command *cmd)
-{
-	struct command send_command = { 0 };
-	send_command.command = htonl(cmd->command);
-	send_command.data_len = htonl(cmd->data_len);
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_command;
-	iov[0].iov_len  = sizeof(send_command);
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_command(cmd);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 1);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_cmd_data(struct sendrecv_info *info, const struct command *cmd, const void *cmd_data)
-{
-	struct command send_command = { 0 };
-	send_command.command = htonl(cmd->command);
-	send_command.data_len = htonl(cmd->data_len);
-	
-	struct iovec iov[2] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_command;
-	iov[0].iov_len  = sizeof(send_command);
-	iov[1].iov_base = (void*)cmd_data;
-	iov[1].iov_len  = cmd->data_len;
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_command(cmd);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 2);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_cmd_data2(struct sendrecv_info *info, 
-	const struct command *cmd, 
-	const void *cmd_data, 
-	const size_t cmd_data_len, 
-	const void *data, 
-	const size_t data_len)
-{
-	struct command send_command = { 0 };
-	send_command.command = htonl(cmd->command);
-	send_command.data_len = htonl(cmd->data_len);
-	
-	struct iovec iov[3] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_command;
-	iov[0].iov_len  = sizeof(send_command);
-	iov[1].iov_base = (void*)cmd_data;
-	iov[1].iov_len  = cmd_data_len;
-	iov[2].iov_base = (void*)data;
-	iov[2].iov_len  = data_len;
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_command(cmd);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 3);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_answer(struct sendrecv_info *info, const struct answer *ans)
-{
-	struct answer send_answer = { 0 };
-	send_answer.command = htonl(ans->command);
-	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = htonl(ans->ret);
-	send_answer.ret_errno = hton_errno(ans->ret_errno);
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_answer;
-	iov[0].iov_len  = sizeof(send_answer);
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_answer(ans);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 1);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_answer_data(struct sendrecv_info *info, const struct answer *ans, const void *ans_data)
-{
-	struct answer send_answer = { 0 };
-	send_answer.command = htonl(ans->command);
-	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = htonl(ans->ret);
-	send_answer.ret_errno = hton_errno(ans->ret_errno);
-	
-	struct iovec iov[2] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_answer;
-	iov[0].iov_len  = sizeof(send_answer);
-	iov[1].iov_base = (void*)ans_data;
-	iov[1].iov_len  = ans->data_len;
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_answer(ans);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 2);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_answer_data_part(struct sendrecv_info *info, const struct answer *ans, const void *ans_data, const size_t ans_data_len)
-{
-	struct answer send_answer = { 0 };
-	send_answer.command = htonl(ans->command);
-	send_answer.data_len = htonl(ans->data_len);
-	send_answer.ret = htonl(ans->ret);
-	send_answer.ret_errno = hton_errno(ans->ret_errno);
-	
-	struct iovec iov[2] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&send_answer;
-	iov[0].iov_len  = sizeof(send_answer);
-	iov[1].iov_base = (void*)ans_data;
-	iov[1].iov_len  = ans_data_len;
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "sending "); dump_answer(ans);
-#endif
-
-	ssize_t ret = rfs_writev(info, iov, 2);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	DEBUG("%s\n", "done");
-	
-	return (size_t)ret;
-}
-
-size_t rfs_send_answer_oob(struct sendrecv_info *info, const struct answer *ans)
-{
-	DEBUG("%s\n", "sending oob");
-	const char oob = 1;
-	if (send(info->socket, &oob, 1, MSG_OOB) < 0)
-	{
-		return -1;
-	}
-
-	return rfs_send_answer(info, ans);
-}
-
-size_t rfs_send_data(struct sendrecv_info *info, const void *data, const size_t data_len)
-{
-	if (data_len < 1)
-	{
-		return 0;
-	}
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)data;
-	iov[0].iov_len  = data_len;
-
-	ssize_t ret = rfs_writev(info, iov, 1);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	
-	return (size_t)ret;
-}
-
-size_t rfs_receive_answer(struct sendrecv_info *info, struct answer *ans)
-{
-	struct answer recv_answer = { 0 };
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&recv_answer;
-	iov[0].iov_len  = sizeof(recv_answer);
-
-	DEBUG("%s\n", "receiving answer");
-	ssize_t ret = rfs_readv(info, iov, 1, 0);
-	if (ret < 0)
-	{
-		return -1;
-	}
-
-	ans->command = ntohl(recv_answer.command);
-	ans->data_len = ntohl(recv_answer.data_len);
-	ans->ret = ntohl(recv_answer.ret);
-	ans->ret_errno = ntoh_errno(recv_answer.ret_errno);
-
-#ifdef RFS_DEBUG
-	DEBUG("%s", "received "); dump_answer(ans);
-#endif
-	
-	return (size_t)ret;
-}
-
-size_t rfs_receive_cmd(struct sendrecv_info *info, struct command *cmd)
-{
-	struct command recv_command = { 0 };
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)&recv_command;
-	iov[0].iov_len  = sizeof(recv_command);
-	
-	DEBUG("%s\n", "receiving command");
-	ssize_t ret = rfs_readv(info, iov, 1, 0);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	
-	cmd->command = ntohl(recv_command.command);
-	cmd->data_len = ntohl(recv_command.data_len);
-	
-#ifdef RFS_DEBUG
-	DEBUG("%s", "received "); dump_command(cmd);
-#endif
-	
-	return (size_t)ret;
-}
-
-static inline size_t _rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len, unsigned check_oob)
-{
-	if (data_len < 1)
-	{
-		return 0;
-	}
-	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = (char*)data;
-	iov[0].iov_len  = data_len;
-
-	ssize_t ret = rfs_readv(info, iov, 1, check_oob);
-	if (ret < 0)
-	{
-		return -1;
-	}
-	
-	return (size_t)ret;
-}
-
-size_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len)
-{
-	return _rfs_receive_data(info, data, data_len, 0);
-}
-
-size_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len)
-{
-	return _rfs_receive_data(info, data, data_len, 1);
-}
-
-size_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len)
+ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len)
 {
 	size_t size_ignored = 0;
 	char buffer[4096] = { 0 };
 	
-	struct iovec iov[1] = { { 0, 0 } };
-	iov[0].iov_base = buffer;
-	
 	while (size_ignored < data_len)
 	{
-		iov[0].iov_len = (data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored);
-		
-		ssize_t ret = rfs_readv(info, iov, 1, 0);
-		if (ret < 1)
+		ssize_t ret = rfs_recv(info, 
+			buffer, 
+			(data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored), 
+			0);
+
+		if (ret < 0)
 		{
-			return -1;
+			return ret;
 		}
 		
 		size_ignored += (size_t)ret;

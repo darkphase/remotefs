@@ -23,7 +23,7 @@ See the file LICENSE.
 #include "operations_utils.h"
 #include "path.h"
 #include "resume.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)
 {
@@ -45,7 +45,9 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	pack_16(&fi_flags, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -117,7 +119,9 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, &handle) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data((void *)&handle, sizeof(handle), 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "exports.h"
 #include "id_lookup.h"
 #include "instance_server.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_utils.h"
 

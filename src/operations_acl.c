@@ -15,7 +15,7 @@
 #include "id_lookup_client.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 static uint32_t local_resolve(uint16_t type, const char *name, size_t name_len, void *instance_casted)
 {
@@ -80,7 +80,9 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	struct command cmd = { cmd_getxattr, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -149,7 +151,13 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		free_buffer(acl);
 		free_buffer(acl_value);
 	}
-	
+
+	if (ans.ret_errno == ENOTSUP)
+	{
+		ans.ret = 0; /* fake ACL absense if server is reporting ENOTSUP: 
+		it usualy means that "ugo" isn't enabled for mounted export */
+	}
+
 	return ans.ret >= 0 ? ans.ret : -ans.ret_errno;
 }
 
@@ -158,15 +166,21 @@ static char* local_reverse_resolve(uint16_t type, uint32_t id, void *instance_ca
 	DEBUG("locally reverse resolving id: %lu\n", (unsigned long)id);
 
 	char *name = NULL;
+	const char *looked_up_name = NULL;
 
 	switch (type)
 	{
 	case ACL_USER:
-		name = strdup(lookup_uid((uid_t)id));
+		looked_up_name = lookup_uid((uid_t)id);
 		break;
 	case ACL_GROUP:
-		name = strdup(lookup_gid((gid_t)id, (uid_t)(-1)));
+		looked_up_name = lookup_gid((gid_t)id, (uid_t)(-1));
 		break;
+	}
+
+	if (looked_up_name != NULL)
+	{
+		name = strdup(looked_up_name);
 	}
 
 	return name;
@@ -250,7 +264,9 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	struct command cmd = { cmd_setxattr, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(text_acl);
 		free_buffer(buffer);

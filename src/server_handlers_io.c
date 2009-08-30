@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "config.h"
 #include "cleanup.h"
 #include "instance_server.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_utils.h"
 
@@ -75,7 +75,9 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	{
 		handle = htonll((uint64_t)fd);
 		
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, &handle) == -1)
+		if (commit_send(&instance->sendrecv, 
+			queue_data((void *)&handle, sizeof(handle), 
+			queue_ans(&ans, send_token(2)))) < 0)
 		{
 			return -1;
 		}

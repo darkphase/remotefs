@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "psemaphore.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 static void* write_behind(void *void_instance);
@@ -417,14 +417,22 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	unsigned overall_size = header_size + size;
 	struct command cmd = { cmd_write, overall_size };
 
-	char buffer[header_size] = { 0 };
+	char header[header_size] = { 0 };
 
-	pack_64(&handle, buffer, 
-	pack_64(&foffset, buffer, 
-	pack_32(&fsize, buffer, 0
-		)));
+	pack_64(&handle, header, 
+	pack_64(&foffset, header, 
+	pack_32(&fsize, header, 0
+	)));
 
-	if (rfs_send_cmd_data2(&instance->sendrecv, &cmd, buffer, header_size, buf, size) == -1)
+	MAKE_SEND_TOK(3) token = { 3, {{ 0 }} };
+	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
+	token.iov[0].iov_len = sizeof(cmd);
+	token.iov[1].iov_base = (void *)header;
+	token.iov[1].iov_len = header_size;
+	token.iov[2].iov_base = (void *)buf;
+	token.iov[2].iov_len = size;
+
+	if (do_send(&instance->sendrecv, (send_tok *)&token) < 0)
 	{
 		return -ECONNABORTED;
 	}

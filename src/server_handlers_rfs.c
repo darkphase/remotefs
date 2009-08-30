@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "sockets.h"
 #include "utils.h"
 #include "server.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #ifdef WITH_SSL
 #	include "ssl_server.h"
 #endif
@@ -166,7 +166,9 @@ int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_i
 	
 	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
 	
-	if (rfs_send_answer_data(&instance->sendrecv, &ans, instance->server.auth_salt) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(instance->server.auth_salt, salt_len, 
+		queue_ans(&ans, send_token(2)))) < 0)
 	{
 		return -1;
 	}

@@ -36,7 +36,7 @@ See the file LICENSE.
 #ifdef SCHEDULING_AVAILABLE
 #	include "scheduling.h"
 #endif
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 #include "sockets.h"
 #ifdef WITH_SSL
 #	include "ssl_client.h"
@@ -733,18 +733,20 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 
 	struct command cmd = { cmd_auth, overall_size };
 
-
 	char *buffer = get_buffer(overall_size);
 
 	pack(user, user_len, buffer, 
 	pack(crypted, crypted_len, buffer, 
 	pack_32(&crypted_len, buffer, 0
-		)));
+	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		free(crypted);
+
 		return -ECONNABORTED;
 	}
 
@@ -776,7 +778,9 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 
 	unsigned path_len = strlen(path);
 	struct command cmd = { cmd_changepath, path_len + 1};
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len + 1, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

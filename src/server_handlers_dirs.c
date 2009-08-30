@@ -17,7 +17,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_server.h"
 #include "path.h"
-#include "sendrecv.h"
+#include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_utils.h"
 
@@ -68,8 +68,6 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	char full_path[FILENAME_MAX + 1] = { 0 };
 	
-	struct answer ans = { cmd_readdir, 0 };
-	
 	while ((dir_entry = readdir(dir)) != 0)
 	{	
 		const char *entry_name = dir_entry->d_name;
@@ -103,7 +101,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		unsigned overall_size = stat_struct_size + sizeof(stat_failed) + entry_len;
 		buffer = get_buffer(overall_size);
 
-		ans.data_len = overall_size;
+		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
 		
 		int pack_ret = 0; 
 		off_t last_offset = pack_stat(instance, buffer, &stbuf, &pack_ret);
@@ -121,7 +119,9 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		dump(buffer, overall_size);
 #endif
 
-		if (rfs_send_answer_data(&instance->sendrecv, &ans, buffer) == -1)
+		if (commit_send(&instance->sendrecv, 
+			queue_data(buffer, overall_size, 
+			queue_ans(&ans, send_token(2)))) < 0)
 		{
 			closedir(dir);
 			free_buffer(path);
@@ -134,9 +134,9 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 	closedir(dir);
 	free_buffer(path);
-	
-	ans.data_len = 0;
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
+
+	struct answer last_ans = { cmd_readdir, 0, 0, 0 };
+	if (rfs_send_answer(&instance->sendrecv, &last_ans) == -1)
 	{
 		return -1;
 	}

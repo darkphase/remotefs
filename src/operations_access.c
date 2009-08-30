@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "names.h"
 #include "operations_rfs.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {
@@ -127,7 +127,9 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	pack_32(&user_len, buffer, 0
 	)))));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		if (local_user != NULL)
 		{
@@ -204,9 +206,11 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 	char *buffer = get_buffer(overall_size);
 	pack(path, path_len, buffer, 
 	pack_32(&fmode, buffer, 0
-		));
+	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;

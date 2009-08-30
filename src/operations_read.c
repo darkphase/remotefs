@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "operations_write.h"
 #include "resume.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)
 {
@@ -35,14 +35,20 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	struct command cmd = { cmd_read, overall_size };
 
 	char buffer[overall_size] = { 0 };
-#undef  overall_size
 
 	pack_64(&handle, buffer, 
 	pack_64(&foffset, buffer, 
 	pack_32(&fsize, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	MAKE_SEND_TOK(2) token = { 2, {{ 0 }} };
+	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
+	token.iov[0].iov_len = sizeof(cmd);
+	token.iov[1].iov_base = buffer;
+	token.iov[1].iov_len = overall_size;
+#undef  overall_size
+
+	if (do_send(&instance->sendrecv, (send_tok *)&token) < 0)
 	{
 		return -ECONNABORTED;
 	}

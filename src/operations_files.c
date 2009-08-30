@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "operations_rfs.h"
 #include "operations_utils.h"
 #include "resume.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 
 int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 {
@@ -42,7 +42,9 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	pack_32(&foffset, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -80,7 +82,9 @@ int _rfs_unlink(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_unlink, path_len };
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, path) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(path, path_len, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -128,7 +132,9 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 	pack_32(&len, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -182,7 +188,9 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 	pack_32(&fmode, buffer, 0
 	));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -237,7 +245,9 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 	pack_32(&fmode, buffer, 0
 	)));
 
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -335,7 +345,9 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	struct command cmd = { cmd_lock, overall_size };
 	
-	if (rfs_send_cmd_data(&instance->sendrecv, &cmd, buffer) == -1)
+	if (commit_send(&instance->sendrecv, 
+		queue_data(buffer, overall_size, 
+		queue_cmd(&cmd, send_token(2)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

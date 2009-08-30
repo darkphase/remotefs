@@ -13,7 +13,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
-#include "sendrecv.h"
+#include "sendrecv_client.h"
 #include "utils.h"
 
 #ifdef WITH_EXPORTS_LIST
