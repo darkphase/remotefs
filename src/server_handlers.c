@@ -81,7 +81,7 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 	DEBUG("mode: %u, size: %lu\n", (unsigned)stbuf.st_mode, (long unsigned)stbuf.st_size);
 
-	pack_stat(stat_buffer, &stbuf, 0);
+	pack_stat(&stbuf, stat_buffer);
 
 	DEBUG("user: %s, user_len: %lu, group: %s, group_len: %lu\n", 
 		user, (unsigned long)user_len, 
@@ -116,10 +116,10 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	uint64_t modtime = 0;
 	uint64_t actime = 0;
 
-	const char *path = buffer + 
-	unpack_64(&actime, buffer, 
-	unpack_64(&modtime, buffer, 
-	unpack_16(&is_null, buffer, 0
+	const char *path = 
+	unpack_64(&actime, 
+	unpack_64(&modtime, 
+	unpack_16(&is_null, buffer
 	)));
 	
 	if (sizeof(actime)
@@ -180,12 +180,12 @@ int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	uint64_t actime_sec = 0;
 	uint64_t actime_nsec = 0;
 
-	const char *path = buffer +  
-	unpack_16(&is_null, buffer, 
-	unpack_64(&actime_nsec, buffer, 
-	unpack_64(&actime_sec, buffer, 
-	unpack_64(&modtime_nsec, buffer, 
-	unpack_64(&modtime_sec, buffer, 0
+	const char *path = 
+	unpack_16(&is_null, 
+	unpack_64(&actime_nsec, 
+	unpack_64(&actime_sec, 
+	unpack_64(&modtime_nsec, 
+	unpack_64(&modtime_sec, buffer
 	)))));
 
 	if (sizeof(actime_sec)
@@ -297,13 +297,13 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 	}
 	
-	pack_32(&namemax, buffer, 
-	pack_32(&ffree, buffer, 
-	pack_32(&files, buffer, 
-	pack_32(&bavail, buffer, 
-	pack_32(&bfree, buffer, 
-	pack_32(&blocks, buffer, 
-	pack_32(&bsize, buffer, 0
+	pack_32(&namemax, 
+	pack_32(&ffree, 
+	pack_32(&files, 
+	pack_32(&bavail, 
+	pack_32(&bfree, 
+	pack_32(&blocks, 
+	pack_32(&bsize, buffer
 	)))))));
 
 	if (commit_send(&instance->sendrecv, 

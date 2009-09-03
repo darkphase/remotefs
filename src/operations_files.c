@@ -38,8 +38,8 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_32(&foffset, buffer, 0
+	pack(path, path_len, 
+	pack_32(&foffset, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 
@@ -127,9 +127,9 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(new_path, new_path_len, buffer,
-	pack(path, path_len, buffer,
-	pack_32(&len, buffer, 0
+	pack(new_path, new_path_len, 
+	pack(path, path_len, 
+	pack_32(&len, buffer
 	)));
 
 	if (commit_send(&instance->sendrecv, 
@@ -184,8 +184,8 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_32(&fmode, buffer, 0
+	pack(path, path_len, 
+	pack_32(&fmode, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 
@@ -240,9 +240,9 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_16(&fi_flags, buffer, 
-	pack_32(&fmode, buffer, 0
+	pack(path, path_len, 
+	pack_16(&fi_flags, 
+	pack_32(&fmode, buffer
 	)));
 
 	if (commit_send(&instance->sendrecv, 
@@ -335,12 +335,12 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 #define overall_size sizeof(fd) + sizeof(flags) + sizeof(type) + sizeof(whence) + sizeof(start) + sizeof(len)
 	char buffer[overall_size] = { 0 };
 	
-	pack_64(&len, buffer,
-	pack_64(&start, buffer,
-	pack_16(&whence, buffer, 
-	pack_16(&type, buffer,
-	pack_16(&flags, buffer,
-	pack_64(&fd, buffer, 0
+	pack_64(&len, 
+	pack_64(&start, 
+	pack_16(&whence, 
+	pack_16(&type, 
+	pack_16(&flags, 
+	pack_64(&fd, buffer
 	))))));
 	
 	struct command cmd = { cmd_lock, overall_size };

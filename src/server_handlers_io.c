@@ -35,8 +35,8 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	
 	uint16_t rfs_flags = 0;
-	const char *path = buffer +
-	unpack_16(&rfs_flags, buffer, 0);
+	const char *path = 
+	unpack_16(&rfs_flags, buffer);
 	
 	if (sizeof(rfs_flags) 
 	+ strlen(path) + 1 != cmd->data_len)
@@ -101,7 +101,7 @@ int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	}
 	
 	uint64_t handle = (uint64_t)-1;
-	unpack_64(&handle, buffer, 0);
+	unpack_64(&handle, buffer);
 	
 	free_buffer(buffer);
 	

@@ -41,8 +41,8 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_16(&fi_flags, buffer, 0
+	pack(path, path_len, 
+	pack_16(&fi_flags, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 

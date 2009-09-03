@@ -419,9 +419,9 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 
 	char header[header_size] = { 0 };
 
-	pack_64(&handle, header, 
-	pack_64(&foffset, header, 
-	pack_32(&fsize, header, 0
+	pack_64(&handle, 
+	pack_64(&foffset, 
+	pack_32(&fsize, header
 	)));
 
 	MAKE_SEND_TOK(3) token = { 3, {{ 0 }} };

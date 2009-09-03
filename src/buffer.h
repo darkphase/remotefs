@@ -35,87 +35,115 @@ static inline void free_buffer(void *buffer)
 }
 
 /** copy data to buffer */
-static inline off_t pack(const void *data, const size_t size, char *buffer, const off_t offset)
+static inline char* pack(const void *data, const size_t size, char *buffer)
 {
-	memcpy(buffer + offset, data, size);
-	return offset + size;
+	memcpy(buffer, data, size);
+	return buffer + size;
 }
 
 /** copy uint16_t to buffer 
 @return offset after appended data
 */
-static inline off_t pack_16(const uint16_t *data, char *buffer, const off_t offset)
+static inline char* pack_16(const uint16_t *data, char *buffer)
 {
-	*((uint16_t *)(buffer + offset)) = htons(*data);
-	return offset + sizeof(*data);
+	*((uint16_t *)buffer) = htons(*data);
+	return buffer + sizeof(*data);
+}
+
+/** same as pack_16, but for signed int */
+static inline char* pack_16_s(const int16_t *data, char *buffer)
+{
+	*((int16_t *)buffer) = htons(*data);
+	return buffer + sizeof(*data);
 }
 
 /** copy uint32_t to buffer 
 @return offset after appended data
 */
-static inline off_t pack_32(const uint32_t *data, char *buffer, const off_t offset)
+static inline char* pack_32(const uint32_t *data, char *buffer)
 {
-	*((uint32_t *)(buffer + offset)) = htonl(*data);
-	return offset + sizeof(*data);
+	*((uint32_t *)buffer) = htonl(*data);
+	return buffer + sizeof(*data);
 }
 
 /** same as pack_32, but for signed int */
-static inline off_t pack_32_s(const int32_t *data, char *buffer, const off_t offset)
+static inline char* pack_32_s(const int32_t *data, char *buffer)
 {
-	*((int32_t *)(buffer + offset)) = htonl(*data);
-	return offset + sizeof(*data);
+	*((int32_t *)buffer) = htonl(*data);
+	return buffer + sizeof(*data);
 }
 
 /** copy uint64_t to buffer 
 @return offset after appended data
 */
-static inline off_t pack_64(const uint64_t *data, char *buffer, const off_t offset)
+static inline char* pack_64(const uint64_t *data, char *buffer)
 {
-	*((uint64_t *)(buffer + offset)) = htonll(*data);
-	return offset + sizeof(*data);
+	*((uint64_t *)buffer) = htonll(*data);
+	return buffer + sizeof(*data);
+}
+
+/** same as pack_64, but for signed int */
+static inline char* pack_64_s(const int64_t *data, char *buffer)
+{
+	*((int64_t *)buffer) = htonll(*data);
+	return buffer + sizeof(*data);
 }
 
 /** copy data from buffer 
 @return offset after copied data
 */
-static inline off_t unpack(void *data, const size_t size, const char *buffer, const off_t offset)
+static inline const char* unpack(void *data, const size_t size, const char *buffer)
 {
-	memcpy(data, buffer + offset, size);
-	return offset + size;
+	memcpy(data, buffer, size);
+	return buffer + size;
 }
 
 /** copy uint16_t from buffer 
 @return offset after copied data
 */
-static inline off_t unpack_16(uint16_t *data, const char *buffer, const off_t offset)
+static inline const char* unpack_16(uint16_t *data, const char *buffer)
 {
-	*data = ntohs(*((uint16_t *)(buffer + offset)));
-	return offset + sizeof(*data);
+	*data = ntohs(*(uint16_t *)buffer);
+	return buffer + sizeof(*data);
+}
+
+/** same as unpack_16, but for signed int */
+static inline const char* unpack_16_s(int16_t *data, const char *buffer)
+{
+	*data = ntohs(*(int16_t *)buffer);
+	return buffer + sizeof(*data);
 }
 
 /** copy uint32_t from buffer 
 @return offset after copied data
 */
-static inline off_t unpack_32(uint32_t *data, const char *buffer, const off_t offset)
+static inline const char* unpack_32(uint32_t *data, const char *buffer)
 {
-	*data = ntohl(*((uint32_t *)(buffer + offset)));
-	return offset + sizeof(*data);
+	*data = ntohl(*((uint32_t *)buffer));
+	return buffer + sizeof(*data);
 }
 
 /** same as unpack_32, but for signed int */
-static inline off_t unpack_32_s(int32_t *data, const char *buffer, const off_t offset)
+static inline const char* unpack_32_s(int32_t *data, const char *buffer)
 {
-	*data = ntohl(*((int32_t *)(buffer + offset)));
-	return offset + sizeof(*data);
+	*data = ntohl(*((int32_t *)buffer));
+	return buffer + sizeof(*data);
 }
 
 /** copy uint64_t from buffer 
 @return offset after copied data
 */
-static inline off_t unpack_64(uint64_t *data, const char *buffer, const off_t offset)
+static inline const char* unpack_64(uint64_t *data, const char *buffer)
 {
-	*data = ntohll(*((uint64_t *)(buffer + offset)));
-	return offset + sizeof(*data);
+	*data = ntohll(*((uint64_t *)buffer));
+	return buffer + sizeof(*data);
+}
+
+/** same as unpack_64, but for signed int */
+static inline const char* unpack_64_s(int64_t *data, const char *buffer)
+{
+	*data = ntohll(*((int64_t *)buffer));
+	return buffer + sizeof(*data);
 }
 
 /** duplicate buffer using get_buffer() */

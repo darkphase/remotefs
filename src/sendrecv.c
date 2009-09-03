@@ -216,6 +216,7 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 #ifdef WITH_SSL
 		if (info->ssl_enabled != 0)
 		{
+			DEBUG("%s\n", "using SSL for write");
 			done = rfs_ssl_write(info->ssl_socket, iov[0].iov_base, iov[0].iov_len);
 		}
 		else

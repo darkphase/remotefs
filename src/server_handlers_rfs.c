@@ -192,9 +192,9 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	uint32_t passwd_len = 0;
 	
-	char *passwd = buffer + 
-	unpack_32(&passwd_len, buffer, 0);
-	char *user = buffer + passwd_len + sizeof(passwd_len);
+	const char *passwd = 
+	unpack_32(&passwd_len, buffer);
+	const char *user = passwd + passwd_len;
 	
 	if (strlen(user) + 1 
 	+ sizeof(passwd_len) 

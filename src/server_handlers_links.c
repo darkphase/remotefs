@@ -33,10 +33,10 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	}
 	
 	uint32_t path_len = 0;
-	const char *path = buffer + 
-	unpack_32(&path_len, buffer, 0);
+	const char *path = 
+	unpack_32(&path_len, buffer);
 
-	const char *target = buffer + sizeof(path_len) + path_len;
+	const char *target = path + path_len;
 	
 	if (sizeof(path_len)
 	+ strlen(path) + 1
@@ -76,10 +76,10 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 	
 	uint32_t path_len = 0;
-	const char *path = buffer + 
-	unpack_32(&path_len, buffer, 0);
+	const char *path = 
+	unpack_32(&path_len, buffer);
 	
-	const char *target = buffer + sizeof(path_len) + path_len;
+	const char *target = path + path_len;
 	
 	if (sizeof(path_len)
 	+ strlen(path) + 1
@@ -120,8 +120,8 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 	
 	unsigned bsize = 0;
-	const char *path = buffer + 
-	unpack_32(&bsize, buffer, 0);
+	const char *path = 
+	unpack_32(&bsize, buffer);
 
 	if (buffer[cmd->data_len-1] != 0)
 	{

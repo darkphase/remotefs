@@ -35,8 +35,8 @@ int _handle_truncate(struct rfsd_instance *instance, const struct sockaddr_in *c
 	}
 	
 	uint32_t offset = (uint32_t)-1;
-	const char *path = buffer +
-	unpack_32(&offset, buffer, 0);
+	const char *path = 
+	unpack_32(&offset, buffer);
 	
 	if (sizeof(offset)
 	+ strlen(path) + 1 != cmd->data_len)
@@ -112,10 +112,10 @@ int _handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	}
 	
 	uint32_t len = 0;
-	const char *path = buffer + 
-	unpack_32(&len, buffer, 0);
+	const char *path = 
+	unpack_32(&len, buffer);
 	
-	const char *new_path = buffer + sizeof(len) + len;
+	const char *new_path = path + len;
 	
 	if (sizeof(len)
 	+ strlen(path) + 1
@@ -155,8 +155,8 @@ int _handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	}
 	
 	uint32_t mode = 0;
-	const char *path = buffer +
-	unpack_32(&mode, buffer, 0);
+	const char *path = 
+	unpack_32(&mode, buffer);
 	
 	if (sizeof(mode)
 	+ strlen(path) + 1 != cmd->data_len)
@@ -201,9 +201,9 @@ int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	uint32_t mode = 0;
 	uint16_t rfs_flags = 0;
 
-	const char *path = buffer +
-	unpack_16(&rfs_flags, buffer, 
-	unpack_32(&mode, buffer, 0
+	const char *path = 
+	unpack_16(&rfs_flags, 
+	unpack_32(&mode, buffer
 	));
 	
 	if (sizeof(mode) 
@@ -278,12 +278,12 @@ int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	}
 #undef overall_size
 
-	unpack_64(&len, buffer,
-	unpack_64(&start, buffer,
-	unpack_16(&whence, buffer, 
-	unpack_16(&type, buffer,
-	unpack_16(&flags, buffer,
-	unpack_64(&fd, buffer, 0
+	unpack_64(&len, 
+	unpack_64(&start, 
+	unpack_16(&whence, 
+	unpack_16(&type, 
+	unpack_16(&flags, 
+	unpack_64(&fd, buffer
 	))))));
 	
 	int lock_cmd = 0;

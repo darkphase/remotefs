@@ -37,8 +37,8 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	}
 	
 	uint32_t mode = 0;
-	const char *path = buffer +
-	unpack_32(&mode, buffer, 0);
+	const char *path = 
+	unpack_32(&mode, buffer);
 	
 	if (sizeof(mode) + strlen(path) + 1 != cmd->data_len)
 	{
@@ -77,16 +77,15 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	uint32_t user_len = 0;
 	uint32_t group_len = 0;
-	unsigned last_pos =
-	unpack_32(&group_len, buffer, 
-	unpack_32(&user_len, buffer, 0
+	const char *path = 
+	unpack_32(&group_len, 
+	unpack_32(&user_len, buffer
 	));
-	
-	const char *path = buffer + last_pos;
+
 	unsigned path_len = strlen(path) + 1;
 	
-	const char *user = buffer + last_pos + path_len;
-	const char *group = buffer + last_pos + path_len + user_len;
+	const char *user = path + path_len;
+	const char *group = user + user_len;
 
 	if (sizeof(user_len) + sizeof(group_len)
 	+ path_len + user_len + group_len != cmd->data_len)

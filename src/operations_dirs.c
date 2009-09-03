@@ -93,12 +93,12 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			return -ECONNABORTED;
 		}
 		
-		const char *user = buffer + 
-		unpack_32(&entry_len, buffer, 
-		unpack_32(&group_len, buffer, 
-		unpack_32(&user_len, buffer, 
-		unpack_stat(&stbuf, buffer, 
-		unpack_16(&stat_failed, buffer, 0
+		const char *user = 
+		unpack_32(&entry_len, 
+		unpack_32(&group_len, 
+		unpack_32(&user_len, 
+		unpack_stat(&stbuf, 
+		unpack_16(&stat_failed, buffer
 		)))));
 		const char *group = user + user_len;
 		const char *entry = group + group_len;
@@ -150,8 +150,8 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_32(&fmode, buffer, 0
+	pack(path, path_len, 
+	pack_32(&fmode, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 

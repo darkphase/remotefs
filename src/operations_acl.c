@@ -71,11 +71,11 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	char *buffer = get_buffer(overall_size);
 	
-	pack(name, name_len, buffer, 
-	pack(path, path_len, buffer, 
-	pack_64(&value_size, buffer, 
-	pack_32(&name_len, buffer, 
-	pack_32(&path_len, buffer, 0
+	pack(name, name_len, 
+	pack(path, path_len, 
+	pack_64(&value_size, 
+	pack_32(&name_len, 
+	pack_32(&path_len, buffer
 	)))));
 	
 	struct command cmd = { cmd_getxattr, overall_size };
@@ -252,12 +252,12 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	char *buffer = get_buffer(overall_size);
 	
-	pack(text_acl, text_acl_len + 1, buffer, 
-	pack(name, name_len, buffer, 
-	pack(path, path_len, buffer, 
-	pack_32(&acl_flags, buffer, 
-	pack_32(&name_len, buffer, 
-	pack_32(&path_len, buffer, 0
+	pack(text_acl, text_acl_len + 1, 
+	pack(name, name_len, 
+	pack(path, path_len, 
+	pack_32(&acl_flags, 
+	pack_32(&name_len, 
+	pack_32(&path_len, buffer
 	))))));
 	
 	struct command cmd = { cmd_setxattr, overall_size };

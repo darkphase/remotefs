@@ -46,7 +46,7 @@ uint16_t rfs_file_flags(int os_flags)
 	return flags;
 }
 
-off_t unpack_stat(struct stat *result, const char *buffer, off_t offset)
+const char* unpack_stat(struct stat *result, const char *buffer)
 {
 	uint32_t mode = 0;
 	uint64_t size = 0;
@@ -60,13 +60,13 @@ off_t unpack_stat(struct stat *result, const char *buffer, off_t offset)
 	dump(buffer, STAT_BLOCK_SIZE);
 #endif
 
-	unpack_32(&blocks, buffer, 
-	unpack_32(&nlink, buffer, 
-	unpack_64(&ctime, buffer, 
-	unpack_64(&mtime, buffer, 
-	unpack_64(&atime, buffer, 
-	unpack_64(&size, buffer, 
-	unpack_32(&mode, buffer, offset 
+	unpack_32(&blocks, 
+	unpack_32(&nlink, 
+	unpack_64(&ctime, 
+	unpack_64(&mtime, 
+	unpack_64(&atime, 
+	unpack_64(&size, 
+	unpack_32(&mode, buffer
 	)))))));
 
 	result->st_mode = mode;
@@ -77,7 +77,7 @@ off_t unpack_stat(struct stat *result, const char *buffer, off_t offset)
 	result->st_nlink = nlink;
 	result->st_blocks = blocks;
 	
-	return offset + STAT_BLOCK_SIZE;
+	return buffer + STAT_BLOCK_SIZE;
 }
 
 uid_t resolve_username(struct rfs_instance *instance, const char *user)

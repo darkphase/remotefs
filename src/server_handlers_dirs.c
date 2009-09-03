@@ -127,7 +127,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			+ group_len
 			+ entry_len;
 
-		pack_stat(stat_buffer, &stbuf, 0);
+		pack_stat(&stbuf, stat_buffer);
 
 		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
 		
@@ -178,8 +178,8 @@ int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	uint32_t mode = 0;
 	
-	const char *path = buffer + 
-	unpack_32(&mode, buffer, 0);
+	const char *path = 
+	unpack_32(&mode, buffer);
 	
 	if (sizeof(mode)
 	+ strlen(path) + 1 != cmd->data_len)

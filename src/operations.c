@@ -92,10 +92,10 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -ECONNABORTED;
 	}
 
-	const char *user = buffer + 
-	unpack_32(&group_len, buffer, 
-	unpack_32(&user_len, buffer, 
-	unpack_stat(stbuf, buffer, 0
+	const char *user = 
+	unpack_32(&group_len, 
+	unpack_32(&user_len, 
+	unpack_stat(stbuf, buffer
 	)));
 	const char *group = user + user_len;
 
@@ -162,10 +162,10 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_64(&actime, buffer, 
-	pack_64(&modtime, buffer, 
-	pack_16(&is_null, buffer, 0
+	pack(path, path_len, 
+	pack_64(&actime, 
+	pack_64(&modtime, 
+	pack_16(&is_null, buffer
 	))));
 
 	if (commit_send(&instance->sendrecv, 
@@ -237,12 +237,12 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(path, path_len, buffer, 
-	pack_16(&is_null, buffer, 
-	pack_64(&actime_nsec, buffer, 
-	pack_64(&actime_sec, buffer, 
-	pack_64(&modtime_nsec, buffer, 
-	pack_64(&modtime_sec, buffer, 0
+	pack(path, path_len, 
+	pack_16(&is_null, 
+	pack_64(&actime_nsec, 
+	pack_64(&actime_sec, 
+	pack_64(&modtime_nsec, 
+	pack_64(&modtime_sec, buffer
 	))))));
 
 	if (commit_send(&instance->sendrecv, 
@@ -336,13 +336,13 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 		return -ECONNABORTED;
 	}
 
-	unpack_32(&namemax, buffer, 
-	unpack_32(&ffree, buffer, 
-	unpack_32(&files, buffer, 
-	unpack_32(&bavail, buffer, 
-	unpack_32(&bfree, buffer, 
-	unpack_32(&blocks, buffer, 
-	unpack_32(&bsize, buffer, 0
+	unpack_32(&namemax, 
+	unpack_32(&ffree, 
+	unpack_32(&files, 
+	unpack_32(&bavail, 
+	unpack_32(&bfree, 
+	unpack_32(&blocks, 
+	unpack_32(&bsize, buffer
 	)))))));
 	
 	free_buffer(buffer);

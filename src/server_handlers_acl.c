@@ -34,10 +34,10 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	uint32_t name_len = 0;
 	uint64_t value_size = 0;
 
-	const char *path = buffer + 
-	unpack_64(&value_size, buffer, 
-	unpack_32(&name_len, buffer, 
-	unpack_32(&path_len, buffer, 0
+	const char *path = 
+	unpack_64(&value_size, 
+	unpack_32(&name_len, 
+	unpack_32(&path_len, buffer
 	)));
 	
 	DEBUG("value size: %lld\n", (long long)value_size);
@@ -172,10 +172,10 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	uint32_t name_len = 0;
 	uint32_t acl_flags = 0;
 
-	const char *path = buffer + 
-	unpack_32(&acl_flags, buffer, 
-	unpack_32(&name_len, buffer, 
-	unpack_32(&path_len, buffer, 0
+	const char *path = 
+	unpack_32(&acl_flags, 
+	unpack_32(&name_len, 
+	unpack_32(&path_len, buffer
 	)));
 	
 	DEBUG("flags: %u\n", acl_flags);

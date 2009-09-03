@@ -69,8 +69,8 @@ int rfs_list_exports(struct rfs_instance *instance)
 		
 		uint32_t options = OPT_NONE;
 		
-		const char *path = buffer + 
-		unpack_32(&options, buffer, 0);
+		const char *path = 
+		unpack_32(&options, buffer);
 		
 		if (header_printed == 0)
 		{

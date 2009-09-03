@@ -194,11 +194,11 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	{
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
-#undef  overall_size
+#undef overall_size
 	
-	unpack_64(&handle, read_buffer, 
-	unpack_64(&offset, read_buffer, 
-	unpack_32(&size, read_buffer, 0
+	unpack_64(&handle, 
+	unpack_64(&offset, 
+	unpack_32(&size, read_buffer
 	)));
 
 	DEBUG("handle: %llu, offset: %llu, size: %u\n", (unsigned long long)handle, (unsigned long long)offset, size);

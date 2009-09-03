@@ -36,9 +36,9 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 
 	char buffer[overall_size] = { 0 };
 
-	pack_64(&handle, buffer, 
-	pack_64(&foffset, buffer, 
-	pack_32(&fsize, buffer, 0
+	pack_64(&handle, 
+	pack_64(&foffset, 
+	pack_32(&fsize, buffer
 	)));
 
 	MAKE_SEND_TOK(2) token = { 2, {{ 0 }} };

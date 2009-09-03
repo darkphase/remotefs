@@ -38,8 +38,8 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		
 		char *buffer = get_buffer(overall_size);
 		
-		pack(export_rec->path, path_len, buffer, 
-		pack_32(&options, buffer, 0
+		pack(export_rec->path, path_len, 
+		pack_32(&options, buffer
 		));
 
 		struct answer ans = { cmd_listexports, overall_size, 0, 0 };

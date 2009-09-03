@@ -36,7 +36,7 @@ int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stb
 	return 0;
 }
 
-off_t pack_stat(char *buffer, struct stat *stbuf, off_t offset)
+char* pack_stat(struct stat *stbuf, char *buffer)
 {
 	uint32_t mode      = stbuf->st_mode;
 	uint64_t size      = stbuf->st_size;
@@ -46,20 +46,20 @@ off_t pack_stat(char *buffer, struct stat *stbuf, off_t offset)
 	uint32_t nlink     = stbuf->st_nlink;
 	uint32_t blocks    = stbuf->st_blocks;
 
-	pack_32(&blocks, buffer, 
-	pack_32(&nlink, buffer, 
-	pack_64(&ctime, buffer, 
-	pack_64(&mtime, buffer, 
-	pack_64(&atime, buffer, 
-	pack_64(&size, buffer, 
-	pack_32(&mode, buffer, 0
+	pack_32(&blocks, 
+	pack_32(&nlink, 
+	pack_64(&ctime, 
+	pack_64(&mtime, 
+	pack_64(&atime, 
+	pack_64(&size, 
+	pack_32(&mode, buffer
 	)))))));
 
 #ifdef RFS_DEBUG
 	dump(buffer, STAT_BLOCK_SIZE);
 #endif
 
-	return offset + STAT_BLOCK_SIZE;
+	return buffer + STAT_BLOCK_SIZE;
 }
 
 int os_file_flags(uint16_t rfs_flags)

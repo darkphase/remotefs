@@ -735,9 +735,9 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 
 	char *buffer = get_buffer(overall_size);
 
-	pack(user, user_len, buffer, 
-	pack(crypted, crypted_len, buffer, 
-	pack_32(&crypted_len, buffer, 0
+	pack(user, user_len, 
+	pack(crypted, crypted_len, 
+	pack_32(&crypted_len, buffer
 	)));
 
 	if (commit_send(&instance->sendrecv, 

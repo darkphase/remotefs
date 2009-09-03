@@ -120,11 +120,11 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	struct command cmd = { cmd_chown, overall_size };
 
 	char *buffer = get_buffer(overall_size);
-	pack(local_group != NULL ? local_group : group, group_len, buffer, 
-	pack(local_user != NULL ? local_user : user, user_len, buffer, 
-	pack(path, path_len, buffer, 
-	pack_32(&group_len, buffer, 
-	pack_32(&user_len, buffer, 0
+	pack(local_group != NULL ? local_group : group, group_len, 
+	pack(local_user != NULL ? local_user : user, user_len, 
+	pack(path, path_len, 
+	pack_32(&group_len, 
+	pack_32(&user_len, buffer
 	)))));
 
 	if (commit_send(&instance->sendrecv, 
@@ -204,8 +204,9 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 	struct command cmd = { cmd_chmod, overall_size };
 
 	char *buffer = get_buffer(overall_size);
-	pack(path, path_len, buffer, 
-	pack_32(&fmode, buffer, 0
+	
+	pack(path, path_len, 
+	pack_32(&fmode, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 

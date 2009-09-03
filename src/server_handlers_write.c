@@ -31,9 +31,9 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	}
 #undef header_size
 	
-	unpack_64(&handle, buffer, 
-	unpack_64(&offset, buffer, 
-	unpack_32(&size, buffer, 0
+	unpack_64(&handle, 
+	unpack_64(&offset, 
+	unpack_32(&size, buffer
 	)));
 	
 	if (handle == (uint64_t)-1)

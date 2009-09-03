@@ -34,9 +34,9 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(target, target_len, buffer,
-	pack(path, path_len, buffer,
-	pack_32(&path_len, buffer, 0
+	pack(target, target_len, 
+	pack(path, path_len, 
+	pack_32(&path_len, buffer
 	)));
 
 	if (commit_send(&instance->sendrecv, 
@@ -86,9 +86,9 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 
 	char *buffer = get_buffer(cmd.data_len);
 
-	pack(target, target_len, buffer,
-	pack(path, path_len, buffer,
-	pack_32(&path_len, buffer, 0
+	pack(target, target_len, 
+	pack(path, path_len, 
+	pack_32(&path_len, buffer
 	)));
 
 	if (commit_send(&instance->sendrecv, 
@@ -243,8 +243,8 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 	char *buffer = get_buffer(overall_size);
 
-	pack(path, path_len, buffer,
-	pack_32(&bsize, buffer, 0
+	pack(path, path_len, 
+	pack_32(&bsize, buffer
 	));
 
 	if (commit_send(&instance->sendrecv, 

@@ -18,7 +18,7 @@ struct stat;
 int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf);
 
 /** pack stat block to buffer */
-off_t pack_stat(char *buffer, struct stat *stbuf, off_t offset);
+char* pack_stat(struct stat *stbuf, char *buffer);
 
 /** convert rfs' file flags (RFS_RDWR, etc) to OS file flags (O_RDWR, etc) */
 int os_file_flags(uint16_t rfs_flags);
