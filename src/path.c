@@ -15,33 +15,30 @@ int path_join(char *full_path, size_t max_len, const char *path, const char *fil
 	unsigned path_len = strlen(path);
 	unsigned filename_len = strlen(filename);
 	
-	const unsigned char copy_path = 
-	(strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0 )
-	? 0
-	: 1;
-	const unsigned char add_slash = ((copy_path == 1 && path[path_len - 1] == '/') ? 0 : 1);
+	const unsigned copy_path = (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) ? 0 : 1;
+	const unsigned add_slash = ((copy_path != 0 && path[path_len - 1] == '/') ? 0 : 1);
 	
-	if (path_len + filename_len + add_slash + 1 > max_len)
+	if ((copy_path != 0 ? path_len : 0) + filename_len + add_slash + 1 > max_len)
 	{
 		return -1;
 	}
 
-	memset(full_path, 0, max_len);
-	
-	if (copy_path == 1)
+	if (copy_path != 0)
 	{
 		memcpy(full_path, path, path_len);
 	}
 	
-	if (copy_path == 1
-	&& add_slash == 1)
+	if (add_slash != 0)
 	{
-		memcpy(full_path + path_len, "/", 1);
+		full_path[path_len] = '/';
 	}
 	
-	memcpy(full_path + (copy_path == 1 ? path_len + add_slash : 0), 
-	filename, 
-	strlen(filename));
+	memcpy(full_path + (copy_path != 0 ? path_len : 0) + add_slash, 
+		filename, 
+		filename_len);
+
+	full_path[(copy_path ? path_len : 0) + add_slash + filename_len] = 0;
 	
 	return 0;
 }
+

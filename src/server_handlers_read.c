@@ -55,7 +55,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	token.iov[0].iov_base = (void *)hton_ans(&ans);
 	token.iov[0].iov_len = sizeof(ans);
 	token.iov[1].iov_base = (void *)buffer;
-	token.iov[1].iov_len = result;
+	token.iov[1].iov_len = (result >= 0 ? result : 0);
 
 	return do_send(&instance->sendrecv, (send_tok *)(void *)&token) < 0 ? -1 : 0;
 }

@@ -27,9 +27,7 @@ extern "C" {
 #endif
 
 struct rfs_export;
-#ifdef WITH_PAUSE
 struct timeval;
-#endif
 
 struct rfsd_instance
 {
