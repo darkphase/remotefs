@@ -72,27 +72,46 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -ans.ret_errno;
 	}
 
-	char *buffer = get_buffer(ans.data_len);
+	uint32_t user_len = 0;
+	uint32_t group_len = 0;
+
+#define buffer_size STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) \
++ (MAX_SUPPORTED_NAME_LEN + 1) + (MAX_SUPPORTED_NAME_LEN + 1)
+
+	char buffer[buffer_size]  = { 0 };
+
+#undef buffer_size
+
+	if (ans.data_len > sizeof(buffer))
+	{
+		return cleanup_badmsg(instance, &ans);
+	}
 
 	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 	{
-		free_buffer(buffer);
 		return -ECONNABORTED;
 	}
 
-	int stat_ret = 0;
-	unpack_stat(instance, buffer, stbuf, &stat_ret);
+	const char *user = buffer + 
+	unpack_32(&group_len, buffer, 
+	unpack_32(&user_len, buffer, 
+	unpack_stat(stbuf, buffer, 0
+	)));
+	const char *group = user + user_len;
 
-	free_buffer(buffer);
+	DEBUG("mode: %u, size: %lu\n", stbuf->st_mode, stbuf->st_size);
 
-	if (stat_ret != 0)
+	stbuf->st_uid = resolve_username(instance, user);
+	stbuf->st_gid = resolve_groupname(instance, group, user);
+
+	if (ans.ret_errno == 0)
 	{
-		return -stat_ret;
+		cache_file(instance, path, stbuf); /* ignore result because cache may be already full */
 	}
 
-	cache_file(instance, path, stbuf); /* ignore result because cache may be already full */
+	DEBUG("user: %s, group: %s, ret: %d, errno: %u\n", user, group, (int)ans.ret, (unsigned)ans.ret_errno);
 
-	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
+	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);
 }
 
 static inline int flush_for_utime(struct rfs_instance *instance, const char *path)

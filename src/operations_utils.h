@@ -12,6 +12,7 @@ See the file LICENSE.
 #define OPERATIONS_UTILS_H
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -22,11 +23,11 @@ struct rfs_instance;
 /** convert OS file flags (O_RDWR, etc) to rfs flags (RFS_RDWR, etc) */
 uint16_t rfs_file_flags(int os_flags);
 
-/** return size of rfs' stat block */
-size_t stat_size();
-
 /** unpack stat block from buffer */
-off_t unpack_stat(struct rfs_instance *instance, const char *buffer, struct stat *result, int *ret);
+off_t unpack_stat(struct stat *result, const char *buffer, off_t offset);
+
+uid_t resolve_username(struct rfs_instance *instance, const char *user);
+gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const char *user);
 
 #endif /* OPERATIONS_UTILS_H */
 

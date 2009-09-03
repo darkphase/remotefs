@@ -17,11 +17,8 @@ struct stat;
 /** stat file */
 int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf);
 
-/** return stat block size as string length (with resolved user and group) */
-size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int *ret);
-
 /** pack stat block to buffer */
-off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat *stbuf, int *ret);
+off_t pack_stat(char *buffer, struct stat *stbuf, off_t offset);
 
 /** convert rfs' file flags (RFS_RDWR, etc) to OS file flags (O_RDWR, etc) */
 int os_file_flags(uint16_t rfs_flags);

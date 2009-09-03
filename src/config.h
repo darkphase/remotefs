@@ -42,6 +42,15 @@ extern "C" {
 #define DEFAULT_IPV6_ADDRESS    "::"
 #endif
 
+#define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \
+	+ sizeof(uint64_t) /* size */                   \
+	+ sizeof(uint64_t) /* atime */                  \
+	+ sizeof(uint64_t) /* mtime */                  \
+	+ sizeof(uint64_t) /* ctime */                  \
+	+ sizeof(uint32_t) /* nlink */                  \
+	+ sizeof(uint32_t) /* blocks */                 \
+
+
 #ifdef RFS_DEBUG
 #define DEFAULT_PASSWD_FILE      "./rfs-passwd"
 #define DEFAULT_EXPORTS_FILE     "./rfs-exports"

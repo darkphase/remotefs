@@ -15,6 +15,8 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
+#include "exports.h"
+#include "id_lookup.h"
 #include "instance_server.h"
 #include "path.h"
 #include "sendrecv_server.h"
@@ -36,7 +38,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		return -1;
 	}
 
-	char *path = buffer;
+	const char *path = buffer;
 	unsigned path_len = strlen(path) + 1;
 	
 	if (path_len != cmd->data_len)
@@ -58,28 +60,33 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	{
 		int saved_errno = errno;
 		
-		free_buffer(path);
+		free_buffer(buffer);
 		return reject_request(instance, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 
 	struct dirent *dir_entry = NULL;
 	struct stat stbuf = { 0 };
 	uint16_t stat_failed = 0;
-	
+	char stat_buffer[STAT_BLOCK_SIZE] = { 0 };
 	char full_path[FILENAME_MAX + 1] = { 0 };
 	
 	while ((dir_entry = readdir(dir)) != 0)
 	{	
 		const char *entry_name = dir_entry->d_name;
-		unsigned entry_len = strlen(entry_name) + 1;
+		uint32_t entry_len = strlen(entry_name) + 1, entry_len_hton = entry_len;
 		
 		stat_failed = 0;
-		memset(&stbuf, 0, sizeof(stbuf));
+		char *send_path = full_path;
 		
 		int joined = path_join(full_path, sizeof(full_path), path, entry_name);
 		if (joined < 0)
 		{
+			send_path = "???";
 			stat_failed = 1;
+		}
+		else
+		{
+			send_path = full_path;
 		}
 	
 		if (joined == 0)
@@ -89,51 +96,62 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 				stat_failed = 1;
 			}
 		}
-		
-		int size_ret = 0;
-		size_t stat_struct_size = stat_size(instance, &stbuf, &size_ret);
 
-		if (size_ret != 0)
+		const char *user = NULL, *group = NULL;
+
+		if (stat_failed != 0)
 		{
-			stat_failed = 1;
+			memset(&stbuf, 0, sizeof(stbuf));
 		}
+		else if ((instance->server.mounted_export->options & OPT_UGO) != 0)
+		{
+			user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
+			group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
+
+			if (user != NULL && strlen(user) > MAX_SUPPORTED_NAME_LEN) { user = NULL; }
+			if (group != NULL && strlen(group) > MAX_SUPPORTED_NAME_LEN) { group = NULL; }
+		}
+
+		if (user == NULL) { user = ""; }
+		if (group == NULL) { group = ""; }
+
+		uint32_t user_len = strlen(user) + 1, user_len_hton = user_len;
+		uint32_t group_len = strlen(group) + 1, group_len_hton = group_len;
 		
-		unsigned overall_size = stat_struct_size + sizeof(stat_failed) + entry_len;
-		buffer = get_buffer(overall_size);
+		unsigned overall_size = sizeof(stat_failed) 
+			+ STAT_BLOCK_SIZE 
+			+ sizeof(user_len_hton) 
+			+ sizeof(group_len_hton) 
+			+ sizeof(entry_len_hton) 
+			+ user_len 
+			+ group_len
+			+ entry_len;
+
+		pack_stat(stat_buffer, &stbuf, 0);
 
 		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
 		
-		int pack_ret = 0; 
-		off_t last_offset = pack_stat(instance, buffer, &stbuf, &pack_ret);
-
-		if (pack_ret != 0)
-		{
-			stat_failed = 1;
-		}
-
-		pack(entry_name, entry_len, buffer, 
-		pack_16(&stat_failed, buffer, last_offset
-		));
-		
-#ifdef RFS_DEBUG
-		dump(buffer, overall_size);
-#endif
-
-		if (commit_send(&instance->sendrecv, 
-			queue_data(buffer, overall_size, 
-			queue_ans(&ans, send_token(2)))) < 0)
+		MAKE_SEND_TOK(9) token = { 0, {{ 0 }} };
+		if (do_send(&instance->sendrecv, 
+			queue_data(entry_name, entry_len, 
+			queue_data(group, group_len, 
+			queue_data(user, user_len, 
+			queue_32(&entry_len_hton, 
+			queue_32(&group_len_hton, 
+			queue_32(&user_len_hton, 
+			queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
+			queue_16(&stat_failed, 
+			queue_ans(&ans, (send_tok *)(void *)&token) 
+			))))))))) < 0)
 		{
 			closedir(dir);
-			free_buffer(path);
 			free_buffer(buffer);
 			return -1;
 		}
-
-		free_buffer(buffer);
 	}
 
 	closedir(dir);
-	free_buffer(path);
+	free_buffer(buffer);
 
 	struct answer last_ans = { cmd_readdir, 0, 0, 0 };
 	if (rfs_send_answer(&instance->sendrecv, &last_ans) == -1)

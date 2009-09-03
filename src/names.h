@@ -24,5 +24,8 @@ unsigned is_nss_name(const char *name);
 /** don't forget to free() result */
 char* local_nss_name(const char *full_name, const struct rfs_instance *instance);
 
+/** don't forget to free() result */
+char* remote_nss_name(const char *short_name, const struct rfs_instance *instance);
+
 #endif /* NAMES_H */
 

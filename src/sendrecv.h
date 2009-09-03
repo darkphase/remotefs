@@ -23,7 +23,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-int rfs_connect(struct sendrecv_info *info, const char *ip, const unsigned port, const unsigned int force_ipv4, const unsigned int force_ipv6);
+int rfs_connect(struct sendrecv_info *info, const char *ip, unsigned port, unsigned force_ipv4, unsigned force_ipv6);
 
 typedef struct iovec send_tok_entry;
 typedef struct
@@ -90,9 +90,7 @@ static inline send_tok* send_token(unsigned count)
 
 static inline send_tok* queue_data(const char *buffer, size_t len, send_tok *token)
 {
-#ifdef RFS_DEBUG
 	DEBUG("data of size %lu\n", (unsigned long)len);
-#endif
 	if (token != NULL)
 	{
 		token->iov[token->count].iov_base = (void *)buffer;
@@ -130,6 +128,24 @@ static inline send_tok* queue_ans(struct answer *ans, send_tok *token)
 	return token;
 }
 
+static inline send_tok* queue_16(uint16_t *value, send_tok *token)
+{
+	*value = htons(*value);
+	return queue_data((char *)value, sizeof(*value), token);
+}
+
+static inline send_tok* queue_32(uint32_t *value, send_tok *token)
+{
+	*value = htonl(*value);
+	return queue_data((char *)value, sizeof(*value), token);
+}
+
+static inline send_tok* queue_64(uint64_t *value, send_tok *token)
+{
+	*value = htonll(*value);
+	return queue_data((char *)value, sizeof(*value), token);
+}
+
 static inline ssize_t do_send(struct sendrecv_info *info, send_tok *token)
 {
 	if (token == NULL)
@@ -137,6 +153,7 @@ static inline ssize_t do_send(struct sendrecv_info *info, send_tok *token)
 		return -EINVAL;
 	}
 
+	DEBUG("sending token with %u records\n", token->count);
 	return rfs_writev(info, token->iov, token->count);
 }
 

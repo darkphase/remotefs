@@ -14,14 +14,12 @@ See the file LICENSE.
 #include "buffer.h"
 #include "config.h"
 #include "exports.h"
-#include "id_lookup.h"
 #include "instance_server.h"
 #include "server_handlers_utils.h"
 
 int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)
 {
 	errno = 0;
-
 	if (lstat(path, stbuf) != 0)
 	{
 		return errno;
@@ -38,95 +36,30 @@ int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stb
 	return 0;
 }
 
-size_t stat_size(struct rfsd_instance *instance, struct stat *stbuf, int *ret)
+off_t pack_stat(char *buffer, struct stat *stbuf, off_t offset)
 {
-	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
-	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
-	
-#ifdef WITH_UGO
-	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
-	&& (user == NULL
-	|| group == NULL))
-	{
-		*ret = ECANCELED;
-	}
-#endif
-	
-	if (user == NULL)
-	{
-		user = "";
-	}
-	if (group == NULL)
-	{
-		group = "";
-	}
-	
-	uint32_t user_len = strlen(user) + 1;
-	uint32_t group_len = strlen(group) + 1;
+	uint32_t mode      = stbuf->st_mode;
+	uint64_t size      = stbuf->st_size;
+	uint64_t atime     = stbuf->st_atime;
+	uint64_t mtime     = stbuf->st_mtime;
+	uint64_t ctime     = stbuf->st_ctime;
+	uint32_t nlink     = stbuf->st_nlink;
+	uint32_t blocks    = stbuf->st_blocks;
 
-	return 0
-	+ sizeof(uint32_t) /* mode */
-	+ sizeof(uint32_t) /* user_len */ 
-	+ sizeof(uint32_t) /* group_len */
-	+ sizeof(uint64_t) /* size */
-	+ sizeof(uint64_t) /* atime */
-	+ sizeof(uint64_t) /* mtime */
-	+ sizeof(uint64_t) /* ctime */
-	+ sizeof(uint32_t) /* nlink */
-	+ sizeof(uint32_t) /* blocks */
-	+ user_len
-	+ group_len;
-}
-
-off_t pack_stat(struct rfsd_instance *instance, char *buffer, struct stat *stbuf, int *ret)
-{
-	const char *user = get_uid_name(instance->id_lookup.uids, stbuf->st_uid);
-	const char *group = get_gid_name(instance->id_lookup.gids, stbuf->st_gid);
-
-#ifdef WITH_UGO
-	if ((instance->server.mounted_export->options & OPT_UGO) != 0 
-	&& (user == NULL
-	|| group == NULL))
-	{
-		*ret = ECANCELED;
-	}
-#endif
-	
-	if (user == NULL)
-	{
-		user = "";
-	}
-	if (group == NULL)
-	{
-		group = "";
-	}
-	
-	DEBUG("sending user: %s, group: %s\n", user, group);
-	
-	uint32_t mode = stbuf->st_mode;
-	uint32_t user_len = strlen(user) + 1;
-	uint32_t group_len = strlen(group) + 1;
-	
-	uint64_t size = stbuf->st_size;
-	uint64_t atime = stbuf->st_atime;
-	uint64_t mtime = stbuf->st_mtime;
-	uint64_t ctime = stbuf->st_ctime;
-	uint32_t nlink = stbuf->st_nlink;
-	uint32_t blocks = stbuf->st_blocks;
-
-	return 
-	pack(group, group_len, buffer, 
-	pack(user, user_len, buffer, 
 	pack_32(&blocks, buffer, 
 	pack_32(&nlink, buffer, 
 	pack_64(&ctime, buffer, 
 	pack_64(&mtime, buffer, 
 	pack_64(&atime, buffer, 
 	pack_64(&size, buffer, 
-	pack_32(&group_len, buffer, 
-	pack_32(&user_len, buffer, 
 	pack_32(&mode, buffer, 0
-	)))))))))));
+	)))))));
+
+#ifdef RFS_DEBUG
+	dump(buffer, STAT_BLOCK_SIZE);
+#endif
+
+	return offset + STAT_BLOCK_SIZE;
 }
 
 int os_file_flags(uint16_t rfs_flags)

@@ -299,6 +299,7 @@ src/server_handlers.o:src/command.h
 src/server_handlers.o:src/config.h
 src/server_handlers.o:src/cleanup.h
 src/server_handlers.o:src/exports.h
+src/server_handlers.o:src/id_lookup.h
 src/server_handlers.o:src/instance_server.h
 src/server_handlers.o:src/sendrecv_server.h
 src/server_handlers.o:src/server.h
@@ -325,6 +326,8 @@ src/server_handlers_acl.o:src/server.h
 src/server_handlers_dirs.o:src/buffer.h
 src/server_handlers_dirs.o:src/command.h
 src/server_handlers_dirs.o:src/config.h
+src/server_handlers_dirs.o:src/exports.h
+src/server_handlers_dirs.o:src/id_lookup.h
 src/server_handlers_dirs.o:src/instance_server.h
 src/server_handlers_dirs.o:src/path.h
 src/server_handlers_dirs.o:src/sendrecv_server.h
@@ -395,7 +398,6 @@ src/server_handlers_sync.o:src/server_handlers.h
 src/server_handlers_utils.o:src/buffer.h
 src/server_handlers_utils.o:src/config.h
 src/server_handlers_utils.o:src/exports.h
-src/server_handlers_utils.o:src/id_lookup.h
 src/server_handlers_utils.o:src/instance_server.h
 src/server_handlers_utils.o:src/server_handlers_utils.h
 src/server_handlers_write.o:src/buffer.h

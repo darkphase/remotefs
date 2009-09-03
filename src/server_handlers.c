@@ -18,6 +18,7 @@ See the file LICENSE.
 #include "config.h"
 #include "cleanup.h"
 #include "exports.h"
+#include "id_lookup.h"
 #include "instance_server.h"
 #include "sendrecv_server.h"
 #include "server.h"
@@ -57,38 +58,44 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	}
 	
 	free_buffer(buffer);
-	
-	int size_ret = 0;
-	unsigned overall_size = stat_size(instance, &stbuf, &size_ret);
 
-	if (size_ret != 0)
+	uint32_t user_len = 0, user_len_hton = 0;
+	uint32_t group_len = 0, group_len_hton = 0;
+	char stat_buffer[STAT_BLOCK_SIZE] = { 0 };
+	const char *user = NULL, *group = NULL;
+
+	if ((instance->server.mounted_export->options & OPT_UGO) != 0)
 	{
-		return reject_request(instance, cmd, size_ret) == 0 ? 1: -1;
+		user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
+		group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
 	}
+
+	if (user == NULL) { user = ""; }
+	if (group == NULL) { group = ""; }
 	
+	user_len = user_len_hton = strlen(user) + 1;
+	group_len = group_len_hton = strlen(group) + 1;
+	
+	unsigned overall_size = STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) + user_len + group_len;
 	struct answer ans = { cmd_getattr, overall_size, 0, 0 };
 
-	buffer = get_buffer(ans.data_len);
+	DEBUG("mode: %u, size: %lu\n", (unsigned)stbuf.st_mode, (long unsigned)stbuf.st_size);
 
-	int pack_ret = 0;
-	pack_stat(instance, buffer, &stbuf, &pack_ret);
+	pack_stat(stat_buffer, &stbuf, 0);
 
-	if (pack_ret != 0)
-	{
-		return reject_request(instance, cmd, pack_ret) == 0 ? 1: -1;
-	}
+	DEBUG("user: %s, user_len: %lu, group: %s, group_len: %lu\n", 
+		user, (unsigned long)user_len, 
+		group, (unsigned long)group_len);
 	
-	if (commit_send(&instance->sendrecv, 
-		queue_data(buffer, overall_size, 
-		queue_ans(&ans, send_token(2)))) < 0)
-	{
-		free_buffer(buffer);
-		return -1;
-	}
-
-	free_buffer(buffer);
-	
-	return 0;
+	MAKE_SEND_TOK(6) token = { 0, {{ 0 }} };
+	return (do_send(&instance->sendrecv, 
+		queue_data(group, group_len, 
+		queue_data(user, user_len, 
+		queue_32(&group_len_hton, 
+		queue_32(&user_len_hton, 
+		queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
+		queue_ans(&ans, (send_tok *)(void *)&token 
+		))))))) < 0) ? -1 : 0;
 }
 
 int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

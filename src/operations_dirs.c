@@ -46,41 +46,33 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 	struct stat stbuf = { 0 };
 	uint16_t stat_failed = 0;
 
+	uint32_t user_len = 0;
+	uint32_t group_len = 0;
+	uint32_t entry_len = 0;
+
 	char full_path[FILENAME_MAX + 1] = { 0 };
-	unsigned buffer_size = stat_size() + sizeof(full_path);
-	char *buffer = get_buffer(buffer_size);
+
+#define buffer_size sizeof(stat_failed) + STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) + sizeof(entry_len) \
++ sizeof(full_path) + (MAX_SUPPORTED_NAME_LEN + 1) /*user */ + (MAX_SUPPORTED_NAME_LEN + 1) /* group */
 	
-	char operation_failed = 0;
+	char buffer[buffer_size] = { 0 };
+
+#undef buffer_size
+
 	do
 	{
 		if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 		{
-			if (buffer != NULL)
-			{
-				free_buffer(buffer);
-			}
-			
 			return -ECONNABORTED;
 		}
 		
 		if (ans.command != cmd_readdir)
 		{
-
-			if (buffer != NULL)
-			{
-				free_buffer(buffer);
-			}
-			
 			return cleanup_badmsg(instance, &ans);
 		}
 		
 		if (ans.ret == -1)
 		{
-			if (buffer != NULL)
-			{
-				free_buffer(buffer);
-			}
-			
 			return -ans.ret_errno;
 		}
 		
@@ -89,67 +81,54 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			break;
 		}
 		
-		if (ans.data_len > buffer_size)
+		if (ans.data_len > sizeof(buffer))
 		{
-			free_buffer(buffer);
+			return -EINVAL;
 		}
 		
-		memset(buffer, 0, buffer_size);
+		memset(buffer, 0, sizeof(buffer));
 		
 		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 		{
-			free_buffer(buffer);
-			
 			return -ECONNABORTED;
 		}
 		
-#ifdef RFS_DEBUG
-		dump(buffer, ans.data_len);
-#endif
-		
-		int stat_ret = 0;
-		off_t last_pos = unpack_stat(instance, buffer, &stbuf, &stat_ret);
-		
-		if (stat_ret != 0)
-		{
-			free_buffer(buffer);
-			return -stat_ret;
-		}
-			
-		last_pos = unpack_16(&stat_failed, buffer, last_pos);
+		const char *user = buffer + 
+		unpack_32(&entry_len, buffer, 
+		unpack_32(&group_len, buffer, 
+		unpack_32(&user_len, buffer, 
+		unpack_stat(&stbuf, buffer, 
+		unpack_16(&stat_failed, buffer, 0
+		)))));
+		const char *group = user + user_len;
+		const char *entry = group + group_len;
 
-		char *entry_name = buffer + last_pos;
-
+		DEBUG("user: %s, group: %s\n", user, group);
+		
 		if (stat_failed == 0)
 		{
-			int joined = path_join(full_path, sizeof(full_path), path, entry_name);
+			stbuf.st_uid = resolve_username(instance, user);
+			stbuf.st_gid = resolve_groupname(instance, group, user);
+
+			int joined = path_join(full_path, sizeof(full_path), path, entry);
 			
 			if (joined < 0)
 			{
-				operation_failed = 1;
 				return -EINVAL;
 			}
 			
 			if (joined == 0)
 			{
 				cache_file(instance, full_path, &stbuf); /* ignore result because cache may be full */
+			
+				if (callback(entry, callback_data) != 0)
+				{
+					break;
+				}
 			}
-		}
-		
-		if (operation_failed == 0)
-		{
-			if (callback(entry_name, callback_data) != 0)
-			{
-				break;
-			}
-		}
+		}	
 	}
 	while (ans.data_len > 0);
-
-	if (buffer != NULL)
-	{
-		free_buffer(buffer);
-	}
 
 	return 0;
 }

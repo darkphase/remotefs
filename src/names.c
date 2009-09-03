@@ -80,3 +80,20 @@ char* local_nss_name(const char *full_name, const struct rfs_instance *instance)
 	return local_name;
 }
 
+char* remote_nss_name(const char *short_name, const struct rfs_instance *instance)
+{
+	size_t name_len = strlen(short_name);
+	size_t hostname_len = strlen(instance->config.host);
+	size_t overall_len = name_len + 1 + hostname_len;
+
+	char *long_name = get_buffer(overall_len + 1);
+
+	memcpy(long_name, short_name, name_len);
+	memcpy(long_name + name_len + 1, instance->config.host, hostname_len);
+
+	long_name[name_len] = '@';
+	long_name[overall_len] = 0;
+
+	return long_name;
+}
+

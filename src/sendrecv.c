@@ -34,7 +34,7 @@ See the file LICENSE.
 
 #include <netinet/tcp.h>
 
-int rfs_connect(struct sendrecv_info *info, const char *host, const unsigned port, const unsigned int force_ipv4, const unsigned int force_ipv6)
+int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, unsigned force_ipv4, unsigned force_ipv6)
 {
 	struct addrinfo *addr_info = NULL;
 	struct addrinfo hints = { 0 };
