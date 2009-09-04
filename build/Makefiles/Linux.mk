@@ -12,9 +12,9 @@ LN = ln -sf
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror -DLINUX -D_XOPEN_SOURCE=500 -D_BSD_SOURCE
+CFLAGS_OS      = -Wall -Werror -DLINUX -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -fno-strict-aliasing
 CFLAGS_DEBUG   = -g -fPIC
-CFLAGS_RELEASE = -O2
+CFLAGS_RELEASE = -O3
 
 ###############################
 # Flags needed for Fuse
@@ -28,7 +28,7 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 ###############################
 
 LDFLAGS_DEBUG   = -g
-LDFLAGS_RELEASE = -s -O2
+LDFLAGS_RELEASE = -s -O3
 LDFLAGS_SSL     = -lssl
 LDFLAGS_PTHR	= -pthread
 
