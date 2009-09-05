@@ -11,6 +11,10 @@ See the file LICENSE.
 
 /** send/recv for server */
 
+#ifdef SOLARIS
+#include <sys/socket.h>
+#endif
+
 #include "sendrecv.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)

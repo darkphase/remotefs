@@ -13,6 +13,7 @@ See the file LICENSE.
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
