@@ -35,9 +35,10 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	struct command cmd = { cmd_readdir, path_len };
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -154,9 +155,10 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 	pack_32(&fmode, buffer
 	));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -195,9 +197,10 @@ int _rfs_rmdir(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_rmdir, path_len };
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}

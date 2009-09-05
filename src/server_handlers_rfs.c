@@ -166,9 +166,10 @@ int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_i
 	
 	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
 	
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(instance->server.auth_salt, salt_len, 
-		queue_ans(&ans, send_token(2)))) < 0)
+		queue_ans(&ans, &token))) < 0)
 	{
 		return -1;
 	}

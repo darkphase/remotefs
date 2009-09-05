@@ -41,14 +41,14 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	pack_32(&fsize, buffer
 	)));
 
-	MAKE_SEND_TOK(2) token = { 2, {{ 0 }} };
+	send_token_t token = { 2, {{ 0 }} };
 	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
 	token.iov[0].iov_len = sizeof(cmd);
 	token.iov[1].iov_base = buffer;
 	token.iov[1].iov_len = overall_size;
-#undef  overall_size
+#undef overall_size
 
-	if (do_send(&instance->sendrecv, (send_tok *)(void *)&token) < 0)
+	if (do_send(&instance->sendrecv, &token) < 0)
 	{
 		return -ECONNABORTED;
 	}

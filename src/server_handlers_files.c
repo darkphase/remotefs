@@ -244,9 +244,10 @@ int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	{
 		handle = htonll((uint64_t)fd);
 		
-		if (commit_send(&instance->sendrecv, 
+		send_token_t token = { 0, {{ 0 }} };
+		if (do_send(&instance->sendrecv, 
 			queue_data((void *)&handle, sizeof(handle), 
-			queue_ans(&ans, send_token(2)))) < 0)
+			queue_ans(&ans, &token))) < 0)
 		{
 			return -1;
 		}

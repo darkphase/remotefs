@@ -130,8 +130,8 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		pack_stat(&stbuf, stat_buffer);
 
 		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
-		
-		MAKE_SEND_TOK(9) token = { 0, {{ 0 }} };
+	
+		send_token_t token = { 0, {{ 0 }} };
 		if (do_send(&instance->sendrecv, 
 			queue_data(entry_name, entry_len, 
 			queue_data(group, group_len, 
@@ -141,7 +141,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			queue_32(&user_len_hton, 
 			queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
 			queue_16(&stat_failed, 
-			queue_ans(&ans, (send_tok *)(void *)&token) 
+			queue_ans(&ans, &token) 
 			))))))))) < 0)
 		{
 			closedir(dir);

@@ -22,10 +22,10 @@ static inline ssize_t rfs_send_answer(struct sendrecv_info *info, struct answer 
 #ifdef RFS_DEBUG
 	dump_answer(ans);
 #endif
-	MAKE_SEND_TOK(1) token = { 1, {{ 0 }} };
+	send_token_t token = { 1, {{ 0 }} };
 	token.iov[0].iov_base = (void *)hton_ans(ans);
 	token.iov[0].iov_len = sizeof(*ans);
-	return (do_send(info, (send_tok *)(void *)&token) == sizeof(*ans) ? 0 : -1);
+	return (do_send(info, &token) == sizeof(*ans) ? 0 : -1);
 }
 
 static inline ssize_t rfs_send_answer_oob(struct sendrecv_info *info, struct answer *ans)

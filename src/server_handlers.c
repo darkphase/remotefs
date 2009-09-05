@@ -87,14 +87,14 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		user, (unsigned long)user_len, 
 		group, (unsigned long)group_len);
 	
-	MAKE_SEND_TOK(6) token = { 0, {{ 0 }} };
+	send_token_t token = { 0, {{ 0 }} };
 	return (do_send(&instance->sendrecv, 
 		queue_data(group, group_len, 
 		queue_data(user, user_len, 
 		queue_32(&group_len_hton, 
 		queue_32(&user_len_hton, 
 		queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
-		queue_ans(&ans, (send_tok *)(void *)&token 
+		queue_ans(&ans, &token 
 		))))))) < 0) ? -1 : 0;
 }
 
@@ -306,9 +306,10 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	pack_32(&bsize, buffer
 	)))))));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_ans(&ans, send_token(2)))) < 0)
+		queue_ans(&ans, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -1;

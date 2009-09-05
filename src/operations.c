@@ -49,9 +49,11 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 	unsigned path_len = strlen(path) + 1;
 
 	struct command cmd = { cmd_getattr, path_len };
-	if (commit_send(&instance->sendrecv, 
+	
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -168,9 +170,10 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	pack_16(&is_null, buffer
 	))));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -245,9 +248,10 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 	pack_64(&modtime_sec, buffer
 	))))));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -287,9 +291,10 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 
 	struct command cmd = { cmd_statfs, path_len };
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}

@@ -42,9 +42,10 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	pack_32(&foffset, buffer
 	));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -82,9 +83,10 @@ int _rfs_unlink(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path) + 1;
 	struct command cmd = { cmd_unlink, path_len };
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}
@@ -132,9 +134,10 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 	pack_32(&len, buffer
 	)));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -188,9 +191,10 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 	pack_32(&fmode, buffer
 	));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -245,9 +249,10 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 	pack_32(&fmode, buffer
 	)));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -345,9 +350,10 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	struct command cmd = { cmd_lock, overall_size };
 	
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}

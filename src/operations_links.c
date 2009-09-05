@@ -39,9 +39,10 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 	pack_32(&path_len, buffer
 	)));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -91,9 +92,10 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	pack_32(&path_len, buffer
 	)));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -247,9 +249,10 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	pack_32(&bsize, buffer
 	));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;

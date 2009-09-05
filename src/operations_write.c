@@ -424,7 +424,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	pack_32(&fsize, header
 	)));
 
-	MAKE_SEND_TOK(3) token = { 3, {{ 0 }} };
+	send_token_t token = { 3, {{ 0 }} };
 	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
 	token.iov[0].iov_len = sizeof(cmd);
 	token.iov[1].iov_base = (void *)header;
@@ -432,7 +432,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	token.iov[2].iov_base = (void *)buf;
 	token.iov[2].iov_len = size;
 
-	if (do_send(&instance->sendrecv, (send_tok *)(void *)&token) < 0)
+	if (do_send(&instance->sendrecv, &token) < 0)
 	{
 		return -ECONNABORTED;
 	}

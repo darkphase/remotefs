@@ -45,9 +45,10 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	pack_16(&fi_flags, buffer
 	));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		return -ECONNABORTED;
@@ -119,9 +120,10 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data((void *)&handle, sizeof(handle), 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}

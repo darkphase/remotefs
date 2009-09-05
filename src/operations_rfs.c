@@ -740,9 +740,10 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 	pack_32(&crypted_len, buffer
 	)));
 
-	if (commit_send(&instance->sendrecv, 
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		free_buffer(buffer);
 		free(crypted);
@@ -778,9 +779,11 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 
 	unsigned path_len = strlen(path);
 	struct command cmd = { cmd_changepath, path_len + 1};
-	if (commit_send(&instance->sendrecv, 
+
+	send_token_t token = { 0, {{ 0 }} };
+	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len + 1, 
-		queue_cmd(&cmd, send_token(2)))) < 0)
+		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
 	}

@@ -44,9 +44,10 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 
 		struct answer ans = { cmd_listexports, overall_size, 0, 0 };
 		
-		if (commit_send(&instance->sendrecv, 
+		send_token_t token = { 0, {{ 0 }} };
+		if (do_send(&instance->sendrecv, 
 			queue_data(buffer, overall_size, 
-			queue_ans(&ans, send_token(2)))) < 0)
+			queue_ans(&ans, &token))) < 0)
 		{
 			free_buffer(buffer);
 			return -1;
