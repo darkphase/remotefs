@@ -321,7 +321,7 @@ static int parse_opts(int argc, char **argv)
 				release_rfsd_instance(&rfsd_instance);
 				exit(0);
 			case 'v':
-				print_version();
+				INFO("%s\n", RFS_FULL_VERSION);
 				release_rfsd_instance(&rfsd_instance);
 				exit(0);
 			case 'q':

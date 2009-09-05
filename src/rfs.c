@@ -177,7 +177,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		exit(0);
 	
 	case KEY_VERSION:
-		print_version();
+		INFO("%s\n", RFS_FULL_VERSION);
 		exit(0);
 	case KEY_QUIET:
 		rfs_instance.config.quiet = 1;

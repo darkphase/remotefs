@@ -18,8 +18,6 @@ force_version:
 	echo "#define RFS_RELEASE $(RELEASE)" >> "$(VERSION_FILE)"
 	echo "#define RFS_FULL_VERSION \"$(VERSION)-$(RELEASE)\"" >> "$(VERSION_FILE)"
 	echo "" >> "$(VERSION_FILE)"
-	echo "static inline void print_version(void) { printf(\"%s\", RFS_FULL_VERSION); }" >> "$(VERSION_FILE)"
-	echo "" >> "$(VERSION_FILE)"
 	echo "#endif /* RFS_VERSION_H */" >> "$(VERSION_FILE)"
 	echo "" >> "$(VERSION_FILE)"
 
