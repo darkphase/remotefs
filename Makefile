@@ -6,6 +6,9 @@ OS=$(shell uname)
 # Solaris, FreeBSD
 OS:sh=uname
 
+# user-specific make targets
+CUSTOM_MK=custom.mk
+
 # reset component to build
 
 ALL = server client libnss nss
@@ -122,17 +125,6 @@ ebuilds: rfsdebuild rfsebuild rfssslebuild rfsnssebuild
 tbz: dummy
 	@$(MAKE) -sf build/Makefiles/base.mk tbz
 	
-packages: tbz ebuilds
-	@ALT=ML-i386 	$(MAKE) -s debs
-	@ALT=ML-i386 	$(MAKE) -s rpms
-	@ALT=ML-AMD64   $(MAKE) -s debs
-	@ALT=ML-AMD64	$(MAKE) -s rpms
-	@ALT=T-MIPS   	$(MAKE) -s ipks
-	@ALT=T-MIPSEL 	$(MAKE) -s ipks
-	@ALT=T-PPC    	$(MAKE) -s ipks
-	@ALT=T-ARM    	$(MAKE) -s ipks
-	@ALT=T-ARMEB  	$(MAKE) -s ipks
-
 install_client:
 	@$(MAKE) -sf build/Makefiles/librfs.mk install_librfs
 	@$(MAKE) -sf build/Makefiles/rfs.mk install_rfs
@@ -168,4 +160,6 @@ rfsd_man:
 rfsnss_man:
 	@$(MAKE) -sf build/Makefiles/base.mk rfsnss_man
 man: dummy rfs_man rfsd_man rfsnss_man
+
+-include $(CUSTOM_MK)
 

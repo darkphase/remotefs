@@ -23,11 +23,11 @@ See the file LICENSE.
 unsigned int is_ipaddr(const char *string)
 {
 #ifdef WITH_IPV6
-	if (strchr(string, ':'))
+	if (strchr(string, ':') != NULL)
 	{
 		/* may be an IPv6 address */
 		struct sockaddr_in6 addr = { 0 };
-		return inet_pton(AF_INET6, string, &(addr.sin6_addr)) == -1 ? 0 : 1;
+		return inet_pton(AF_INET6, string, &(addr.sin6_addr)) == 1 ? 1 : 0;
 	}
 	else
 	{
@@ -54,11 +54,94 @@ unsigned int is_ipv4_local(const char *ip_addr)
 }
 
 #ifdef WITH_IPV6
+static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned prefix_len)
+{
+	struct in6_addr addr6;
+	if (inet_pton(AF_INET6, addr, &addr6) != 1)
+	{
+		return 0;
+	}
+
+	struct in6_addr mask6;
+	if (inet_pton(AF_INET6, net, &mask6) != 1)
+	{
+		return 0;
+	}
+	
+	uint64_t mask_h = *(uint64_t *)mask6.s6_addr;
+	uint64_t addr_h = *(uint64_t *)addr6.s6_addr;
+	unsigned i = prefix_len; for (; i < sizeof(struct in6_addr) * 4; ++i)
+	{
+		mask_h &= (mask_h ^ (1LL << i));
+		addr_h &= (addr_h ^ (1LL << i));
+	}
+	*(uint64_t *)mask6.s6_addr = mask_h;
+	*(uint64_t *)addr6.s6_addr = addr_h;
+
+	if (prefix_len > 64)
+	{
+		uint64_t mask_l = *(uint64_t *)(mask6.s6_addr + sizeof(uint64_t));
+		uint64_t addr_l = *(uint64_t *)(addr6.s6_addr + sizeof(uint64_t));
+		i = prefix_len; for (; i < sizeof(struct in6_addr) * 8; ++i)
+		{
+			mask_l &= (mask_l ^ (1LL << (i - 64)));
+			addr_l &= (addr_l ^ (1LL << (i - 64)));
+		}
+		*(uint64_t *)(mask6.s6_addr + sizeof(uint64_t)) = mask_l;
+		*(uint64_t *)(addr6.s6_addr + sizeof(uint64_t)) = addr_l;
+	}
+
+	return (memcmp(addr6.s6_addr, mask6.s6_addr, sizeof(struct in6_addr)) == 0 ? 1 : 0);
+}
+#endif
+
+static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned prefix_len)
+{
+	struct in_addr addr4;
+	if (inet_pton(AF_INET, addr, &addr4) != 1)
+	{
+		return 0;
+	}
+	
+	struct in_addr mask4;
+	if (inet_pton(AF_INET, net, &mask4) != 1)
+	{
+		return 0;
+	}
+
+	unsigned i = prefix_len; for (; i < sizeof(mask4.s_addr) * 8; ++i)
+	{
+		mask4.s_addr &= (mask4.s_addr ^ (1L << i));
+		addr4.s_addr &= (addr4.s_addr ^ (1L << i));
+	}
+
+	return (addr4.s_addr == mask4.s_addr ? 1 : 0);
+}
+
+unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len)
+{
+#ifdef WITH_IPV6
+	if (strchr(addr, ':') != NULL)
+	{
+		return compare_ipv6_netmask(addr, net, prefix_len);
+	}
+#endif
+	
+	return compare_ipv4_netmask(addr, net, prefix_len);
+}
+
+#ifdef WITH_IPV6
 unsigned int is_ipv6_local(const char *ip_addr)
 {
 	if (strstr(ip_addr, "fe") != ip_addr
 	&& strncmp(ip_addr, "::1", sizeof("::1")) != 0)
 	{
+		if (strstr(ip_addr, "ffff::") == ip_addr 
+		&& strchr(ip_addr, '.') > ip_addr + 6)
+		{
+			return is_ipv4_local(ip_addr + 6);
+		}
+
 		return 0;
 	}
 	

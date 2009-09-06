@@ -81,7 +81,7 @@ extern "C" {
 #define RFS_NSS_SHARED_OPTION   "-a"
 
 #ifdef RFS_DEBUG
-#        define DEBUG(format, args...) do { printf(format, args); } while (0)
+#        define DEBUG(format, args...) do { fprintf(stderr, format, args); } while (0)
 #else
 #        define DEBUG(format, args...) {}
 #endif
