@@ -294,7 +294,7 @@ static int validate_export(const struct rfs_export *line_export)
 			const char *user = (const char *)user_item->data;
 			if (is_ipaddr(user))
 			{
-				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for this export");
+				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for the same export");
 				return -1;
 			}
 			

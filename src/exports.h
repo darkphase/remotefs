@@ -28,20 +28,18 @@ struct rfs_export
 	uid_t export_uid;
 };
 
-/** parse exports files. data will be stored in static variable
-@see exports.c 
-@return 0 on success, -errno on system error, line number on parsing error
-*/
+/** parse exports_file to exports
+@uid is a value set by rfsd -u to use by default  (if no uid is set for specific export)
+@return 0 on success, -errno on system error, line number on parsing error */
 int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid);
 
-/** delete parsed exports info and free memory allocated for exports */
+/** free memory allocated for exports */
 void release_exports(struct list **exports);
 
-/** get export info by path */
+/** get export info by export path */
 const struct rfs_export* get_export(const struct list *exports, const char *path);
 
 #ifdef RFS_DEBUG
-/** write exports to output. debug only */
 extern void dump_exports(const struct list *exports);
 #endif
 
