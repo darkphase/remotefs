@@ -79,6 +79,11 @@ static inline send_token_t* queue_data(const char *buffer, size_t len, send_toke
 	DEBUG("data of size %lu\n", (unsigned long)len);
 	if (token != NULL)
 	{
+		if (token->count >= 16)
+		{
+			return NULL;
+		}
+
 		token->iov[token->count].iov_base = (void *)buffer;
 		token->iov[token->count].iov_len = len;
 		++(token->count);
@@ -91,13 +96,7 @@ static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
 #ifdef RFS_DEBUG
 	dump_command(cmd);
 #endif
-	if (token != NULL)
-	{
-		token->iov[token->count].iov_base = (void *)hton_cmd(cmd);
-		token->iov[token->count].iov_len = sizeof(*cmd);
-		++(token->count);
-	}
-	return token;
+	return queue_data((char *)hton_cmd(cmd), sizeof(*cmd), token);
 }
 
 static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
@@ -105,13 +104,7 @@ static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
 #ifdef RFS_DEBUG
 	dump_answer(ans);
 #endif
-	if (token != NULL)
-	{	
-		token->iov[token->count].iov_base = (void *)hton_ans(ans);
-		token->iov[token->count].iov_len = sizeof(*ans);
-		++(token->count);
-	}
-	return token;
+	return queue_data((char *)hton_ans(ans), sizeof(*ans), token);
 }
 
 static inline send_token_t* queue_16(uint16_t *value, send_token_t *token)

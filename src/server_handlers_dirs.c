@@ -89,7 +89,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			send_path = full_path;
 		}
 	
-		if (joined == 0)
+		if (joined >= 0)
 		{
 			if (stat_file(instance, full_path, &stbuf) != 0)
 			{

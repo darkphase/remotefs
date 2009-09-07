@@ -86,7 +86,8 @@ static int check_root_uid()
 	if (getuid() != 0) /* i'm sorry Dave, but i can't do that */
 	{
 		WARN("WARNING: You can't run rfsd without root privileges: they are required to chroot to export directory. " \
-		"However, this warning can be disabled with -q option (`rfsd -q`) if you believe your OS will let you chroot without root privileges, but be prepared to get \"%s\" on client side.\n", 
+		"However, this warning can be disabled with -q option (`rfsd -q`) if you believe your OS will let you chroot without root privileges, "
+		"but be prepared to get \"%s\" on client side.\n", 
 		strerror(EPERM));
 
 		return -1;

@@ -118,7 +118,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 				return -EINVAL;
 			}
 			
-			if (joined == 0)
+			if (joined >= 0)
 			{
 				cache_file(instance, full_path, &stbuf); /* ignore result because cache may be full */
 			

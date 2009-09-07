@@ -143,12 +143,14 @@ static struct list* parse_list(const char *buffer, const char *border)
 	const char *local_buffer = buffer;
 	do
 	{
-		const char *delimiter = find_chr(local_buffer, border, ",(\n");
+		const char *delimiter = find_chr(local_buffer, border, ",()\n");
 		
 		if (delimiter > border)
 		{
 			break;
 		}
+		
+		local_buffer = trim_left(local_buffer, delimiter - local_buffer);
 		
 		int len = (delimiter != NULL ? delimiter - local_buffer : border - local_buffer);
 		
@@ -171,16 +173,16 @@ static struct list* parse_list(const char *buffer, const char *border)
 			break;
 		}
 		
-		local_buffer = trim_left(delimiter + 1, border - local_buffer);
+		local_buffer = delimiter + 1;
 	}
 	while (local_buffer < border);
 	
 	return ret;
 }
 
-static char* parse_line(const char *buffer, unsigned size, int start_from, struct rfs_export *line_export)
+static char* parse_line(const char *buffer, unsigned size, struct rfs_export *line_export)
 {
-	const char *local_buffer = buffer + start_from;
+	const char *local_buffer = buffer;
 	char *next_line = strchr(local_buffer, '\n');
 	const char *border = (next_line != NULL ? next_line : local_buffer + strlen(local_buffer));
 	
@@ -276,7 +278,7 @@ static char* parse_line(const char *buffer, unsigned size, int start_from, struc
 	return next_line == NULL ? NULL : next_line + 1;
 }
 
-static int validate_export(const struct rfs_export *line_export)
+static int validate_export(const struct rfs_export *line_export, struct list *exports)
 {
 #ifdef WITH_UGO
 	if ((line_export->options & OPT_UGO) != 0)
@@ -294,7 +296,7 @@ static int validate_export(const struct rfs_export *line_export)
 			const char *user = (const char *)user_item->data;
 			if (is_ipaddr(user))
 			{
-				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for the same export");
+				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for the same export.");
 				return -1;
 			}
 			
@@ -302,6 +304,22 @@ static int validate_export(const struct rfs_export *line_export)
 		}
 	}
 #endif
+
+	if (line_export->path != NULL)
+	{
+		struct list *item = exports;
+		while (item != NULL)
+		{
+			struct rfs_export *export = (struct rfs_export *)item->data;
+			if (strcmp(line_export->path, export->path) == 0)
+			{
+				ERROR("Duplicate export: %s\n", export->path);
+				return -1;
+			}
+
+			item = item->next;
+		}
+	}
 
 	return 0;
 }
@@ -363,20 +381,22 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		memset(line_export, 0, sizeof(*line_export));
 		line_export->export_uid = (uid_t)-1;
 		
-		next_line = parse_line(buffer, (unsigned)((buffer + size) - next_line), next_line - buffer, line_export);
+		next_line = parse_line(next_line, (buffer + size) - next_line, line_export);
 		if (next_line == (char *)-1)
 		{
 			free_buffer(line_export);
 			fclose(fd);
+			release_exports(exports);
 			return line_number;
 		}
 		
 		/* must be called before setting uid/gid to default values
 		because those are to be checked */
-		if (validate_export(line_export) != 0)
+		if (validate_export(line_export, *exports) != 0)
 		{
 			free_buffer(line_export);
 			fclose(fd);
+			release_exports(exports);
 			return line_number;
 		}
 		
