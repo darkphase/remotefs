@@ -77,7 +77,7 @@ static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned
 	int byte;
 	int len;
 	int diff = 1;   /* assume all is OK */
-	for (bit = byte = len = 0; len < prefix_len && byte < 16; byte++,bit++)
+	for (bit = byte = len = 0; len < prefix_len && byte < 16; len++,bit++)
 	{
 		if ( bit == 8 )
 		{
