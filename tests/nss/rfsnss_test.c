@@ -109,6 +109,18 @@ int main()
 	endpwent();
 	*/
 	
+	while (1)
+	{
+		struct group *grp = getgrent();
+
+		if (grp == NULL)
+		{
+			break;
+		}
+
+		printf("<<< %s, %d\n", grp->gr_name, grp->gr_gid);
+	}
+
 	return 0;
 }
 
