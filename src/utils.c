@@ -56,6 +56,11 @@ unsigned int is_ipv4_local(const char *ip_addr)
 #ifdef WITH_IPV6
 static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
+	if ( prefix_len > 128 )
+	{
+		return 0;
+	}
+
 	struct in6_addr addr6;
 	if (inet_pton(AF_INET6, addr, &addr6) != 1)
 	{
@@ -67,31 +72,27 @@ static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned
 	{
 		return 0;
 	}
-	
-	uint64_t mask_h = *(uint64_t *)mask6.s6_addr;
-	uint64_t addr_h = *(uint64_t *)addr6.s6_addr;
-	unsigned i = prefix_len; for (; i < sizeof(struct in6_addr) * 4; ++i)
-	{
-		mask_h &= (mask_h ^ (1LL << i));
-		addr_h &= (addr_h ^ (1LL << i));
-	}
-	*(uint64_t *)mask6.s6_addr = mask_h;
-	*(uint64_t *)addr6.s6_addr = addr_h;
 
-	if (prefix_len > 64)
+	int bit;
+	int byte;
+	int len;
+	int diff = 1;   /* assume all is OK */
+	for (bit = byte = len = 0; len < prefix_len && byte < 16; byte++,bit++)
 	{
-		uint64_t mask_l = *(uint64_t *)(mask6.s6_addr + sizeof(uint64_t));
-		uint64_t addr_l = *(uint64_t *)(addr6.s6_addr + sizeof(uint64_t));
-		i = prefix_len; for (; i < sizeof(struct in6_addr) * 8; ++i)
+		if ( bit == 8 )
 		{
-			mask_l &= (mask_l ^ (1LL << (i - 64)));
-			addr_l &= (addr_l ^ (1LL << (i - 64)));
+			byte++;
+			bit = 0;
 		}
-		*(uint64_t *)(mask6.s6_addr + sizeof(uint64_t)) = mask_l;
-		*(uint64_t *)(addr6.s6_addr + sizeof(uint64_t)) = addr_l;
+		uint8_t mask =  1<<(8-bit); /* bit value which must be the same */
+		if ( (addr6.s6_addr[byte] & mask) != (mask6.s6_addr[byte] & mask) )
+		{
+			/* not from the same subnet */
+			diff = 0;
+			break;
+		}
 	}
-
-	return (memcmp(addr6.s6_addr, mask6.s6_addr, sizeof(struct in6_addr)) == 0 ? 1 : 0);
+	return diff;
 }
 #endif
 
