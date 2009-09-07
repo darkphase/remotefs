@@ -76,7 +76,7 @@ static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned
 	int bit;
 	int byte;
 	int len;
-	int diff = 1;   /* assume all is OK */
+	int same = 1;   /* assume all is OK */
 	for (bit = byte = len = 0; len < prefix_len && byte < 16; len++,bit++)
 	{
 		if ( bit == 8 )
@@ -84,39 +84,49 @@ static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned
 			byte++;
 			bit = 0;
 		}
-		uint8_t mask =  1<<(8-bit); /* bit value which must be the same */
+		uint8_t mask =  1<<(7-bit); /* bit value which must be the same */
 		if ( (addr6.s6_addr[byte] & mask) != (mask6.s6_addr[byte] & mask) )
 		{
 			/* not from the same subnet */
-			diff = 0;
+			same = 0;
 			break;
 		}
 	}
-	return diff;
+	return same;
 }
 #endif
 
 static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
+	if ( prefix_len > 2<<sizeof(struct in_addr) )
+	{
+		return 0;
+	}
+
 	struct in_addr addr4;
 	if (inet_pton(AF_INET, addr, &addr4) != 1)
 	{
 		return 0;
 	}
 	
-	struct in_addr mask4;
-	if (inet_pton(AF_INET, net, &mask4) != 1)
+	struct in_addr net4;
+	if (inet_pton(AF_INET, net, &net4) != 1)
 	{
 		return 0;
 	}
 
-	unsigned i = prefix_len; for (; i < sizeof(mask4.s_addr) * 8; ++i)
+	unsigned i;
+	struct in_addr mask;
+	mask.s_addr = 0;
+	int bits = (2<<sizeof(struct in_addr))-1;
+	for (i = 0; i < prefix_len; ++i)
 	{
-		mask4.s_addr &= (mask4.s_addr ^ (1L << i));
-		addr4.s_addr &= (addr4.s_addr ^ (1L << i));
+		mask.s_addr |= (1L<<(bits-i));
 	}
 
-	return (addr4.s_addr == mask4.s_addr ? 1 : 0);
+	/* addresses are in NW order mask must also be in NW order */
+	mask.s_addr = htonl(mask.s_addr);
+	return ((addr4.s_addr & mask.s_addr) == (net4.s_addr & mask.s_addr)) ? 1 : 0;
 }
 
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len)
