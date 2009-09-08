@@ -101,8 +101,6 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 	)));
 	const char *group = user + user_len;
 
-	DEBUG("mode: %u, size: %lu\n", stbuf->st_mode, stbuf->st_size);
-
 	stbuf->st_uid = resolve_username(instance, user);
 	stbuf->st_gid = resolve_groupname(instance, group, user);
 
