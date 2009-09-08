@@ -126,15 +126,24 @@ void TestUtils::testHostIP()
 	const char *localhost4 = "localhost";
 	const char *localhost6 = "ip6-localhost";
 	const char *localhost_ip4 = "127.0.0.1";
+	const char *localhost_ip6 = "::1";
 
-	int family4 = AF_UNSPEC;
+	int family4 = AF_INET;
 	char *ip4 = host_ip(localhost4, &family4);
+	CPPUNIT_ASSERT(ip4 != NULL);
 	CPPUNIT_ASSERT(strcmp(ip4, localhost_ip4) == 0 && family4 == AF_INET);
 	free(ip4);
 
-	int family6 = AF_UNSPEC;
-	char *ip6 = host_ip(localhost6, &family6);
-	CPPUNIT_ASSERT(strcmp(ip6, localhost_ip4) == 0 && family6 == AF_INET);
+	int family6 = AF_INET6;
+	char *ip6 = host_ip(localhost4, &family6);
+
+	if (ip6 == NULL)
+	{
+		ip6 = host_ip(localhost6, &family6);
+	}
+
+	CPPUNIT_ASSERT(ip6 != NULL);
+	CPPUNIT_ASSERT(strcmp(ip6, localhost_ip6) == 0 && family6 == AF_INET6);
 	free(ip6);
 }
 
