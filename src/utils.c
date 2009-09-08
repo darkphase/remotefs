@@ -56,7 +56,7 @@ unsigned int is_ipv4_local(const char *ip_addr)
 static unsigned compare_maskbits(const unsigned char *addr, const unsigned char *net, unsigned bits_number)
 {
 	unsigned bits_checked = 0;
-	unsigned byte = 0; for (; byte < (bits_number + 1) / 8 && bits_checked < bits_number; ++byte)
+	unsigned byte = 0; for (; byte < (bits_number + 7) / 8 && bits_checked < bits_number; ++byte)
 	{
 		unsigned bit = 0; for (; bit < 8; ++bit, ++bits_checked)
 		{
