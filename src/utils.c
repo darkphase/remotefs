@@ -58,9 +58,9 @@ static unsigned compare_maskbits(const unsigned char *addr, const unsigned char 
 	unsigned bits_checked = 0;
 	unsigned byte = 0; for (; byte < (bits_number + 7) / 8 && bits_checked < bits_number; ++byte)
 	{
-		unsigned bit = 0; for (; bit < 8; ++bit, ++bits_checked)
+		unsigned bit = 0; for (; bit < 8 && bits_checked < bits_number; ++bit, ++bits_checked)
 		{
-			uint8_t mask =  1<<(7-bit); /* bit value which must be the same */
+			uint8_t mask = 1 << (7 - bit); /* bit value which must be the same */
 			if ( (addr[byte] & mask) != (net[byte] & mask) )
 			{
 				/* not from the same subnet */
