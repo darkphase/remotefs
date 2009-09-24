@@ -45,15 +45,27 @@ void TestUtils::testCompareNetmaskIPv4()
 	CPPUNIT_ASSERT(compare_netmask("1.2.3.4", "1.2.3.4", 0) != 0);
 	CPPUNIT_ASSERT(compare_netmask("1.2.3.4", "0.0.0.0", 0) != 0);
 
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.4", 32) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.4", 24) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.0", 24) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.4", 16) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.0.0", 16) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.4", 8) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.0.0.0", 8) == 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "1.2.3.4", 0) != 0);
-	CPPUNIT_ASSERT(compare_netmask("11.2.3.4", "0.0.0.0", 0) != 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.4", 32) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.4", 24) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.0", 24) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.4", 16) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.0.0", 16) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.4", 8) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.0.0.0", 8) == 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "1.2.3.4", 0) != 0);
+	CPPUNIT_ASSERT(compare_netmask("2.2.3.4", "0.0.0.0", 0) != 0);
+
+	CPPUNIT_ASSERT(compare_netmask("64.0.0.0", "255.0.0.0", 1) == 0);
+	CPPUNIT_ASSERT(compare_netmask("128.0.0.0", "255.0.0.0", 1) != 0);
+	CPPUNIT_ASSERT(compare_netmask("192.0.0.0", "255.0.0.0", 1) != 0);
+
+	CPPUNIT_ASSERT(compare_netmask("160.0.0.0", "255.0.0.0", 2) == 0);
+	CPPUNIT_ASSERT(compare_netmask("192.0.0.0", "255.0.0.0", 2) != 0);
+	CPPUNIT_ASSERT(compare_netmask("224.0.0.0", "255.0.0.0", 2) != 0);
+	
+	CPPUNIT_ASSERT(compare_netmask("208.0.0.0", "255.0.0.0", 3) == 0);
+	CPPUNIT_ASSERT(compare_netmask("224.0.0.0", "255.0.0.0", 3) != 0);
+	CPPUNIT_ASSERT(compare_netmask("240.0.0.0", "255.0.0.0", 3) != 0);
 }
 
 void TestUtils::testCompareNetmaskIPv6()
@@ -139,11 +151,12 @@ void TestUtils::testHostIP()
 
 	if (ip6 == NULL)
 	{
+		family6 = AF_UNSPEC;
 		ip6 = host_ip(localhost6, &family6);
 	}
 
 	CPPUNIT_ASSERT(ip6 != NULL);
-	CPPUNIT_ASSERT(strcmp(ip6, localhost_ip6) == 0 && family6 == AF_INET6);
+	CPPUNIT_ASSERT(strcmp(ip6, (family6 == AF_INET6 ? localhost_ip6 : localhost_ip4)) == 0);
 	free(ip6);
 }
 
