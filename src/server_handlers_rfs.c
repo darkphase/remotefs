@@ -77,6 +77,12 @@ static int check_permissions(struct rfsd_instance *instance, const struct rfs_ex
 				DEBUG("%s\n", "access is allowed by ip address");
 				return 0;
 			}
+			else if (client_ip > client_ip_addr 
+			&& compare_netmask(client_ip_addr, id, rec->prefix_len) != 0)
+			{
+				DEBUG("%s\n", "access is allowed by ip address");
+				return 0;
+			}
 		}
 		else if (instance->server.auth_user != NULL
 		&& instance->server.auth_passwd != NULL
