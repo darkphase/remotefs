@@ -51,36 +51,36 @@ static int check_password(struct rfsd_instance *instance)
 
 static int check_permissions(struct rfsd_instance *instance, const struct rfs_export *export_info, const char *client_ip_addr)
 {
+	const char *client_ip = client_ip_addr;
+
+#ifdef WITH_IPV6
+	const char ipv4_to_ipv6_mapping[] = "::ffff:";
+	if (strncmp(ipv4_to_ipv6_mapping, client_ip_addr, sizeof(ipv4_to_ipv6_mapping) - 1) == 0)
+	{
+		client_ip += sizeof(ipv4_to_ipv6_mapping) - 1;
+	}
+#endif
+
 	struct list *user_entry = export_info->users;
 	while (user_entry != NULL)
 	{
-		const char *user = (const char *)user_entry->data;
+		const struct user_rec *rec = (const struct user_rec *)user_entry->data;
+		const char *id = rec->id;
 		if (
 #ifdef WITH_UGO
 		(export_info->options & OPT_UGO) == 0 &&
 #endif
-		is_ipaddr(user) != 0)
+		is_ipaddr(id) != 0)
 		{
-#ifndef WITH_IPV6
-			if (strcmp(user, client_ip_addr) == 0)
+			if (compare_netmask(client_ip, id, rec->prefix_len) != 0)
 			{
 				DEBUG("%s\n", "access is allowed by ip address");
 				return 0;
 			}
-#else
-			if ( strcmp(user, client_ip_addr) == 0 ||
-			     (strncmp(client_ip_addr, "::ffff:", 7) == 0 &&
-			      strcmp(user, client_ip_addr+7) == 0)
-			   )
-			{
-				DEBUG("%s\n", "access is allowed by ip address");
-				return 0;
-			}
-#endif
 		}
 		else if (instance->server.auth_user != NULL
 		&& instance->server.auth_passwd != NULL
-		&& strcmp(user, instance->server.auth_user) == 0
+		&& strcmp(id, instance->server.auth_user) == 0
 		&& check_password(instance) == 0)
 		{
 			DEBUG("%s\n", "access is allowed by username and password");

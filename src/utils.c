@@ -75,6 +75,8 @@ static unsigned compare_maskbits(const unsigned char *addr, const unsigned char 
 #ifdef WITH_IPV6
 static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
+	DEBUG("comparing %s with %s/%u assuming it's ipv6\n", addr, net, prefix_len);
+
 	if ( prefix_len > 128 )
 	{
 		return 0;
@@ -98,6 +100,8 @@ static unsigned compare_ipv6_netmask(const char *addr, const char *net, unsigned
 
 static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
+	DEBUG("comparing %s with %s/%u assuming it's ipv4\n", addr, net, prefix_len);
+
 	if ( prefix_len > 2<<sizeof(struct in_addr) )
 	{
 		return 0;
@@ -121,7 +125,7 @@ static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
 #ifdef WITH_IPV6
-	if (strchr(addr, ':') != NULL)
+	if (strchr(addr, ':') != NULL && strchr(net, ':') != NULL)
 	{
 		return compare_ipv6_netmask(addr, net, prefix_len);
 	}

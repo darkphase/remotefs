@@ -39,6 +39,7 @@ void TestExports::tearDown()
 
 void TestExports::testCorrectParsing()
 {
+	// need to avoid duplicate entries in exports paths
 	const char *correct_exports[] = 
 		{ 
 		"/var alex, 127.0.0.1 ()", 
@@ -52,6 +53,9 @@ void TestExports::testCorrectParsing()
 		"", 
 		"#", 
 		"#/opt", 
+		"/lib 127.0.0.1/32", 
+		"/lib32 alex (ugo) ",           // input after options, but skippable
+		"/lib64 alex (ugo)\t",          // input after options, but skippable
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
 	size_t ignored_count = 0;
@@ -104,12 +108,13 @@ void TestExports::testWrongParsing()
 {
 	const char *wrong_exports[] = 
 		{
-		"/root",                              // no users
-		"/proc (ro)",                         // no users
-		"/boot 127.0.0.1 ( user=127.0.0.1 )", // wrong user=
-		"/lib alex (ro, ugo)",                // can't use ro with ugo
-		"/opt alex (user=alex, ugo)",         // can't use user= with ugo
-		"/var 127.0.0.1, alex (ugo)",         // can't use ipaddr with ugo
+		"/root",                                // no users
+		"/proc (ro)",                           // no users
+		"/boot 127.0.0.1 ( user=127.0.0.1 )",   // wrong user=
+		"/lib alex (ro, ugo)",                  // can't use ro with ugo
+		"/opt alex (user=alex, ugo)",           // can't use user= with ugo
+		"/var 127.0.0.1, alex (ugo)",           // can't use ipaddr with ugo
+		"/var 127.0.0.1, alex (ugo) 127.0.0.2", // input after options
 		};
 	const size_t wrong_count = sizeof(wrong_exports) / sizeof(wrong_exports[0]);
 

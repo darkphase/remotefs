@@ -180,6 +180,61 @@ static struct list* parse_list(const char *buffer, const char *border)
 	return ret;
 }
 
+static inline unsigned default_prefix_len(const char *ip_addr)
+{
+	DEBUG("defaulting prefix length for %s\n", ip_addr);
+
+#ifdef WITH_IPV6
+	if (strchr(ip_addr, ':') != NULL)
+	{
+		return 128;
+	}
+	else
+#endif
+	{
+		return 32;
+	}
+}
+
+static struct list* set_prefix_lengths(const struct list *users_list)
+{
+	struct list *fixed_users = NULL;
+
+	const struct list *item = users_list;
+	while (item != NULL)
+	{
+		const char *id = (const char *)item->data;
+		struct user_rec *rec = get_buffer(sizeof(*rec));
+
+		const char *delimiter = strchr(id, '/');
+		if (delimiter != NULL || is_ipaddr(id))
+		{
+			if (delimiter == NULL) /* is ip addr */
+			{
+				rec->id = buffer_dup(id, strlen(id) + 1);
+				rec->prefix_len = default_prefix_len(rec->id);
+			}
+			else
+			{
+				rec->id = buffer_dup_str(id, delimiter - id);
+				rec->prefix_len = (delimiter == id + strlen(id) - 1 ? default_prefix_len(rec->id) : atoi(delimiter + 1));
+			}
+
+		}
+		else
+		{
+			rec->id = buffer_dup(id, strlen(id) + 1);
+			rec->prefix_len = (unsigned)(-1);
+		}
+
+		add_to_list(&fixed_users, rec);
+		
+		item = item->next;
+	}
+
+	return fixed_users;
+}
+
 static char* parse_line(const char *buffer, unsigned size, struct rfs_export *line_export)
 {
 	const char *local_buffer = buffer;
@@ -237,7 +292,9 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 		return (char *)-1;
 	}
 
-	struct list *this_line_users = parse_list(users, users_end);
+	struct list *users_list = parse_list(users, users_end);
+	struct list *this_line_users = (users_list == NULL ? NULL : set_prefix_lengths(users_list));
+	destroy_list(&users_list);
 	
 	const char *options = find_chr(users_end, border, "(");
 	struct list *this_line_options = NULL;
@@ -251,10 +308,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 			
 			if (set_export_opts(line_export, this_line_options) != 0)
 			{
-				free_buffer(share);
-				destroy_list(&this_line_users);
-				destroy_list(&this_line_options);
-				return (char *)-1;
+				goto parse_error;
 			}
 			
 			if (this_line_options != NULL)
@@ -264,11 +318,14 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 		}
 		else
 		{
-			free_buffer(share);
-			destroy_list(&this_line_users);
-			destroy_list(&this_line_options);
-			
-			return (char *)-1;
+			goto parse_error;
+		}
+
+		/* check if there is nothing else after options list */
+		if (options_end + 1 < border 
+		&& trim_left(options_end + 1, border - (options_end + 1)) != border)
+		{
+			goto parse_error;
 		}
 	}
 	
@@ -276,6 +333,12 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	line_export->users = this_line_users;
 	
 	return next_line == NULL ? NULL : next_line + 1;
+
+parse_error:
+	free_buffer(share);
+	destroy_list(&this_line_users);
+	destroy_list(&this_line_options);
+	return (char *)-1;
 }
 
 static int validate_export(const struct rfs_export *line_export, struct list *exports)
@@ -293,8 +356,8 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		struct list *user_item = line_export->users;
 		while (user_item != NULL)
 		{
-			const char *user = (const char *)user_item->data;
-			if (is_ipaddr(user))
+			const struct user_rec *rec = (const struct user_rec *)user_item->data;
+			if (is_ipaddr(rec->id))
 			{
 				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for the same export.");
 				return -1;
@@ -379,6 +442,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 
 		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
 		memset(line_export, 0, sizeof(*line_export));
+		
 		line_export->export_uid = (uid_t)-1;
 		
 		next_line = parse_line(next_line, (buffer + size) - next_line, line_export);
@@ -389,7 +453,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 			release_exports(exports);
 			return line_number;
 		}
-		
+
 		/* must be called before setting uid/gid to default values
 		because those are to be checked */
 		if (validate_export(line_export, *exports) != 0)
@@ -466,11 +530,12 @@ static void dump_export(const struct rfs_export *single_export)
 	DEBUG("%s%s", "users: ", user == NULL ? "\n" : "");
 	while (user != NULL)
 	{
-		const char *username = (char *)user->data;
+		const struct user_rec *rec = (const struct user_rec *)user->data;
 		
-		DEBUG("'%s' (%s)%s", 
-		username, 
-		is_ipaddr(username) ? "ip address" : "username", 
+		DEBUG("'%s/%u' (%s)%s", 
+		rec->id, 
+		rec->prefix_len, 
+		is_ipaddr(rec->id) ? "ip address" : "username", 
 		user->next == NULL ? "\n" : ", ");
 		
 		user = user->next;
@@ -479,9 +544,7 @@ static void dump_export(const struct rfs_export *single_export)
 	DEBUG("options: %d\n", single_export->options);
 	DEBUG("export uid: %d\n", single_export->export_uid);
 }
-#endif /* RFS_DEBUG */
 
-#ifdef RFS_DEBUG
 void dump_exports(const struct list *exports)
 {
 	DEBUG("%s", "dumping exports set:\n");

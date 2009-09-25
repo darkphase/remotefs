@@ -19,6 +19,14 @@ extern "C" {
 
 struct list;
 
+/** user information
+prefix_len is optional and set for ip-addresses only */
+struct user_rec
+{
+	char *id;
+	unsigned prefix_len;
+};
+
 /** export information */
 struct rfs_export
 {
