@@ -36,6 +36,9 @@ void* extract_from_list(struct list **head, struct list *item);
 /** delete whole list */
 void destroy_list(struct list **head);
 
+/** *count* list length */
+unsigned list_length(const struct list *head);
+
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif

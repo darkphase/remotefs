@@ -47,6 +47,10 @@ void release_exports(struct list **exports);
 /** get export info by export path */
 const struct rfs_export* get_export(const struct list *exports, const char *path);
 
+/** parse string delimited by ','
+@border pointer to the end of the string */
+struct list* parse_list(const char *buffer, const char *border);
+
 #ifdef RFS_DEBUG
 extern void dump_exports(const struct list *exports);
 #endif

@@ -136,7 +136,7 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 	return 0;
 }
 
-static struct list* parse_list(const char *buffer, const char *border)
+struct list* parse_list(const char *buffer, const char *border)
 {
 	struct list *ret = NULL;
 	
@@ -487,6 +487,16 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 static void release_export(struct rfs_export *single_export)
 {
 	free_buffer(single_export->path);
+
+	struct list *user_item = single_export->users;
+	while (user_item != NULL)
+	{
+		struct user_rec *rec = (struct user_rec *)user_item->data;
+		free_buffer(rec->id);
+
+		user_item = user_item->next;
+	}
+
 	destroy_list(&(single_export->users));
 	single_export->users = NULL;
 }
@@ -527,16 +537,15 @@ static void dump_export(const struct rfs_export *single_export)
 	DEBUG("path: '%s'\n", single_export->path);
 
 	struct list *user = single_export->users;
-	DEBUG("%s%s", "users: ", user == NULL ? "\n" : "");
+	DEBUG("%s\n", "users: ");
 	while (user != NULL)
 	{
 		const struct user_rec *rec = (const struct user_rec *)user->data;
 		
-		DEBUG("'%s/%u' (%s)%s", 
+		DEBUG("'%s/%u' (%s)\n", 
 		rec->id, 
 		rec->prefix_len, 
-		is_ipaddr(rec->id) ? "ip address" : "username", 
-		user->next == NULL ? "\n" : ", ");
+		is_ipaddr(rec->id) ? "ip address" : "username");
 		
 		user = user->next;
 	}

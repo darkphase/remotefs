@@ -104,3 +104,17 @@ void destroy_list(struct list **head)
 	*head = NULL;
 }
 
+unsigned list_length(const struct list *head)
+{
+	size_t count = 0;
+
+	const struct list *item = head;
+	while (item != NULL)
+	{
+		++count;
+		item = item->next;
+	}
+
+	return count;
+}
+

@@ -27,6 +27,8 @@ void TestList::testList()
 		CPPUNIT_ASSERT(add_to_list(&root, new int(i)) != NULL);
 	}
 
+	CPPUNIT_ASSERT(list_length(root) == (range_stop - range_start));
+
 	struct list *item = root;
 	size_t current = 0;
 	while (item != NULL)

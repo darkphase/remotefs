@@ -13,6 +13,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "instance_server.h"
+#include "list.h"
 #include "passwd.h"
 #ifdef WITH_SSL
 #	include "ssl_server.h"
@@ -20,19 +21,27 @@ See the file LICENSE.
 #include "sug_common.h"
 #include "utils.h"
 
-static int check_listen_address(const char *address)
+static int check_listen_addresses(const struct list *addresses)
 {
 	/* resolving won't happen for listen address,
 	so this is always an ip-address */
-	
-	if (
-#ifdef WITH_IPV6
-	is_ipv6_local(address) == 0 &&
-#endif
-	is_ipv4_local(address) == 0)
+
+	const struct list *address_item = addresses;
+	while (address_item != NULL)
 	{
-		WARN("WARNING: You are listening on interface outside of private network (%s).\n", address);
-		return -1;
+		const char *address = (const char *)(address_item->data);
+	
+		if (
+#ifdef WITH_IPV6
+		is_ipv6_local(address) == 0 &&
+#endif
+		is_ipv4_local(address) == 0)
+		{
+			WARN("WARNING: You are listening on interface outside of private network (%s).\n", address);
+			return -1;
+		}
+
+		address_item = address_item->next;
 	}
 	
 	return 0;
@@ -110,7 +119,7 @@ int suggest_server(const struct rfsd_instance *instance)
 {
 	int ret = 0;
 	
-	if (check_listen_address(instance->config.listen_address) != 0)
+	if (check_listen_addresses(instance->config.listen_addresses) != 0)
 	{
 		ret = -1;
 	}

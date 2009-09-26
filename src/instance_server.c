@@ -14,6 +14,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance.h"
 #include "instance_server.h"
+#include "list.h"
 
 static void init_cleanup(struct rfsd_instance *instance)
 {
@@ -55,9 +56,9 @@ static void init_pause(struct rfsd_instance *instance)
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
 #ifndef WITH_IPV6
-	instance->config.listen_address = strdup(DEFAULT_IPV4_ADDRESS);
+	add_to_list(&instance->config.listen_addresses, strdup(DEFAULT_IPV4_ADDRESS));
 #else
-	instance->config.listen_address = strdup(DEFAULT_IPV6_ADDRESS);
+	add_to_list(&instance->config.listen_addresses, strdup(DEFAULT_IPV6_ADDRESS));
 #endif
 	instance->config.listen_port = DEFAULT_SERVER_PORT;
 	instance->config.worker_uid = geteuid();
@@ -97,7 +98,7 @@ void init_rfsd_instance(struct rfsd_instance *instance)
 
 void release_rfsd_instance(struct rfsd_instance *instance)
 {
-	free(instance->config.listen_address);
+	destroy_list(&(instance->config.listen_addresses));
 	free(instance->config.pid_file);
 	free(instance->config.exports_file);
 	free(instance->config.passwd_file);

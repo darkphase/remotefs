@@ -231,11 +231,7 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	return -1;
 }
 
-#ifndef WITH_IPV6
 int handle_connection(struct rfsd_instance *instance, int client_socket, const struct sockaddr_in *client_addr)
-#else
-int handle_connection(struct rfsd_instance *instance, int client_socket, const struct sockaddr_storage *client_addr)
-#endif
 {
 	instance->sendrecv.socket = client_socket;
 	instance->sendrecv.connection_lost = 0;

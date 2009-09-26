@@ -14,6 +14,7 @@ See the file LICENSE.
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "compat.h"
 #include "options.h"
@@ -21,6 +22,8 @@ See the file LICENSE.
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
+
+struct list;
 
 #define DEFAULT_SERVER_PORT     5001
 #define KEEP_ALIVE_PERIOD       60 * 5      /* secs */
@@ -41,6 +44,8 @@ extern "C" {
 #ifdef WITH_IPV6
 #define DEFAULT_IPV6_ADDRESS    "::"
 #endif
+#define LISTEN_BACKLOG          10
+#define MAX_LISTEN_ADDRESSES    16
 
 #define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \
 	+ sizeof(uint64_t) /* size */                   \
@@ -49,7 +54,6 @@ extern "C" {
 	+ sizeof(uint64_t) /* ctime */                  \
 	+ sizeof(uint32_t) /* nlink */                  \
 	+ sizeof(uint32_t) /* blocks */                 \
-
 
 #ifdef RFS_DEBUG
 #define DEFAULT_PASSWD_FILE      "./rfs-passwd"
@@ -81,7 +85,7 @@ extern "C" {
 #define RFS_NSS_SHARED_OPTION   "-a"
 
 #ifdef RFS_DEBUG
-#        define DEBUG(format, args...) do { fprintf(stderr, format, args); } while (0)
+#        define DEBUG(format, args...) do { fprintf(stderr, "%u: ", (unsigned)getpid()); fprintf(stderr, format, args); } while (0)
 #else
 #        define DEBUG(format, args...) {}
 #endif
@@ -123,7 +127,7 @@ struct rfs_config
 /** server options */
 struct rfsd_config
 {
-	char *listen_address;
+	struct list* listen_addresses;
 	char *pid_file;
 	unsigned int listen_port;
 	uid_t worker_uid;
