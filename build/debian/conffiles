@@ -1,2 +1,3 @@
 /etc/init.d/rfsd
 /etc/rfs-exports
+/etc/default/rfsd

@@ -178,10 +178,12 @@ rfsdmanpages: dummy
 	cp build/man/gz/man8/rfspasswd.8.gz dpkg_man/man8/
 
 rfsdetc: dummy
-	mkdir -p "dpkg_etc/init.d/";
-	cp build/etc/rfs-exports "dpkg_etc/";
-	chmod 600 "dpkg_etc/rfs-exports";
-	cp build/init.d/rfsd.debian "dpkg_etc/init.d/rfsd";
+	mkdir -p "dpkg_etc/init.d/"
+	mkdir -p "dpkg_etc/default/"
+	cp build/etc/rfs-exports "dpkg_etc/"
+	chmod 600 "dpkg_etc/rfs-exports"
+	cp build/init.d/rfsd.debian "dpkg_etc/init.d/rfsd"
+	cp build/debian/default/rfsd "dpkg_etc/default/rfsd"
 	chmod +x "dpkg_etc/init.d/rfsd"
 
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
@@ -319,22 +321,23 @@ rfsdipk: dummy ipkbase
 	    echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).ipk"; \
 	fi
 	
-	$(MAKE) -sf build/Makefiles/base.mk clean_tmp;
-	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk ipkbase;
-	mkdir -p "ipkg/rfsd/etc/init.d";
-	$(MAKE) -f build/Makefiles/base.mk clean_build;
-	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null;
-	$(MAKE) -f build/Makefiles/base.mk clean_build;
-	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null;
-	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/";
-	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/";
-	cp build/init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd";
-	chmod +x "ipkg/rfsd/etc/init.d/rfsd";
-	cp build/etc/rfs-exports "ipkg/rfsd/etc/";
-	chmod 600 "ipkg/rfsd/etc/rfs-exports";
-	cp build/kamikaze/conffiles "ipkg/rfsd/CONTROL/";
-	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk buildipk;
-	$(MAKE) -sf build/Makefiles/base.mk clean_tmp;
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp
+	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk ipkbase
+	mkdir -p "ipkg/rfsd/etc/init.d"
+	$(MAKE) -f build/Makefiles/base.mk clean_build
+	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk clean_build
+	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null
+	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/"
+	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/"
+	cp build/init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd"
+	chmod +x "ipkg/rfsd/etc/init.d/rfsd"
+	cp build/etc/rfs-exports "ipkg/rfsd/etc/"
+	chmod 600 "ipkg/rfsd/etc/rfs-exports"
+	cp build/kamikaze/conffiles "ipkg/rfsd/CONTROL/"
+	chmod 644 "ipkg/rfsd/CONTROL/conffiles"
+	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk buildipk
+	$(MAKE) -sf build/Makefiles/base.mk clean_tmp
 	
 buildipk: dummy
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \

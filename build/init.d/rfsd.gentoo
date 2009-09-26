@@ -36,14 +36,14 @@ start() {
       checkconfig || return 1
       ebegin "Starting rfsd"
       start-stop-daemon --start --quiet --oknodo \
-        --pidfile ${PIDFILE} --exec /usr/bin/rfsd -- \
-        -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
+        --pidfile ${RFSD_PIDFILE} --exec /usr/bin/rfsd -- \
+        -a ${RFSD_LISTEN} -p ${RFSD_PORT} -u ${RFSD_USER} -r ${RFSD_PIDFILE} ${RFSD_QUIET}
       eend $?
 }
 
 stop() {
       ebegin "Stopping rfsd"
-      start-stop-daemon --stop --quiet --oknodo --pidfile ${PIDFILE}
+      start-stop-daemon --stop --quiet --oknodo --pidfile ${RFSD_PIDFILE}
       eend $?
 }
 
@@ -54,8 +54,8 @@ restart() {
 
 reload() {
       ebegin "Reloading rfsd"
-      kill -HUP `cat ${PIDFILE}` && \
-        /usr/bin/rfsd -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}
+      kill -HUP `cat ${RFSD_PIDFILE}` && \
+        /usr/bin/rfsd -a ${RFSD_LISTEN} -p ${RFSD_PORT} -u ${RFSD_RFSD_USER} -r ${RFSD_PIDFILE} ${RFSD_QUIET}
       eend $?
 }
 

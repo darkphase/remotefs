@@ -13,18 +13,13 @@ set -e
 
 # /etc/init.d/rfsd: start and stop the remote filesystem daemon
 
+. /etc/default/rfsd
 . /lib/lsb/init-functions
-
-LISTEN="0.0.0.0"
-PORT="5001"
-RFSD_USER="root"
-PIDFILE="/var/run/rfsd.pid"
-#QUIET="-q"
 
 case "$1" in
 	start)
 		log_daemon_msg "Starting rfsd"
-		if start-stop-daemon --start --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd -- -a ${LISTEN} -p ${PORT} -u ${RFSD_USER} -r ${PIDFILE} ${QUIET}; then 
+		if start-stop-daemon --start --oknodo --pidfile /var/run/rfsd.pid --exec /usr/bin/rfsd -- -a ${RFSD_LISTEN} -p ${RFSD_PORT} -u ${RFSD_USER} -r ${RFSD_PIDFILE} ${RFSD_QUIET}; then 
 			log_end_msg 0
 		else
 			log_end_msg 1
@@ -43,7 +38,7 @@ case "$1" in
 		$0 start
 		;;
 	reload)
-		kill -s HUP `cat ${PIDFILE}`
+		kill -s HUP `cat ${RFSD_PIDFILE}`
 		$0 start
 		;;
 	*)
