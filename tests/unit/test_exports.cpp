@@ -42,20 +42,20 @@ void TestExports::testCorrectParsing()
 	// need to avoid duplicate entries in exports paths
 	const char *correct_exports[] = 
 		{ 
-		"/var alex, 127.0.0.1 ()", 
-		"/bin alex, 127.0.0.1", 
-		"/tmp alex (ugo)", 
+		"/var root, 127.0.0.1 ()", 
+		"/bin root, 127.0.0.1", 
+		"/tmp root (ugo)", 
 		"/sbin 127.0.0.1 ( ro)", 
-		"/home/alex alex (user=alex )", 
-		"/home 127.0.0.1,alex( ro,user=root )", 
+		"/home/alex root (user=root )", 
+		"/home 127.0.0.1,root( ro,user=root )", 
 		" /usr 127.0.0.1", 
-		"\t/sys alex", 
+		"\t/sys root", 
 		"", 
 		"#", 
 		"#/opt", 
 		"/lib 127.0.0.1/32", 
-		"/lib32 alex (ugo) ",           // input after options, but skippable
-		"/lib64 alex (ugo)\t",          // input after options, but skippable
+		"/lib32 root (ugo) ",           // input after options, but skippable
+		"/lib64 root (ugo)\t",          // input after options, but skippable
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
 	size_t ignored_count = 0;
@@ -111,10 +111,10 @@ void TestExports::testWrongParsing()
 		"/root",                                // no users
 		"/proc (ro)",                           // no users
 		"/boot 127.0.0.1 ( user=127.0.0.1 )",   // wrong user=
-		"/lib alex (ro, ugo)",                  // can't use ro with ugo
-		"/opt alex (user=alex, ugo)",           // can't use user= with ugo
-		"/var 127.0.0.1, alex (ugo)",           // can't use ipaddr with ugo
-		"/var 127.0.0.1, alex (ugo) 127.0.0.2", // input after options
+		"/lib root (ro, ugo)",                  // can't use ro with ugo
+		"/opt root (user=root, ugo)",           // can't use user= with ugo
+		"/var 127.0.0.1, root (ugo)",           // can't use ipaddr with ugo
+		"/var 127.0.0.1, root (ugo) 127.0.0.2", // input after options
 		};
 	const size_t wrong_count = sizeof(wrong_exports) / sizeof(wrong_exports[0]);
 
@@ -138,7 +138,7 @@ void TestExports::testDupesParsing()
 {
 	const char *dup_exports[] = 
 		{
-		"/root alex (ugo)", 
+		"/root root (ugo)", 
 		"/root 127.0.0.1 (ro)", 
 		};
 	const size_t dup_count = sizeof(dup_exports) / sizeof(dup_exports[0]);
