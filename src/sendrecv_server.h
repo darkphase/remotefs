@@ -11,7 +11,7 @@ See the file LICENSE.
 
 /** send/recv for server */
 
-#ifdef SOLARIS
+#if defined SOLARIS || defined FREEBSD || defined QNX
 #include <sys/socket.h>
 #endif
 
