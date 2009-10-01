@@ -66,6 +66,8 @@ void TestUtils::testCompareNetmaskIPv4()
 	CPPUNIT_ASSERT(compare_netmask("208.0.0.0", "255.0.0.0", 3) == 0);
 	CPPUNIT_ASSERT(compare_netmask("224.0.0.0", "255.0.0.0", 3) != 0);
 	CPPUNIT_ASSERT(compare_netmask("240.0.0.0", "255.0.0.0", 3) != 0);
+	
+	CPPUNIT_ASSERT(compare_netmask("127.0.0.1", "127.0.0.2", 32) == 0);
 }
 
 void TestUtils::testCompareNetmaskIPv6()

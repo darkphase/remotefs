@@ -56,6 +56,10 @@ void TestExports::testCorrectParsing()
 		"/lib 127.0.0.1/32", 
 		"/lib32 root (ugo) ",           // input after options, but skippable
 		"/lib64 root (ugo)\t",          // input after options, but skippable
+		"/etc root@127.0.0.1", 
+		"/emul root@127.0.0.1/32", 
+		"/boot root@::1/128", 
+		"/dev root@::1/80", 
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
 	size_t ignored_count = 0;
@@ -115,6 +119,8 @@ void TestExports::testWrongParsing()
 		"/opt root (user=root, ugo)",           // can't use user= with ugo
 		"/var 127.0.0.1, root (ugo)",           // can't use ipaddr with ugo
 		"/var 127.0.0.1, root (ugo) 127.0.0.2", // input after options
+		"/etc root@127.0.0.1/33",               // too long prefix
+		"/etc root@::1/129",                    // too long prefix
 		};
 	const size_t wrong_count = sizeof(wrong_exports) / sizeof(wrong_exports[0]);
 

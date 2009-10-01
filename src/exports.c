@@ -196,7 +196,7 @@ static inline unsigned default_prefix_len(const char *ip_addr)
 	}
 }
 
-static struct list* set_prefix_lengths(const struct list *users_list)
+static struct list* parse_users(const struct list *users_list)
 {
 	struct list *fixed_users = NULL;
 
@@ -206,33 +206,92 @@ static struct list* set_prefix_lengths(const struct list *users_list)
 		const char *id = (const char *)item->data;
 		struct user_rec *rec = get_buffer(sizeof(*rec));
 
-		const char *delimiter = strchr(id, '/');
-		if (delimiter != NULL || is_ipaddr(id))
+		rec->username = NULL;
+		rec->network = NULL;
+		rec->prefix_len = (unsigned)-1;
+
+		DEBUG("%s\n", id);
+
+		const char *prefix_delimiter = strchr(id, '/');
+		const char *network_delimiter = strchr(id, '@');
+
+		if (prefix_delimiter != NULL 
+		&& prefix_delimiter - id != strlen(id))
 		{
-			if (delimiter == NULL) /* is ip addr */
+			rec->prefix_len = atoi(prefix_delimiter + 1);
+		}
+
+		if (network_delimiter != NULL) /* it's something like root@127.0.0.1 */
+		{
+			rec->username = buffer_dup_str(id, network_delimiter - id);
+			rec->network = buffer_dup_str(network_delimiter + 1, 
+				prefix_delimiter != NULL 
+				? prefix_delimiter - network_delimiter - 1 
+				: strlen(id) - (network_delimiter + 1 - id));
+
+			if (prefix_delimiter == NULL)
 			{
-				rec->id = buffer_dup(id, strlen(id) + 1);
-				rec->prefix_len = default_prefix_len(rec->id);
+				rec->prefix_len = default_prefix_len(rec->network);
+			}
+
+			DEBUG("%s %s\n", rec->username, rec->network);
+		}
+		else if (prefix_delimiter == NULL) /* no network delimiter and no prefix length */
+		{
+			if (is_ipaddr(id) != 0)
+			{
+				rec->network = buffer_dup(id, strlen(id) + 1);
+				rec->prefix_len = default_prefix_len(id);
 			}
 			else
 			{
-				rec->id = buffer_dup_str(id, delimiter - id);
-				rec->prefix_len = (delimiter == id + strlen(id) - 1 ? default_prefix_len(rec->id) : atoi(delimiter + 1));
+				rec->username = buffer_dup(id, strlen(id) + 1);
 			}
-
 		}
-		else
+		else /* prefix delimiter ('/') is present, but no network delimiter ('@') */
 		{
-			rec->id = buffer_dup(id, strlen(id) + 1);
-			rec->prefix_len = (unsigned)(-1);
-		}
+			rec->network = buffer_dup_str(id, prefix_delimiter - id);
 
+			if (is_ipaddr(rec->network) == 0)
+			{
+				goto error;
+			}
+		}
+		
 		add_to_list(&fixed_users, rec);
 		
 		item = item->next;
 	}
 
 	return fixed_users;
+
+error:
+
+	{
+
+	struct list *fixed_item = fixed_users;
+	while (fixed_item != NULL)
+	{
+		struct user_rec *rec = (struct user_rec *)fixed_item->data;
+
+		if (rec->username != NULL)
+		{
+			free_buffer(rec->username);
+		}
+
+		if (rec->network != NULL)
+		{
+			free_buffer(rec->network);
+		}
+
+		fixed_item = fixed_item->next;
+	}
+
+	destroy_list(&fixed_users);
+	
+	return (struct list *)(-1);
+
+	}
 }
 
 static char* parse_line(const char *buffer, unsigned size, struct rfs_export *line_export)
@@ -251,7 +310,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 		return next_line == NULL ? NULL : next_line + 1;
 	}
 	
-	const char *share_end = find_chr(local_buffer, border, "\t ()");
+	const char *share_end = find_chr(local_buffer, border, "\t ");
 	if (share_end == NULL)
 	{
 		return (char *)-1;
@@ -293,9 +352,14 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	}
 
 	struct list *users_list = parse_list(users, users_end);
-	struct list *this_line_users = (users_list == NULL ? NULL : set_prefix_lengths(users_list));
+	struct list *this_line_users = (users_list == NULL ? NULL : parse_users(users_list));
 	destroy_list(&users_list);
-	
+
+	if (this_line_users == (struct list *)(-1))
+	{
+		return (char *)(-1);
+	}
+
 	const char *options = find_chr(users_end, border, "(");
 	struct list *this_line_options = NULL;
 	
@@ -349,7 +413,9 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		if ((line_export->options & OPT_RO) != 0
 		|| line_export->export_uid != -1)
 		{
-			ERROR("%s\n", "Export validation error: you can't specify \"ro\" or \"user=\" options simultaneously with \"ugo\" option. \"ugo\" will handle all security related issues for this export.");
+			ERROR("Export validation error: you can't specify \"ro\" or \"user=\" options simultaneously "
+			"with \"ugo\" option. \"ugo\" will handle all security related issues for this export (%s).\n", 
+			line_export->path);
 			return -1;
 		}
 		
@@ -357,9 +423,11 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		while (user_item != NULL)
 		{
 			const struct user_rec *rec = (const struct user_rec *)user_item->data;
-			if (is_ipaddr(rec->id))
+			if (rec->username == NULL)
 			{
-				ERROR("%s\n", "Export validation error: you can't authenticate user by IP-address while using \"ugo\" option for the same export.");
+				ERROR("Export validation error: you can't authenticate user by IP-addresses "
+				"while using \"ugo\" option for the same export (%s).\n", 
+				line_export->path);
 				return -1;
 			}
 			
@@ -367,6 +435,38 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		}
 	}
 #endif
+
+	struct list *user_item = line_export->users;
+	while (user_item != NULL)
+	{
+		struct user_rec *rec = (struct user_rec *)user_item->data;
+		if (rec->network != NULL)
+		{
+			unsigned too_long_prefix = 0;
+#ifdef WITH_IPV6
+			if (strchr(rec->network, ':') != NULL)
+			{
+				if (rec->prefix_len > 128)
+				{
+					too_long_prefix = 1;
+				}
+			}
+			else
+#endif
+			if (rec->prefix_len > 32)
+			{
+				too_long_prefix = 1;
+			}
+
+			if (too_long_prefix != 0)
+			{
+				ERROR("Too long prefix length (%u) for network %s\n", rec->prefix_len, rec->network);
+				return -1;
+			}
+		}
+
+		user_item = user_item->next;
+	}
 
 	if (line_export->path != NULL)
 	{
@@ -492,8 +592,16 @@ static void release_export(struct rfs_export *single_export)
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
-		free_buffer(rec->id);
+		if (rec->username != NULL)
+		{
+			free_buffer(rec->username);
+		}
 
+		if (rec->network != NULL)
+		{
+			free_buffer(rec->network);
+		}
+		
 		user_item = user_item->next;
 	}
 
@@ -542,10 +650,10 @@ static void dump_export(const struct rfs_export *single_export)
 	{
 		const struct user_rec *rec = (const struct user_rec *)user->data;
 		
-		DEBUG("'%s/%u' (%s)\n", 
-		rec->id, 
-		rec->prefix_len, 
-		is_ipaddr(rec->id) ? "ip address" : "username");
+		DEBUG("'%s@%s/%u'\n", 
+		rec->username != NULL ? rec->username : "", 
+		rec->network != NULL ? rec->network : "", 
+		rec->prefix_len);
 		
 		user = user->next;
 	}

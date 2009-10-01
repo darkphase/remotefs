@@ -23,7 +23,8 @@ struct list;
 prefix_len is optional and set for ip-addresses only */
 struct user_rec
 {
-	char *id;
+	char *username;
+	char *network;
 	unsigned prefix_len;
 };
 

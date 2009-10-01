@@ -61,35 +61,61 @@ static int check_permissions(struct rfsd_instance *instance, const struct rfs_ex
 	}
 #endif
 
+	DEBUG("client ip: %s\n", client_ip);
+
 	struct list *user_entry = export_info->users;
 	while (user_entry != NULL)
 	{
 		const struct user_rec *rec = (const struct user_rec *)user_entry->data;
-		const char *id = rec->id;
-		if (
+
 #ifdef WITH_UGO
-		(export_info->options & OPT_UGO) == 0 &&
-#endif
-		is_ipaddr(id) != 0)
+		if ((export_info->options & OPT_UGO) != 0 
+		&& rec->username == NULL)
 		{
-			if (compare_netmask(client_ip, id, rec->prefix_len) != 0)
-			{
-				DEBUG("%s\n", "access is allowed by ip address");
-				return 0;
-			}
-			else if (client_ip > client_ip_addr 
-			&& compare_netmask(client_ip_addr, id, rec->prefix_len) != 0)
-			{
-				DEBUG("%s\n", "access is allowed by ip address");
-				return 0;
-			}
+			user_entry = user_entry->next;
+			continue;
 		}
-		else if (instance->server.auth_user != NULL
-		&& instance->server.auth_passwd != NULL
-		&& strcmp(id, instance->server.auth_user) == 0
-		&& check_password(instance) == 0)
+#endif
+
+		unsigned can_pass = 1;
+
+		if (rec->network != NULL)
 		{
-			DEBUG("%s\n", "access is allowed by username and password");
+			if (compare_netmask(client_ip, rec->network, rec->prefix_len) == 0)
+			{
+				can_pass = 0;
+			}
+
+#ifdef WITH_IPV6
+			/* do double check because ::ffff:/80 might not be allowed in exports
+			but actual IPv4 address might be */
+			if (can_pass == 0 
+			&& client_ip > client_ip_addr 
+			&& compare_netmask(client_ip_addr, rec->network, rec->prefix_len) != 0)
+			{
+				can_pass = 1;
+			}
+#endif
+		
+			DEBUG("passed check for network %s/%u: %u\n", rec->network, rec->prefix_len, can_pass);
+		}
+
+
+		if (rec->username != NULL)
+		{
+			if (instance->server.auth_user == NULL
+			|| instance->server.auth_passwd == NULL
+			|| strcmp(rec->username, instance->server.auth_user) != 0
+			|| check_password(instance) != 0)
+			{
+				can_pass = 0;
+			}
+			
+			DEBUG("passed check for username %s: %u\n", rec->username, can_pass);
+		}
+
+		if (can_pass != 0)
+		{
 			return 0;
 		}
 		

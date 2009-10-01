@@ -33,7 +33,7 @@ int reject_request(struct rfsd_instance *instance, const struct command *cmd, in
 int reject_request_with_cleanup(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno);
 
 int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_connection(struct rfsd_instance *instance, int client_socket, const struct sockaddr_in *client_addr);
+int handle_connection(struct rfsd_instance *instance, int client_socket, const struct sockaddr_storage *client_addr);
 
 /** close connection */
 void server_close_connection(struct rfsd_instance *instance);

@@ -242,7 +242,7 @@ static int start_server(const struct list *addresses, const unsigned port, unsig
 			{
 				int listen_socket = listen_sockets[i];
 				
-				struct sockaddr_in client_addr;
+				struct sockaddr_storage client_addr;
 				socklen_t addr_len = sizeof(client_addr);
 
 				int client_socket = accept(listen_socket, (struct sockaddr *)&client_addr, &addr_len);
@@ -254,16 +254,17 @@ static int start_server(const struct list *addresses, const unsigned port, unsig
 #ifdef RFS_DEBUG
 				char straddr[256] = { 0 };
 #ifdef WITH_IPV6
-				inet_ntop(client_addr.sin_family, 
-				client_addr.sin_family == AF_INET 
-					? (const void *)&((struct sockaddr_in*)&client_addr)->sin_addr 
-					: (const void *)&((struct sockaddr_in6*)&client_addr)->sin6_addr, 
-				straddr, sizeof(straddr));
-#else
-				inet_ntop(AF_INET, &((struct sockaddr_in*)&client_addr)->sin_addr, straddr, sizeof(straddr));
+				if (client_addr.ss_family == AF_INET6)
+				{
+					inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr, sizeof(straddr));
+				}
+				else
 #endif
+				{
+					inet_ntop(AF_INET, &((struct sockaddr_in*)&client_addr)->sin_addr, straddr, sizeof(straddr));
+				}
 
-				DEBUG("incoming connection from %s\n",straddr);
+				DEBUG("incoming connection from %s\n", straddr);
 #endif /* RFS_DEBUG */
 				
 				if (fork() == 0) /* child */
