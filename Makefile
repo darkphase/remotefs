@@ -161,5 +161,6 @@ rfsnss_man:
 	@$(MAKE) -sf build/Makefiles/base.mk rfsnss_man
 man: dummy rfs_man rfsd_man rfsnss_man
 
--include $(CUSTOM_MK)
+# This don't work with FreeBSD and Solaris
+#include $(CUSTOM_MK)
 
