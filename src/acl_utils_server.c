@@ -105,6 +105,6 @@ uint32_t id_lookup_resolve(uint16_t type, const char *name, size_t name_len, voi
 	return ACL_UNDEFINED_ID;
 }
 #else
-int acö_utils_server = 0;
+int acl_utils_server = 0;
 #endif /* ACL_AVAILABLE */
 
