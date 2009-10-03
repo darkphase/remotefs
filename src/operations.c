@@ -30,11 +30,31 @@ See the file LICENSE.
 #include "resume.h"
 #include "sendrecv_client.h"
 
+static inline int flush_file(struct rfs_instance *instance, const char *path)
+{	
+	uint64_t desc = is_file_in_open_list(instance, path);
+
+	if (desc != (uint64_t)-1)
+	{
+		return flush_write(instance, path, desc);
+	}
+
+	return 0;
+}
+
 int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *stbuf)
 {
 	if (instance->sendrecv.socket == -1)
 	{
 		return -ECONNABORTED;
+	}
+
+	/* see comments for _rfs_utime 
+	and some sofware is getting file attrs without flushing it 
+	so if data is still in write cache, this software might get wrong stats */
+	if (flush_file(instance, path) < 0)
+	{
+		return -ECANCELED;
 	}
 
 	const struct tree_item *cached_value = get_cache(instance, path);
@@ -114,25 +134,6 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);
 }
 
-static inline int flush_for_utime(struct rfs_instance *instance, const char *path)
-{
-	/* yes, it's strange indeed, that file is flushing during utime and utimens calls
-	however, remotefs may cache write operations until release call
-	so if utime[ns] is called before release() (just like for `cp -p`)
-	then folowing release() and included flush() will invalidate modification time and etc
-
-	so flushing is here */
-
-	uint64_t desc = is_file_in_open_list(instance, path);
-
-	if (desc != (uint64_t)-1)
-	{
-		return flush_write(instance, path, desc);
-	}
-
-	return 0;
-}
-
 int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *buf)
 {
 	if (instance->sendrecv.socket == -1)
@@ -140,7 +141,13 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 		return -ECONNABORTED;
 	}
 
-	if (flush_for_utime(instance, path) < 0)
+	/* yes, it's strange indeed, that file is flushing during utime and utimens calls
+	however, remotefs may cache write operations until release call
+	so if utime[ns] is called before release() (just like for `cp -p`)
+	then folowing release() and included flush() will invalidate modification time and etc
+
+	so flushing is here */
+	if (flush_file(instance, path) < 0)
 	{
 		return -ECANCELED;
 	}
@@ -207,7 +214,8 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 		return -ECONNABORTED;
 	}
 
-	if (flush_for_utime(instance, path) < 0)
+	/* see comments for utime */
+	if (flush_file(instance, path) < 0)
 	{
 		return -ECANCELED;
 	}
