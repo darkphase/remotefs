@@ -9,7 +9,7 @@
 # examples:
 #
 # just fileserver:
-# /tmp 127.0.0.1, alex, 10.0.0.0/8
+# /tmp 127.0.0.1, alex@10.0.0.0/8
 # /tmp 127.0.0.1, alex, 10.0.0.2 (ro)
 # /tmp 0.0.0.0/0 (ro)
 #
@@ -18,8 +18,10 @@
 # /tmp 127.0.0.1 (user=rfs)
 #
 # UGO model enabled: (if compiled with it)
-# /tmp alex (ugo)
+# /tmp alex@10.0.0.2 (ugo)
 #
-# make note, that you can not authenticate user 
-# by IP-address if UGO is enabled
+# NOTE: you can not authenticate user 
+# by network or IP-address only if UGO is enabled
+# username is obligatory while using this mode
+# (everything else is optional)
 
