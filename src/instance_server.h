@@ -88,6 +88,7 @@ struct rfsd_instance
 	struct rfsd_config config;
 };
 
+#define DECLARE_RFSD_INSTANCE(name) extern struct rfsd_instance (name)
 #define DEFINE_RFSD_INSTANCE(name) struct rfsd_instance (name) = { { 0 } }
 
 /* initialise rfsd instance */

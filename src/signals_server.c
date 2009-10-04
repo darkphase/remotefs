@@ -15,6 +15,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "rfsd.h"
+#include "server.h"
 #include "signals.h"
 
 static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontext_t_casted)
@@ -43,11 +44,11 @@ static void signal_handler_server(int signal, siginfo_t *sig_info, void *ucontex
 	case SIGHUP:
 	case SIGTERM:
 	case SIGINT:
-		stop_server();
+		stop_server(&rfsd_instance);
 		exit(0);
 		
 	case SIGALRM:
-		check_keep_alive();
+		check_keep_alive(&rfsd_instance);
 		break;
 		
 	case SIGPIPE:

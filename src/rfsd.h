@@ -9,17 +9,15 @@ See the file LICENSE.
 #ifndef RFSD_H
 #define RFSD_H
 
+#include "instance_server.h"
+
 /** server interface, basically for signals */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-/** shutdown server */
-void stop_server(void);
-
-/** check if keep-alive has expired */
-void check_keep_alive(void);
+DECLARE_RFSD_INSTANCE(rfsd_instance);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

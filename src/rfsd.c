@@ -13,7 +13,6 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
-#include <sys/stat.h>
 
 #include "config.h"
 #include "exports.h"
@@ -28,288 +27,11 @@ See the file LICENSE.
 #endif
 #include "server.h"
 #include "signals_server.h"
-#include "sockets.h"
 #include "sug_server.h"
 #include "version.h"
 
 static int daemonize = 1;
-
-static DEFINE_RFSD_INSTANCE(rfsd_instance);
-
-static int create_pidfile(const char *pidfile)
-{
-	FILE *fp = fopen(pidfile, "wt");
-	if (fp == NULL)
-	{
-		return -1;
-	}
-	
-	if (fprintf(fp, "%lu", (long unsigned)getpid()) < 1)
-	{
-		fclose(fp);
-		return -1;
-	}
-	
-	fclose(fp);
-	
-	return 0;
-}
-
-static void release_server(struct rfsd_instance *instance)
-{
-	release_exports(&rfsd_instance.exports.list);
-	release_passwords(&rfsd_instance.passwd.auths);
-
-	unlink(rfsd_instance.config.pid_file);
-	release_rfsd_instance(&rfsd_instance);
-}
-
-static int start_server(const struct list *addresses, const unsigned port, unsigned force_ipv4, unsigned force_ipv6)
-{
-	install_signal_handlers_server();
-
-	int listen_sockets[MAX_LISTEN_ADDRESSES];
-	memset(listen_sockets, -1, sizeof(listen_sockets) / sizeof(listen_sockets[0]));
-	unsigned listen_number = 0;
-	int max_socket_number = -1;
-
-	const struct list *address_item = addresses;
-	while (address_item != NULL)
-	{
-		const char *address = (const char *)address_item->data;
-		int listen_family = -1;
-
-		struct sockaddr_in addr = { 0 };
-		addr.sin_family = AF_INET;
-		addr.sin_port = htons(port);
-
-#ifdef WITH_IPV6
-		struct sockaddr_in6 addr6 = { 0 };
-		addr6.sin6_family = AF_INET6;
-		addr6.sin6_port = htons(port);
-#endif
-		
-		errno = 0;
-		if (inet_pton(AF_INET, address, &(addr.sin_addr)) == 1)
-		{
-			listen_family = AF_INET;
-		}
-#ifdef WITH_IPV6
-		else if (inet_pton(AF_INET6, address, &(addr6.sin6_addr)) == 1)
-		{
-			listen_family = AF_INET6;
-		}
-#endif
-		
-		if (listen_family == -1)
-		{
-			ERROR("Invalid address for listening to: %s\n", address);
-			return -1;
-		}
-
-		int listen_socket = -1;
-
-		errno = 0;
-		if (listen_family == AF_INET)
-		{
-			listen_socket = socket(PF_INET, SOCK_STREAM, 0);
-		}
-#ifdef WITH_IPV6
-		else if (listen_family == AF_INET6)
-		{
-			listen_socket = socket(PF_INET6, SOCK_STREAM, 0);
-		}
-#endif
-
-		if (listen_socket == -1)
-		{	
-			ERROR("Error creating listen socket for %s: %s\n", address, strerror(errno));
-			return 1;
-		}
-
-		listen_sockets[listen_number] = listen_socket;
-		++listen_number;
-		max_socket_number = (max_socket_number < listen_socket ? listen_socket : max_socket_number);
-
-		errno = 0;
-		if (setup_socket_reuse(listen_socket, 1) != 0)
-		{
-			ERROR("Error setting reuse option for %s: %s\n", address, strerror(errno));
-			return 1;
-		}
-
-#if defined WITH_IPV6
-		if (force_ipv6 != 0)
-		{
-			if (setup_socket_ipv6_only(listen_socket) != 0)
-			{
-				ERROR("Error setting IPv6-only option for %s: %s\n", address, strerror(errno));
-				return 1;
-			}
-		}
-#endif
-
-		if (listen_family == AF_INET)
-		{
-			errno = 0;
-			if (bind(listen_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0)
-			{
-				ERROR("Error binding to %s: %s\n", address, strerror(errno));
-				return 1;
-			}
-
-		}
-#ifdef WITH_IPV6
-		else if (listen_family == AF_INET6)
-		{			
-			errno = 0;
-			if (bind(listen_socket, (struct sockaddr*)&addr6, sizeof(addr6)) != 0)
-			{
-				ERROR("Error binding to %s: %s\n", address, strerror(errno));
-				return 1;
-			}
-		}
-#endif
-
-		if (listen(listen_socket, LISTEN_BACKLOG) != 0)
-		{
-			ERROR("Error listening to %s: %s\n", address, strerror(errno));
-			return 1;
-		}
-
-#ifdef WITH_IPV6
-		DEBUG("listening to %s interface: %s (%d)\n", listen_family == AF_INET ? "IPv4" : "IPv6", address, port);
-#else
-		DEBUG("listening to IPv4 interface: %s (%d)\n", address, port);
-#endif
-			
-		address_item = address_item->next;
-	}
-
-	/* the server should not apply it own mask while mknod
-	file or directory creation is called. These settings
-	are allready done by the client */
-	umask(0);
-
-#ifndef RFS_DEBUG
-	if (chdir("/") != 0)
-	{
-		return 1;
-	}
-	
-	if (daemonize)
-	{
-		fclose(stdin);
-		fclose(stdout);
-		fclose(stderr);
-	}
-#endif
-	
-	while (1)
-	{
-		fd_set listen_set;
-
-		FD_ZERO(&listen_set);
-		unsigned i = 0; for (; i < listen_number; ++i)
-		{
-			FD_SET(listen_sockets[i], &listen_set);
-		}
-		
-		errno = 0;
-		int retval = select(max_socket_number + 1, &listen_set, NULL, NULL, NULL);
-
-		if (errno == EINTR || errno == EAGAIN)
-		{
-			continue;
-		}
-
-		if (retval < 0)
-		{
-			DEBUG("select retval: %d: %s\n", retval, strerror(errno));
-			return -1;
-		}
-			
-		DEBUG("select retval: %d\n", retval);
-
-		if (retval < 1)
-		{
-			continue;
-		}
-
-		for (i = 0; i < listen_number; ++i)
-		{
-			if (FD_ISSET(listen_sockets[i], &listen_set))
-			{
-				int listen_socket = listen_sockets[i];
-				
-				struct sockaddr_storage client_addr;
-				socklen_t addr_len = sizeof(client_addr);
-
-				int client_socket = accept(listen_socket, (struct sockaddr *)&client_addr, &addr_len);
-				if (client_socket == -1)
-				{
-					continue;
-				}
-		
-#ifdef RFS_DEBUG
-				char straddr[256] = { 0 };
-#ifdef WITH_IPV6
-				if (client_addr.ss_family == AF_INET6)
-				{
-					inet_ntop(AF_INET6, &((struct sockaddr_in6*)&client_addr)->sin6_addr, straddr, sizeof(straddr));
-				}
-				else
-#endif
-				{
-					inet_ntop(AF_INET, &((struct sockaddr_in*)&client_addr)->sin_addr, straddr, sizeof(straddr));
-				}
-
-				DEBUG("incoming connection from %s\n", straddr);
-#endif /* RFS_DEBUG */
-				
-				if (fork() == 0) /* child */
-				{
-					unsigned j = 0; for (; j < listen_number; ++j)
-					{
-						close(listen_sockets[j]);
-					}
-
-#ifdef SCHEDULING_AVAILABLE
-					setup_socket_ndelay(client_socket, 1);
-					set_scheduler();
-#endif
-
-					return handle_connection(&rfsd_instance, client_socket, &client_addr);
-				}
-				else
-				{
-					close(client_socket);
-				}		
-			}
-		}
-	}
-}
-
-void stop_server()
-{
-	server_close_connection(&rfsd_instance);
-	release_server(&rfsd_instance);
-
-	exit(0);
-}
-
-void check_keep_alive()
-{
-	if (keep_alive_locked(&rfsd_instance) != 0
-	&& keep_alive_expired(&rfsd_instance) == 0)
-	{
-		DEBUG("%s\n", "keep alive expired");
-		server_close_connection(&rfsd_instance);
-		exit(1);
-	}
-	
-	alarm(keep_alive_period());
-}
+DEFINE_RFSD_INSTANCE(rfsd_instance);
 
 static void usage(const char *app_name)
 {
@@ -516,25 +238,18 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif 
+	
+	install_signal_handlers_server();
 
-	if (create_pidfile(rfsd_instance.config.pid_file) != 0)
-	{
-		ERROR("Error creating pidfile: %s\n", rfsd_instance.config.pid_file);
-		release_server(&rfsd_instance);
-		exit(1);
-	}
-
-	int ret = start_server(rfsd_instance.config.listen_addresses, 
-		rfsd_instance.config.listen_port, 
+	int ret = start_server(&rfsd_instance, daemonize, 
 #ifdef WITH_IPV6
-		rfsd_instance.config.force_ipv4, rfsd_instance.config.force_ipv6
+	rfsd_instance.config.force_ipv4, rfsd_instance.config.force_ipv6
 #else
-		1, 0
+	1, 0
 #endif
-		);
-	
+	);
+
 	release_server(&rfsd_instance);
-	
 	return ret;
 }
 

@@ -11,14 +11,6 @@ See the file LICENSE.
 
 /** server routines */
 
-#include <arpa/inet.h>
-#if defined FREEBSD || defined QNX
-# include <sys/socket.h>
-#endif
-#if defined FREEBSD
-# include <netinet/in.h>
-#endif
-
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
@@ -32,11 +24,21 @@ int reject_request(struct rfsd_instance *instance, const struct command *cmd, in
 /** reject client's request with cleaning socket from incoming data */
 int reject_request_with_cleanup(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno);
 
-int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-int handle_connection(struct rfsd_instance *instance, int client_socket, const struct sockaddr_storage *client_addr);
+/** start listening and accepting connections */
+int start_server(struct rfsd_instance *instance, unsigned daemonize, unsigned force_ipv4, unsigned force_ipv6);
+
+/** close connection, release server and exit */
+void stop_server(struct rfsd_instance *instance);
 
 /** close connection */
 void server_close_connection(struct rfsd_instance *instance);
+
+/** release resource allocated by server
+including pidfile, exports, passwords and etc */
+void release_server(struct rfsd_instance *instance);
+
+/** check if keep-alive has expired */
+void check_keep_alive(struct rfsd_instance *instance);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

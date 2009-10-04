@@ -6,6 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <arpa/inet.h>
 #include <errno.h>
 #include <grp.h>
 #include <pwd.h>
