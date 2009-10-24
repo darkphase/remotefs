@@ -8,6 +8,13 @@ OS:sh=uname
 
 # user-specific make targets
 CUSTOM_MK=custom.mk
+ifeq ($(V), 99)
+export V=
+export OUTPUT=&1
+else
+export V=s
+export OUTPUT="/dev/null"
+endif
 
 # reset component to build
 
@@ -28,7 +35,7 @@ help:
 	@more build/Makefiles/help
 
 debug: dummy
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -sf build/Makefiles/base.mk rfsd rfspasswd rfs libnss nss
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -$(V)f build/Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
 all release: $(ALL) #server client libnss nss
 
@@ -37,49 +44,49 @@ server: rfsd rfspasswd
 client: rfs
 
 rfs: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfs
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfs
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 librfs: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk librfs
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk librfs
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 rfsd: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsd
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsd
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 rfspasswd: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfspasswd
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfspasswd
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 libnss: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk libnss
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk libnss
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 nss: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk nss
-	@$(MAKE) -sf build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk nss
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
 
 dummy:
-	@$(MAKE) -sf build/Makefiles/version.mk make_version
+	@$(MAKE) -$(V)f build/Makefiles/version.mk make_version
 
 #######################################
 # Rules for cleaning,and dpendencied
 #######################################
 clean:
-	@$(MAKE) -sf build/Makefiles/base.mk clean
+	@$(MAKE) -$(V)f build/Makefiles/base.mk clean
 
 depends:
 	@$(MAKE) -f build/Makefiles/base.mk depends
 
 force_version:
-	@$(MAKE) -sf build/Makefiles/version.mk force_version
+	@$(MAKE) -$(V)f build/Makefiles/version.mk force_version
 
 ########################################
 # Rules for packaging, ...
@@ -87,80 +94,80 @@ force_version:
 
 rfsrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsrpm
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsrpm
 rfsdrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsdrpm
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdrpm
 rfsnssrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsnssrpm
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssrpm
 rpms: rfsrpm rfsdrpm rfsnssrpm
 
 rfsdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsdeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdeb
 rfsddeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsddeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsddeb
 rfsnssdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsnssdeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssdeb
 debs: rfsdeb rfsddeb rfsnssdeb
 
 rfsdipk: force_version dummy
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -sf build/Makefiles/base.mk rfsdipk
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdipk
 	
 ipks: rfsdipk
 
 rfsdebuild: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk rfsdebuild
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsdebuild
 rfsebuild: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk rfsebuild
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsebuild
 rfssslebuild: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk rfssslebuild
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfssslebuild
 rfsnssebuild: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk rfsnssebuild
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsnssebuild
 ebuilds: rfsdebuild rfsebuild rfssslebuild rfsnssebuild
 
 tbz: dummy
-	@$(MAKE) -sf build/Makefiles/base.mk tbz
+	@$(MAKE) -$(V)f build/Makefiles/base.mk tbz
 	
 install_client:
-	@$(MAKE) -sf build/Makefiles/librfs.mk install_librfs
-	@$(MAKE) -sf build/Makefiles/rfs.mk install_rfs
+	@$(MAKE) -$(V)f build/Makefiles/librfs.mk install_librfs
+	@$(MAKE) -$(V)f build/Makefiles/rfs.mk install_rfs
 install_server:
-	@$(MAKE) -sf build/Makefiles/rfsd.mk install_rfsd
-	@$(MAKE) -sf build/Makefiles/rfspasswd.mk install_rfspasswd
+	@$(MAKE) -$(V)f build/Makefiles/rfsd.mk install_rfsd
+	@$(MAKE) -$(V)f build/Makefiles/rfspasswd.mk install_rfspasswd
 install: dummy install_client install_server
-	@$(MAKE) -sf build/Makefiles/base.mk install_man
+	@$(MAKE) -$(V)f build/Makefiles/base.mk install_man
 
 install_nss: dummy 
-	@$(MAKE) -sf build/Makefiles/libnss.mk install_libnss
-	@$(MAKE) -sf build/Makefiles/nssd.mk install_nssd
-	@$(MAKE) -sf build/Makefiles/base.mk install_man
+	@$(MAKE) -$(V)f build/Makefiles/libnss.mk install_libnss
+	@$(MAKE) -$(V)f build/Makefiles/nssd.mk install_nssd
+	@$(MAKE) -$(V)f build/Makefiles/base.mk install_man
 
 uninstall_client:
-	@$(MAKE) -sf build/Makefiles/librfs.mk uninstall_librfs
-	@$(MAKE) -sf build/Makefiles/rfs.mk uninstall_rfs
+	@$(MAKE) -$(V)f build/Makefiles/librfs.mk uninstall_librfs
+	@$(MAKE) -$(V)f build/Makefiles/rfs.mk uninstall_rfs
 uninstall_server:
-	@$(MAKE) -sf build/Makefiles/rfsd.mk uninstall_rfsd
-	@$(MAKE) -sf build/Makefiles/rfspasswd.mk uninstall_rfspasswd
+	@$(MAKE) -$(V)f build/Makefiles/rfsd.mk uninstall_rfsd
+	@$(MAKE) -$(V)f build/Makefiles/rfspasswd.mk uninstall_rfspasswd
 uninstall: dummy uninstall_client uninstall_server
-	@$(MAKE) -sf build/Makefiles/base.mk uninstall_man
+	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall_man
 
 uninstall_nss: dummy
-	@$(MAKE) -sf build/Makefiles/nssd.mk uninstall_nssd
-	@$(MAKE) -sf build/Makefiles/libnss.mk uninstall_libnss
-	@$(MAKE) -sf build/Makefiles/base.mk uninstall_man
+	@$(MAKE) -$(V)f build/Makefiles/nssd.mk uninstall_nssd
+	@$(MAKE) -$(V)f build/Makefiles/libnss.mk uninstall_libnss
+	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall_man
 
 rfs_man:
-	@$(MAKE) -sf build/Makefiles/base.mk rfs_man
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfs_man
 rfsd_man:
-	@$(MAKE) -sf build/Makefiles/base.mk rfsd_man
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsd_man
 rfsnss_man:
-	@$(MAKE) -sf build/Makefiles/base.mk rfsnss_man
+	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsnss_man
 man: dummy rfs_man rfsd_man rfsnss_man
 
 # This don't work with FreeBSD and Solaris
-#include $(CUSTOM_MK)
+#-include $(CUSTOM_MK)
 

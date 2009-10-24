@@ -163,7 +163,7 @@ rfsmanpages: dummy
 rfsdeb: dummy clean_tmp debbase rfsmanpages
 	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	mkdir -p "dpkg$(INSTALL_DIR)/lib";
-	$(MAKE) -f build/Makefiles/base.mk rfs >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfs >$(OUTPUT)
 	cp rfs "dpkg$(INSTALL_DIR)/bin/";
 	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
 	ln -sf "librfs.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfs.$(SO_EXT)"
@@ -189,9 +189,9 @@ rfsdetc: dummy
 rfsddeb: dummy clean_tmp debbase rfsdmanpages rfsdetc
 	echo "Building package rfsd_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfspasswd >$(OUTPUT)
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfsd >$(OUTPUT)
 	cp rfsd "dpkg$(INSTALL_DIR)/bin/";
 	cp rfspasswd "dpkg$(INSTALL_DIR)/bin/";
 	cp build/debian/conffiles dpkg/DEBIAN/
@@ -213,9 +213,9 @@ rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	cp build/debian/rfs_nss/post* build/debian/rfs_nss/pre* dpkg/DEBIAN/
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk librfs >/dev/null
-	$(MAKE) -f build/Makefiles/base.mk libnss >/dev/null
-	$(MAKE) -f build/Makefiles/base.mk nss >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk librfs >$(OUTPUT)
+	$(MAKE) -f build/Makefiles/base.mk libnss >$(OUTPUT)
+	$(MAKE) -f build/Makefiles/base.mk nss >$(OUTPUT)
 	mkdir -p "dpkg/lib";
 	cp rfs_nssd "dpkg$(INSTALL_DIR)/bin/";
 	cp libnss_rfs.so.2 "dpkg/lib/";
@@ -247,7 +247,7 @@ builddeb: dummy
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	fakeroot chown -R 0:0 dpkg/;
-	fakeroot dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >/dev/null;
+	fakeroot dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >$(OUTPUT)
 	$(MAKE) -f build/Makefiles/base.mk clean_bins
 	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
 
@@ -258,7 +258,7 @@ builddeb: dummy
 rfsrpm: dummy
 	$(MAKE) -f build/Makefiles/base.mk clean_tmp
 	$(MAKE) -f build/Makefiles/base.mk man
-	RPMNAME=rfs $(MAKE) -sf build/Makefiles/base.mk buildrpm
+	RPMNAME=rfs $(MAKE) -f build/Makefiles/base.mk buildrpm
 	$(MAKE) -f build/Makefiles/base.mk clean_tmp
 	
 rfsdrpm: dummy
@@ -298,7 +298,7 @@ buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	chmod 700 $(RPMNAME)-$(VERSION)/build/init.d/*
 	tar -cpzf rpmbuild/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
 	rm -fr $(RPMNAME)-$(VERSION)
-	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >/dev/null 2>&1
+	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >$(OUTPUT) 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
 	$(MAKE) -f build/Makefiles/base.mk clean_bins
 	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
@@ -325,9 +325,9 @@ rfsdipk: dummy ipkbase
 	IPKNAME=rfsd $(MAKE) -f build/Makefiles/base.mk ipkbase
 	mkdir -p "ipkg/rfsd/etc/init.d"
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk rfspasswd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfspasswd >$(OUTPUT)
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk rfsd >/dev/null
+	$(MAKE) -f build/Makefiles/base.mk rfsd >$(OUTPUT)
 	cp rfsd "ipkg/rfsd$(INSTALL_DIR)/bin/"
 	cp rfspasswd "ipkg/rfsd$(INSTALL_DIR)/bin/"
 	cp build/init.d/rfsd.kamikaze "ipkg/rfsd/etc/init.d/rfsd"
@@ -342,16 +342,16 @@ rfsdipk: dummy ipkbase
 buildipk: dummy
 	sed -e "s/INSERT ARCH HERE, PLEASE/${ARCH}/" \
 	-e "s/VERSION GOES HERE/${VERSION}-${RELEASE}/" \
-	"build/kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control";
-	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)";
-	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . >/dev/null;
+	"build/kamikaze/control.$(IPKNAME)" >"ipkg/$(IPKNAME)/CONTROL/control"
+	fakeroot chown -R 0:0 "ipkg/$(IPKNAME)"
+	fakeroot ipkg-build -c "ipkg/$(IPKNAME)" . >$(OUTPUT)
 	
 	if [ -z "$(EXPERIMENTAL)" ]; then \
 	    mv "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH).ipk" "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk";\
 	fi
 	
-	$(MAKE) -f build/Makefiles/base.mk clean_bins;
-	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp;
+	$(MAKE) -f build/Makefiles/base.mk clean_bins
+	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
 
 #############################
 # Gentoo ebuilds
