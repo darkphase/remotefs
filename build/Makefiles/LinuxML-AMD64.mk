@@ -4,6 +4,7 @@ include build/Makefiles/Linux.mk
 # OS / CC specifics flags
 ################################
 
+ARCH="amd64"
 CFLAGS_OS      += -m64 -I/usr/include
 
 ###############################
