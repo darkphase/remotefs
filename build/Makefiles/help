@@ -7,41 +7,53 @@ rpms:      Create packages for Redhat/Fedora
 rpm-rfs:   Create client package for Redhat/Fedora
 rpm-rfsd:  Create server package for Redhat/Fedora
 ebuild:    Create Gentoo-ebuilds
+ipks:      Create OpenWrt packages (server only)
+rfsdipk:   Create OpenWrt server package
 
-release:   Create all binaries
-all:       Create all binaries
+release:   Build all binaries
+all:       Same as "release"
 
 rfs:       Build client
 rfsd:      Build server
-rfspasswd: Build utility for managing server passwords
+rfspasswd: Build utility for managing server's passwords
 
 tbz:       Create the versioned remotefs tarball
 
 clean:     Remove all temporary files
-depends:   Rebuild the dependency file Makefiles/depends.mk
+depends:   Rebuild the dependency file (build/Makefiles/depends.mk)
 
 help:      Show this message
 
 debug:     Create all binaries with debug code
 
+
 Creating binaries with an alternative compiler:
 -----------------------------------------------
 
-The following with compile with the Sun Studio Compiler
-suite under Linux: make release ALT=SunGcc
+Add ALT environment variable as in ALT="T-MIPSEL make rfsdipk". 
+This will build rfsd ipkg-package using LinuxT-MIPSEL.mk file 
+located at build/Makefiles/ under Linux. Or "`uname`T-MIPSEL.mk" file
+in general.
 
-If you want to use the Intel Compiler, make sure that icc
-is within your PATH and call: make release ALT=Icc
 
-The following with cross compile for an arm processor:
-make release ALT=LS-GLv2
-
-Build remotefs with different features as for example IPv6 support:
+Enabling/disabling features
 -------------------------------------------------------------
 
-Edit the file Makefiles/options.mk and uncomment the lines corresponding to
-the feature you want to include.
+See build/Makefiles/options.mk. Comment or uncomment lines defining 
+different features.
 
-If you want IPv6 support, remove the fisrt '#' from the line
-#OPT_1=-DWITH_IPV6
+For example, if you don't need IPv6 support, comment out line 
+with OPT_1=-DWITH_IPV6
+
+
+Install directory
+-------------------------------------------------------------
+
+Used for `make install` and `make uninstall`. See build/Makefiles/install.mk.
+
+
+Verbose build
+-------------------------------------------------------------
+
+You could add V=99 for verbose output as in "V=99 make rfsdeb"
 
