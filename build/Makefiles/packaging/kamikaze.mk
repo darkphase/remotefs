@@ -13,8 +13,6 @@ clean_kamikaze: dummy clean_kamikaze_tmp
 # Build ipkg
 #############################
 
-ipk: ipk-rfsd
-
 ipkbase: dummy
 	mkdir -p "ipkg/$(IPKNAME)/CONTROL/";
 	mkdir -p "ipkg/$(IPKNAME)$(INSTALL_DIR)/bin";
