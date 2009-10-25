@@ -16,25 +16,32 @@ SRC_URI="http://downloads.sourceforge.net/remotefs/remotefs-VERSION HERE.tar.bz2
 
 BUILDDIR=INSERT BUILDDIR HERE
 
+compile() {
+    ALT="Gentoo" make -C "${BUILDDIR}/" libnss nss rfsnss_man
+}
+
+src_compile() {
+    compile
+}
+
 setup_install() {
     # install root
-    echo "INSTALL_DIR=${D}/usr/" > "${BUILDDIR}/Makefiles/install.mk"
+    echo "INSTALL_DIR=${D}/usr/" > "${BUILDDIR}/build/Makefiles/install.mk"
     
     mkdir -p "${D}/usr/sbin/"
 }
 
-src_compile() {
-    ALT="Gentoo" make -C "${BUILDDIR}/" libnss nss rfsnss_man
-}
-
-src_install() {
-    setup_install
-
+install() {
     make -C "${BUILDDIR}/" install_nss
     
     cp "${BUILDDIR}/build/sbin/rfsnsswitch.sh" "${D}/usr/sbin/"
     chmod 700 "${D}/usr/sbin/rfsnsswitch.sh"
     chown root:root "${D}/usr/sbin/rfsnsswitch.sh"
+}
+
+src_install() {
+    setup_install
+    install
 }
 
 pkg_postinst() {
