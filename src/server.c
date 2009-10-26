@@ -25,9 +25,6 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "list.h"
 #include "passwd.h"
-#ifdef WITH_PAUSE 
-#include "scheduling.h"
-#endif
 #include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_sync.h"
@@ -122,9 +119,6 @@ static int handle_command(struct rfsd_instance *instance, const struct sockaddr_
 		return handle_release(instance, client_addr, cmd);
 	
 	case cmd_read:
-#ifdef WITH_PAUSE
-		pause_rdwr(instance);
-#endif
 		return handle_read(instance, client_addr, cmd);
 	
 	case cmd_statfs:
@@ -150,9 +144,6 @@ static int handle_command(struct rfsd_instance *instance, const struct sockaddr_
 		return handle_truncate(instance, client_addr, cmd);
 
 	case cmd_write:
-#ifdef WITH_PAUSE
-		pause_rdwr(instance);
-#endif
 		return handle_write(instance, client_addr, cmd);
 
 	case cmd_mkdir:

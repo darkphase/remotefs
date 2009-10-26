@@ -15,52 +15,13 @@ See the file LICENSE.
 #include "options.h"
 
 #ifdef SCHEDULING_AVAILABLE
-#	include "scheduling.h"
-#endif
-
-#if defined WITH_PAUSE
-
-#include <stdio.h>
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "instance_server.h"
-
-void pause_rdwr(struct rfsd_instance *instance)
-{
-	struct timeval act = { 0 }; /* all variables are must be initialized */
-	long dt = 0;
-
-	gettimeofday(&act, NULL);
-	if ( instance->pause.last.tv_sec == 0 )
-	{
-		instance->pause.last.tv_sec = act.tv_sec;
-		instance->pause.last.tv_usec = act.tv_usec;
-	}
-
-	dt = ((act.tv_sec - instance->pause.last.tv_sec) * 1000000) +
-	     act.tv_usec - instance->pause.last.tv_usec;
-	if ( dt > 100000 && dt < 120000 )
-	{
-		struct timespec ts = { 0, 10000000 };
-		nanosleep(&ts, NULL);
-		gettimeofday(&(instance->pause.last), NULL);
-	}
-	else if ( dt >= 120000 )
-	{
-		instance->pause.last.tv_sec  = act.tv_sec;
-		instance->pause.last.tv_usec = act.tv_usec;
-	}
-}
-#endif /* WITH_PAUSE */
-
-#ifdef SCHEDULING_AVAILABLE
 
 #include <pthread.h>
 #include <pthread_impl.h>
 #include <sched.h>
 #include <string.h>
+
+#include "scheduling.h"
 
 void set_scheduler(void)
 {
@@ -72,7 +33,7 @@ void set_scheduler(void)
 
 #endif /* SCHEDULING_AVAILABLE */
 
-#if ! (defined SCHEDULING_AVAILABLE || defined WITH_PAUSE)
+#if ! (defined SCHEDULING_AVAILABLE)
 int scheduling_not_used = 0;
 #endif
 

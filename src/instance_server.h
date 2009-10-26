@@ -77,13 +77,6 @@ struct rfsd_instance
 	struct ssl_info ssl;
 #endif
 
-#ifdef WITH_PAUSE
-	struct
-	{
-		struct timeval last;
-	} pause;
-#endif
-
 	/* server's config */
 	struct rfsd_config config;
 };

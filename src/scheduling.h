@@ -21,12 +21,6 @@ void set_scheduler(void);
 
 #endif /* SCHEDULING_AVAILABLE */
 
-#ifdef WITH_PAUSE
-struct rfsd_instance;
-
-void pause_rdwr(struct rfsd_instance *instance);
-#endif /* WITH_PAUSE */
-
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
