@@ -13,4 +13,4 @@ CC = gcc
 CFLAGS_OS      = -DSOLARIS \
                  -D_XPG5 \
                  -D_REENTRANT \
-                 -fPIC \
+                 -fPIC
