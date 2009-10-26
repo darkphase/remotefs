@@ -10,6 +10,7 @@ See the file LICENSE.
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <string.h>
 #include <utime.h>
 
@@ -98,6 +99,35 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		))))))) < 0) ? -1 : 0;
 }
 
+static int process_utime(struct rfsd_instance *instance, const struct command *cmd, const char *path, unsigned is_null, uint64_t actime, uint64_t modtime)
+{
+	struct utimbuf *buf = NULL;
+	
+	if (is_null == 0)
+	{
+		buf = get_buffer(sizeof(*buf));
+		buf->modtime = modtime;
+		buf->actime = actime;
+	}
+	
+	errno = 0;
+	int result = utime(path, buf);
+	
+	struct answer ans = { cmd->command, 0, result, errno };
+	
+	if (buf != NULL)
+	{
+		free_buffer(buf);
+	}
+		
+	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
+	{
+		return -1;
+	}
+	
+	return (result == 0 ? 0 : 1);
+}
+
 int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	char *buffer = get_buffer(cmd->data_len);
@@ -130,34 +160,12 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		free_buffer(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
-	
-	struct utimbuf *buf = NULL;
-	
-	if (is_null == 0)
-	{
-		buf = get_buffer(sizeof(*buf));
-		buf->modtime = modtime;
-		buf->actime = actime;
-	}
-	
-	errno = 0;
-	int result = utime(path, buf);
-	
-	struct answer ans = { cmd_utime, 0, result, errno };
-	
-	if (buf != NULL)
-	{
-		free_buffer(buf);
-	}
-	
+
+	int ret = process_utime(instance, cmd, path, is_null, actime, modtime);
+
 	free_buffer(buffer);
-	
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return (result == 0 ? 0 : 1);
+
+	return ret;
 }
 
 int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
@@ -199,37 +207,11 @@ int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
-	DEBUG("is_null: %u\n", (unsigned)is_null);
-	
-	struct timeval *tv = NULL;
-	
-	if (is_null == 0)
-	{
-		tv = get_buffer(sizeof(*tv) * 2);
-		tv[0].tv_sec  = (long)(actime_sec);
-		tv[0].tv_usec = (long)(actime_nsec / 1000);
-		tv[1].tv_sec  = (long)(modtime_sec);
-		tv[1].tv_usec = (long)(modtime_nsec / 1000);
-	}
-	
-	errno = 0;
-	int result = utimes(path, tv);
-	
-	struct answer ans = { cmd_utimens, 0, result, errno };
-	
-	if (tv != NULL)
-	{
-		free_buffer(tv);
-	}
-	
+	int ret = process_utime(instance, cmd, path, is_null, actime_sec, modtime_sec);
+
 	free_buffer(buffer);
 	
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return (result == 0 ? 0 : 1);
+	return ret;
 }
 
 int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
