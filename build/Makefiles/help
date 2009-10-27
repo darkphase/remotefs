@@ -52,8 +52,8 @@ Install directory
 Used for `make install` and `make uninstall`. See build/Makefiles/install.mk.
 
 
-Verbose build
+Verbose build output
 -------------------------------------------------------------
 
-You could add V=99 for verbose output as in "V=99 make rfsdeb"
+See custom.mk and adjust it if needed.
 

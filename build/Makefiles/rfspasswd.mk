@@ -4,11 +4,11 @@ include build/Makefiles/rfspasswd-defs.mk
 
 $(rfspasswd_OBJS):
 	@echo Compile $@
-	@$(CC) -c -o $@ $*.c $(rfspasswd_CFLAGS)
+	$(CC) -c -o $@ $*.c $(rfspasswd_CFLAGS)
 
 build: $(rfspasswd_OBJS)
 	@echo Link $(rfspasswd_TARGET)
-	@$(CC) -o $(rfspasswd_TARGET) $(rfspasswd_OBJS) $(rfspasswd_LDFLAGS)
+	$(CC) -o $(rfspasswd_TARGET) $(rfspasswd_OBJS) $(rfspasswd_LDFLAGS)
 
 install_rfspasswd:
 	if [ -f $(rfspasswd_TARGET) ]; then \

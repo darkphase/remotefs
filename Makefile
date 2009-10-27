@@ -1,17 +1,5 @@
 
 #############################
-# Verbosity
-#############################
-
-ifeq ($(V), 99)
-export V=
-export OUTPUT=&1
-else
-export V=s
-export OUTPUT="/dev/null"
-endif
-
-#############################
 # OS-dependent options
 #############################
 
@@ -22,8 +10,7 @@ OS:sh=uname
 
 include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
-
-CUSTOM_MK=custom.mk
+include custom.mk
 
 #############################
 # Compile flags
@@ -40,7 +27,6 @@ LDFLAGS_MAIN_RELEASE = "$(LDFLAGS_RELEASE)"
 
 help:
 	@more build/Makefiles/help
-	@echo $(V) $(MAKE) $(OUTPUT)
 
 #############################
 # General targets
@@ -171,7 +157,3 @@ rfsnss_man: dummy
 	
 man: dummy
 	@$(MAKE) -$(V)f build/Makefiles/man.mk man
-
-# This don't work with FreeBSD and Solaris
-#-include $(CUSTOM_MK)
-

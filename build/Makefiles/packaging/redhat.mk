@@ -50,7 +50,7 @@ buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	echo "Building package $(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm"
 	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man1
 	mkdir -p $(RPMNAME)-$(VERSION)/build/man/man8
-	tar --exclude .svn -cf - src rfs_nss build/init.d build/etc build/sbin build/Makefiles Makefile | (cd $(RPMNAME)-$(VERSION); tar xf -)
+	tar --exclude .svn -cf - src rfs_nss build/init.d build/etc build/sbin build/Makefiles Makefile custom.mk | (cd $(RPMNAME)-$(VERSION); tar xf -)
 	cp build/man/*.1 $(RPMNAME)-$(VERSION)/build/man/man1/
 	cd $(RPMNAME)-$(VERSION)/build/man/man1/; gzip *
 	cp build/man/*.8 $(RPMNAME)-$(VERSION)/build/man/man8/
