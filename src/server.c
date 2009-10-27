@@ -221,7 +221,6 @@ int do_stop_server(struct config *config, int ret_code)
 	}
 
 	exit(ret_code);
-	return 0;
 }
 
 int stop_server(struct config *config, int ret_code)
