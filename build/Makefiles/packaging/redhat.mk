@@ -60,5 +60,4 @@ buildrpm: rpmbuild build/redhat/$(RPMNAME).spec
 	rm -fr $(RPMNAME)-$(VERSION)
 	HOME=`pwd`/rpmbuild rpmbuild -bb --target $(ARCH) rpmbuild/SPECS/$(RPMNAME).spec >$(OUTPUT) 2>&1
 	cp rpmbuild/RPMS/$(RPMNAME)-$(VERSION)-$(RELEASE).${ARCH}.rpm .
-	$(MAKE) -f build/Makefiles/base.mk clean_bins
-	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_bins clean_packages_tmp

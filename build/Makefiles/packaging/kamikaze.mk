@@ -53,5 +53,4 @@ buildipk: dummy
 	    mv "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH).ipk" "$(IPKNAME)_$(VERSION)-$(RELEASE)_$(ARCH)_experimental.ipk";\
 	fi
 	
-	$(MAKE) -f build/Makefiles/base.mk clean_bins
-	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_bins clean_packages_tmp

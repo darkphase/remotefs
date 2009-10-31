@@ -76,9 +76,7 @@ rfsnssdeb: dummy clean_tmp debbase rfsnssmanpages rfsnsssbin
 	echo "Building package rfsnss_$(VERSION)-$(RELEASE)_$(ARCH).deb"
 	cp build/debian/rfs_nss/post* build/debian/rfs_nss/pre* dpkg/DEBIAN/
 	$(MAKE) -f build/Makefiles/base.mk clean_build
-	$(MAKE) -f build/Makefiles/base.mk librfs >$(OUTPUT)
-	$(MAKE) -f build/Makefiles/base.mk libnss >$(OUTPUT)
-	$(MAKE) -f build/Makefiles/base.mk nss >$(OUTPUT)
+	$(MAKE) -f build/Makefiles/base.mk librfs libnss nss >$(OUTPUT)
 	mkdir -p "dpkg/lib";
 	cp rfs_nssd "dpkg$(INSTALL_DIR)/bin/";
 	cp libnss_rfs.so.2 "dpkg/lib/";
@@ -111,5 +109,4 @@ builddeb: dummy
 	$(CONTROL_TEMPLATE) >dpkg/DEBIAN/control
 	fakeroot chown -R 0:0 dpkg/;
 	fakeroot dpkg -b dpkg "$(NAME)_$(VERSION)-$(RELEASE)_$(ARCH).deb" >$(OUTPUT)
-	$(MAKE) -f build/Makefiles/base.mk clean_bins
-	$(MAKE) -f build/Makefiles/base.mk clean_packages_tmp
+	$(MAKE) -f build/Makefiles/base.mk clean_bins clean_packages_tmp
