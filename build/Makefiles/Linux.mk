@@ -12,7 +12,7 @@ LN = ln -sf
 # OS / CC specifics flags
 ################################
 
-CFLAGS_OS      = -Wall -Werror -DLINUX -D_XOPEN_SOURCE=500 -D_BSD_SOURCE
+CFLAGS_OS      = -Wall -Werror -DLINUX -D_XOPEN_SOURCE=500 -D_BSD_SOURCE # -Wno-strict-aliasing
 CFLAGS_DEBUG   = -g -fPIC
 CFLAGS_RELEASE = -O3
 

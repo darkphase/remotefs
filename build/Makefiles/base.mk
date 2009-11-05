@@ -8,8 +8,12 @@ include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
 include build/Makefiles/version.mk
 
+INC_CUSTOM=$(shell build/Makefiles/check_custom.sh)
+INC_CUSTOM:sh=build/Makefiles/check_custom.sh
+include $(INC_CUSTOM)
+
 libnss: dummy
-	@echo
+	@echo ZZZ $(INC_CUSTOM)
 	@$(MAKE) -f build/Makefiles/libnss.mk flags build
 	@echo
 

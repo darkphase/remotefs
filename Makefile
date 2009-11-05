@@ -1,3 +1,19 @@
+#############################
+# Verbosity
+#############################
+
+# gmake
+VERBOSE=$(shell build/Makefiles/verbose.sh)
+# Solaris, FreeBSD
+VERBOSE:sh=build/Makefiles/verbose.sh
+include build/Makefiles/$(VERBOSE)
+
+#############################
+# allow build for nss part, will be
+# set to "" if OS don't support this
+#############################
+RFS_NSS=nss
+ALL = server client libnss $(RFS_NSS)
 
 #############################
 # OS-dependent options
@@ -10,7 +26,6 @@ OS:sh=uname
 
 include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
-include custom.mk
 
 #############################
 # Compile flags
@@ -32,12 +47,10 @@ help:
 # General targets
 #############################
 
-ALL = server client libnss nss
-
 debug: dummy
 	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -$(V)f build/Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
-all release: $(ALL) #server client libnss nss
+all release: $(ALL)
 
 server: rfsd rfspasswd
 
@@ -94,13 +107,13 @@ force_version:
 
 rfsrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsrpm
 rfsdrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdrpm
 rfsnssrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssrpm
 rpms: rfsrpm rfsdrpm rfsnssrpm
 
 rfsdeb: force_version dummy
