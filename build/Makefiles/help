@@ -30,7 +30,7 @@ debug:     Create all binaries with debug code
 Creating binaries with an alternative compiler:
 -----------------------------------------------
 
-Add ALT environment variable as in ALT="T-MIPSEL make rfsdipk". 
+Add ALT environment variable as in `ALT="T-MIPSEL" make rfsdipk`. 
 This will build rfsd ipkg-package using LinuxT-MIPSEL.mk file 
 located at build/Makefiles/ under Linux. Or "`uname`T-MIPSEL.mk" file
 in general.
@@ -55,5 +55,11 @@ Used for `make install` and `make uninstall`. See build/Makefiles/install.mk.
 Verbose build output
 -------------------------------------------------------------
 
-See custom.mk and adjust it if needed.
+Add V=99 before make as in `V=99 make rfsddeb`.
 
+
+Custom build targets
+-------------------------------------------------------------
+
+You could create custom.mk under build root and it will be automatically 
+included to main Makefile.

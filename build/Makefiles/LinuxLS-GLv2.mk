@@ -55,9 +55,4 @@ LDFLAGS_SO   = -shared -Wl,-soname,$(@)
 SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
 
-
-###############################
-# Optional OS dependent program
-###############################
-
-RFS_NSS = 
+ALL          = server

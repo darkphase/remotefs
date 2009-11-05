@@ -7,14 +7,15 @@ OS:sh=uname
 include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
 include build/Makefiles/version.mk
+include build/Makefiles/shortcuts.mk
 include build/Makefiles/variable/verbosity.mk
 
 libnss: dummy
-	@echo ZZZ $(INC_CUSTOM)
+	@echo
 	@$(MAKE) -f build/Makefiles/libnss.mk flags build
 	@echo
 
-nss: dummy
+nssd: dummy
 	@echo
 	@$(MAKE) -f build/Makefiles/nssd.mk flags build
 	@echo

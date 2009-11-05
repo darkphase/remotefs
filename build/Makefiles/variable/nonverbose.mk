@@ -1,2 +1,2 @@
-SILENT=s
+SILENT=-s
 OUTPUT=/dev/null

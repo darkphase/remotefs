@@ -39,14 +39,7 @@ SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
 
 ###############################
-# Optional OS dependent program
-###############################
-
-RFS_NSS =
-
-###############################
 # Components which can be build
 ###############################
 
 ALL = server
-
