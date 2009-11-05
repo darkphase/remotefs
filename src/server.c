@@ -14,6 +14,9 @@ See the file LICENSE.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if defined QNX
+#include <sys/select.h>
+#endif
 
 #include "buffer.h"
 #include "command.h"
