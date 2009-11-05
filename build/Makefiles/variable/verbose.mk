@@ -1,3 +1,2 @@
-V=
+SILENT=
 OUTPUT=&1
-

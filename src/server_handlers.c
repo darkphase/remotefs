@@ -65,11 +65,13 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	char stat_buffer[STAT_BLOCK_SIZE] = { 0 };
 	const char *user = NULL, *group = NULL;
 
+#ifdef WITH_UGO
 	if ((instance->server.mounted_export->options & OPT_UGO) != 0)
 	{
 		user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
 		group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
 	}
+#endif
 
 	if (user == NULL) { user = ""; }
 	if (group == NULL) { group = ""; }

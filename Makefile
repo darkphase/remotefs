@@ -2,11 +2,7 @@
 # Verbosity
 #############################
 
-# gmake
-VERBOSE=$(shell build/Makefiles/verbose.sh)
-# Solaris, FreeBSD
-VERBOSE:sh=build/Makefiles/verbose.sh
-include build/Makefiles/$(VERBOSE)
+include build/Makefiles/variable/verbosity.mk
 
 #############################
 # allow build for nss part, will be
@@ -48,7 +44,7 @@ help:
 #############################
 
 debug: dummy
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -$(V)f build/Makefiles/base.mk rfsd rfspasswd rfs libnss nss
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_DEBUG) LDFLAGS_MAIN=$(LDFLAGS_MAIN_DEBUG) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsd rfspasswd rfs libnss nss
 
 all release: $(ALL)
 
@@ -57,49 +53,49 @@ server: rfsd rfspasswd
 client: rfs
 
 rfs: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfs
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfs
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 librfs: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk librfs
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk librfs
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 rfsd: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsd
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsd
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 rfspasswd: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfspasswd
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfspasswd
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 libnss: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk libnss
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk libnss
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 nss: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk nss
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean_build
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk nss
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean_build
 
 dummy:
-	@$(MAKE) -$(V)f build/Makefiles/version.mk make_version
+	@$(MAKE) -$(SILENT)f build/Makefiles/version.mk make_version
 
 #######################################
 # Redirect for cleaning, depends and version
 #######################################
 clean:
-	@$(MAKE) -$(V)f build/Makefiles/base.mk clean
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk clean
 
 depends:
-	@$(MAKE) -$(V)f build/Makefiles/base.mk depends
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk depends
 
 force_version:
-	@$(MAKE) -$(V)f build/Makefiles/version.mk force_version
+	@$(MAKE) -$(SILENT)f build/Makefiles/version.mk force_version
 
 ########################################
 # Redirects for packaging
@@ -107,66 +103,68 @@ force_version:
 
 rfsrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsrpm
 rfsdrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsdrpm
 rfsnssrpm: force_version dummy
 	@ARCH=`rpm --eval "%{_arch}"` \
-	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssrpm
+	OUTPUT="$(OUTPUT)" CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsnssrpm
 rpms: rfsrpm rfsdrpm rfsnssrpm
 
 rfsdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsdeb
 rfsddeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsddeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsddeb
 rfsnssdeb: force_version dummy
 	@ARCH=`dpkg --print-architecture` \
-	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsnssdeb
+	CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsnssdeb
 debs: rfsdeb rfsddeb rfsnssdeb
 
 rfsdipk: force_version dummy
-	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(V)f build/Makefiles/base.mk rfsdipk
+	@CFLAGS_MAIN=$(CFLAGS_MAIN_RELEASE) LDFLAGS_MAIN=$(LDFLAGS_MAIN_RELEASE) $(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsdipk
 	
 ipks: rfsdipk
 
 rfsdebuild: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsdebuild
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsdebuild
 rfsebuild: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsebuild
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsebuild
 rfssslebuild: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk rfssslebuild
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk rfssslebuild
 rfsnssebuild: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk rfsnssebuild
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk rfsnssebuild
 ebuilds: rfsdebuild rfsebuild rfssslebuild rfsnssebuild
 
 tbz: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk tbz
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk tbz
 
 install: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk install
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk install
 install_nss: dummy 
-	@$(MAKE) -$(V)f build/Makefiles/base.mk install_nss
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk install_nss
 
 uninstall: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk uninstall
 uninstall_nss: dummy
-	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall_nss
+	@$(MAKE) -$(SILENT)f build/Makefiles/base.mk uninstall_nss
 
 ########################################
 # Redirects for man
 ########################################
 
 rfs_man: dummy
-	@$(MAKE) -$(V)f build/Makefiles/man.mk rfs_man
+	@$(MAKE) -$(SILENT)f build/Makefiles/man.mk rfs_man
 	
 rfsd_man: dummy
-	@$(MAKE) -$(V)f build/Makefiles/man.mk rfsd_man
+	@$(MAKE) -$(SILENT)f build/Makefiles/man.mk rfsd_man
 	
 rfsnss_man: dummy
-	@$(MAKE) -$(V)f build/Makefiles/man.mk rfsd_man
+	@$(MAKE) -$(SILENT)f build/Makefiles/man.mk rfsd_man
 	
 man: dummy
-	@$(MAKE) -$(V)f build/Makefiles/man.mk man
+	@$(MAKE) -$(SILENT)f build/Makefiles/man.mk man
+
+include build/Makefiles/variable/custom.mk

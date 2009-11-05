@@ -7,10 +7,7 @@ OS:sh=uname
 include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
 include build/Makefiles/version.mk
-
-INC_CUSTOM=$(shell build/Makefiles/check_custom.sh)
-INC_CUSTOM:sh=build/Makefiles/check_custom.sh
-include $(INC_CUSTOM)
+include build/Makefiles/variable/verbosity.mk
 
 libnss: dummy
 	@echo ZZZ $(INC_CUSTOM)

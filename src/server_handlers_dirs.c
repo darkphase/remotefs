@@ -103,7 +103,9 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		{
 			memset(&stbuf, 0, sizeof(stbuf));
 		}
-		else if ((instance->server.mounted_export->options & OPT_UGO) != 0)
+
+#ifdef WITH_UGO		
+		if ((instance->server.mounted_export->options & OPT_UGO) != 0)
 		{
 			user = get_uid_name(instance->id_lookup.uids, stbuf.st_uid);
 			group = get_gid_name(instance->id_lookup.gids, stbuf.st_gid);
@@ -111,6 +113,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			if (user != NULL && strlen(user) > MAX_SUPPORTED_NAME_LEN) { user = NULL; }
 			if (group != NULL && strlen(group) > MAX_SUPPORTED_NAME_LEN) { group = NULL; }
 		}
+#endif
 
 		if (user == NULL) { user = ""; }
 		if (group == NULL) { group = ""; }
