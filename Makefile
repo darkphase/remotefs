@@ -160,5 +160,3 @@ rfsnss_man: dummy
 	
 man: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/man.mk man
-
-include build/Makefiles/variable/custom.mk

@@ -9,6 +9,7 @@ include build/Makefiles/options.mk
 include build/Makefiles/version.mk
 include build/Makefiles/shortcuts.mk
 include build/Makefiles/variable/verbosity.mk
+include build/Makefiles/variable/custom.mk
 
 libnss: dummy
 	@echo
