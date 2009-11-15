@@ -34,6 +34,7 @@ Flags used my the makefiles:
 CFLAGS_MAIN    CGLAGS passed by the main Makefile
 CFLAGS_OS      OS/copiler specific CFLAGS
 CFLAGS_FUSE    CFLAGS for FUSE
+CFLAGS_ACL     CFLAGS for ACL support
 CFLAGS_DEBUG   Debug CFLAGS
 CFLAGS_RELEASE Release CFLAGS
 CFLAGS_OPTS    Options CFLAGS (see options.mk)

@@ -53,3 +53,4 @@ SO_NAME_NSS    = nss_rfs.so.1
 LDFLAGS_SO_NSS = -shared -Wl,-soname,$(SO_NAME_NSS) -fPIC
 CFLAGS_SO_NSS  = $(CFLAGS_SO)
 
+ALL = server client nss

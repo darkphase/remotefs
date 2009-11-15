@@ -19,8 +19,11 @@ See the file LICENSE.
 #	define SENDFILE_AVAILABLE
 #endif
 
-#if (defined LINUX && defined WITH_ACL)
+#if ((defined LINUX || defined FREEBSD) && defined WITH_ACL)
 #	define ACL_AVAILABLE
+#	if defined LINUX
+#		define ACL_OPERATIONS_AVAILABLE
+#	endif
 #endif
 
 #if (defined DARWIN && defined WITH_SCHEDULING)

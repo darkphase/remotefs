@@ -142,7 +142,7 @@ int rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, 
 	DECORATE(_rfs_readlink, instance, path, buffer, size);
 }
 
-#if defined ACL_AVAILABLE
+#if defined ACL_OPERATIONS_AVAILABLE
 int rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
 	DECORATE(_rfs_getxattr, instance, path, name, value, size);
@@ -152,7 +152,7 @@ int rfs_setxattr(struct rfs_instance *instance, const char *path, const char *na
 {
 	DECORATE(_rfs_setxattr, instance, path, name, value, size, flags);
 }
-#endif /* ACL_AVAILABLE */
+#endif /* ACL_OPERATIONS_AVAILABLE */
 
 int rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc)
 {

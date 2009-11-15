@@ -78,7 +78,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *target);
 int _rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size);
 
-#if defined ACL_AVAILABLE
+#if defined ACL_OPERATIONS_AVAILABLE
 /* acl */
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size);
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);

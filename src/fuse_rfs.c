@@ -47,7 +47,7 @@ struct fuse_operations fuse_rfs_operations = {
 	.link		= fuse_rfs_link,
 	.symlink	= fuse_rfs_symlink,
 	.readlink	= fuse_rfs_readlink,
-#if defined ACL_AVAILABLE
+#if defined ACL_OPERATIONS_AVAILABLE
 	.setxattr	= fuse_rfs_setxattr,
 	.getxattr	= fuse_rfs_getxattr,
 #endif
@@ -200,7 +200,7 @@ int fuse_rfs_readlink(const char *path, char *buffer, size_t size)
 	FUSE_DECORATE(rfs_readlink, instance, path, buffer, size);
 }
 
-#if defined ACL_AVAILABLE
+#if defined ACL_OPERATIONS_AVAILABLE
 int fuse_rfs_getxattr(const char *path, const char *name, char *value, size_t size)
 {
 	FUSE_DECORATE(rfs_getxattr, instance, path, name, value, size);
@@ -210,7 +210,7 @@ int fuse_rfs_setxattr(const char *path, const char *name, const char *value, siz
 {
 	FUSE_DECORATE(rfs_setxattr, instance, path, name, value, size, flags);
 }
-#endif /* ACL_AVAILABLE */
+#endif /* ACL_OPERATIONS_AVAILABLE */
 
 int fuse_rfs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
