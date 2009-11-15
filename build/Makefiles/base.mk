@@ -47,6 +47,7 @@ rfspasswd: dummy
 
 clean_build: dummy
 	$(RM) -f src/*.o
+	$(RM) -f src/acl/*.o
 	$(RM) -f src/md5crypt/*.o
 	$(RM) -f rfs_nss/src/*.o
 
@@ -67,11 +68,13 @@ clean: clean_build clean_bins clean_packages clean_version
 # Rebuild dependency file
 #############################
 depends:
-	@touch build/Makefiles/depends.mk
-	@grep -E '#\s*include[^"]+"[^"]+"' src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/src\/\1/' > build/Makefiles/depends.mk
-	@grep -E '#\s*include[^"]+"[^"]+"' rfs_nss/src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/rfs_nss\/src\/\1/' >> build/Makefiles/depends.mk
-	@ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
-	@ls rfs_nss/src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
+	echo -n "" > build/Makefiles/depends.mk
+	grep -E '#\s*include[^"]+"[^"]+"' src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/src\/\1/' >> build/Makefiles/depends.mk
+	grep -E '#\s*include[^"]+"[^"]+"' src/acl/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/src\/acl\/\1/' >> build/Makefiles/depends.mk
+	grep -E '#\s*include[^"]+"[^"]+"' rfs_nss/src/*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/rfs_nss\/src\/\1/' >> build/Makefiles/depends.mk
+	ls src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
+	ls src/acl/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
+	ls rfs_nss/src/*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
 
 ########################################
 # Packaging

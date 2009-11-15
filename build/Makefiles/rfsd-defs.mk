@@ -20,8 +20,8 @@ rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-rfsd_OBJS = src/acl_utils.o \
-            src/acl_utils_server.o \
+rfsd_OBJS = src/acl/acl_utils.o \
+            src/acl/acl_utils_server.o \
             src/buffer.o \
             src/cleanup.o \
             src/command.o \

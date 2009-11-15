@@ -204,14 +204,6 @@ enum rfs_lock_type
 	RFS_UNLCK               = 4
 };
 
-#ifdef ACL_AVAILABLE
-enum rfs_acl_flags
-{
-	RFS_XATTR_CREATE          = 1,
-	RFS_XATTR_REPLACE         = 2
-};
-#endif /* ACL_AVAILABLE */
-
 /** write-behind control struct */
 struct write_behind_request
 {
