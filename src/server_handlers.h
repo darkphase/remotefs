@@ -13,6 +13,9 @@ See the file LICENSE.
 
 #include "options.h"
 
+#include "acl/server_handlers_acl.h"
+#include "server_handlers_rfs.h"
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif

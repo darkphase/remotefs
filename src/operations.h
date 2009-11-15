@@ -11,6 +11,7 @@ See the file LICENSE.
 
 /** rfs operations */
 
+#include "acl/operations_acl.h"
 #include "options.h"
 
 /* if connection lost after executing the operation
@@ -77,12 +78,6 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 int _rfs_link(struct rfs_instance *instance, const char *path, const char *target);
 int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *target);
 int _rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size);
-
-#if defined ACL_OPERATIONS_AVAILABLE
-/* acl */
-int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size);
-int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);
-#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

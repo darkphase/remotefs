@@ -15,9 +15,7 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "list.h"
 #include "passwd.h"
-#ifdef WITH_SSL
-#	include "ssl_server.h"
-#endif
+#include "ssl/server.h"
 #include "sug_common.h"
 #include "utils.h"
 

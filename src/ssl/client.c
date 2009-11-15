@@ -10,9 +10,9 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "buffer.h"
-#include "config.h"
-#include "ssl_client.h"
+#include "client.h"
+#include "../buffer.h"
+#include "../config.h"
 
 SSL_METHOD* choose_ssl_client_method()
 {

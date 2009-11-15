@@ -27,6 +27,12 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/acl/operations_acl.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \
+              src/nss/client.o \
+              src/nss/operations_nss.o \
+              src/nss/server.o \
+              src/ssl/client.o \
+              src/ssl/operations_ssl.o \
+              src/ssl/ssl.o \
               src/attr_cache.o \
               src/buffer.o \
               src/command.o \
@@ -38,8 +44,6 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/keep_alive_client.o \
               src/list.o \
               src/names.o \
-              src/nss_client.o \
-              src/nss_server.o \
               src/operations.o \
               src/operations_access.o \
               src/operations_dirs.o \
@@ -47,7 +51,6 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations_files.o \
               src/operations_io.o \
               src/operations_links.o \
-              src/operations_nss.o \
               src/operations_rfs.o \
               src/operations_read.o \
               src/operations_sync.o \
@@ -60,8 +63,6 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/signals.o \
               src/signals_client.o \
               src/sockets.o \
-              src/ssl.o \
-              src/ssl_client.o \
               src/utils.o \
               src/md5crypt/crypt_md5.o \
               src/md5crypt/md5.o  \

@@ -2,14 +2,13 @@
 # Build options for remotefs
 ############################################
 
-# If you want IPv6 connectivity remove
-# the '#' character before OPT_1
+###############################################
+# IPv6 support
 
 OPT_1 = -DWITH_IPV6
 
 ###############################################
-# If you want support for SSL encryption
-# remove the '#' character for both lines
+# SSL support
 
 #OPT_2 = -DWITH_SSL
 #OPT_2_LD = $(LDFLAGS_SSL)
@@ -36,7 +35,6 @@ OPT_5 = -DWITH_UGO
 
 ###############################################
 # Experimental scheduling for MacOS only
-# MacOS only
 
 OPT_6 = -DWITH_SCHEDULING
 

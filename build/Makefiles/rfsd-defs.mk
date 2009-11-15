@@ -24,6 +24,10 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/acl/server.o \
             src/acl/server_handlers_acl.o \
             src/acl/utils.o \
+            src/nss/server_handlers_nss.o \
+            src/ssl/server_handlers_ssl.o \
+            src/ssl/server.o \
+            src/ssl/ssl.o \
             src/buffer.o \
             src/cleanup.o \
             src/command.o \
@@ -46,7 +50,6 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/server_handlers_files.o \
             src/server_handlers_io.o \
             src/server_handlers_links.o \
-            src/server_handlers_nss.o \
             src/server_handlers_read.o \
             src/server_handlers_rfs.o \
             src/server_handlers_sync.o \
@@ -54,8 +57,6 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/server_handlers_utils.o \
             src/signals.o \
             src/sockets.o \
-            src/ssl.o \
-            src/ssl_server.o \
             src/utils.o \
             src/md5crypt/crypt_md5.o \
             src/md5crypt/md5.o \

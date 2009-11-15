@@ -7,8 +7,8 @@ See the file LICENSE.
 */
 #ifdef WITH_SSL
 
-#include "config.h"
-#include "ssl_server.h"
+#include "server.h"
+#include "../config.h"
 
 SSL_METHOD* choose_ssl_server_method()
 {

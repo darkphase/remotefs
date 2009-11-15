@@ -15,9 +15,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "instance_client.h"
-#ifdef WITH_SSL
-#	include "ssl_client.h"
-#endif
+#include "ssl/client.h"
 #include "sug_common.h"
 #include "sug_client.h"
 #include "utils.h"

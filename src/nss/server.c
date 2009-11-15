@@ -6,7 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "options.h"
+#include "../options.h"
 
 #if defined RFSNSS_AVAILABLE
 
@@ -19,12 +19,12 @@ See the file LICENSE.
 #include <sys/un.h>
 #include <sys/stat.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_client.h"
-#include "list.h"
-#include "nss_server.h"
+#include "server.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../list.h"
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {

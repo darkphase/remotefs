@@ -16,6 +16,8 @@ See the file LICENSE.
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "options.h"
+
 #include "attr_cache.h"
 #include "buffer.h"
 #include "command.h"
@@ -25,22 +27,17 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "keep_alive_client.h"
 #include "list.h"
-#ifdef WITH_UGO
-#	include "nss_server.h"
-#endif
+#include "nss/operations_nss.h"
+#include "nss/server.h"
 #include "operations.h"
 #include "operations_rfs.h"
 #include "operations_write.h"
-#include "options.h"
 #include "resume.h"
-#ifdef SCHEDULING_AVAILABLE
-#	include "scheduling.h"
-#endif
+#include "scheduling.h"
 #include "sendrecv_client.h"
 #include "sockets.h"
-#ifdef WITH_SSL
-#	include "ssl_client.h"
-#endif
+#include "ssl/operations_ssl.h"
+#include "ssl/client.h"
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
 {
@@ -277,118 +274,6 @@ static int resume_files(struct rfs_instance *instance)
 	return ret; /* not real error. probably. but we've tried our best */
 }
 
-#ifdef WITH_SSL
-int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors)
-{
-	DEBUG("key file: %s, cert file: %s\n", instance->config.ssl_key_file, instance->config.ssl_cert_file);
-	DEBUG("ciphers: %s\n", instance->config.ssl_ciphers);
-	
-	instance->sendrecv.ssl_socket = rfs_init_client_ssl(
-	&instance->ssl.ctx, 
-	instance->config.ssl_key_file, 
-	instance->config.ssl_cert_file, 
-	instance->config.ssl_ciphers);
-	
-	if (instance->sendrecv.ssl_socket == NULL)
-	{
-		if (show_errors != 0)
-		{
-			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
-			ERROR("Error initing SSL: %s\n", instance->ssl.last_error);
-			ERROR("Make sure that SSL certificate (%s) and key (%s) do exist and correct\n", 
-				instance->config.ssl_cert_file, 
-				instance->config.ssl_key_file);
-			if (instance->ssl.last_error != NULL)
-			{
-				free(instance->ssl.last_error);
-				instance->ssl.last_error = NULL;
-			}
-		}
-		return -EIO;
-	}
-
-	struct command cmd = { cmd_enablessl, 0 };
-	
-	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
-	{
-		if (show_errors != 0)
-		{
-			ERROR("Error initing SSL: %s\n", strerror(EIO));
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -EIO;
-	}
-	
-	struct answer ans = { 0 };
-	
-	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
-	{
-		if (show_errors != 0)
-		{
-			ERROR("Error initing SSL: %s\n", strerror(EIO));
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -EIO;
-	}
-	
-	if (ans.command != cmd_enablessl)
-	{
-		if (show_errors != 0)
-		{
-			ERROR("Error initing SSL: %s\n", strerror(EINVAL));
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -EBADMSG;
-	}
-	
-	if (ans.ret != 0)
-	{
-		if (show_errors != 0)
-		{
-			ERROR("Error initing SSL: %s\n", strerror(ans.ret_errno));
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -ans.ret_errno;
-	}
-	
-	if (rfs_attach_ssl(instance->sendrecv.ssl_socket, instance->sendrecv.socket) != 0)
-	{
-		if (show_errors != 0)
-		{
-			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
-			ERROR("SSL error: %s\n", instance->ssl.last_error);
-			if (instance->ssl.last_error != NULL)
-			{
-				free(instance->ssl.last_error);
-				instance->ssl.last_error = NULL;
-			}
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -EIO;
-	}
-	
-	if (rfs_connect_ssl(instance->sendrecv.ssl_socket) != 0)
-	{
-		if (show_errors != 0)
-		{
-			instance->ssl.last_error = rfs_last_ssl_error(instance->ssl.last_error);
-			ERROR("Error connecting using SSL: %s\n", instance->ssl.last_error);
-			if (instance->ssl.last_error != NULL)
-			{
-				free(instance->ssl.last_error);
-				instance->ssl.last_error = NULL;
-			}
-		}
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		return -EIO;
-	}
-	
-	instance->sendrecv.ssl_enabled = 1;
-
-	return 0;
-}
-#endif
-
 int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsigned int change_path)
 {
 	DEBUG("(re)connecting to %s:%d\n", instance->config.host, instance->config.server_port);
@@ -532,40 +417,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 	return 0;
 }
-
-#if defined RFSNSS_AVAILABLE
-static int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
-{
-	if ((instance->client.export_opts & OPT_UGO) != 0)
-	{
-		if (is_nss_running(instance) == 0)
-		{
-			int getnames_ret = rfs_getnames(instance);
-			if (getnames_ret != 0)
-			{
-				if (show_errors != 0)
-				{
-					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
-				}
-				return -1;
-			}
-
-			int nss_start_ret = start_nss_server(instance);
-			DEBUG("nss start ret: %d\n", nss_start_ret);
-			if (nss_start_ret != 0)
-			{
-				if (show_errors != 0)
-				{
-					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
-				}
-				return -1;
-			}
-		}		
-	}
-
-	return 0;
-}
-#endif
 
 void* rfs_init(struct rfs_instance *instance)
 {

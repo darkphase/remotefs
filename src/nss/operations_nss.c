@@ -6,16 +6,21 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "../options.h"
+
+#ifdef RFSNSS_AVAILABLE
+
 #include <errno.h>
 #include <string.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_client.h"
-#include "list.h"
-#include "operations_rfs.h"
-#include "sendrecv_client.h"
+#include "server.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../list.h"
+#include "../operations_rfs.h"
+#include "../sendrecv_client.h"
 
 int rfs_getnames(struct rfs_instance *instance)
 {
@@ -122,3 +127,36 @@ int rfs_getnames(struct rfs_instance *instance)
 	return 0;
 }
 
+int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
+{
+	if ((instance->client.export_opts & OPT_UGO) != 0)
+	{
+		if (is_nss_running(instance) == 0)
+		{
+			int getnames_ret = rfs_getnames(instance);
+			if (getnames_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
+				}
+				return -1;
+			}
+
+			int nss_start_ret = start_nss_server(instance);
+			DEBUG("nss start ret: %d\n", nss_start_ret);
+			if (nss_start_ret != 0)
+			{
+				if (show_errors != 0)
+				{
+					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
+				}
+				return -1;
+			}
+		}		
+	}
+
+	return 0;
+}
+
+#endif /* RFSNSS_AVAILABLE */

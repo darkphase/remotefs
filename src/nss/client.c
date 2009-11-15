@@ -6,7 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "options.h"
+#include "../options.h"
 
 #if defined RFSNSS_AVAILABLE
 
@@ -17,11 +17,11 @@ See the file LICENSE.
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "list.h"
-#include "names.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../list.h"
+#include "../names.h"
 
 static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 {

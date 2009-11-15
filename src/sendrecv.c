@@ -29,7 +29,7 @@ See the file LICENSE.
 #include "instance.h"
 #include "sendrecv.h"
 #ifdef WITH_SSL
-#include "ssl.h"
+#include "ssl/ssl.h"
 #endif
 
 #include <netinet/tcp.h>

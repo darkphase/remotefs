@@ -7,15 +7,13 @@ See the file LICENSE.
 */
 #ifdef WITH_SSL
 
-#if defined DARWIN || defined QNX
-#       include <string.h>
-#endif
+#include <string.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 
-#include "buffer.h"
-#include "config.h"
 #include "ssl.h"
+#include "../buffer.h"
+#include "../config.h"
 
 SSL* rfs_init_ssl(
 	SSL_CTX **ctx,

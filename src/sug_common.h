@@ -11,7 +11,7 @@ See the file LICENSE.
 
 #ifdef WITH_SSL
 
-#include "ssl.h"
+#include "ssl/ssl.h"
 
 /** return 0 if SSL cna be initialized with passed key/cert/ciphers */
 int check_ssl(SSL_METHOD *method, const char *keyfile, const char *certfile, const char *ciphers);

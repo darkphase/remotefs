@@ -18,7 +18,7 @@ See the file LICENSE.
 #ifdef WITH_SSL
 
 #include "config.h"
-#include "ssl.h"
+#include "sug_common.h"
 
 static int try_init_ssl(SSL_METHOD *method, const char *keyfile, const char *certfile, const char *ciphers)
 {
