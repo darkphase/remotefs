@@ -8,7 +8,7 @@ See the file LICENSE.
 
 #include "../options.h"
 
-#ifdef ACL_AVAILABLE
+#ifdef ACL_OPERATIONS_AVAILABLE
 
 #include <errno.h>
 #include <grp.h>
@@ -16,8 +16,7 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "acl_utils.h"
-#include "acl_utils_nss.h"
+#include "nss_resolve.h"
 #include "../buffer.h"
 #include "../config.h"
 #include "../instance_client.h"
@@ -171,7 +170,7 @@ char* nss_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted)
 }
 
 #else
-int acl_utils_nss_c_empty_module_makes_suncc_mad = 0;
+int acl_nss_resolve_c_empty_module_makes_suncc_mad = 0;
 #endif /* ACL_AVAILABLE */
 
 

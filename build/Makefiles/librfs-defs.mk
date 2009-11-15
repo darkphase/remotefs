@@ -22,9 +22,11 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-librfs_OBJS = src/acl/acl_linux.o \
-              src/acl/acl_utils.o \
-              src/acl/acl_utils_nss.o \
+librfs_OBJS = src/acl/local_resolve.o \
+              src/acl/nss_resolve.o \
+              src/acl/operations_acl.o \
+              src/acl/utils.o \
+              src/acl/xattr_linux.o \
               src/attr_cache.o \
               src/buffer.o \
               src/command.o \
@@ -40,7 +42,6 @@ librfs_OBJS = src/acl/acl_linux.o \
               src/nss_server.o \
               src/operations.o \
               src/operations_access.o \
-              src/operations_acl.o \
               src/operations_dirs.o \
               src/operations_exports.o \
               src/operations_files.o \

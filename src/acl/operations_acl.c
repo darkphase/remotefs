@@ -1,4 +1,12 @@
-#include "options.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
+#include "../options.h"
 
 #ifdef ACL_OPERATIONS_AVAILABLE
 
@@ -7,44 +15,17 @@
 #include <string.h>
 #include <sys/acl.h>
 
-#include "acl/acl_linux.h"
-#include "acl/acl_utils.h"
-#include "acl/acl_utils_nss.h"
-#include "buffer.h"
-#include "config.h"
-#include "command.h"
-#include "id_lookup_client.h"
-#include "instance_client.h"
-#include "operations_rfs.h"
-#include "sendrecv_client.h"
-
-static uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *instance_casted)
-{
-	char *dup_name = buffer_dup_str(name, name_len);
-	if (dup_name == NULL)
-	{
-		return ACL_UNDEFINED_ID;
-	}
-
-	DEBUG("locally resolving name: %s\n", dup_name);
-
-	uint32_t id = ACL_UNDEFINED_ID;
-
-	switch (tag)
-	{
-	case ACL_USER:
-		id = (uint32_t)(lookup_user(dup_name));
-		break;
-	case ACL_GROUP:
-		id = (uint32_t)(lookup_group(dup_name, NULL));
-		break;
-	}
-
-	free_buffer(dup_name);
-
-	DEBUG("id: %lu\n", (unsigned long)id);
-	return id;
-}
+#include "xattr_linux.h"
+#include "local_resolve.h"
+#include "nss_resolve.h"
+#include "utils.h"
+#include "../buffer.h"
+#include "../config.h"
+#include "../command.h"
+#include "../id_lookup_client.h"
+#include "../instance_client.h"
+#include "../operations_rfs.h"
+#include "../sendrecv_client.h"
 
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
@@ -159,31 +140,6 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	acl_free(acl);
 	
 	return xattr_size;
-}
-
-static char* local_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted)
-{
-	DEBUG("locally reverse resolving id: %lu\n", id != NULL ? *(unsigned long *)(id) : ACL_UNDEFINED_ID);
-
-	char *name = NULL;
-	const char *looked_up_name = NULL;
-
-	switch (tag)
-	{
-	case ACL_USER:
-		looked_up_name = lookup_uid(*(uid_t *)(id));
-		break;
-	case ACL_GROUP:
-		looked_up_name = lookup_gid(*(gid_t *)(id), (uid_t)(-1));
-		break;
-	}
-
-	if (looked_up_name != NULL)
-	{
-		name = strdup(looked_up_name);
-	}
-
-	return name;
 }
 
 int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags)

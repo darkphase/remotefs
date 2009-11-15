@@ -8,14 +8,14 @@ See the file LICENSE.
 
 #include "../options.h"
 
-#if (defined LINUX && defined ACL_AVAILABLE)
+#if (defined LINUX && defined ACL_OPERATIONS_AVAILABLE)
 
 #include <errno.h>
 #include <string.h>
 #include <sys/acl.h>
 
-#include "acl_linux.h"
-#include "acl_utils.h"
+#include "xattr_linux.h"
+#include "utils.h"
 #include "libacl/include/acl_ea.h"
 #include "../buffer.h"
 #include "../config.h"
@@ -210,4 +210,4 @@ error:
 
 #else
 int acl_linux_c_empty_module = 0;
-#endif /* ACL_AVAILABLE && LINUX */
+#endif /* ACL_OPERATIONS_AVAILABLE && LINUX */

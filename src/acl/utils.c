@@ -16,7 +16,7 @@ See the file LICENSE.
 #include <acl/libacl.h>
 #endif
 
-#include "acl_utils.h"
+#include "utils.h"
 #include "../buffer.h"
 #include "../config.h"
 #include "../id_lookup.h"

@@ -6,14 +6,14 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-/** utilities for ACL support with NSS */
+/** resolving of names using rfs_nss */
 
 #include "../options.h"
 
-#ifdef ACL_AVAILABLE
+#ifdef ACL_OPERATIONS_AVAILABLE
 
-#ifndef ACL_UTILS_NSS_H
-#define ACL_UTILS_NSS_H
+#ifndef ACL_NSS_RESOLVE_H
+#define ACL_NSS_RESOLVE_H
 
 #include <stdint.h>
 #include <sys/acl.h>
@@ -26,7 +26,7 @@ uint32_t nss_resolve(acl_tag_t tag, const char *name, size_t name_len, void *ins
 don't forget to free() result */
 char* nss_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted);
 
-#endif /* ACL_UTILS_NSS_H */
+#endif /* ACL_NSS_RESOLVE_H */
 
-#endif /* ACL_AVAILABLE */
+#endif /* ACL_OPERATIONS_AVAILABLE */
 

@@ -10,10 +10,10 @@ See the file LICENSE.
 
 #include "../options.h"
 
-#if (defined LINUX && defined ACL_AVAILABLE)
+#if (defined LINUX && defined ACL_OPERATIONS_AVAILABLE)
 
-#ifndef ACL_LINUX_H
-#define ACL_LINUX_H
+#ifndef ACL_XATTR_LINUX_H
+#define ACL_XATTR_LINUX_H
 
 #include <stdint.h>
 #include <sys/acl.h>
@@ -29,6 +29,6 @@ int rfs_acl_to_xattr(const acl_t acl, void *xattr, size_t size);
 don't forget to acl_free() result */
 int rfs_acl_from_xattr(const void *xattr, size_t size, acl_t *acl);
 
-#endif /* ACL_LINUX_H */
-#endif /* ACL_AVAILABLE && LINUX */
+#endif /* ACL_XATTR_LINUX_H */
+#endif /* ACL_OPERATIONS_AVAILABLE && LINUX */
 

@@ -1,4 +1,12 @@
-#include "options.h"
+/*
+remotefs file system
+See the file AUTHORS for copyright information.
+	
+This program can be distributed under the terms of the GNU GPL.
+See the file LICENSE.
+*/
+
+#include "../options.h"
 
 #if defined ACL_AVAILABLE
 
@@ -6,14 +14,15 @@
 #include <string.h>
 #include <sys/acl.h>
 
-#include "acl/acl_utils.h"
-#include "acl/acl_utils_server.h"
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_server.h"
-#include "sendrecv_server.h"
+#include "id_lookup_resolve.h"
 #include "server.h"
+#include "utils.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_server.h"
+#include "../sendrecv_server.h"
+#include "../server.h"
 
 int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

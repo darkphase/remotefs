@@ -10,10 +10,9 @@ See the file LICENSE.
 
 #ifdef ACL_AVAILABLE
 
-#include <errno.h>
 #include <string.h>
 
-#include "acl_utils.h"
+#include "id_lookup_resolve.h"
 #include "../buffer.h"
 #include "../config.h"
 #include "../id_lookup.h"
@@ -108,69 +107,7 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 	return ACL_UNDEFINED_ID;
 }
 
-int rfs_get_file_acl(const char *path, const char *acl_name, acl_t *acl)
-{
-	DEBUG("getting ACL record (%s) from %s\n", acl_name, path);
-
-	acl_type_t acl_type = 0;
-
-	if (strcmp(acl_name, RFS_XATTR_NAME_ACL_ACCESS) == 0)
-	{
-		acl_type = ACL_TYPE_ACCESS;
-	}
-	else if (strcmp(acl_name, RFS_XATTR_NAME_ACL_DEFAULT) == 0)
-	{
-		acl_type = ACL_TYPE_DEFAULT;
-	}
-
-	if (acl_type != ACL_TYPE_ACCESS 
-	&& acl_type != ACL_TYPE_DEFAULT)
-	{
-		return -ENOTSUP;
-	}
-
-	errno = 0;
-	*acl = acl_get_file(path, ACL_TYPE_ACCESS);
-
-	if (acl == NULL)
-	{
-		return -errno;
-	}
-
-	return 0;
-}
-
-int rfs_set_file_acl(const char *path, const char *acl_name, const acl_t acl)
-{
-	DEBUG("setting ACL (%s) to %s\n", acl_name, path);
-
-	acl_type_t acl_type = 0;
-
-	if (strcmp(acl_name, RFS_XATTR_NAME_ACL_ACCESS) == 0)
-	{
-		acl_type = ACL_TYPE_ACCESS;
-	}
-	else if (strcmp(acl_name, RFS_XATTR_NAME_ACL_DEFAULT) == 0)
-	{
-		acl_type = ACL_TYPE_DEFAULT;
-	}
-
-	if (acl_type != ACL_TYPE_ACCESS 
-	&& acl_type != ACL_TYPE_DEFAULT)
-	{
-		return -ENOTSUP;
-	}
-
-	errno = 0;
-	if (acl_set_file(path, acl_type, acl) != 0)
-	{
-		return -errno;
-	}
-
-	return 0;
-}
-
 #else
-int acl_utils_server_c_empty_module = 0;
+int acl_id_lookup_resolve_c_empty_module = 0;
 #endif /* ACL_AVAILABLE */
 
