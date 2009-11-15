@@ -8,7 +8,7 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <list.h>
-#include <nss_client.h>
+#include <nss/client.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
