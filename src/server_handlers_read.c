@@ -112,7 +112,7 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	size_t done = 0;
 	while (done < size)
 	{	
-		ssize_t result = rfs_sendfile(instance->sendrecv.socket, fd, offset, size - done);
+		ssize_t result = rfs_sendfile(instance->sendrecv.socket, fd, offset + done, size - done);
 
 		if (result <= 0)
 		{
