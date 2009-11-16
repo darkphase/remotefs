@@ -6,7 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#if (defined LINUX && defined SENDFILE_AVAILABLE)
+#if ((defined LINUX || defined SOLARIS) && defined SENDFILE_AVAILABLE)
 
 #ifndef SENDFILE_LINUX_H
 #define SENDFILE_LINUX_H
