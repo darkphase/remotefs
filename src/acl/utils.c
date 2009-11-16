@@ -12,9 +12,6 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <string.h>
-#ifdef LINUX
-#include <acl/libacl.h>
-#endif
 
 #include "utils.h"
 #include "../buffer.h"
@@ -22,7 +19,7 @@ See the file LICENSE.
 #include "../id_lookup.h"
 #include "../instance.h"
 
-#ifdef FREEBSD
+#if (defined FREEBSD || defined DARWIN)
 #define acl_get_perm acl_get_perm_np
 #endif
 

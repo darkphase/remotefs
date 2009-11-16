@@ -10,12 +10,6 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <sys/stat.h>
-#if defined SENDFILE_AVAILABLE
-#	include <sys/sendfile.h>
-#endif
-#ifdef RFS_DEBUG
-#	include <sys/time.h>
-#endif
 #include <unistd.h>
 
 #include "buffer.h"
@@ -24,6 +18,7 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "sendrecv_server.h"
 #include "server.h"
+#include "sendfile/sendfile_rfs.h"
 
 static int read_small_block(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
@@ -117,17 +112,8 @@ static int read_with_sendfile(struct rfsd_instance *instance, const struct comma
 	size_t done = 0;
 	while (done < size)
 	{	
-#if (defined FREEBSD || defined DARWIN)
-		off_t sbytes = 0;
-		ssize_t result = sendfile(fd, instance->sendrecv.socket, offset, size - done, NULL, &sbytes, 0);
-		if (result == 0)
-		{
-  			result = sbytes;
-		}
-		offset += result;
-#else
-		ssize_t result = sendfile(instance->sendrecv.socket, fd, &offset, size - done);
-#endif
+		ssize_t result = rfs_sendfile(instance->sendrecv.socket, fd, offset, size - done);
+
 		if (result <= 0)
 		{
 			ans.ret_errno = errno;

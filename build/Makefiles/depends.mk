@@ -315,6 +315,7 @@ src/server_handlers_read.o:src/config.h
 src/server_handlers_read.o:src/instance_server.h
 src/server_handlers_read.o:src/sendrecv_server.h
 src/server_handlers_read.o:src/server.h
+src/server_handlers_read.o:src/sendfile/sendfile_rfs.h
 src/server_handlers_rfs.o:src/buffer.h
 src/server_handlers_rfs.o:src/command.h
 src/server_handlers_rfs.o:src/config.h
