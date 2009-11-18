@@ -17,7 +17,7 @@ See the file LICENSE.
 
 /** generalized interface 
 implementation should set errno to specific error (if any) 
-generally this means that implementation just should manipulate errno 
+generally this means that implementation just shouldn't manipulate errno 
 after system's sendfile() is called 
 
 \return size sent on success, -1 on error
