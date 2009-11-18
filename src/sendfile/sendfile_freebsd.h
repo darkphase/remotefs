@@ -6,14 +6,17 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef SENDFILE_LINUX_H
-#define SENDFILE_LINUX_H
+#ifndef SENDFILE_FREEBSD_H
+#define SENDFILE_FREEBSD_H
 
-#include <sys/sendfile.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
 
 static inline ssize_t rfs_sendfile(int out_fd, int in_fd, off_t offset, size_t size)
 {
-	return sendfile(out_fd, in_fd, &offset, size);
+	off_t done = 0;
+	return (sendfile(in_fd, out_fd, offset, size, NULL, &done, 0) == 0 ? done : -1);
 }
 
-#endif /* SENDFILE_LINUX_H */
+#endif /* SENDFILE_FREEBSD_H */
