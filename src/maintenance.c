@@ -73,7 +73,7 @@ int start_maintenance_thread(struct config *config)
 
 void stop_maintenance_thread(struct config *config)
 {
-	DEBUG("stopping maintenance thread %ld\n", config->maintenance_thread);
+	DEBUG("%s\n", "stopping maintenance thread");
 
 	if (config->maintenance_thread != 0)
 	{
