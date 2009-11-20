@@ -12,6 +12,9 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <string.h>
+#ifdef LINUX
+#	include <acl/libacl.h>
+#endif
 
 #include "utils.h"
 #include "../buffer.h"
