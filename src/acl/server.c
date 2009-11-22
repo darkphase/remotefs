@@ -17,7 +17,7 @@ See the file LICENSE.
 #include "../config.h"
 
 #define RFS_XATTR_NAME_ACL_ACCESS  "system.posix_acl_access"
-#define RFS_XATTR_NAME_ACL_DEFAULT "system.posix_acl_defult"
+#define RFS_XATTR_NAME_ACL_DEFAULT "system.posix_acl_default"
 
 int rfs_get_file_acl(const char *path, const char *acl_name, acl_t *acl)
 {
@@ -41,7 +41,7 @@ int rfs_get_file_acl(const char *path, const char *acl_name, acl_t *acl)
 	}
 
 	errno = 0;
-	*acl = acl_get_file(path, ACL_TYPE_ACCESS);
+	*acl = acl_get_file(path, acl_type);
 
 	if (acl == NULL)
 	{
