@@ -8,6 +8,8 @@ include build/Makefiles/variable/verbosity.mk
 # OS-dependent options
 #############################
 
+default: help
+
 # gmake
 OS=$(shell uname)
 # Solaris, FreeBSD
