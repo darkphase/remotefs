@@ -16,7 +16,7 @@ See the file LICENSE.
 #include <sys/types.h>
 
 /** generalized interface 
-implementation should set errno to specific error (if any) 
+implementation shouldn't set errno to specific error (if any) 
 generally this means that implementation just shouldn't manipulate errno 
 after system's sendfile() is called 
 

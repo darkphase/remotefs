@@ -94,6 +94,7 @@ struct rfs_instance
 	struct rfs_config config;
 };
 
+#define DECLARE_RFS_INSTANCE(name) extern struct rfs_instance (name)
 #define DEFINE_RFS_INSTANCE(name) struct rfs_instance (name) = { { 0 } }
 
 /* initialise rfs instance */
