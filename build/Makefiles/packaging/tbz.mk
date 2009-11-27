@@ -28,6 +28,6 @@ tbz:
 	
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)"/
 	tar -xjf "$(TEMP_TBZ)" -C "remotefs-$(VERSION)-$(RELEASE)"/
-	tar -cjf "remotefs-$(VERSION)-$(RELEASE).tar.bz2" "remotefs-$(VERSION)-$(RELEASE)"/
+	tar --exclude *.tar.gz -cjf "remotefs-$(VERSION)-$(RELEASE).tar.bz2" "remotefs-$(VERSION)-$(RELEASE)"/
 	
 	$(MAKE) -sf build/Makefiles/base.mk clean_tmp
