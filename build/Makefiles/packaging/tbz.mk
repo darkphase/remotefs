@@ -22,7 +22,7 @@ tbz:
 	
 	chmod 700 build/init.d/rfsd.*
 	
-	tar --exclude .svn -cjf "$(TEMP_TBZ)" \
+	tar --exclude .svn -cjhf "$(TEMP_TBZ)" \
 	src rfs_nss build Makefile \
 	README LICENSE AUTHORS CHANGELOG
 	
