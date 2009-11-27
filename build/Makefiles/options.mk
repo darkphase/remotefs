@@ -42,8 +42,8 @@ OPT_6 = -DWITH_SCHEDULING
 # End of user configuration, don't change the
 # following lines
 
-CFLAGS_OPTS = $(CFLAGS) $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5) $(OPT_6) $(OPT_7) $(OPT_8) $(OPT_9) $(OPT_10)
-LDFLAGS_OPTS = $(LDFLAGS) $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT_6_LD) $(OPT_7_LD) $(OPT_8_LD) $(OPT_9_LD) $(OPT_10_LD)
+CFLAGS_OPTS = $(OPT_1) $(OPT_2) $(OPT_3) $(OPT_4) $(OPT_5) $(OPT_6) $(OPT_7) $(OPT_8) $(OPT_9) $(OPT_10)
+LDFLAGS_OPTS = $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT_6_LD) $(OPT_7_LD) $(OPT_8_LD) $(OPT_9_LD) $(OPT_10_LD)
 
 # Default entry for main Makefile
 help:
