@@ -75,9 +75,10 @@ int nss_create_socket(struct rfs_instance *instance)
 
 	if (bind(sock, (struct sockaddr *)&address, sizeof(struct sockaddr_un)) == -1)
 	{
+		int saved_errno = errno;
 		close(sock);
 		unlink(socket_name);
-		return -errno;
+		return -saved_errno;
 	}
 
 	chmod(socket_name, 0600);

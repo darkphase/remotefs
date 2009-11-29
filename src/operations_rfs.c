@@ -105,27 +105,27 @@ static void* maintenance(void *void_instance)
 			pthread_exit(0);
 		}
 		
-		if (keep_alive_slept >= keep_alive_period()
-		&& keep_alive_trylock(instance) == 0)
+		if (keep_alive_slept >= client_keep_alive_period()
+		&& client_keep_alive_trylock(instance) == 0)
 		{
 			if (check_connection(instance) == 0)
 			{
 				rfs_keep_alive(instance);
 			}
 			
-			keep_alive_unlock(instance);
+			client_keep_alive_unlock(instance);
 			keep_alive_slept = 0;
 		}
 		
 		if (attr_cache_slept >= ATTR_CACHE_TTL * 2 
-		&& keep_alive_lock(instance) == 0)
+		&& client_keep_alive_lock(instance) == 0)
 		{
 			if (cache_is_old(instance) != 0)
 			{
 				clear_cache(instance);
 			}
 			
-			keep_alive_unlock(instance);
+			client_keep_alive_unlock(instance);
 			attr_cache_slept = 0;
 		}
 	}
@@ -157,8 +157,8 @@ static int resume_files(struct rfs_instance *instance)
 		if (open_ret < 0)
 		{
 			ret = open_ret;
-			remove_file_from_open_list(instance, data->path);
-			remove_file_from_locked_list(instance, data->path);
+			resume_remove_file_from_open_list(instance, data->path);
+			resume_remove_file_from_locked_list(instance, data->path);
 			
 			/* if even single file wasn't reopened, then
 			force whole operation fail to prevent descriptors
@@ -201,7 +201,7 @@ static int resume_files(struct rfs_instance *instance)
 			fl.l_start = lock_info->start;
 			fl.l_len = lock_info->len;
 
-			uint64_t desc = is_file_in_open_list(instance, lock_info->path);
+			uint64_t desc = resume_is_file_in_open_list(instance, lock_info->path);
 			if (desc == (uint64_t)-1) /* we can only resume files which were opened on resume 
 			in other case, we don't know which open flags were used to lock that file and etc
 			so we can't reopen file on our own */
@@ -217,7 +217,7 @@ static int resume_files(struct rfs_instance *instance)
 			if (lock_ret < 0)
 			{
 				ret = lock_ret;
-				remove_file_from_locked_list(instance, lock_info->path);
+				resume_remove_file_from_locked_list(instance, lock_info->path);
 
 				resume_failed = 1;
 				break;
@@ -246,14 +246,14 @@ static int resume_files(struct rfs_instance *instance)
 			fl.l_start = data->start;
 			fl.l_len = data->len;
 
-			uint64_t desc = is_file_in_open_list(instance, data->path);
+			uint64_t desc = resume_is_file_in_open_list(instance, data->path);
 
 			if (desc != (uint64_t)-1)
 			{
 				_rfs_lock(instance, data->path, desc, F_UNLCK, &fl); /* ignore the result and keep going */
 			}
 				
-			remove_file_from_locked_list(instance, data->path);
+			resume_remove_file_from_locked_list(instance, data->path);
 			
 			locked_file = locked_file->next;
 		}
@@ -265,7 +265,7 @@ static int resume_files(struct rfs_instance *instance)
 			
 			_rfs_release(instance, data->path, data->desc); /* ignore the result and keep going */
 
-			remove_file_from_open_list(instance, data->path);
+			resume_remove_file_from_open_list(instance, data->path);
 			
 			open_file = open_file->next;
 		}
@@ -420,7 +420,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 void* rfs_init(struct rfs_instance *instance)
 {
-	keep_alive_init(instance);
+	client_keep_alive_init(instance);
 	if (pthread_create(&instance->client.maintenance_thread, NULL, maintenance, (void *)instance) != 0)
 	{
 		instance->client.maintenance_thread = 0;
@@ -453,7 +453,7 @@ void* rfs_init(struct rfs_instance *instance)
 
 void rfs_destroy(struct rfs_instance *instance)
 {
-	keep_alive_lock(instance);
+	client_keep_alive_lock(instance);
 
 #if defined RFSNSS_AVAILABLE
 	if (is_nss_running(instance))
@@ -469,7 +469,7 @@ void rfs_destroy(struct rfs_instance *instance)
 		kill_write_behind(instance);
 	}
 	
-	keep_alive_unlock(instance);
+	client_keep_alive_unlock(instance);
 	
 	instance->client.maintenance_please_die = 1;
 
@@ -478,7 +478,7 @@ void rfs_destroy(struct rfs_instance *instance)
 		pthread_join(instance->client.maintenance_thread, NULL);
 	}
 
-	keep_alive_destroy(instance);
+	client_keep_alive_destroy(instance);
 	
 	destroy_cache(instance);
 	destroy_resume_lists(instance);

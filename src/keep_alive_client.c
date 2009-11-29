@@ -9,32 +9,32 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_client.h"
 
-unsigned keep_alive_period()
+unsigned client_keep_alive_period()
 {
 	return KEEP_ALIVE_PERIOD;
 }
 
-int keep_alive_init(struct rfs_instance *instance)
+int client_keep_alive_init(struct rfs_instance *instance)
 {
 	return pthread_mutex_init(&instance->keep_alive.mutex, NULL);
 }
 
-int keep_alive_destroy(struct rfs_instance *instance)
+int client_keep_alive_destroy(struct rfs_instance *instance)
 {
 	return pthread_mutex_destroy(&instance->keep_alive.mutex);
 }
 
-int keep_alive_trylock(struct rfs_instance *instance)
+int client_keep_alive_trylock(struct rfs_instance *instance)
 {
 	return pthread_mutex_trylock(&instance->keep_alive.mutex);
 }
 
-int keep_alive_unlock(struct rfs_instance *instance)
+int client_keep_alive_unlock(struct rfs_instance *instance)
 {
 	return pthread_mutex_unlock(&instance->keep_alive.mutex);
 }
 
-int keep_alive_lock(struct rfs_instance *instance)
+int client_keep_alive_lock(struct rfs_instance *instance)
 {
 	return pthread_mutex_lock(&instance->keep_alive.mutex);
 }

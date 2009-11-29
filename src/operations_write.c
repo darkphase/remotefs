@@ -120,7 +120,7 @@ static void* write_behind(void *void_instance)
 		pthread_exit(NULL);
 	}
 	
-	if (keep_alive_lock(instance) != 0)
+	if (client_keep_alive_lock(instance) != 0)
 	{
 		write_behind_request->last_ret = -EIO;
 		pthread_exit(NULL);
@@ -133,7 +133,7 @@ static void* write_behind(void *void_instance)
 	if (write_behind_request->block == NULL) /* oops. was it already flush'ed? */
 	{
 		DEBUG("%s\n", "*** write behind finished");
-		keep_alive_unlock(instance);
+		client_keep_alive_unlock(instance);
 		continue;
 	}
 
@@ -166,7 +166,7 @@ static void* write_behind(void *void_instance)
 	
 	DEBUG("%s\n", "*** write behind finished");
 	
-	keep_alive_unlock(instance);
+	client_keep_alive_unlock(instance);
 	
 	} /* while (1) */
 }
@@ -227,7 +227,7 @@ int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 static int _rfs_flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
-	if (keep_alive_lock(instance) != 0)
+	if (client_keep_alive_lock(instance) != 0)
 	{
 		return -EIO;
 	}
@@ -235,18 +235,18 @@ static int _rfs_flush_write(struct rfs_instance *instance, const char *path, uin
 	int ret = flush_write(instance, path, desc);
 	if (ret < 0)
 	{
-		keep_alive_unlock(instance);
+		client_keep_alive_unlock(instance);
 		return ret;
 	}
 		
-	keep_alive_unlock(instance);
+	client_keep_alive_unlock(instance);
 
 	return ret;
 }
 
 static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
-	if (keep_alive_lock(instance) != 0)
+	if (client_keep_alive_lock(instance) != 0)
 	{
 		return -EIO;
 	}
@@ -254,7 +254,7 @@ static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *pa
 	int flush_ret = flush_write(instance, path, desc);
 	if (flush_ret < 0)
 	{
-		keep_alive_unlock(instance);
+		client_keep_alive_unlock(instance);
 		return flush_ret;
 	}
 		
@@ -268,7 +268,7 @@ static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *pa
 	offset, 
 	desc);
 		
-	keep_alive_unlock(instance);
+	client_keep_alive_unlock(instance);
 	return ret;
 }
 
@@ -334,7 +334,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 		{
 			/* no place left in existing block after write - fire write behind */
 			
-			if (keep_alive_lock(instance) != 0)
+			if (client_keep_alive_lock(instance) != 0)
 			{
 				return -EIO;
 			}
@@ -346,7 +346,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 				{
 					clear_cache_by_desc(&instance->write_cache.cache, desc);
 					
-					keep_alive_unlock(instance);
+					client_keep_alive_unlock(instance);
 					return write_behind_request->last_ret;
 				}
 				
@@ -372,11 +372,11 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 			
 			if (rfs_sem_post(&instance->write_cache.write_behind_sem) != 0)
 			{
-				keep_alive_unlock(instance);
+				client_keep_alive_unlock(instance);
 				return -EIO;
 			}
 			
-			keep_alive_unlock(instance);
+			client_keep_alive_unlock(instance);
 			
 			/* ensure write behind is running */
 			rfs_sem_wait(&instance->write_cache.write_behind_started);
@@ -467,7 +467,7 @@ int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf,
 		return _rfs_write_cached(instance, path, buf, size, offset, desc);
 	}
 	
-	if (keep_alive_lock(instance) != 0)
+	if (client_keep_alive_lock(instance) != 0)
 	{
 		return -EIO;
 	}
@@ -482,7 +482,7 @@ int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf,
 	offset, 
 	desc);
 	
-	keep_alive_unlock(instance);
+	client_keep_alive_unlock(instance);
 	
 	return ret;
 }

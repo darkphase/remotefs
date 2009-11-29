@@ -19,23 +19,23 @@ struct rfsd_instance;
 
 /** check if connection is should be closed during lack of activity 
 (no operations and no keep alive packets) */
-int keep_alive_expired(struct rfsd_instance *instance);
+int server_keep_alive_expired(struct rfsd_instance *instance);
 
 /** update last keep alive time with current time() value */
-void update_keep_alive(struct rfsd_instance *instance);
+void server_keep_alive_update(struct rfsd_instance *instance);
 
 /** check if process is in the middle of an operation */
-int keep_alive_locked(struct rfsd_instance *instance);
+int server_keep_alive_locked(struct rfsd_instance *instance);
 
 /** lock keep alive. not needed actually since it is implemented with SIGALRM.
 for future use */
-int keep_alive_lock(struct rfsd_instance *instance);
+int server_keep_alive_lock(struct rfsd_instance *instance);
 
 /** unlock keep alive */
-int keep_alive_unlock(struct rfsd_instance *instance);
+int server_keep_alive_unlock(struct rfsd_instance *instance);
 
 /** get keep alive checking period */
-unsigned keep_alive_period(void);
+unsigned server_keep_alive_period(void);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -18,10 +18,10 @@ extern "C" {
 struct rfsd_instance;
 
 /** add descriptor to list of open files */
-int add_file_to_open_list(struct rfsd_instance *instance, int file);
+int cleanup_add_file_to_open_list(struct rfsd_instance *instance, int file);
 
 /** remove descriptor from list of open files */
-int remove_file_from_open_list(struct rfsd_instance *instance, int file);
+int cleanup_remove_file_from_open_list(struct rfsd_instance *instance, int file);
 
 /** unlock locked files ans close open ones */
 int cleanup_files(struct rfsd_instance *instance);

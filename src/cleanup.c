@@ -30,7 +30,7 @@ static struct list* check_file_in_list(struct list *head, int file)
 	return NULL;
 }
 
-int add_file_to_list(struct list **head, int file)
+static int add_file_to_list(struct list **head, int file)
 {
 	struct list *exist = check_file_in_list(*head, file);
 	if (exist != NULL)
@@ -55,13 +55,13 @@ int add_file_to_list(struct list **head, int file)
 	return 0;
 }
 
-int add_file_to_open_list(struct rfsd_instance *instance, int file)
+int cleanup_add_file_to_open_list(struct rfsd_instance *instance, int file)
 {
 	DEBUG("adding file to open list: %d\n", file);
 	return add_file_to_list(&instance->cleanup.open_files, file);
 }
 
-int remove_file_from_list(struct list **head, int file)
+static int remove_file_from_list(struct list **head, int file)
 {
 	struct list *exist = check_file_in_list(*head, file);
 	if (exist == NULL)
@@ -74,7 +74,7 @@ int remove_file_from_list(struct list **head, int file)
 	return 0;
 }
 
-int remove_file_from_open_list(struct rfsd_instance *instance, int file)
+int cleanup_remove_file_from_open_list(struct rfsd_instance *instance, int file)
 {
 	DEBUG("removing file from open list: %d\n", file);
 	return remove_file_from_list(&instance->cleanup.open_files, file);

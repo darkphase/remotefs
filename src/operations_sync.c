@@ -18,10 +18,10 @@ See the file LICENSE.
 
 #define DECORATE(func, instance, args...)                       \
 	int ret = -ECONNABORTED;                                    \
-	if (keep_alive_lock((instance)) == 0)                       \
+	if (client_keep_alive_lock((instance)) == 0)                \
 	{                                                           \
 		PARTIALY_DECORATE(ret, (func), (instance), args)        \
-		keep_alive_unlock((instance));                          \
+		client_keep_alive_unlock((instance));                   \
 	}                                                           \
 	else                                                        \
 	{                                                           \

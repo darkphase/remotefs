@@ -374,7 +374,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	if (ans.ret == 0)
 	{
-		update_file_lock_status(instance, path, lock_cmd, fl); 
+		resume_update_file_lock_status(instance, path, lock_cmd, fl); 
 	}
 	
 	return ans.ret != 0 ? -ans.ret_errno : 0;

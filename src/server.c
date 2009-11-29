@@ -56,7 +56,7 @@ int reject_request_with_cleanup(struct rfsd_instance *instance, const struct com
 	return _reject_request(instance, cmd, ret_errno, 1);
 }
 
-static int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	if (cmd->command <= cmd_first
 	|| cmd->command >= cmd_last)
@@ -65,7 +65,7 @@ static int handle_command(struct rfsd_instance *instance, const struct sockaddr_
 		return -1;
 	}
 
-	update_keep_alive(instance);
+	server_keep_alive_update(instance);
 
 	switch (cmd->command)
 	{
@@ -233,8 +233,8 @@ static int handle_connection(struct rfsd_instance *instance, int client_socket, 
 
 	srand(time(NULL));
 	
-	update_keep_alive(instance);
-	alarm(keep_alive_period());
+	server_keep_alive_update(instance);
+	alarm(server_keep_alive_period());
 	
 	struct command current_command = { 0 };
 	
@@ -602,14 +602,14 @@ void stop_server(struct rfsd_instance *instance)
 
 void check_keep_alive(struct rfsd_instance *instance)
 {
-	if (keep_alive_locked(instance) != 0
-	&& keep_alive_expired(instance) == 0)
+	if (server_keep_alive_locked(instance) != 0
+	&& server_keep_alive_expired(instance) == 0)
 	{
 		DEBUG("%s\n", "keep alive expired");
 		server_close_connection(instance);
 		exit(1);
 	}
 	
-	alarm(keep_alive_period());
+	alarm(server_keep_alive_period());
 }
 

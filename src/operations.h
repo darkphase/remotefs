@@ -11,6 +11,9 @@ See the file LICENSE.
 
 /** rfs operations */
 
+#include <stdint.h>
+#include <sys/types.h>
+
 #include "acl/operations_acl.h"
 #include "options.h"
 

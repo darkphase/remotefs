@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "list.h"
 #include "resume.h"
 
-int add_file_to_open_list(struct rfs_instance *instance, const char *path, int flags, uint64_t desc)
+int resume_add_file_to_open_list(struct rfs_instance *instance, const char *path, int flags, uint64_t desc)
 {
 	DEBUG("adding %s to open list with %d flags\n", path, flags);
 	struct list *item = instance->resume.open_files;
@@ -52,7 +52,7 @@ int add_file_to_open_list(struct rfs_instance *instance, const char *path, int f
 	return 0;
 }
 
-int remove_file_from_open_list(struct rfs_instance *instance, const char *path)
+int resume_remove_file_from_open_list(struct rfs_instance *instance, const char *path)
 {
 	DEBUG("removing %s from open list\n", path);
 	
@@ -73,7 +73,7 @@ int remove_file_from_open_list(struct rfs_instance *instance, const char *path)
 	return 0;
 }
 
-uint64_t is_file_in_open_list(struct rfs_instance *instance, const char *path)
+uint64_t resume_is_file_in_open_list(struct rfs_instance *instance, const char *path)
 {
 	struct list *item = instance->resume.open_files;
 	while (item != NULL)
@@ -89,7 +89,7 @@ uint64_t is_file_in_open_list(struct rfs_instance *instance, const char *path)
 	return -1;
 }
 
-int update_file_lock_status(struct rfs_instance *instance, const char *path, int lock_cmd, struct flock *fl)
+int resume_update_file_lock_status(struct rfs_instance *instance, const char *path, int lock_cmd, struct flock *fl)
 {
 	/* check if we already have such record */
 	struct list *item = instance->resume.locked_files;
@@ -149,7 +149,7 @@ int update_file_lock_status(struct rfs_instance *instance, const char *path, int
 	return 0;
 }
 
-int remove_file_from_locked_list(struct rfs_instance *instance, const char *path)
+int resume_remove_file_from_locked_list(struct rfs_instance *instance, const char *path)
 {
 	DEBUG("removing %s from locked list\n", path);
 	struct list *item = instance->resume.locked_files;

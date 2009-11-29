@@ -88,7 +88,7 @@ static int nss_connect(const char *server)
 
 		DEBUG("socket name: %s\n", socket_name);
 
-		int sock = socket(PF_UNIX, SOCK_STREAM, 0);
+		int sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
 		if (sock == -1)
 		{

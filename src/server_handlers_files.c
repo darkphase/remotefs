@@ -226,7 +226,7 @@ int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	if (fd != -1)
 	{
-		if (add_file_to_open_list(instance, fd) != 0)
+		if (cleanup_add_file_to_open_list(instance, fd) != 0)
 		{
 			close(fd);
 			return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;

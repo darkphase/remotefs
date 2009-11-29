@@ -32,7 +32,7 @@ See the file LICENSE.
 
 static inline int flush_file(struct rfs_instance *instance, const char *path)
 {	
-	uint64_t desc = is_file_in_open_list(instance, path);
+	uint64_t desc = resume_is_file_in_open_list(instance, path);
 
 	if (desc != (uint64_t)-1)
 	{
