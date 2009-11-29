@@ -14,8 +14,8 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
-#include "cleanup.h"
 #include "instance_server.h"
+#include "resume/cleanup.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_utils.h"
@@ -57,7 +57,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	if (fd != -1)
 	{
-		if (cleanup_add_file_to_open_list(instance, fd) != 0)
+		if (cleanup_add_file_to_open_list(&instance->cleanup.open_files, fd) != 0)
 		{
 			close(fd);
 			return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
@@ -117,7 +117,7 @@ int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	struct answer ans = { cmd_release, 0, ret, errno };	
 	
-	if (cleanup_remove_file_from_open_list(instance, fd) != 0)
+	if (cleanup_remove_file_from_open_list(&instance->cleanup.open_files, fd) != 0)
 	{
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 	}

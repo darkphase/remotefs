@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "operations_write.h"
-#include "resume.h"
+#include "resume/resume.h"
 #include "sendrecv_client.h"
 
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)

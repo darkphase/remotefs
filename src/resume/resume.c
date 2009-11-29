@@ -10,16 +10,16 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "buffer.h"
-#include "config.h"
-#include "instance_client.h"
-#include "list.h"
+#include "../buffer.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../list.h"
 #include "resume.h"
 
-int resume_add_file_to_open_list(struct rfs_instance *instance, const char *path, int flags, uint64_t desc)
+int resume_add_file_to_open_list(struct list **head, const char *path, int flags, uint64_t desc)
 {
 	DEBUG("adding %s to open list with %d flags\n", path, flags);
-	struct list *item = instance->resume.open_files;
+	struct list *item = *head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
@@ -42,7 +42,7 @@ int resume_add_file_to_open_list(struct rfs_instance *instance, const char *path
 	new_item->desc = desc;
 	new_item->last_used_read_block = 0;
 	
-	if (add_to_list(&instance->resume.open_files, new_item) == NULL)
+	if (add_to_list(head, new_item) == NULL)
 	{
 		free(new_item->path);
 		free_buffer(new_item);
@@ -52,18 +52,18 @@ int resume_add_file_to_open_list(struct rfs_instance *instance, const char *path
 	return 0;
 }
 
-int resume_remove_file_from_open_list(struct rfs_instance *instance, const char *path)
+int resume_remove_file_from_open_list(struct list **head, const char *path)
 {
 	DEBUG("removing %s from open list\n", path);
 	
-	struct list *item = instance->resume.open_files;
+	struct list *item = *head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
 		if (strcmp(data->path, path) == 0)
 		{
 			free(data->path);
-			remove_from_list(&instance->resume.open_files, item);
+			remove_from_list(head, item);
 
 			return 0;
 		}
@@ -73,9 +73,9 @@ int resume_remove_file_from_open_list(struct rfs_instance *instance, const char 
 	return 0;
 }
 
-uint64_t resume_is_file_in_open_list(struct rfs_instance *instance, const char *path)
+uint64_t resume_is_file_in_open_list(const struct list *head, const char *path)
 {
-	struct list *item = instance->resume.open_files;
+	const struct list *item = head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
@@ -89,10 +89,10 @@ uint64_t resume_is_file_in_open_list(struct rfs_instance *instance, const char *
 	return -1;
 }
 
-int resume_update_file_lock_status(struct rfs_instance *instance, const char *path, int lock_cmd, struct flock *fl)
+int resume_update_file_lock_status(struct list **head, const char *path, int lock_cmd, struct flock *fl)
 {
 	/* check if we already have such record */
-	struct list *item = instance->resume.locked_files;
+	struct list *item = *head;
 	while (item != NULL)
 	{
 		struct lock_rec *data = (struct lock_rec *)item->data;
@@ -110,7 +110,7 @@ int resume_update_file_lock_status(struct rfs_instance *instance, const char *pa
 
 			free(data->path);
 			
-			remove_from_list(&instance->resume.locked_files, item);
+			remove_from_list(head, item);
 			break;
 		}
 
@@ -133,7 +133,7 @@ int resume_update_file_lock_status(struct rfs_instance *instance, const char *pa
 		new_item->start = fl->l_start;
 		new_item->len = fl->l_len;
 	
-		if (add_to_list(&instance->resume.locked_files, new_item) == NULL)
+		if (add_to_list(head, new_item) == NULL)
 		{
 			free(new_item->path);
 			free_buffer(new_item);
@@ -149,17 +149,17 @@ int resume_update_file_lock_status(struct rfs_instance *instance, const char *pa
 	return 0;
 }
 
-int resume_remove_file_from_locked_list(struct rfs_instance *instance, const char *path)
+int resume_remove_file_from_locked_list(struct list **head, const char *path)
 {
 	DEBUG("removing %s from locked list\n", path);
-	struct list *item = instance->resume.locked_files;
+	struct list *item = *head;
 	while (item != NULL)
 	{
 		struct lock_rec *data = (struct lock_rec *)item->data;
 		if (strcmp(data->path, path) == 0)
 		{
 			free(data->path);
-			item = remove_from_list(&instance->resume.locked_files, item);
+			item = remove_from_list(head, item);
 
 			continue;
 		}
@@ -169,25 +169,25 @@ int resume_remove_file_from_locked_list(struct rfs_instance *instance, const cha
 	return 0;
 }
 
-void destroy_resume_lists(struct rfs_instance *instance)
+void destroy_resume_lists(struct list **open, struct list **locked)
 {
 	DEBUG("%s\n", "destroying resume lists");
-	struct list *open_item = instance->resume.open_files;
+	struct list *open_item = *open;
 	while (open_item != NULL)
 	{
 		free(((struct open_rec *)open_item->data)->path);
 		open_item = open_item->next;
 	}
-	destroy_list(&instance->resume.open_files);
-	instance->resume.open_files = NULL;
+	destroy_list(open);
+	*open = NULL;
 	
-	struct list *lock_item = instance->resume.locked_files;
+	struct list *lock_item = *locked;
 	while (lock_item != NULL)
 	{
 		free(((struct lock_rec *)lock_item->data)->path);
 		lock_item = lock_item->next;
 	}
-	destroy_list(&instance->resume.locked_files);
-	instance->resume.locked_files = NULL;
+	destroy_list(locked);
+	*locked = NULL;
 }
 

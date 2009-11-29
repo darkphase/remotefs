@@ -27,12 +27,12 @@ See the file LICENSE.
 #include "operations_write.h"
 #include "operations_utils.h"
 #include "path.h"
-#include "resume.h"
+#include "resume/resume.h"
 #include "sendrecv_client.h"
 
 static inline int flush_file(struct rfs_instance *instance, const char *path)
 {	
-	uint64_t desc = resume_is_file_in_open_list(instance, path);
+	uint64_t desc = resume_is_file_in_open_list(instance->resume.open_files, path);
 
 	if (desc != (uint64_t)-1)
 	{

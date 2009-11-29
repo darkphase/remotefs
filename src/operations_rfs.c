@@ -32,7 +32,8 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 #include "operations_write.h"
-#include "resume.h"
+#include "resume/client.h"
+#include "resume/resume.h"
 #include "scheduling.h"
 #include "sendrecv_client.h"
 #include "sockets.h"
@@ -131,147 +132,6 @@ static void* maintenance(void *void_instance)
 	}
 
 	return NULL;
-}
-
-static int resume_files(struct rfs_instance *instance)
-{
-	/* we're doing this inside of maintenance() call, 
-	so keep alive is locked */
-	
-	DEBUG("%s\n", "beginning to resume connection");
-	
-	int ret = 0; /* last error */
-	unsigned resume_failed = 0;
-	
-	/* reopen files */
-	const struct list *open_file = instance->resume.open_files;
-	while (open_file != NULL)
-	{
-		struct open_rec *data = (struct open_rec *)open_file->data;
-		uint64_t desc = (uint64_t)-1;
-		uint64_t prev_desc = data->desc;
-		
-		DEBUG("reopening file %s\n", data->path);
-
-		int open_ret = _rfs_open(instance, data->path, data->flags, &desc);
-		if (open_ret < 0)
-		{
-			ret = open_ret;
-			resume_remove_file_from_open_list(instance, data->path);
-			resume_remove_file_from_locked_list(instance, data->path);
-			
-			/* if even single file wasn't reopened, then
-			force whole operation fail to prevent descriptors
-			mixing and stuff */
-			
-			resume_failed = 1;
-			break;
-		}
-		
-		if (desc != prev_desc)
-		{
-			/* nope, we're not satisfied with another descriptor 
-			those descriptors will be used in read() and write() so 
-			files should be opened exactly with the same descriptors */
-			
-			resume_failed = 1;
-			break;
-		}
-
-		DEBUG("%s\n", "ok");
-		
-		open_file = open_file->next;
-	}
-		
-	if (resume_failed == 0)
-	{
-		const struct list *lock_item = instance->resume.locked_files;
-		while (lock_item != NULL)
-		{
-			const struct lock_rec *lock_info = (const struct lock_rec *)lock_item->data;
-				
-			DEBUG("relocking file %s (at %llu of len %llu)\n", 
-				lock_info->path, 
-				(long long unsigned)lock_info->start, 
-				(long long unsigned)lock_info->len);
-
-			struct flock fl = { 0 };
-			fl.l_type = lock_info->type;
-			fl.l_whence = lock_info->whence;
-			fl.l_start = lock_info->start;
-			fl.l_len = lock_info->len;
-
-			uint64_t desc = resume_is_file_in_open_list(instance, lock_info->path);
-			if (desc == (uint64_t)-1) /* we can only resume files which were opened on resume 
-			in other case, we don't know which open flags were used to lock that file and etc
-			so we can't reopen file on our own */
-			{
-				ret = -EBADF;
-				resume_failed = 1;
-
-				break;
-			}
-
-			int lock_ret = _rfs_lock(instance, lock_info->path, desc, lock_info->cmd, &fl);
-				
-			if (lock_ret < 0)
-			{
-				ret = lock_ret;
-				resume_remove_file_from_locked_list(instance, lock_info->path);
-
-				resume_failed = 1;
-				break;
-			}
-		
-			DEBUG("%s\n", "ok");
-
-			lock_item = lock_item->next;
-		}
-	}
-		
-	/* if resume failed, then close all files marked as open 
-	and clear unlock locked files*/
-	if (resume_failed != 0)
-	{
-		DEBUG("%s\n", "resume failed");
-
-		const struct list *locked_file = instance->resume.locked_files;
-		while (locked_file != NULL)
-		{
-			struct lock_rec *data = (struct lock_rec *)locked_file->data;
-			
-			struct flock fl = { 0 };
-			fl.l_type = data->type;
-			fl.l_whence = data->whence;
-			fl.l_start = data->start;
-			fl.l_len = data->len;
-
-			uint64_t desc = resume_is_file_in_open_list(instance, data->path);
-
-			if (desc != (uint64_t)-1)
-			{
-				_rfs_lock(instance, data->path, desc, F_UNLCK, &fl); /* ignore the result and keep going */
-			}
-				
-			resume_remove_file_from_locked_list(instance, data->path);
-			
-			locked_file = locked_file->next;
-		}
-
-		const struct list *open_file = instance->resume.open_files;
-		while (open_file != NULL)
-		{
-			struct open_rec *data = (struct open_rec *)open_file->data;
-			
-			_rfs_release(instance, data->path, data->desc); /* ignore the result and keep going */
-
-			resume_remove_file_from_open_list(instance, data->path);
-			
-			open_file = open_file->next;
-		}
-	}
-	
-	return ret; /* not real error. probably. but we've tried our best */
 }
 
 int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsigned int change_path)
@@ -481,7 +341,7 @@ void rfs_destroy(struct rfs_instance *instance)
 	client_keep_alive_destroy(instance);
 	
 	destroy_cache(instance);
-	destroy_resume_lists(instance);
+	destroy_resume_lists(&instance->resume.open_files, &instance->resume.locked_files);
 	
 #ifdef WITH_SSL
 	if (instance->config.enable_ssl != 0)

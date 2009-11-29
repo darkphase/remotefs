@@ -30,6 +30,8 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/nss/client.o \
               src/nss/operations_nss.o \
               src/nss/server.o \
+              src/resume/client.o \
+              src/resume/resume.o \
               src/ssl/client.o \
               src/ssl/operations_ssl.o \
               src/ssl/ssl.o \
@@ -57,7 +59,6 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations_write.o \
               src/operations_utils.o \
               src/path.o \
-              src/resume.o \
               src/error.o \
               src/sendrecv.o \
               src/signals.o \

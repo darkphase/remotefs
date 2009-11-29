@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "operations_write.h"
 #include "operations_utils.h"
 #include "path.h"
-#include "resume.h"
+#include "resume/resume.h"
 #include "sendrecv_client.h"
 
 int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)
@@ -95,7 +95,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	else
 	{
 		delete_from_cache(instance, path);
-		resume_add_file_to_open_list(instance, path, flags, *desc);
+		resume_add_file_to_open_list(&instance->resume.open_files, path, flags, *desc);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -144,7 +144,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	if (ans.ret == 0)
 	{
 		delete_from_cache(instance, path);
-		resume_remove_file_from_open_list(instance, path);
+		resume_remove_file_from_open_list(&instance->resume.open_files, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;

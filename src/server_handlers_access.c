@@ -14,7 +14,6 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
-#include "cleanup.h"
 #include "exports.h"
 #include "id_lookup.h"
 #include "instance_server.h"

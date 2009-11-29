@@ -21,13 +21,13 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
-#include "cleanup.h"
 #include "exports.h"
 #include "id_lookup.h"
 #include "instance_server.h"
 #include "keep_alive_server.h"
 #include "list.h"
 #include "passwd.h"
+#include "resume/cleanup.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_sync.h"
@@ -269,7 +269,7 @@ void server_close_connection(struct rfsd_instance *instance)
 		close(instance->sendrecv.socket);
 	}
 	
-	cleanup_files(instance);
+	cleanup_files(&instance->cleanup.open_files);
 	
 	if (instance->server.auth_user != NULL)
 	{

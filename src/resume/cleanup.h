@@ -15,16 +15,16 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct rfsd_instance;
+struct list;
 
 /** add descriptor to list of open files */
-int cleanup_add_file_to_open_list(struct rfsd_instance *instance, int file);
+int cleanup_add_file_to_open_list(struct list **head, int file);
 
 /** remove descriptor from list of open files */
-int cleanup_remove_file_from_open_list(struct rfsd_instance *instance, int file);
+int cleanup_remove_file_from_open_list(struct list **head, int file);
 
 /** unlock locked files ans close open ones */
-int cleanup_files(struct rfsd_instance *instance);
+int cleanup_files(struct list **open);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

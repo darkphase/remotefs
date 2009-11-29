@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "instance_client.h"
 #include "operations_rfs.h"
 #include "operations_utils.h"
-#include "resume.h"
+#include "resume/resume.h"
 #include "sendrecv_client.h"
 
 int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
@@ -374,7 +374,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	
 	if (ans.ret == 0)
 	{
-		resume_update_file_lock_status(instance, path, lock_cmd, fl); 
+		resume_update_file_lock_status(&instance->resume.open_files, path, lock_cmd, fl); 
 	}
 	
 	return ans.ret != 0 ? -ans.ret_errno : 0;

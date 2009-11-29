@@ -80,6 +80,7 @@ depends:
 	SCANDIR="src\/acl\/"       $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/md5crypt\/"  $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/nss\/"       $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/resume\/"    $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/ssl\/"       $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="rfs_nss\/src\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 

@@ -25,11 +25,11 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/acl/server_handlers_acl.o \
             src/acl/utils.o \
             src/nss/server_handlers_nss.o \
+            src/resume/cleanup.o \
             src/ssl/server_handlers_ssl.o \
             src/ssl/server.o \
             src/ssl/ssl.o \
             src/buffer.o \
-            src/cleanup.o \
             src/command.o \
             src/crypt.o \
             src/exports.o \

@@ -9,10 +9,11 @@ See the file LICENSE.
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "buffer.h"
-#include "config.h"
-#include "instance_server.h"
-#include "list.h"
+#include "../buffer.h"
+#include "../config.h"
+#include "../instance_server.h"
+#include "../list.h"
+#include "cleanup.h"
 
 static struct list* check_file_in_list(struct list *head, int file)
 {
@@ -55,10 +56,10 @@ static int add_file_to_list(struct list **head, int file)
 	return 0;
 }
 
-int cleanup_add_file_to_open_list(struct rfsd_instance *instance, int file)
+int cleanup_add_file_to_open_list(struct list **head, int file)
 {
 	DEBUG("adding file to open list: %d\n", file);
-	return add_file_to_list(&instance->cleanup.open_files, file);
+	return add_file_to_list(head, file);
 }
 
 static int remove_file_from_list(struct list **head, int file)
@@ -74,19 +75,19 @@ static int remove_file_from_list(struct list **head, int file)
 	return 0;
 }
 
-int cleanup_remove_file_from_open_list(struct rfsd_instance *instance, int file)
+int cleanup_remove_file_from_open_list(struct list **head, int file)
 {
 	DEBUG("removing file from open list: %d\n", file);
-	return remove_file_from_list(&instance->cleanup.open_files, file);
+	return remove_file_from_list(head, file);
 }
 
-int cleanup_files(struct rfsd_instance *instance)
+int cleanup_files(struct list **open)
 {
 	DEBUG("%s\n", "cleaninig up files");
 
-	if (instance->cleanup.open_files != NULL)
+	if (*open != NULL)
 	{
-		struct list *item = instance->cleanup.open_files;
+		struct list *item = *open;
 		while (item != 0)
 		{
 			DEBUG("closing still open handle: %d\n", *((int *)(item->data)));
@@ -95,7 +96,8 @@ int cleanup_files(struct rfsd_instance *instance)
 			item = item->next;
 		}
 		
-		destroy_list(&instance->cleanup.open_files);
+		destroy_list(open);
+		*open = NULL;
 	}
 	
 	return 0;
