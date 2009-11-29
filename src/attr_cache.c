@@ -135,6 +135,7 @@ const struct tree_item* get_cache(struct rfs_instance *instance, const char *pat
 #ifdef RFS_DEBUG
 		++instance->attr_cache.cache_hits;
 #endif
+		tdelete(&key, &instance->attr_cache.cache, compare_path); /* destructive reading */
 		return *(struct tree_item **)found;
 	}
 #ifdef RFS_DEBUG

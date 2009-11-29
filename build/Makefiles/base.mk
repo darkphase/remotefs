@@ -48,8 +48,9 @@ rfspasswd: dummy
 clean_build: dummy
 	$(RM) -f src/*.o
 	$(RM) -f src/acl/*.o
-	$(RM) -f src/nss/*.o
 	$(RM) -f src/md5crypt/*.o
+	$(RM) -f src/nss/*.o
+	$(RM) -f src/resume/*.o
 	$(RM) -f src/ssl/*.o
 	$(RM) -f rfs_nss/src/*.o
 
