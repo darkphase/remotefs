@@ -89,12 +89,12 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	{
 		if (ans.ret_errno == -ENOENT)
 		{
-			delete_from_cache(instance, path);
+			delete_from_cache(&instance->attr_cache, path);
 		}
 	}
 	else
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 		resume_add_file_to_open_list(&instance->resume.open_files, path, flags, *desc);
 	}
 
@@ -143,7 +143,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 		resume_remove_file_from_open_list(&instance->resume.open_files, path);
 	}
 

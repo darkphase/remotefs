@@ -35,7 +35,6 @@ struct list;
 #define MAX_SUPPORTED_NAME_LEN  32          /* used in chown(), getattr() and etc related to stat() */
 #define RFS_WRITE_BLOCK         32 * 1024   /* bytes */
 #define RFS_READ_BLOCK          32 * 1024   /* bytes */
-#define PREFETCH_LIMIT          32 * 1024   /* bytes */
 #define SENDFILE_LIMIT          4 * 1024    /* bytes */
 #define SSL_READ_BLOCK          8 * 1024    /* bytes */
 #define SSL_WRITE_BLOCK         8 * 1024    /* bytes */

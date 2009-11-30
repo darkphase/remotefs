@@ -26,16 +26,16 @@ static void init_client(struct rfs_instance *instance)
 	instance->client.my_pid = getpid();
 }
 
-static void init_attr_cache(struct rfs_instance *instance)
+static void init_attr_cache(struct attr_cache *cache)
 {
 	/* attrs cache */
-	instance->attr_cache.cache = NULL;
-	instance->attr_cache.last_time_checked = (time_t)(0);
-	instance->attr_cache.number_of_entries = 0;
+	cache->cache = NULL;
+	cache->last_time_checked = (time_t)(0);
+	cache->number_of_entries = 0;
 #ifdef RFS_DEBUG
-	instance->attr_cache.cache_hits = 0;
-	instance->attr_cache.cache_misses = 0;
-	instance->attr_cache.max_number_of_entries = 0;
+	cache->hits = 0;
+	cache->misses = 0;
+	cache->max_number_of_entries = 0;
 #endif
 }
 
@@ -111,7 +111,7 @@ static void init_rfs_config(struct rfs_instance *instance)
 void init_rfs_instance(struct rfs_instance *instance)
 {
 	init_client(instance);
-	init_attr_cache(instance);
+	init_attr_cache(&instance->attr_cache);
 	init_resume(instance);
 	init_write_cache(instance);
 	init_sendrecv(&instance->sendrecv);

@@ -120,7 +120,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 			
 			if (joined >= 0)
 			{
-				cache_file(instance, full_path, &stbuf); /* ignore result because cache may be full */
+				cache_file(&instance->attr_cache, full_path, &stbuf); /* ignore result because cache may be full */
 			
 				if (callback(entry, callback_data) != 0)
 				{
@@ -181,7 +181,7 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -220,7 +220,7 @@ int _rfs_rmdir(struct rfs_instance *instance, const char *path)
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;

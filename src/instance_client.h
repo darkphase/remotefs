@@ -11,6 +11,7 @@ See the file LICENSE.
 
 /** remotefs client instances */
 
+#include "attr_cache.h"
 #include "config.h"
 #include "psemaphore.h"
 #include "instance.h"
@@ -36,18 +37,8 @@ struct rfs_instance
 	} client;
 	
 	/* attributes cache */
-	struct
-	{
-		void *cache;
-		time_t last_time_checked;
-		unsigned long number_of_entries;
-#ifdef RFS_DEBUG
-		unsigned long cache_hits;
-		unsigned long cache_misses;
-		unsigned max_number_of_entries;
-#endif
-	} attr_cache;
-	
+	struct attr_cache attr_cache;
+		
 	/* keep-alive */
 	struct 
 	{

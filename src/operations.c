@@ -57,12 +57,13 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -ECANCELED;
 	}
 
-	const struct tree_item *cached_value = get_cache(instance, path);
+	const struct tree_item *cached_value = get_cache(&instance->attr_cache, path);
 	if (cached_value != NULL 
 	&& (time(NULL) - cached_value->time) < ATTR_CACHE_TTL )
 	{
 		DEBUG("%s is cached\n", path);
 		memcpy(stbuf, &cached_value->data, sizeof(*stbuf));
+		delete_from_cache(&instance->attr_cache, path); /* destructive reading */
 		return 0;
 	}
 
@@ -126,7 +127,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 
 	if (ans.ret_errno == 0)
 	{
-		cache_file(instance, path, stbuf); /* ignore result because cache may be already full */
+		cache_file(&instance->attr_cache, path, stbuf);
 	}
 
 	DEBUG("user: %s, group: %s, ret: %d, errno: %u\n", user, group, (int)ans.ret, (unsigned)ans.ret_errno);
@@ -201,7 +202,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);
@@ -280,7 +281,7 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return (ans.ret == -1 ? -ans.ret_errno : ans.ret);

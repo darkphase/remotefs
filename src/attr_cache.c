@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_client.h"
 #ifdef RFS_DEBUG
-#include "ratio.h"
+#	include "ratio.h"
 #endif
 
 static int any_node(const void *s1, const void *s2)
@@ -28,17 +28,6 @@ static int compare_path(const void *s1, const void *s2)
 	return strcmp(((struct tree_item *)s1)->path, ((struct tree_item *)s2)->path);
 }
 
-unsigned cache_is_old(struct rfs_instance *instance)
-{
-	if (time(NULL) > instance->attr_cache.last_time_checked + ATTR_CACHE_TTL)
-	{
-		instance->attr_cache.last_time_checked = time(NULL);
-		return 1;
-	}
-	
-	return 0;
-}
-
 static int compare_time(const void *s1, const void *s2)
 {
 	return ((struct tree_item *)s1)->time > (((struct tree_item *)s2)->time + ATTR_CACHE_TTL)
@@ -46,9 +35,21 @@ static int compare_time(const void *s1, const void *s2)
 	: 1;
 }
 
-void clear_cache(struct rfs_instance *instance)
+unsigned cache_is_old(struct attr_cache *cache)
 {
-	if (instance->attr_cache.cache == NULL)
+	time_t now = time(NULL);
+	if (now > cache->last_time_checked + ATTR_CACHE_TTL)
+	{
+		cache->last_time_checked = now;
+		return 1;
+	}
+	
+	return 0;
+}
+
+void clear_cache(struct attr_cache *cache)
+{
+	if (cache->cache == NULL)
 	{
 		return;
 	}
@@ -62,7 +63,7 @@ void clear_cache(struct rfs_instance *instance)
 	
 	do
 	{
-		void *found = tfind(&key, &instance->attr_cache.cache, compare_time);
+		void *found = tfind(&key, &cache->cache, compare_time);
 		
 		if (found == NULL)
 		{
@@ -71,7 +72,7 @@ void clear_cache(struct rfs_instance *instance)
 		
 		struct tree_item *node = *(struct tree_item **)found;
 		
-		if (tdelete(node, &instance->attr_cache.cache, compare_path) != NULL)
+		if (tdelete(node, &cache->cache, compare_path) != NULL)
 		{
 			DEBUG("deleted from cache: %s\n", node->path);
 			
@@ -82,9 +83,9 @@ void clear_cache(struct rfs_instance *instance)
 	while (1);
 }
 
-void* cache_file(struct rfs_instance *instance, const char *path, struct stat *stbuf)
+void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf)
 {
-	if (instance->attr_cache.number_of_entries >= ATTR_CACHE_MAX_ENTRIES)
+	if (cache->number_of_entries >= ATTR_CACHE_MAX_ENTRIES)
 	{
 		return NULL;
 	}
@@ -100,7 +101,7 @@ void* cache_file(struct rfs_instance *instance, const char *path, struct stat *s
 	key->time = time(NULL);
 	memcpy(&(key->data), stbuf, sizeof(key->data));
 	
-	void *found = tfind(key, &instance->attr_cache.cache, compare_path);
+	void *found = tfind(key, &cache->cache, compare_path);
 	if (found != NULL)
 	{
 		free(key->path);
@@ -114,34 +115,34 @@ void* cache_file(struct rfs_instance *instance, const char *path, struct stat *s
 	}
 	else
 	{
-		++(instance->attr_cache.number_of_entries);
+		++(cache->number_of_entries);
 #ifdef RFS_DEBUG
-		if (instance->attr_cache.number_of_entries > instance->attr_cache.max_number_of_entries)
+		if (cache->number_of_entries > cache->max_number_of_entries)
 		{
-			instance->attr_cache.max_number_of_entries = instance->attr_cache.number_of_entries;
+			cache->max_number_of_entries = cache->number_of_entries;
 		}
 #endif
-		return tsearch(key, &instance->attr_cache.cache, compare_path);
+		return tsearch(key, &cache->cache, compare_path);
 	}
 }
 
-const struct tree_item* get_cache(struct rfs_instance *instance, const char *path)
+const struct tree_item* 
+get_cache(struct attr_cache *cache, const char *path)
 {
 	struct tree_item key = { (char *)path, time(NULL), { 0 } };
 	
-	void *found = tfind(&key, &instance->attr_cache.cache, compare_path);
+	void *found = tfind(&key, &cache->cache, compare_path);
 	if (found != NULL)
 	{
 #ifdef RFS_DEBUG
-		++instance->attr_cache.cache_hits;
+		++cache->hits;
 #endif
-		tdelete(&key, &instance->attr_cache.cache, compare_path); /* destructive reading */
 		return *(struct tree_item **)found;
 	}
 #ifdef RFS_DEBUG
 	else
 	{
-		++instance->attr_cache.cache_misses;
+		++cache->misses;
 	}
 #endif
 	
@@ -167,45 +168,45 @@ static void release_cache(const void *nodep, const VISIT which, const int depth)
 	}
 }
 
-void destroy_cache(struct rfs_instance *instance)
+void* destroy_cache(struct attr_cache *cache)
 {
-	if (instance->attr_cache.cache != NULL)
+	if (cache->cache != NULL)
 	{
-		twalk(instance->attr_cache.cache, release_cache);
+		twalk(cache->cache, release_cache);
 		
-		while (instance->attr_cache.cache != NULL)
+		while (cache->cache != NULL)
 		{
-			tdelete(NULL, &instance->attr_cache.cache, any_node);
+			tdelete(NULL, &cache->cache, any_node);
 		}
-		
-		instance->attr_cache.cache = NULL;
-		instance->attr_cache.number_of_entries = 0;
 	}
+
+	return NULL;
 }
 
-void delete_from_cache(struct rfs_instance *instance, const char *path)
+void delete_from_cache(struct attr_cache *cache, const char *path)
 {
 	struct tree_item key = { (char *)path, time(NULL), { 0 } };
-	void *found = tfind(&key, &instance->attr_cache.cache, compare_path);
+
+	void *found = tfind(&key, &cache->cache, compare_path);
 	struct tree_item *value = (found != NULL ? *(struct tree_item **)found : NULL);
 	
-	tdelete(&key, &instance->attr_cache.cache, compare_path);
+	tdelete(&key, &cache->cache, compare_path);
 	
 	if (value != NULL)
 	{
 		free(value->path);
 		free_buffer(value);
-		--(instance->attr_cache.number_of_entries);
+		--(cache->number_of_entries);
 	}
 }
 
 #ifdef RFS_DEBUG
-void dump_attr_stats(struct rfs_instance *instance)
+void dump_attr_stats(struct attr_cache *cache)
 {
 	DEBUG("attr cache hits: %lu, misses: %lu, ratio: %.2f\n", 
-	instance->attr_cache.cache_hits, 
-	instance->attr_cache.cache_misses, 
-	ratio(instance->attr_cache.cache_hits, instance->attr_cache.cache_misses));
-	DEBUG("attr cache max number of entries: %u/%u\n", instance->attr_cache.max_number_of_entries, ATTR_CACHE_MAX_ENTRIES);
+	cache->hits, 
+	cache->misses, 
+	ratio(cache->hits, cache->misses));
+	DEBUG("attr cache max number of entries: %lu/%u\n", cache->max_number_of_entries, ATTR_CACHE_MAX_ENTRIES);
 }
 #endif

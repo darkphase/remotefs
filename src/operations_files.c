@@ -67,7 +67,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -106,7 +106,7 @@ int _rfs_unlink(struct rfs_instance *instance, const char *path)
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -160,7 +160,7 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -216,7 +216,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return (ans.ret == 0 ? 0 : -ans.ret_errno);

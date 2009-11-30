@@ -399,7 +399,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 	{
 		int ret = write_behind_request->last_ret;
 		
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 		reset_write_behind(instance);
 		return ret;
 	}
@@ -450,7 +450,7 @@ static int _write(struct rfs_instance *instance, const char *path, const char *b
 		return -EBADMSG;
 	}
 	
-	delete_from_cache(instance, path);
+	delete_from_cache(&instance->attr_cache, path);
 	
 	return ans.ret == -1 ? -ans.ret_errno : (int)ans.ret;
 }

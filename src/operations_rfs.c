@@ -121,9 +121,9 @@ static void* maintenance(void *void_instance)
 		if (attr_cache_slept >= ATTR_CACHE_TTL * 2 
 		&& client_keep_alive_lock(instance) == 0)
 		{
-			if (cache_is_old(instance) != 0)
+			if (cache_is_old(&instance->attr_cache) != 0)
 			{
-				clear_cache(instance);
+				clear_cache(&instance->attr_cache);
 			}
 			
 			client_keep_alive_unlock(instance);
@@ -340,7 +340,7 @@ void rfs_destroy(struct rfs_instance *instance)
 
 	client_keep_alive_destroy(instance);
 	
-	destroy_cache(instance);
+	destroy_cache(&instance->attr_cache);
 	destroy_resume_lists(&instance->resume.open_files, &instance->resume.locked_files);
 	
 #ifdef WITH_SSL
@@ -351,7 +351,7 @@ void rfs_destroy(struct rfs_instance *instance)
 #endif
 	
 #ifdef RFS_DEBUG
-	dump_attr_stats(instance);
+	dump_attr_stats(&instance->attr_cache);
 #endif
 }
 

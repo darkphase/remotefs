@@ -172,7 +172,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 
 	if ( ans.ret_errno == 0 )
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;
@@ -235,7 +235,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	if ( ans.ret_errno == 0 )
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == 0 ? 0 : -ans.ret_errno;

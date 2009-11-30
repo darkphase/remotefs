@@ -65,7 +65,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 	
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
@@ -118,7 +118,7 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 
 	if (ans.ret == 0)
 	{
-		delete_from_cache(instance, path);
+		delete_from_cache(&instance->attr_cache, path);
 	}
 
 	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
