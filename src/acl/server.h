@@ -22,7 +22,12 @@ extern "C" {
 #include <stdint.h>
 #include <sys/acl.h>
 
+/** get binary ACL representation from file 
+\return 0 on success or negated errno */
 int rfs_get_file_acl(const char *path, const char *acl_name, acl_t *acl);
+
+/** set ACL to file 
+\return 0 on success of negated errno */
 int rfs_set_file_acl(const char *path, const char *acl_name, const acl_t acl);
 
 #if defined (__cplusplus) || defined (c_plusplus)

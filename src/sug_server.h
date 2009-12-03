@@ -13,7 +13,8 @@ See the file LICENSE.
 
 struct rfsd_instance;
 
-/** make suggestions for server */
+/** make suggestions for server 
+\return 0 if no suggestions can be made (everything is fine) */
 int suggest_server(const struct rfsd_instance *instance);
 
 #endif /* SUG_SERVER_H */

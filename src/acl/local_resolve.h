@@ -22,7 +22,12 @@ extern "C" {
 #include <stdint.h>
 #include <sys/acl.h>
 
+/** resolve name using system's database 
+\return ACL_UNDEFINED_ID if not found */
 uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *instance_casted);
+
+/** resolve id using system's database 
+\return NULL if not found */
 char* local_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted);
 
 #if defined (__cplusplus) || defined (c_plusplus)

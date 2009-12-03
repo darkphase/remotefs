@@ -11,6 +11,9 @@ See the file LICENSE.
 
 struct rfs_instance;
 
+/** call necessary _rfs_open(), _rfs_lock() according to resume lists 
+to restore files state after connection is restored 
+\return 0 on success */
 int resume_files(struct rfs_instance *instance);
 
 #endif /* RESUME_CLIENT_H */

@@ -22,7 +22,12 @@ extern "C" {
 #include <stdint.h>
 #include <sys/acl.h>
 
+/** resolve name using id_lookup lists 
+\return ACL_UNDEFINED_ID if not found */
 uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, void *lookup_casted);
+
+/** resolve id using id_lookup lists 
+\return NULL if not found */
 char* id_lookup_reverse_resolve(acl_tag_t tag, void *id, void *lookup_casted);
 
 #if defined (__cplusplus) || defined (c_plusplus)

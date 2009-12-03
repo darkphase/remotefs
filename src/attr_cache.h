@@ -40,22 +40,21 @@ struct tree_item
 	struct stat data;
 };
 
-/** add file to cache */
+/** add file to cache 
+\return added item or NULL on error */
 void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf);
 
 /** delete file from cache */
 void delete_from_cache(struct attr_cache *cache, const char *path);
 
-/** get cached value for file */
+/** get cached value for file 
+\return cached item or NULL if not found */
 const struct tree_item* get_cache(struct attr_cache *cache, const char *path);
 
 /** delete all cached data */
 void* destroy_cache(struct attr_cache *cache);
 
-/** check if cache is outdated
-@return not 0 if cache is old 
-\param last_time_checked last check time - will be updated with time() 
-*/
+/** check if cache is outdated */
 unsigned cache_is_old(struct attr_cache *cache);
 
 /** delete outdated files from cache */

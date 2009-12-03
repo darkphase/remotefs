@@ -17,6 +17,7 @@ extern "C" {
 
 #ifdef SCHEDULING_AVAILABLE
 
+/** set real-time scheduling and max priority to current thread */
 void set_scheduler(void);
 
 #endif /* SCHEDULING_AVAILABLE */

@@ -19,11 +19,13 @@ See the file LICENSE.
 #include <sys/acl.h>
 
 /** makes names like "name@remote_host" from "name" 
-and returns its uid/gid (if available) */
+and returns its uid/gid (if available) 
+\return ACL_UNDEFINED_ID if not found */
 uint32_t nss_resolve(acl_tag_t tag, const char *name, size_t name_len, void *instance_casted);
 
-/** returns name of remote user/group as in name@remote_host
-don't forget to free() result */
+/** returns name of remote user/group as in name@remote_host, 
+don't forget to free() result 
+\return NULL if not found */
 char* nss_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted);
 
 #endif /* ACL_NSS_RESOLVE_H */

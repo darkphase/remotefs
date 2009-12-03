@@ -15,16 +15,21 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** set socket to reuse address */
+/** set socket to reuse address 
+\return 0 on success */
 int setup_socket_reuse(int socket, const char reuse);
 
-/** set socket pid */
+/** set socket pid 
+\return 0 on success */
 int setup_soket_pid(int socket, const pid_t pid);
 
+/** set TCP_NODELAY to socket
+\return 0 on success */
 int setup_socket_ndelay(int socket, const char nodelay);
 
 #ifdef WITH_IPV6
-/** set socket for usage with IPv6 only */
+/** set socket for usage with IPv6 only 
+\return 0 on success */
 int setup_socket_ipv6_only(int socket);
 #endif
 

@@ -13,7 +13,7 @@ See the file LICENSE.
 
 #include "ssl/ssl.h"
 
-/** return 0 if SSL cna be initialized with passed key/cert/ciphers */
+/** \return 0 if SSL can be initialized with passed key/cert/ciphers */
 int check_ssl(SSL_METHOD *method, const char *keyfile, const char *certfile, const char *ciphers);
 
 #endif /* WITH_SSL */

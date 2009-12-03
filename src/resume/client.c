@@ -120,7 +120,7 @@ int resume_files(struct rfs_instance *instance)
 	}
 		
 	/* if resume failed, then close all files marked as open 
-	and clear unlock locked files*/
+	and unlock locked files*/
 	if (resume_failed != 0)
 	{
 		DEBUG("%s\n", "resume failed");

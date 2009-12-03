@@ -13,7 +13,8 @@ See the file LICENSE.
 
 struct rfs_instance;
 
-/** make suggestions for client */
+/** make suggestions for client 
+\return 0 if no suggestions can be made (everything is fine) */
 void suggest_client(const struct rfs_instance *instance);
 
 #endif /* SUG_CLIENT_H */

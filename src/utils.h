@@ -18,10 +18,10 @@ struct sockaddr_in6;
 extern "C" {
 # endif
 
-/** check if specified user is actually an ip address */
+/** check if specified string is actually an ip address */
 unsigned int is_ipaddr(const char *string);
 
-/** is IPv4 address belongs to private network */
+/** check if IPv4 address belongs to private network */
 unsigned int is_ipv4_local(const char *ip_addr);
 
 /** don't forget to free() returned value */
@@ -31,7 +31,7 @@ char* host_ip(const char *host, int *resolved_address_family);
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len);
 
 #ifdef WITH_IPV6
-/** is IPv6 address belongs to private network */
+/** check if IPv6 address belongs to private network */
 unsigned int is_ipv6_local(const char *ip_addr);
 #endif
 

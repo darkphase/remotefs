@@ -40,19 +40,26 @@ struct lock_rec
 	off_t len;
 };
 
-/** add file to list of open */
+/** add file to list of open 
+\return 0 if successfully added 
+\param flags file open flags 
+\param desc descriptor of open file */
 int resume_add_file_to_open_list(struct list **head, const char *path, int flags, uint64_t desc);
 
-/** remove file from list of open */
+/** remove file from list of open 
+\return 0 if successfully removed */
 int resume_remove_file_from_open_list(struct list **head, const char *path);
 
-/** return file descriptor if file is recorder as open or -1 if not */
+/** check if file is recorded as open 
+\return file descriptor if file is recorder as open or -1 if not */
 uint64_t resume_is_file_in_open_list(const struct list *head, const char *path);
 
-/** remove file from list of locked */
+/** remove file from list of locked 
+\return 0 if successfully removed */
 int resume_remove_file_from_locked_list(struct list **head, const char *path);
 
-/** clear lock info or add lock info for path depend on lock_cmd and */
+/** clear lock info or add lock info for path depend on lock_cmd 
+\return 0 on success */
 int resume_update_file_lock_status(struct list **head, const char *path, int lock_cmd, struct flock *fl);
 
 /** delete lists of open and locked files */
