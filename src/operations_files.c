@@ -292,6 +292,13 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 	return (ans.ret == 0 ? 0 : -ans.ret_errno);
 }
 
+static unsigned is_file_fully_locked(const struct flock *fl)
+{
+	return (fl->l_whence == SEEK_SET 
+	&& fl->l_start == 0 
+	&& fl->l_len == 0) ? 1 : 0;
+}
+
 int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, int lock_cmd, struct flock *fl)
 {
 	if (instance->sendrecv.socket == -1)
@@ -317,19 +324,20 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	}
 	
 	uint16_t type = 0;
-	switch (fl->l_type)
+	if (fl->l_type == F_UNLCK)
 	{
-	case F_UNLCK:
 		type = RFS_UNLCK;
-		break;
-	case F_RDLCK:
-		type = RFS_RDLCK;
-		break;
-	case F_WRLCK:
-		type = RFS_WRLCK;
-		break;
-	default:
-		return -EINVAL;
+	}
+	else 
+	{
+		if ((fl->l_type & F_RDLCK) != 0)
+		{
+			type |= RFS_RDLCK;
+		}
+		if ((fl->l_type & F_WRLCK) != 0)
+		{
+			type |= RFS_WRLCK;
+		}
 	}
 	
 	uint16_t whence = fl->l_whence;
@@ -372,9 +380,17 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 		return cleanup_badmsg(instance, &ans);
 	}
 	
-	if (ans.ret == 0)
+	if (ans.ret == 0 
+	&& (lock_cmd == F_SETLK || lock_cmd == F_SETLKW))
 	{
-		resume_update_file_lock_status(&instance->resume.open_files, path, lock_cmd, fl); 
+		if (fl->l_type == F_UNLCK)
+		{
+			resume_remove_file_from_locked_list(&instance->resume.locked_files, path); 
+		}
+		else
+		{
+			resume_add_file_to_locked_list(&instance->resume.locked_files, path, fl->l_type, is_file_fully_locked(fl)); 
+		}
 	}
 	
 	return ans.ret != 0 ? -ans.ret_errno : 0;

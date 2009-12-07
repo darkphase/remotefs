@@ -89,61 +89,39 @@ uint64_t resume_is_file_in_open_list(const struct list *head, const char *path)
 	return -1;
 }
 
-int resume_update_file_lock_status(struct list **head, const char *path, int lock_cmd, struct flock *fl)
+int resume_add_file_to_locked_list(struct list **head, const char *path, int lock_type, unsigned fully_locked)
 {
-	/* check if we already have such record */
+	DEBUG("adding %s to locked list %s\n", path, fully_locked ? "(fully locked)" : "");
+
 	struct list *item = *head;
 	while (item != NULL)
 	{
-		struct lock_rec *data = (struct lock_rec *)item->data;
-
-		if (strcmp(data->path, path) == 0 
-		&& data->whence == fl->l_whence 
-		&& data->start == fl->l_start 
-		&& data->len == fl->l_len)
+		struct lock_rec *data = (struct lock_rec *)(item->data);
+		if (strcmp(data->path, path) == 0)
 		{
-			/* remove old entry */
-			DEBUG("removing lock for file %s (at %llu of len %llu)\n", 
-				data->path, 
-				(long long unsigned)data->start, 
-				(long long unsigned)data->len);
-
-			free(data->path);
-			
-			remove_from_list(head, item);
-			break;
+			data->lock_type = lock_type;
+			data->fully_locked = fully_locked;
+			return 0;
 		}
 
 		item = item->next;
 	}
 
-	/* add new lock item for this file if needed */
-	if (lock_cmd == F_SETLK || lock_cmd == F_SETLKW)
+	struct lock_rec *new_item = get_buffer(sizeof(*new_item));
+	if (new_item == NULL)
 	{
-		struct lock_rec *new_item = get_buffer(sizeof(*new_item));
-		if (new_item == NULL)
-		{
-			return -1;
-		}
-	
-		new_item->path = strdup(path);
-		new_item->cmd = lock_cmd;
-		new_item->type = fl->l_type;
-		new_item->whence = fl->l_whence;
-		new_item->start = fl->l_start;
-		new_item->len = fl->l_len;
-	
-		if (add_to_list(head, new_item) == NULL)
-		{
-			free(new_item->path);
-			free_buffer(new_item);
-			return -1;
-		}
-			
-		DEBUG("added lock for file %s (at %llu of len %llu)\n", 
-			new_item->path, 
-			(long long unsigned)new_item->start, 
-			(long long unsigned)new_item->len);
+		return -1;
+	}
+
+	new_item->path = strdup(path);
+	new_item->lock_type = lock_type;
+	new_item->fully_locked = fully_locked;
+
+	if (add_to_list(head, new_item) == NULL)
+	{
+		free(new_item->path);
+		free_buffer(new_item);
+		return -1;
 	}
 
 	return 0;

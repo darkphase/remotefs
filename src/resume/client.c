@@ -72,28 +72,35 @@ int resume_files(struct rfs_instance *instance)
 		
 		open_file = open_file->next;
 	}
-		
+	
+	/* relock files */
 	if (resume_failed == 0)
 	{
 		const struct list *lock_item = instance->resume.locked_files;
 		while (lock_item != NULL)
 		{
-			const struct lock_rec *lock_info = (const struct lock_rec *)lock_item->data;
+			const struct lock_rec *lock_info = (const struct lock_rec *)(lock_item->data);
+
+			if (lock_info->fully_locked == 0) /* we're not supporting relocking of files 
+			which are not locked for the full length */
+			{
+				ret = -EBADF;
+				resume_failed = 1; 
+
+				break;
+			}
 				
-			DEBUG("relocking file %s (at %llu of len %llu)\n", 
-				lock_info->path, 
-				(long long unsigned)lock_info->start, 
-				(long long unsigned)lock_info->len);
+			DEBUG("relocking file %s\n", lock_info->path);
 
 			struct flock fl = { 0 };
-			fl.l_type = lock_info->type;
-			fl.l_whence = lock_info->whence;
-			fl.l_start = lock_info->start;
-			fl.l_len = lock_info->len;
+			fl.l_type = lock_info->lock_type;
+			fl.l_whence = SEEK_SET;
+			fl.l_start = 0;
+			fl.l_len = 0;
 
 			uint64_t desc = resume_is_file_in_open_list(instance->resume.open_files, lock_info->path);
-			if (desc == (uint64_t)-1) /* we can only resume files which were opened on resume 
-			in other case, we don't know which open flags were used to lock that file and etc
+			if (desc == (uint64_t)-1) /* we can only resume files which were opened 
+			in other case, we don't know which open flags were used to lock that file and etc 
 			so we can't reopen file on our own */
 			{
 				ret = -EBADF;
@@ -102,7 +109,7 @@ int resume_files(struct rfs_instance *instance)
 				break;
 			}
 
-			int lock_ret = _rfs_lock(instance, lock_info->path, desc, lock_info->cmd, &fl);
+			int lock_ret = _rfs_lock(instance, lock_info->path, desc, F_SETLK, &fl);
 				
 			if (lock_ret < 0)
 			{
@@ -131,10 +138,10 @@ int resume_files(struct rfs_instance *instance)
 			struct lock_rec *data = (struct lock_rec *)locked_file->data;
 			
 			struct flock fl = { 0 };
-			fl.l_type = data->type;
-			fl.l_whence = data->whence;
-			fl.l_start = data->start;
-			fl.l_len = data->len;
+			fl.l_type = data->lock_type;
+			fl.l_whence = SEEK_SET;
+			fl.l_start = 0;
+			fl.l_len = 0;
 
 			uint64_t desc = resume_is_file_in_open_list(instance->resume.open_files, data->path);
 

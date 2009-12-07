@@ -33,11 +33,8 @@ struct open_rec
 struct lock_rec
 {
 	char *path;
-	int cmd;
-	short type;
-	short whence;
-	off_t start;
-	off_t len;
+	int lock_type;
+	unsigned fully_locked;
 };
 
 /** add file to list of open 
@@ -54,13 +51,14 @@ int resume_remove_file_from_open_list(struct list **head, const char *path);
 \return file descriptor if file is recorder as open or -1 if not */
 uint64_t resume_is_file_in_open_list(const struct list *head, const char *path);
 
+/** add file to list of locked 
+\param fully_locked !0 if file is locked for full length
+\return 0 on success */
+int resume_add_file_to_locked_list(struct list **head, const char *path, int lock_type, unsigned fully_locked);
+
 /** remove file from list of locked 
 \return 0 if successfully removed */
 int resume_remove_file_from_locked_list(struct list **head, const char *path);
-
-/** clear lock info or add lock info for path depend on lock_cmd 
-\return 0 on success */
-int resume_update_file_lock_status(struct list **head, const char *path, int lock_cmd, struct flock *fl);
 
 /** delete lists of open and locked files */
 void destroy_resume_lists(struct list **open, struct list **locked);
