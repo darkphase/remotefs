@@ -1,3 +1,5 @@
+/* test */
+
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
