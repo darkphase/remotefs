@@ -19,6 +19,20 @@ extern "C" {
 
 struct list;
 
+/** on/off export options */
+enum rfs_export_opts 
+{ 
+	OPT_NONE         = 0, 
+	OPT_RO           = 1, 
+#ifdef WITH_UGO
+	OPT_UGO          = 2, 
+#endif
+	
+	/* reserved */
+	
+	OPT_COMPAT       = 50
+};
+
 /** user information
 prefix_len is optional and set for ip-addresses only */
 struct user_rec

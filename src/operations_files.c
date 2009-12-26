@@ -16,6 +16,7 @@ See the file LICENSE.
 #include "command.h"
 #include "compat.h"
 #include "config.h"
+#include "defines.h"
 #include "instance_client.h"
 #include "operations_rfs.h"
 #include "operations_utils.h"

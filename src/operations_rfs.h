@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 #include "options.h"
+#include "exports.h"
 #include "ssl/operations_ssl.h"
 #include "nss/operations_nss.h"
 

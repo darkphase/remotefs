@@ -13,6 +13,7 @@ See the file LICENSE.
 
 #include "buffer.h"
 #include "config.h"
+#include "defines.h"
 #include "id_lookup_client.h"
 #include "instance_client.h"
 #include "names.h"

@@ -102,6 +102,7 @@ src/operations_files.o:src/buffer.h
 src/operations_files.o:src/command.h
 src/operations_files.o:src/compat.h
 src/operations_files.o:src/config.h
+src/operations_files.o:src/defines.h
 src/operations_files.o:src/instance_client.h
 src/operations_files.o:src/operations_rfs.h
 src/operations_files.o:src/operations_utils.h
@@ -169,6 +170,7 @@ src/operations_sync.o:src/operations_rfs.h
 src/operations_sync.o:src/options.h
 src/operations_utils.o:src/buffer.h
 src/operations_utils.o:src/config.h
+src/operations_utils.o:src/defines.h
 src/operations_utils.o:src/id_lookup_client.h
 src/operations_utils.o:src/instance_client.h
 src/operations_utils.o:src/names.h
@@ -279,6 +281,7 @@ src/server_handlers_exports.o:src/server.h
 src/server_handlers_files.o:src/buffer.h
 src/server_handlers_files.o:src/command.h
 src/server_handlers_files.o:src/config.h
+src/server_handlers_files.o:src/defines.h
 src/server_handlers_files.o:src/instance_server.h
 src/server_handlers_files.o:src/resume/cleanup.h
 src/server_handlers_files.o:src/sendrecv_server.h
@@ -325,6 +328,7 @@ src/server_handlers_sync.o:src/keep_alive_server.h
 src/server_handlers_sync.o:src/server_handlers.h
 src/server_handlers_utils.o:src/buffer.h
 src/server_handlers_utils.o:src/config.h
+src/server_handlers_utils.o:src/defines.h
 src/server_handlers_utils.o:src/exports.h
 src/server_handlers_utils.o:src/instance_server.h
 src/server_handlers_utils.o:src/server_handlers_utils.h
@@ -360,6 +364,7 @@ src/sug_server.o:src/sug_common.h
 src/sug_server.o:src/utils.h
 src/utils.o:src/config.h
 src/utils.o:src/sendrecv.h
+src/utils.o:src/utils.h
 src/attr_cache.o:src/attr_cache.c
 src/buffer.o:src/buffer.c
 src/command.o:src/command.c
@@ -494,6 +499,7 @@ src/nss/operations_nss.o:src/nss/server.h
 src/nss/operations_nss.o:src/nss/../buffer.h
 src/nss/operations_nss.o:src/nss/../command.h
 src/nss/operations_nss.o:src/nss/../config.h
+src/nss/operations_nss.o:src/nss/../exports.h
 src/nss/operations_nss.o:src/nss/../instance_client.h
 src/nss/operations_nss.o:src/nss/../list.h
 src/nss/operations_nss.o:src/nss/../operations_rfs.h

@@ -14,6 +14,7 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
+#include "defines.h"
 #include "instance_server.h"
 #include "resume/cleanup.h"
 #include "sendrecv_server.h"

@@ -26,6 +26,19 @@ static DEFINE_RFS_INSTANCE(rfs_instance);
 
 static unsigned just_list_exports = 0;
 
+/** remotefs client parse options flags */
+enum
+{
+	KEY_HELP
+	, KEY_VERSION
+	, KEY_QUIET
+	, KEY_LISTEXPORTS
+#if defined WITH_IPV6
+	, KEY_IPV4
+	, KEY_IPV6
+#endif
+};
+
 #define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
 
 struct fuse_opt rfs_opts[] = 

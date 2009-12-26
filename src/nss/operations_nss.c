@@ -17,6 +17,7 @@ See the file LICENSE.
 #include "../buffer.h"
 #include "../command.h"
 #include "../config.h"
+#include "../exports.h"
 #include "../instance_client.h"
 #include "../list.h"
 #include "../operations_rfs.h"

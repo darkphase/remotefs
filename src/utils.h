@@ -11,6 +11,8 @@ See the file LICENSE.
 
 /** various utils */
 
+#include "exports.h"
+
 struct sockaddr_in;
 struct sockaddr_in6;
 

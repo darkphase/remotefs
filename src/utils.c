@@ -19,6 +19,7 @@ See the file LICENSE.
 
 #include "config.h"
 #include "sendrecv.h"
+#include "utils.h"
 
 unsigned int is_ipaddr(const char *string)
 {

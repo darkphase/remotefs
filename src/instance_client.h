@@ -13,8 +13,10 @@ See the file LICENSE.
 
 #include "attr_cache.h"
 #include "config.h"
-#include "psemaphore.h"
+#include "exports.h"
 #include "instance.h"
+#include "operations_write.h"
+#include "psemaphore.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

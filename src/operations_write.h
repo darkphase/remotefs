@@ -15,6 +15,15 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+/** write-behind control struct */
+struct write_behind_request
+{
+	struct cache_block *block;
+	unsigned int please_die;
+	int last_ret;
+	char *path;
+};
+
 struct rfs_instance;
 
 /** init write-behind control info */

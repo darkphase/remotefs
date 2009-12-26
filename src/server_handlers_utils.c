@@ -13,6 +13,7 @@ See the file LICENSE.
 
 #include "buffer.h"
 #include "config.h"
+#include "defines.h"
 #include "exports.h"
 #include "instance_server.h"
 #include "server_handlers_utils.h"
