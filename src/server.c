@@ -270,6 +270,10 @@ void server_close_connection(struct rfsd_instance *instance)
 	}
 	
 	cleanup_files(&instance->cleanup.open_files);
+
+#ifdef WITH_MEMCACHE
+	destroy_memcache(&instance->memcache);
+#endif
 	
 	if (instance->server.auth_user != NULL)
 	{

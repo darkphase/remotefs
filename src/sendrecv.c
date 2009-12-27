@@ -154,7 +154,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 	while (1)
 	{
 #ifdef RFS_DEBUG
-		DEBUG("count: %u, size left: %u, overall_size: %u, diff: %u\n", count, (unsigned int)size_left, (unsigned int)overall_size, (unsigned int)diff);
+		DEBUG("count: %u, size left: %u, overall_size: %u, diff: %u\n", ret, (unsigned int)size_left, (unsigned int)overall_size, (unsigned int)diff);
 		dump_iov(iov, ret);
 #endif
 		if (ret < 1)

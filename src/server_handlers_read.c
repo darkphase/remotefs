@@ -16,6 +16,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
+#include "memcache.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "sendfile/sendfile_rfs.h"
@@ -36,7 +37,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	errno = 0;
 	ssize_t result = pread(fd, buffer, size, offset);
 	
-	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno};
+	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno };
 
 	if (result < 0)
 	{
@@ -192,30 +193,101 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		return reject_request(instance, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
-	struct stat st = { 0 };
-	errno = 0;
-	if (fstat(handle, &st) != 0)
+#ifdef WITH_MEMCACHE
+	if (size >= MEMCACHE_THRESHOLD 
+	&& memcache_fits(&instance->memcache, handle, offset, size) != 0)
 	{
-		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
-	}
-	
-	if (offset > st.st_size)
-	{
-		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
-	}
-
-	if (size + offset > st.st_size)
-	{
-		size = st.st_size - offset;
-	}
-	
-	if (size == 0)
-	{
-		struct answer ans = { cmd_read, 0, 0, 0 };
+		DEBUG("%s\n", "hooray! memcache fits!");
 		
-		return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
-	}
+		struct memcached_block *cache = &instance->memcache;
 
-	return choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
+		struct answer ans = { cmd_read, (uint32_t)cache->size, (int32_t)cache->size, 0 };
+
+		send_token_t token = { 0, {{ 0 }} };
+
+		if (do_send(&instance->sendrecv, 
+			queue_data(cache->data, cache->size, 
+			queue_ans(&ans, &token))) < 0)
+		{
+			return -1;
+		}
+	}
+	else 
+	{
+#endif
+		struct stat st = { 0 };
+		errno = 0;
+		if (fstat(handle, &st) != 0)
+		{
+			return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
+		}
+	
+		if (offset > st.st_size)
+		{
+			return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
+		}
+
+		if (size + offset > st.st_size)
+		{
+			size = st.st_size - offset;
+		}
+	
+		if (size == 0)
+		{
+			struct answer ans = { cmd_read, 0, 0, 0 };
+		
+			return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
+		}
+
+		int ret = choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
+
+		if (ret != 0)
+		{
+			return ret;
+		}
+#ifdef WITH_MEMCACHE
+	} /* else */
+
+	/* try to read-ahead 
+	we will ignore any errors at this point since real read operation is already complete */
+	if (size >= MEMCACHE_THRESHOLD)
+	{
+		DEBUG("memcaching block at %llu of size %llu (desc %llu)\n", 
+		(long long unsigned)offset + size, 
+		(long long unsigned)size, 
+		(long long unsigned)handle);
+
+		struct memcached_block *cache = &instance->memcache;
+
+		if (cache->size != size)
+		{
+			if (cache->data != NULL)
+			{
+				free_buffer(cache->data);
+				cache->data = NULL;
+			}
+
+			cache->data = get_buffer(size);
+			DEBUG("reserved cache data at %p\n", cache->data);
+			if (cache->data == NULL)
+			{
+				destroy_memcache(cache);
+				return 0;
+			}
+		}
+
+		ssize_t result = pread((int)handle, cache->data, size, offset + size);
+		if (result != size)
+		{
+			destroy_memcache(cache);
+		}
+		else
+		{
+			memcache_block(cache, handle, offset + size, size, NULL);
+		}
+	}
+#endif
+
+	return 0;
 }
 

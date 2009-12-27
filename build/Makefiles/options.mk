@@ -39,6 +39,10 @@ OPT_5 = -DWITH_UGO
 OPT_6 = -DWITH_SCHEDULING
 
 ###############################################
+
+#OPT_7 = -DWITH_MEMCACHE
+
+###############################################
 # End of user configuration, don't change the
 # following lines
 

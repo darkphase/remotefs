@@ -21,6 +21,7 @@ See the file LICENSE.
 #include "config.h"
 #include "psemaphore.h"
 #include "instance.h"
+#include "memcache.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
@@ -75,6 +76,10 @@ struct rfsd_instance
 #ifdef WITH_SSL
 	/* ssl */
 	struct ssl_info ssl;
+#endif
+
+#ifdef WITH_MEMCACHE
+	struct memcached_block memcache;
 #endif
 
 	/* server's config */

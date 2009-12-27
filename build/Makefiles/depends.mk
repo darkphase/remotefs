@@ -306,6 +306,7 @@ src/server_handlers_read.o:src/buffer.h
 src/server_handlers_read.o:src/command.h
 src/server_handlers_read.o:src/config.h
 src/server_handlers_read.o:src/instance_server.h
+src/server_handlers_read.o:src/memcache.h
 src/server_handlers_read.o:src/sendrecv_server.h
 src/server_handlers_read.o:src/server.h
 src/server_handlers_read.o:src/sendfile/sendfile_rfs.h
@@ -528,7 +529,7 @@ src/resume/cleanup.o:src/resume/../buffer.h
 src/resume/cleanup.o:src/resume/../config.h
 src/resume/cleanup.o:src/resume/../instance_server.h
 src/resume/cleanup.o:src/resume/../list.h
-src/resume/cleanup.o:src/resume/cleanup.h
+src/resume/cleanup.o:src/resume/../memcache.h
 src/resume/client.o:src/resume/../operations.h
 src/resume/client.o:src/resume/../config.h
 src/resume/client.o:src/resume/../instance_client.h
