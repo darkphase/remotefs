@@ -248,9 +248,6 @@ static int handle_connection(struct rfsd_instance *instance, int client_socket, 
 			return 1;
 		}
 		
-#ifdef RFS_DEBUG
-		dump_command(&current_command);
-#endif
 		if (handle_command(instance, (struct sockaddr_in*)client_addr, &current_command) == -1)
 		{
 			DEBUG("command executed with internal error: %s\n", describe_command(current_command.command));

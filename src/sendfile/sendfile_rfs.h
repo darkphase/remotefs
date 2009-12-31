@@ -13,7 +13,11 @@ See the file LICENSE.
 #ifndef SENDFILE_H
 #define SENDFILE_H
 
+#include <stdint.h>
 #include <sys/types.h>
+
+struct command;
+struct rfsd_instance;
 
 /** generalized interface 
 implementation shouldn't set errno to specific error (if any) 
@@ -29,6 +33,8 @@ static inline ssize_t rfs_sendfile(int out_fd, int in_fd, off_t offset, size_t s
 #elif (defined FREEBSD)
 #	include "sendfile_freebsd.h"
 #endif
+
+int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
 
 #endif /* SENDFILE_H */
 #endif /* SENDFILE_AVAILABLE */

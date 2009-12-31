@@ -529,7 +529,7 @@ src/resume/cleanup.o:src/resume/../buffer.h
 src/resume/cleanup.o:src/resume/../config.h
 src/resume/cleanup.o:src/resume/../instance_server.h
 src/resume/cleanup.o:src/resume/../list.h
-src/resume/cleanup.o:src/resume/../memcache.h
+src/resume/cleanup.o:src/resume/cleanup.h
 src/resume/client.o:src/resume/../operations.h
 src/resume/client.o:src/resume/../config.h
 src/resume/client.o:src/resume/../instance_client.h

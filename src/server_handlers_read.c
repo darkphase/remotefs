@@ -21,6 +21,8 @@ See the file LICENSE.
 #include "server.h"
 #include "sendfile/sendfile_rfs.h"
 
+typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
+
 static int read_small_block(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading small block");
@@ -95,49 +97,6 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 	return 0;
 }
 #endif /* defined WITH_SSL || ! defined SENDFILE_AVAILABLE */
-
-#if defined SENDFILE_AVAILABLE
-static int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
-{
-	DEBUG("%s\n", "reading with sendfile");
-	
-	int fd = (int)handle;
-	
-	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-
-	errno = 0;
-	size_t done = 0;
-	while (done < size)
-	{	
-		ssize_t result = rfs_sendfile(instance->sendrecv.socket, fd, offset + done, size - done);
-
-		if (result <= 0)
-		{
-			ans.ret_errno = errno;
-			ans.ret = -1;
-			ans.data_len = done;
-
-			return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
-		}
-		
-		done += result;
-#ifdef RFS_DEBUG
-		if (result > 0)
-		{
-			instance->sendrecv.bytes_sent += result;
-		}
-#endif
-	}
-	
-	return 0;
-}
-#endif /* defined SENDFILE_AVAILABLE */
-
-typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
 
 #if defined SENDFILE_AVAILABLE
 static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
@@ -215,30 +174,6 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	else 
 	{
 #endif
-		struct stat st = { 0 };
-		errno = 0;
-		if (fstat(handle, &st) != 0)
-		{
-			return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
-		}
-	
-		if (offset > st.st_size)
-		{
-			return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
-		}
-
-		if (size + offset > st.st_size)
-		{
-			size = st.st_size - offset;
-		}
-	
-		if (size == 0)
-		{
-			struct answer ans = { cmd_read, 0, 0, 0 };
-		
-			return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
-		}
-
 		int ret = choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
 
 		if (ret != 0)

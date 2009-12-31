@@ -12,7 +12,7 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "server_handlers.h"
 
-/* need to define client_socket, client_addr and cmd before using this macro */
+/* need to define client_addr and cmd before using this macro */
 #define DECORATE(decorate_func)                                        \
 	if (server_keep_alive_lock(instance) == 0)                         \
 	{                                                                  \
