@@ -16,6 +16,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
+#include "measure.h"
 #include "memcache.h"
 #include "sendrecv_server.h"
 #include "server.h"
@@ -73,9 +74,9 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 		errno = 0;
 		ssize_t result = pread(fd, buffer, current_block, offset + done);
 	
-		if (result < 0)
+		if (result <= 0)
 		{
-			struct answer ans_error = { cmd_read, 0, -1, errno };
+			struct answer ans_error = { cmd_read, 0, done, errno };
 			return (first_block ? rfs_send_answer : rfs_send_answer_oob)(&instance->sendrecv, &ans_error) == -1 ? -1 : 1;
 		}
 		else

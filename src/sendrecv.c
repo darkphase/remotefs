@@ -27,6 +27,7 @@ See the file LICENSE.
 #include "config.h"
 #include "error.h"
 #include "instance.h"
+#include "measure.h"
 #include "sendrecv.h"
 #ifdef WITH_SSL
 #include "ssl/ssl.h"
@@ -136,11 +137,9 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 {
 	size_t overall_size = 0;
 	
-	{
 	int i = 0; for (i = 0; i < count; ++i)
 	{
 		overall_size += iov[i].iov_len;
-	}
 	}
 	
 	if (size_left == overall_size)
@@ -259,6 +258,8 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 
 static inline int is_mark(int socket)
 {
+	BEGIN_MEASURE(is_mark_time);
+
 	/* wait for further data become ready to not miss OOB byte */
 	DEBUG("%s\n", "waiting for further data");
 
@@ -275,13 +276,16 @@ static inline int is_mark(int socket)
 			return -errno;
 		}
 	}
-	while (select_ret < 1);
+	while (FD_ISSET(socket, &read_set) == 0);
+
+	CHECKPOINT(is_mark_time);
 
 	int atmark = 0;
 
+	errno = 0;
 	if (ioctl(socket, SIOCATMARK, &atmark) < 0)
 	{
-		return -EIO;
+		return -errno;
 	}
 
 	DEBUG("atmark: %d\n", atmark);
@@ -289,14 +293,20 @@ static inline int is_mark(int socket)
 	if (atmark != 0)
 	{
 		char oob = 0;
-		return (recv(socket, (char *)&oob, 1, MSG_OOB) < 0 ? -1 : 1);
+		
+		errno = 0;
+		return (recv(socket, (char *)&oob, 1, MSG_OOB) < 0 ? -errno : 1);
 	}
+
+	CHECKPOINT(is_mark_time);
 
 	return 0;
 }
 
 ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
 {
+	BEGIN_MEASURE(rfs_recv_time);
+
 	ssize_t size_recv = 0;
 	while (size_recv < size)
 	{
@@ -311,6 +321,8 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 		else
 		{
 #endif
+			CHECKPOINT(rfs_recv_time);
+
 			if (check_oob != 0)
 			{
 				/* is_mark() will clear stream from OOB message */
@@ -329,7 +341,11 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 				}
 			}
 			
-			done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
+			CHECKPOINT(rfs_recv_time);
+
+			done = recv(info->socket, buffer + size_recv, size - size_recv, 0);
+
+			CHECKPOINT(rfs_recv_time);
 #ifdef WITH_SSL
 		}
 #endif

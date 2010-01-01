@@ -51,6 +51,7 @@ clean_build: dummy
 	$(RM) -f src/md5crypt/*.o
 	$(RM) -f src/nss/*.o
 	$(RM) -f src/resume/*.o
+	$(RM) -f src/sendfile/*.o
 	$(RM) -f src/ssl/*.o
 	$(RM) -f rfs_nss/src/*.o
 
@@ -71,7 +72,7 @@ clean: clean_build clean_bins clean_packages clean_version
 # Rebuild dependency file
 #############################
 builddep: dummy
-	grep -E '#\s*include[^"]+"[^"]+"' $(SCANDIR)*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/$(SCANDIR)\1/' >> build/Makefiles/depends.mk
+	grep -EH '#\s*include[^"]+"[^"]+"' $(SCANDIR)*.c | sed -r -e 's/\.c/.o/' -e 's/#\s*include[^"]+"([^"]+)".*/$(SCANDIR)\1/' >> build/Makefiles/depends.mk
 	ls $(SCANDIR)*.c | sed -e 's/\([^\.]*\)/\1.o:\1/' >> build/Makefiles/depends.mk
 
 depends:
@@ -82,6 +83,7 @@ depends:
 	SCANDIR="src\/md5crypt\/"  $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/nss\/"       $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/resume\/"    $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/sendfile\/"  $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/ssl\/"       $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="rfs_nss\/src\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 

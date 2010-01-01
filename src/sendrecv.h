@@ -12,6 +12,7 @@ See the file LICENSE.
 /** socket send/recv and connect/disconnect routines */
 
 #include <errno.h>
+#include <limits.h>
 #include <sys/uio.h>
 
 #include "buffer.h"
@@ -77,9 +78,9 @@ static inline struct answer* ntoh_ans(struct answer *ans)
 static inline send_token_t* queue_data(const char *buffer, size_t len, send_token_t *token)
 {
 	DEBUG("data of size %lu\n", (unsigned long)len);
-	if (token != NULL)
+	if (token != NULL && len > 0)
 	{
-		if (token->count >= 16)
+		if (token->count >= IOV_MAX)
 		{
 			return NULL;
 		}
