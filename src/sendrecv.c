@@ -264,6 +264,8 @@ static inline int is_mark(int socket)
 	DEBUG("%s\n", "waiting for further data");
 
 	fd_set read_set;
+	
+	FD_ZERO(&read_set);
 	FD_SET(socket, &read_set);
 
 	int select_ret = 0;
