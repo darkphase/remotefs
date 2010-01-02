@@ -28,6 +28,7 @@ See the file LICENSE.
 #include "list.h"
 #include "passwd.h"
 #include "resume/cleanup.h"
+#include "scheduling.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "server_handlers_sync.h"

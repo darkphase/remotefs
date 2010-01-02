@@ -182,12 +182,10 @@ int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 }
 #endif /* ACL_AVAILABLE */
 
-#ifdef RFSNSS_AVAILABLE
 int handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	DECORATE(_handle_getnames)
 }
-#endif
 
 #undef DECORATE
 

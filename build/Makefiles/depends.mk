@@ -239,6 +239,7 @@ src/server.o:src/keep_alive_server.h
 src/server.o:src/list.h
 src/server.o:src/passwd.h
 src/server.o:src/resume/cleanup.h
+src/server.o:src/scheduling.h
 src/server.o:src/sendrecv_server.h
 src/server.o:src/server.h
 src/server.o:src/server_handlers_sync.h
@@ -307,6 +308,7 @@ src/server_handlers_read.o:src/buffer.h
 src/server_handlers_read.o:src/command.h
 src/server_handlers_read.o:src/config.h
 src/server_handlers_read.o:src/instance_server.h
+src/server_handlers_read.o:src/measure.h
 src/server_handlers_read.o:src/memcache.h
 src/server_handlers_read.o:src/sendrecv_server.h
 src/server_handlers_read.o:src/server.h
@@ -506,14 +508,12 @@ src/nss/operations_nss.o:src/nss/../instance_client.h
 src/nss/operations_nss.o:src/nss/../list.h
 src/nss/operations_nss.o:src/nss/../operations_rfs.h
 src/nss/operations_nss.o:src/nss/../sendrecv_client.h
-src/nss/server.o:src/nss/../options.h
 src/nss/server.o:src/nss/server.h
 src/nss/server.o:src/nss/../buffer.h
 src/nss/server.o:src/nss/../command.h
 src/nss/server.o:src/nss/../config.h
 src/nss/server.o:src/nss/../instance_client.h
 src/nss/server.o:src/nss/../list.h
-src/nss/server_handlers_nss.o:src/nss/../options.h
 src/nss/server_handlers_nss.o:src/nss/../buffer.h
 src/nss/server_handlers_nss.o:src/nss/../config.h
 src/nss/server_handlers_nss.o:src/nss/../command.h

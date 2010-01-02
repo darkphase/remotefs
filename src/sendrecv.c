@@ -345,7 +345,7 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 			
 			CHECKPOINT(rfs_recv_time);
 
-			done = recv(info->socket, buffer + size_recv, size - size_recv, 0);
+			done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
 
 			CHECKPOINT(rfs_recv_time);
 #ifdef WITH_SSL

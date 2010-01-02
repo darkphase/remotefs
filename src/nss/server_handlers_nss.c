@@ -6,10 +6,6 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "../options.h"
-
-#ifdef RFSNSS_AVAILABLE
-
 #include <string.h>
 
 #include "../buffer.h"
@@ -116,5 +112,3 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	return 0;
 }
-
-#endif /* RFSNSS_AVAILABLE */

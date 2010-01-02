@@ -63,9 +63,7 @@ int handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 int handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 #endif
 
-#ifdef RFSNSS_AVAILABLE
 int handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
