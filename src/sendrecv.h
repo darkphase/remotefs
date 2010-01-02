@@ -31,7 +31,7 @@ typedef struct iovec send_token_entry_t;
 typedef struct
 {
 	unsigned count;
-	send_token_entry_t iov[16];
+	send_token_entry_t iov[IOV_MAX];
 } send_token_t;
 
 /* low lev */
