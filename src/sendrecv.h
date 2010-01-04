@@ -23,7 +23,11 @@ See the file LICENSE.
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
-
+#ifdef QNX
+# ifndef IOV_MAX /* for QNX */
+#  define IOV_MAX _XOPEN_IOV_MAX
+# endif 
+#endif
 int rfs_connect(struct sendrecv_info *info, const char *ip, unsigned port, unsigned force_ipv4, unsigned force_ipv6);
 
 typedef struct iovec send_token_entry_t;
