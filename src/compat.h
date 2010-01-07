@@ -21,9 +21,13 @@ See the file LICENSE.
 #endif /* SOLARIS */
 
 #if defined QNX
-#       if ! defined AI_ADDRCONFIG
-#               define AI_ADDRCONFIG 0
-#       endif
+#	if ! defined AI_ADDRCONFIG
+#		define AI_ADDRCONFIG 0
+#	endif
+#
+#	if ! defined IOV_MAX
+#		define IOV_MAX _XOPEN_IOV_MAX
+#	endif 
 #endif /* QNX */
 
 #if ! defined O_ASYNC
