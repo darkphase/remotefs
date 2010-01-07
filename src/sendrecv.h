@@ -17,6 +17,7 @@ See the file LICENSE.
 
 #include "buffer.h"
 #include "command.h"
+#include "compat.h"
 #include "error.h"
 #include "instance.h"
 
