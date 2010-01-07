@@ -10,7 +10,6 @@ See the file LICENSE.
 
 #if (defined LINUX && defined ACL_OPERATIONS_AVAILABLE)
 
-#include <endian.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/acl.h>
