@@ -38,6 +38,7 @@ LDFLAGS_FUSE = `pkg-config --libs fuse`
 LDFLAGS_DEBUG   = -g
 LDFLAGS_RELEASE = -s
 LDFLAGS_SSL     = -lssl
+LDFLAGS_ACL     = -lacl -lrt
 LDFLAGS_PTHR	= -pthread
 
 

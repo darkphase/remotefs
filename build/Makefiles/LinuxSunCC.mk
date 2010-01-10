@@ -34,12 +34,14 @@ LDFLAGS_FUSE = -lfuse -lpthread
 LDFLAGS_DEBUG   = -g
 LDFLAGS_RELEASE = -s
 LDFLAGS_SSL     = -lssl
-LDFLAGS_PTHR	= -lpthread
+LDFLAGS_ACL     = -lacl -lrt
+LDFLAGS_PTHR    = -lpthread
 
 ###############################
 # Flags for dymamic libraries
 ###############################
 
+CFLAGS_SO    = -fPIC
 LDFLAGS_SO   = -shared -Wl,-soname,$(@)
 SO_EXT       = so
 SO_NAME      = $(TARGET).$(SO_EXT).$(VERSION)
@@ -52,4 +54,4 @@ SO_NAME_NSS    = libnss_rfs.so.2
 LDFLAGS_SO_NSS = -shared -Wl,-soname,$(SO_NAME_NSS) -fPIC
 CFLAGS_SO_NSS  = $(CFLAGS_SO)
 
-ALL            = server
+ALL            = server client nss
