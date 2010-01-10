@@ -1,3 +1,33 @@
+0.13
+
+[+] scheduling is enabled for MacOS by default
+[+] added -v option for rfsd and rfs to print version
+
+[*] POSIX ACL redone, supported on Linux, FreeBSD (server only) and probably 
+    on any POSIX ACL compliant system
+[*] files locking redone: remotefs will support only fully locked files during 
+    connection resume, otherwise reconnect will fail
+[*] packages might be built from tarball again
+[*] readdir redone
+
+rfsd:
+
+[+] rfsd might listen to several interfaces
+[+] support of network masks in exports
+[+] sendfile() support for FreeBSD
+
+[*] removed -g option, group will be set according to -u option
+[*] fixed exports parsing
+[*] fixed memory leak in exports handling
+[*] fixed read_as_always() (used with SSL and when sendfile() isn't available)
+
+rfs:
+
+[+] introduced memory limit for attributes cache: 10000 entries
+
+[*] getattr redone
+[*] destructive reading of attributes cache for better cache consistency
+
 0.12
 
 [+] IPv6 is enabled by default

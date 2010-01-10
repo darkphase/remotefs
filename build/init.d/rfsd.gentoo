@@ -11,12 +11,6 @@ depend() {
 }
 
 checkconfig() {
-	if ! grep -qw fuse /proc/filesystems; then
-                eerror "Couldn't find the FUSE filesystem."
-                eerror "Please enable it in your kernel config and/or load the appropriate module(s)."
-                return 1
-	fi
-
         if [ ! -e /etc/conf.d/rfsd ] ; then
                 eerror "Configfile /etc/conf.d/rfsd not found."
                 eerror "Please ensure that this file exists."
