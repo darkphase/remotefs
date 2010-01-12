@@ -130,7 +130,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	struct answer ans = { 0 };
 
-	if (rfs_receive_answer(&instance->sendrecv, &ans) == 0)
+	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -ECONNABORTED;
 	}
