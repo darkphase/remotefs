@@ -23,7 +23,7 @@ install_man() {
     cp "${BUILDDIR}/build/man/rfscert.sh.1" > "${D}/usr/share/man/man1/"
 }
 
-install() {
+make_install() {
     cp "${BUILDDIR}/build/sbin/rfscert.sh" "${D}/usr/sbin/rfscert.sh"
     chmod 755 "${D}/usr/sbin/rfscert.sh"
     chown root:root "${D}/usr/sbin/rfscert.sh"
@@ -32,5 +32,5 @@ install() {
 src_install() {
     setup_install
     install_man
-    install
+    make_install
 }

@@ -34,6 +34,7 @@ setup_compile() {
     fi
     if use acl; then
 	echo "OPT_5=-DWITH_ACL" >> "${BUILDDIR}/build/Makefiles/options.mk"
+	echo "OPT_5_LD=\$(LDFLAGS_ACL)" >> "${BUILDDIR}/build/Makefiles/options.mk"
     fi
     echo "CFLAGS_OPTS = \$(CFLAGS) \$(OPT_1) \$(OPT_2) \$(OPT_3) \$(OPT_4) \$(OPT_5)" >> "${BUILDDIR}/build/Makefiles/options.mk"
     echo "LDFLAGS_OPTS = \$(LDFLAGS) \$(OPT_2_LD) \$(OPT_3_LD) \$(OPT_4_LD) \$(OPT_5_LD)" >> "${BUILDDIR}/build/Makefiles/options.mk"
@@ -53,7 +54,7 @@ setup_install() {
     echo "INSTALL_DIR=${D}/usr/" > "${BUILDDIR}/build/Makefiles/install.mk"
 }
 
-install() {
+make_install() {
     make -C "${BUILDDIR}/" install
     
     ln -sf "librfs.so.JUST VERSION" "${D}/usr/lib/librfs.so"
@@ -61,5 +62,5 @@ install() {
 
 src_install() {
     setup_install
-    install
+    make_install
 }

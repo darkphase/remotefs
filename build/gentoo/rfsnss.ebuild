@@ -31,7 +31,7 @@ setup_install() {
     mkdir -p "${D}/usr/sbin/"
 }
 
-install() {
+make_install() {
     make -C "${BUILDDIR}/" install_nss
     
     cp "${BUILDDIR}/build/sbin/rfsnsswitch.sh" "${D}/usr/sbin/"
@@ -41,7 +41,7 @@ install() {
 
 src_install() {
     setup_install
-    install
+    make_install
 }
 
 pkg_postinst() {
