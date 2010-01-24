@@ -34,7 +34,7 @@ static uint32_t get_id(acl_tag_t tag, const char *name, size_t name_len)
 	case ACL_USER:
 		{
 		errno = 0;
-		struct passwd *pwd = getpwnam(name);
+		struct passwd *pwd = getpwnam(dup_name);
 		DEBUG("%s\n", strerror(errno));
 		if (pwd != NULL)
 		{
@@ -44,7 +44,7 @@ static uint32_t get_id(acl_tag_t tag, const char *name, size_t name_len)
 		break;
 	case ACL_GROUP:
 		{
-		struct group *grp = getgrnam(name);
+		struct group *grp = getgrnam(dup_name);
 		if (grp != NULL)
 		{
 			id = (uint32_t)(grp->gr_gid);
