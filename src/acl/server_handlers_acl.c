@@ -96,12 +96,12 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 			return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 		}
 	
-	acl_free(acl);
+		acl_free(acl);
 	}
 
 	DEBUG("acl text: \n%s\n", acl_text == NULL ? "NULL" : acl_text);
 	
-	struct answer ans = { cmd_getxattr, acl_text_len + 1, 0, 0 };
+	struct answer ans = { cmd_getxattr, acl_text == NULL ? 0 : acl_text_len + 1, 0, 0 };
 
 	send_token_t token = { 0, {{ 0 }} };
 	if (do_send(&instance->sendrecv, 
