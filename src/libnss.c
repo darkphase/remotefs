@@ -137,7 +137,7 @@ static inline int build_grp(struct group *result, char *buffer, size_t buflen, c
 	}
 
 	result->gr_passwd = memcpy(even_addr(buffer + name_len), DEFAULT_PASSWD, sizeof(DEFAULT_PASSWD));
-	*result->gr_mem = (even_addr(result->gr_passwd + sizeof(DEFAULT_PASSWD)));
+	result->gr_mem = (char**)(even_addr(result->gr_passwd + sizeof(DEFAULT_PASSWD)));
 	*result->gr_mem = NULL;
 
 	return 0;
