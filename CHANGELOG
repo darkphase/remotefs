@@ -1,3 +1,9 @@
+0.13-2
+
+[*] fixed hang with ACL under some conditions
+[*] fixed EINVAL if rfs_nss is installed but not enabled
+[*] fixed crash of libnss_rfs during su
+
 0.13
 
 [+] scheduling is enabled for MacOS by default
