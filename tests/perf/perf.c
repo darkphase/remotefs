@@ -544,6 +544,65 @@ off_t sstoi(char *opt, int *stepType)
 }
 
 /* main test functions */
+int create(void)
+{
+   char buf[4096];
+   char *s;
+   int i;
+   int ret = 1;
+   char *spec;
+   if ( ret && createDir(testDir) )
+      ret = 0;
+
+   if ( totalSize < maxSize )
+   {
+       maxSize = totalSize;
+   }
+   int nb = maxSize;
+   spec = specToName(0, nb, csv);
+
+   STARTTIME();
+   for(i=0;i < nb &&createFileBefore;i++)
+   {
+      snprintf(buf,sizeof(buf), "%s/f_%d",testDir,i);
+      int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+      if ( fd > 0 )
+      {
+         close(fd);
+      }
+      else
+      {
+         ret = 0;
+         break;
+      }
+   }
+   ENDTIME();
+   SETDT();
+   double createPerSecond = nb*1000000.0/dt;
+
+   fprintf(stdout,"Create %-18s time %8.3f sec %8.0f     F/s\n",
+           spec,
+           (double)dt/1000000,
+           createPerSecond
+           );
+   STARTTIME();
+   for(i=0;i < nb; i++)
+   {
+      snprintf(buf,sizeof(buf),"%s/f_%d",testDir,i);
+      deleteFile(buf);
+   }
+   ENDTIME();
+   SETDT();
+   createPerSecond = nb*1000000.0/dt;
+   fprintf(stdout,"Delete %-18s time %8.3f sec %8.0f     F/s\n",
+           spec,
+           (double)dt/1000000,
+           createPerSecond
+           );
+   
+   deleteTestDir(1);
+   return ret;
+}
 
 int copy(void)
 {
@@ -657,9 +716,11 @@ int copy(void)
       {
          ENDTIME();
          SETDT();
-         fprintf(stdout,"Make  %-18s time %8.3f sec\n",
+         int createPerSecond = nb*1000000/dt;
+         fprintf(stdout,"Make  %-18s time %8.3f sec %8d     F/s\n",
                  spec,
-                 (double)dt/1000000
+                 (double)dt/1000000,
+                 createPerSecond
                  );
       }
       if ( doSleep && createFileBefore)
@@ -1012,6 +1073,7 @@ void syntax()
    fprintf(stderr,"      copy\n");
    fprintf(stderr,"      list\n");
    fprintf(stderr,"      cmp (only integrity test)\n");
+   fprintf(stderr,"      create /timing for creating and deleting files(\n");
    exit(1);
 }
 
@@ -1027,6 +1089,7 @@ tests_t tests[] =
    { "copy", copy },
    { "list", list },
    { "cmp",  cmp },
+   { "create",  create },
    { NULL,   NULL }
 };
 
