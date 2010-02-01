@@ -1,7 +1,7 @@
 VER_MAJOR=0
-VER_MINOR=13
+VER_MINOR=14
 VERSION="$(VER_MAJOR).$(VER_MINOR)"
-RELEASE=2
+RELEASE=1
 VERSION_FILE="src/version.h"
 
 include build/Makefiles/install.mk
