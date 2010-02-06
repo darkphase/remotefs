@@ -14,9 +14,12 @@ See the file LICENSE.
 #include "../buffer.h"
 #include "../config.h"
 #include "../id_lookup_client.h"
+#include "../instance_client.h"
 
 uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *instance_casted)
 {
+	const struct rfs_instance *instance = (const struct rfs_instance *)(instance_casted);
+
 	char *dup_name = buffer_dup_str(name, name_len);
 	if (dup_name == NULL)
 	{
@@ -30,10 +33,10 @@ uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *i
 	switch (tag)
 	{
 	case ACL_USER:
-		id = (uint32_t)(lookup_user(dup_name));
+		id = (uint32_t)(lookup_user(instance, dup_name));
 		break;
 	case ACL_GROUP:
-		id = (uint32_t)(lookup_group(dup_name, NULL));
+		id = (uint32_t)(lookup_group(instance, dup_name, NULL));
 		break;
 	}
 
@@ -45,6 +48,8 @@ uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *i
 
 char* local_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted)
 {
+	const struct rfs_instance *instance = (const struct rfs_instance *)(instance_casted);
+
 	DEBUG("locally reverse resolving id: %lu\n", id != NULL ? *(unsigned long *)(id) : ACL_UNDEFINED_ID);
 
 	char *name = NULL;
@@ -53,10 +58,10 @@ char* local_reverse_resolve(acl_tag_t tag, void *id, void *instance_casted)
 	switch (tag)
 	{
 	case ACL_USER:
-		looked_up_name = lookup_uid(*(uid_t *)(id));
+		looked_up_name = lookup_uid(instance, *(uid_t *)(id));
 		break;
 	case ACL_GROUP:
-		looked_up_name = lookup_gid(*(gid_t *)(id), (uid_t)(-1));
+		looked_up_name = lookup_gid(instance, *(gid_t *)(id), (uid_t)(-1));
 		break;
 	}
 

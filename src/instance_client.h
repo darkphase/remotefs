@@ -84,6 +84,8 @@ struct rfs_instance
 		rfs_sem_t thread_ready;
 	} nss;
 
+	struct id_lookup_info id_lookup;
+
 	struct rfs_config config;
 };
 

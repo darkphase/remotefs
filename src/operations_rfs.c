@@ -301,6 +301,9 @@ void* rfs_init(struct rfs_instance *instance)
 		    instance->nss.use_nss = 0;
 	    }
 #endif /* RFSNSS_AVAILABLE */
+
+		create_uids_lookup(&(instance->id_lookup.uids));
+		create_gids_lookup(&(instance->id_lookup.gids));
 	}
 #endif /* WITH_UGO */
 
@@ -342,6 +345,9 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 	destroy_cache(&instance->attr_cache);
 	destroy_resume_lists(&instance->resume.open_files, &instance->resume.locked_files);
+
+	destroy_uids_lookup(&(instance->id_lookup.uids));
+	destroy_gids_lookup(&(instance->id_lookup.gids));
 	
 #ifdef WITH_SSL
 	if (instance->config.enable_ssl != 0)

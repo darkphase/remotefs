@@ -112,6 +112,7 @@ void init_rfs_instance(struct rfs_instance *instance)
 {
 	init_client(instance);
 	init_attr_cache(&instance->attr_cache);
+	init_id_lookup(&instance->id_lookup);
 	init_resume(instance);
 	init_write_cache(instance);
 	init_sendrecv(&instance->sendrecv);

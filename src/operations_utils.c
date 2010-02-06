@@ -83,61 +83,58 @@ const char* unpack_stat(struct stat *result, const char *buffer)
 
 uid_t resolve_username(struct rfs_instance *instance, const char *user)
 {
+	uid_t uid = instance->client.my_uid;
+
 #ifdef WITH_UGO
-#ifdef RFSNSS_AVAILABLE
+#ifdef RFSNSS_AVAILABLE	
+	char *name = strdup(user);
+
 	if (instance->nss.use_nss != 0)
 	{
-		char *long_name = remote_nss_name(user, instance);
-		
-		DEBUG("long user name: %s\n", long_name);
-
-		struct passwd *pwd = getpwnam(long_name);
-		free_buffer(long_name);
-
-		if (pwd != NULL)
-		{
-			DEBUG("uid for long name: %u\n", pwd->pw_uid);
-			return pwd->pw_uid;
-		}
+		free(name);
+		name = remote_nss_name(user, instance);
 	}
-	else
 #endif /* RFSNSS_AVAILABLE */
+	
 	if ((instance->client.export_opts & OPT_UGO) != 0)
 	{
-		return lookup_user(user);
+		uid = lookup_user(instance, name);
 	}
+
+	free(name);
 #endif /* WITH_UGO */
 	
-	return instance->client.my_uid;
+	return uid;
 }
 
 gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const char *user)
 {
+	gid_t gid = instance->client.my_gid;
+
 #ifdef WITH_UGO
 #ifdef RFSNSS_AVAILABLE	
+	char *group_name = strdup(group);
+	char *user_name = strdup(user);
+
 	if (instance->nss.use_nss != 0)
 	{
-		char *long_name = remote_nss_name(user, instance);
-		
-		DEBUG("long group name: %s\n", long_name);
+		free(group_name);
+		free(user_name);
 
-		struct group *grp = getgrnam(long_name);
-		free_buffer(long_name);
-
-		if (grp != NULL)
-		{
-			DEBUG("gid for long name: %u\n", grp->gr_gid);
-			return grp->gr_gid;
-		}
+		group_name = remote_nss_name(group, instance);
+		user_name = remote_nss_name(user, instance);
 	}
-	else
 #endif /* RFSNSS_AVAILABLE */
+
 	if ((instance->client.export_opts & OPT_UGO) != 0)
 	{
-		return lookup_group(group, user);
+		gid = lookup_group(instance, group_name, user_name);
 	}
+
+	free(group_name);
+	free(user_name);
 #endif /* WITH_UGO */
 	
-	return instance->client.my_gid;
+	return gid;
 }
 
