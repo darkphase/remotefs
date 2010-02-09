@@ -17,7 +17,6 @@ See the file LICENSE.
 
 #include "xattr_linux.h"
 #include "local_resolve.h"
-#include "nss_resolve.h"
 #include "utils.h"
 #include "../buffer.h"
 #include "../config.h"
@@ -100,9 +99,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		
 	DEBUG("acl: %s\n", acl_text);
 
-	acl_t acl = rfs_acl_from_text(acl_text, 
-		(instance->nss.use_nss ? nss_resolve : local_resolve), 
-		(void *)instance);
+	acl_t acl = rfs_acl_from_text(acl_text, local_resolve, (void *)instance);
 
 	free_buffer(acl_text);
 		
@@ -161,10 +158,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 #endif
 
 	size_t acl_text_len = 0;
-	char *acl_text = rfs_acl_to_text(acl, 
-		(instance->nss.use_nss ? nss_reverse_resolve : local_reverse_resolve), 
-		(void *)instance, 
-		&acl_text_len);
+	char *acl_text = rfs_acl_to_text(acl, local_reverse_resolve, (void *)instance, &acl_text_len);
 
 	if (acl_text == NULL)
 	{

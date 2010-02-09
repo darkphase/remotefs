@@ -32,7 +32,9 @@ src/id_lookup.o:src/id_lookup.h
 src/id_lookup.o:src/buffer.h
 src/id_lookup.o:src/list.h
 src/id_lookup_client.o:src/config.h
+src/id_lookup_client.o:src/id_lookup.h
 src/id_lookup_client.o:src/id_lookup_client.h
+src/id_lookup_client.o:src/instance_client.h
 src/instance.o:src/config.h
 src/instance.o:src/instance.h
 src/instance_client.o:src/buffer.h
@@ -437,15 +439,11 @@ src/acl/local_resolve.o:src/acl/local_resolve.h
 src/acl/local_resolve.o:src/acl/../buffer.h
 src/acl/local_resolve.o:src/acl/../config.h
 src/acl/local_resolve.o:src/acl/../id_lookup_client.h
-src/acl/nss_resolve.o:src/acl/../options.h
-src/acl/nss_resolve.o:src/acl/nss_resolve.h
-src/acl/nss_resolve.o:src/acl/../buffer.h
-src/acl/nss_resolve.o:src/acl/../config.h
-src/acl/nss_resolve.o:src/acl/../instance_client.h
+src/acl/local_resolve.o:src/acl/../instance_client.h
+src/acl/local_resolve.o:src/acl/../names.h
 src/acl/operations_acl.o:src/acl/../options.h
 src/acl/operations_acl.o:src/acl/xattr_linux.h
 src/acl/operations_acl.o:src/acl/local_resolve.h
-src/acl/operations_acl.o:src/acl/nss_resolve.h
 src/acl/operations_acl.o:src/acl/utils.h
 src/acl/operations_acl.o:src/acl/../buffer.h
 src/acl/operations_acl.o:src/acl/../config.h
@@ -482,7 +480,6 @@ src/acl/xattr_linux.o:src/acl/../config.h
 src/acl/xattr_linux.o:src/acl/../inet.h
 src/acl/id_lookup_resolve.o:src/acl/id_lookup_resolve.c
 src/acl/local_resolve.o:src/acl/local_resolve.c
-src/acl/nss_resolve.o:src/acl/nss_resolve.c
 src/acl/operations_acl.o:src/acl/operations_acl.c
 src/acl/server.o:src/acl/server.c
 src/acl/server_handlers_acl.o:src/acl/server_handlers_acl.c

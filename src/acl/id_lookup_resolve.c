@@ -21,7 +21,7 @@ See the file LICENSE.
 #define RFS_XATTR_NAME_ACL_ACCESS  "system.posix_acl_access"
 #define RFS_XATTR_NAME_ACL_DEFAULT "system.posix_acl_defult"
 
-char* id_lookup_reverse_resolve(acl_tag_t tag, void *id, void *lookup_casted)
+char* id_lookup_reverse_resolve(acl_tag_t tag, const void *id, void *lookup_casted)
 {
 	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
 

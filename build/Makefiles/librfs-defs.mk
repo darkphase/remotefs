@@ -23,7 +23,6 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 #######################################
 
 librfs_OBJS = src/acl/local_resolve.o \
-              src/acl/nss_resolve.o \
               src/acl/operations_acl.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \

@@ -36,7 +36,7 @@ extern "C" {
 typedef uint32_t (*resolve)(acl_tag_t tag, const char *name, size_t name_len, void *data);
 /** resolve id to name 
 \return NULL if not found */
-typedef char* (*reverse_resolve)(acl_tag_t tag, void *id, void *data);
+typedef char* (*reverse_resolve)(acl_tag_t tag, const void *id, void *data);
 
 /* don't forget to acl_free result 
 \param text ACL text representation 
