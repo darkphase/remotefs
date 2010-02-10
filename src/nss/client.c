@@ -12,6 +12,7 @@ See the file LICENSE.
 
 #include <dirent.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -58,7 +59,7 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 
 			size_t overall_len = strlen(NSS_SOCKETS_DIR) + strlen(entry->d_name) + 1;
 
-			ret = get_buffer(overall_len);
+			ret = malloc(overall_len);
 			snprintf(ret, overall_len, "%s%s", NSS_SOCKETS_DIR, entry->d_name);
 			ret[overall_len - 1] = 0;
 			
@@ -93,7 +94,7 @@ static int nss_connect(const char *server)
 		if (sock == -1)
 		{
 			last_errno = errno;
-			free_buffer(socket_name);
+			free(socket_name);
 			break;
 		}
 		
@@ -101,7 +102,7 @@ static int nss_connect(const char *server)
 		strcpy(address.sun_path, socket_name);
 		address.sun_family = AF_UNIX;
 	
-		free_buffer(socket_name);
+		free(socket_name);
 	
 		DEBUG("%s\n", "connecting");
 
@@ -128,11 +129,11 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	int sock = nss_connect(server);
 	if (sock < 0)
 	{
-		free_buffer(server);
+		free(server);
 		return sock;
 	}
 
-	free_buffer(server);
+	free(server);
 		
 	int saved_errno = 0;
 
@@ -159,7 +160,7 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	if (send(sock, &cmd, sizeof(cmd), 0) != sizeof(cmd))
 	{
 		saved_errno = errno;
-		free_buffer(name);
+		free(name);
 		goto error;
 	}
 
@@ -168,11 +169,11 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	if (send(sock, name, overall_size, 0) != overall_size)
 	{
 		saved_errno = errno;
-		free_buffer(name);
+		free(name);
 		goto error;
 	}
 
-	free_buffer(name);
+	free(name);
 
 	if (recv(sock, &ans, sizeof(ans), 0) != sizeof(ans))
 	{
@@ -258,7 +259,7 @@ static int get_names(const char *server, struct list **names, enum server_comman
 
 		if (ans.data_len > 0)
 		{
-			char *name = get_buffer(ans.data_len);
+			char *name = malloc(ans.data_len);
 
 			if (recv(sock, name, ans.data_len, 0) != ans.data_len)
 			{

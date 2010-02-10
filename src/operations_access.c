@@ -119,7 +119,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 
 	struct command cmd = { cmd_chown, overall_size };
 
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 	pack(local_group != NULL ? local_group : group, group_len, 
 	pack(local_user != NULL ? local_user : user, user_len, 
 	pack(path, path_len, 
@@ -142,7 +142,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 			free(local_group);
 		}
 
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
@@ -156,7 +156,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 		free(local_group);
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -204,7 +204,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	struct command cmd = { cmd_chmod, overall_size };
 
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 	
 	pack(path, path_len, 
 	pack_32(&fmode, buffer
@@ -215,11 +215,11 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 

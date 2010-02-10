@@ -11,6 +11,7 @@ See the file LICENSE.
 #ifdef ACL_AVAILABLE
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #ifdef LINUX
 #	include <acl/libacl.h>
@@ -340,7 +341,7 @@ char* rfs_acl_to_text(const acl_t acl,
 	DEBUG("calcuated ACL text len: %lu\n", (unsigned long)len_params.len);
 
 	/* allocate memory for acl text */
-	char *text_acl = get_buffer(len_params.len + 1);
+	char *text_acl = malloc(len_params.len + 1);
 
 	/* write to allocated entry */
 	struct acl_to_text_params write_params = { text_acl, 0, custom_resolve, custom_resolve_data };
@@ -351,7 +352,7 @@ char* rfs_acl_to_text(const acl_t acl,
 	if (write_ret != 0
 	|| write_params.len != len_params.len)
 	{
-		free_buffer(text_acl);
+		free(text_acl);
 		return NULL;
 	}
 

@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
+
 #include "buffer.h"
 #include "config.h"
 #include "data_cache.h"
@@ -13,7 +15,7 @@ See the file LICENSE.
 
 struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t offset, uint64_t descriptor)
 {
-	struct cache_block *reserved = get_buffer(sizeof(*reserved));
+	struct cache_block *reserved = malloc(sizeof(*reserved));
 	
 	reserved->allocated = size;
 	reserved->used = 0;
@@ -21,10 +23,10 @@ struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t o
 	reserved->offset = offset;
 	reserved->data = NULL;
 	
-	reserved->data = get_buffer(size);
+	reserved->data = malloc(size);
 	if (reserved->data == NULL)
 	{
-		free_buffer(reserved);
+		free(reserved);
 		return NULL;
 	}
 	
@@ -32,8 +34,8 @@ struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t o
 	
 	if (add_to_list(head, reserved) == NULL)
 	{
-		free_buffer(reserved->data);
-		free_buffer(reserved);
+		free(reserved->data);
+		free(reserved);
 		return NULL;
 	}
 	
@@ -77,7 +79,7 @@ void clear_cache_by_desc(struct list **head, uint64_t descriptor)
 		struct cache_block *block = (struct cache_block *)item->data;
 		if (block->descriptor == descriptor)
 		{
-			free_buffer(block->data);
+			free(block->data);
 			item = remove_from_list(head, item);
 		}
 		else
@@ -96,7 +98,7 @@ void clear_cache_by_offset(struct list **head, uint64_t descriptor, off_t offset
 		if (block->descriptor == descriptor
 		&& block->offset <= offset)
 		{
-			free_buffer(block->data);
+			free(block->data);
 			item = remove_from_list(head, item);
 		}
 		else
@@ -112,7 +114,7 @@ void destroy_data_cache(struct list **head)
 	while (item != NULL)
 	{
 		struct cache_block *block = (struct cache_block *)item->data;
-		free_buffer(block->data);
+		free(block->data);
 		
 		item = item->next;
 	}
@@ -141,7 +143,7 @@ struct list* delete_block_from_cache(struct list **head, struct cache_block *blo
 	{
 		if ((struct cache_block *)item->data == block)
 		{
-			free_buffer(block->data);
+			free(block->data);
 			return remove_from_list(head, item);
 		}
 		

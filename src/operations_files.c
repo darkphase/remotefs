@@ -37,7 +37,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 
 	struct command cmd = { cmd_truncate, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_32(&foffset, buffer
@@ -48,11 +48,11 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -128,7 +128,7 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 
 	struct command cmd = { cmd_rename, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(new_path, new_path_len, 
 	pack(path, path_len, 
@@ -140,11 +140,11 @@ int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -186,7 +186,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	struct command cmd = { cmd_mknod, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_32(&fmode, buffer
@@ -197,11 +197,11 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -243,7 +243,7 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 
 	struct command cmd = { cmd_create, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_16(&fi_flags, 
@@ -255,11 +255,11 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 

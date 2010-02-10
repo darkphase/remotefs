@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <fcntl.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "../buffer.h"
@@ -39,7 +40,7 @@ static int add_file_to_list(struct list **head, int file)
 		return 0;
 	}
 
-	int *handle = get_buffer(sizeof(file));
+	int *handle = malloc(sizeof(file));
 	if (handle == NULL)
 	{
 		return -1;
@@ -49,7 +50,7 @@ static int add_file_to_list(struct list **head, int file)
 	
 	if (add_to_list(head, handle) == NULL)
 	{
-		free_buffer(handle);
+		free(handle);
 		return -1;
 	}
 	

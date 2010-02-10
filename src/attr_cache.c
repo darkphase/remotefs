@@ -77,7 +77,7 @@ void clear_cache(struct attr_cache *cache)
 			DEBUG("deleted from cache: %s\n", node->path);
 			
 			free(node->path);
-			free_buffer(node);
+			free(node);
 		}
 	}
 	while (1);
@@ -90,7 +90,7 @@ void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf)
 		return NULL;
 	}
 
-	struct tree_item *key = get_buffer(sizeof(*key));
+	struct tree_item *key = malloc(sizeof(*key));
 
 	if (key == NULL)
 	{
@@ -105,7 +105,7 @@ void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf)
 	if (found != NULL)
 	{
 		free(key->path);
-		free_buffer(key);
+		free(key);
 		
 		struct tree_item *value = *(struct tree_item **)found;
 		memcpy(&value->data, stbuf, sizeof(value->data));
@@ -163,7 +163,7 @@ static void release_cache(const void *nodep, const VISIT which, const int depth)
 				free(node->path);
 			}
 			
-			free_buffer(node);
+			free(node);
 		}
 	}
 }
@@ -195,7 +195,7 @@ void delete_from_cache(struct attr_cache *cache, const char *path)
 	if (value != NULL)
 	{
 		free(value->path);
-		free_buffer(value);
+		free(value);
 		--(cache->number_of_entries);
 	}
 }

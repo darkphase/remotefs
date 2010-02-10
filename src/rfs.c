@@ -142,7 +142,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 					exit(1);
 				}
 				
-				rfs_instance.config.host = get_buffer(delimiter - arg);
+				rfs_instance.config.host = malloc(delimiter - arg);
 				memset(rfs_instance.config.host, 0, delimiter - arg);
 				memcpy(rfs_instance.config.host, arg + 1, delimiter - arg - 1);
 				
@@ -155,13 +155,13 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 				
 				if (delimiter != NULL)
 				{
-					rfs_instance.config.host = get_buffer(delimiter - arg + 1);
+					rfs_instance.config.host = malloc(delimiter - arg + 1);
 					memset(rfs_instance.config.host, 0, delimiter - arg + 1);
 					memcpy(rfs_instance.config.host, arg, delimiter - arg);
 				}
 				else
 				{
-					rfs_instance.config.host = get_buffer(strlen(arg) + 1);
+					rfs_instance.config.host = malloc(strlen(arg) + 1);
 					memcpy(rfs_instance.config.host, arg, strlen(arg) + 1);
 				}
 #if WITH_IPV6
@@ -170,7 +170,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 			
 			if (delimiter != NULL)
 			{
-				rfs_instance.config.path = get_buffer(strlen(arg) - (delimiter - arg));
+				rfs_instance.config.path = malloc(strlen(arg) - (delimiter - arg));
 				memset(rfs_instance.config.path, 0, strlen(arg) - (delimiter - arg));
 				memcpy(rfs_instance.config.path, delimiter + 1, strlen(arg) - (delimiter - arg) - 1);
 			}
@@ -253,7 +253,7 @@ static int read_password()
 		return -saved_errno;
 	}
 	
-	char *buffer = get_buffer(size + 1);
+	char *buffer = malloc(size + 1);
 	memset(buffer, 0, size + 1);
 	
 	int done = fread(buffer, 1, size, fp);
@@ -278,7 +278,7 @@ static int read_password()
 	
 	rfs_instance.config.auth_passwd = passwd_hash(buffer, EMPTY_SALT);
 	DEBUG("hashed passwd: %s\n", rfs_instance.config.auth_passwd ? rfs_instance.config.auth_passwd : "NULL");
-	free_buffer(buffer);
+	free(buffer);
 	
 	return 0;
 }
@@ -300,11 +300,11 @@ int list_exports_main()
 	
 	rfs_disconnect(&rfs_instance, 1);
 	
-	free_buffer(rfs_instance.config.host);
+	free(rfs_instance.config.host);
 	
 	if (rfs_instance.config.path != 0)
 	{
-		free_buffer(rfs_instance.config.path);
+		free(rfs_instance.config.path);
 	}
 	
 	if (rfs_instance.config.auth_passwd != NULL)
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
 	{
 		char opt_tmpl[] = "-ofsname=rfs@";
 		size_t fsname_len = strlen(opt_tmpl) + strlen(rfs_instance.config.host) + 1;
-		fsname_opt = get_buffer(fsname_len);
+		fsname_opt = malloc(fsname_len);
 		snprintf(fsname_opt, fsname_len, "%s%s", opt_tmpl, rfs_instance.config.host);
 		
 		DEBUG("setting fsname: %s\n", fsname_opt);
@@ -432,11 +432,11 @@ int main(int argc, char **argv)
 
 	if (fsname_opt != NULL)
 	{
-		free_buffer(fsname_opt);
+		free(fsname_opt);
 	}
 
-	free_buffer(rfs_instance.config.host);
-	free_buffer(rfs_instance.config.path);
+	free(rfs_instance.config.host);
+	free(rfs_instance.config.path);
 	
 	if (rfs_instance.config.auth_passwd != NULL)
 	{

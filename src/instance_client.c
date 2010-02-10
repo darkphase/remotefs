@@ -84,14 +84,14 @@ static void init_rfs_config(struct rfs_instance *instance)
 	if (home_dir != NULL)
 	{
 		size_t key_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_KEY_FILE) + 2; /* 2 == '/' + '\0' */
-		key = get_buffer(key_path_size);
+		key = malloc(key_path_size);
 		if (key != NULL)
 		{
 			snprintf(key, key_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_KEY_FILE);
 		}
 	
 		size_t cert_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_CERT_FILE) + 2;
-		cert = get_buffer(cert_path_size);
+		cert = malloc(cert_path_size);
 		if (cert != NULL)
 		{
 			snprintf(cert, cert_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_CERT_FILE);

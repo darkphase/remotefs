@@ -39,7 +39,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 
 	struct command cmd = { cmd_open, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_16(&fi_flags, buffer
@@ -50,11 +50,11 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 

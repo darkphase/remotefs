@@ -6,6 +6,8 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
+
 #include "buffer.h"
 #include "config.h"
 #include "list.h"
@@ -18,7 +20,7 @@ struct list* add_to_list(struct list **head, void *data)
 		tail = tail->next;
 	}
 
-	struct list *new_item = get_buffer(sizeof(*new_item));
+	struct list *new_item = malloc(sizeof(*new_item));
 	if (new_item == NULL)
 	{
 		return NULL;
@@ -62,7 +64,7 @@ void* extract_from_list(struct list **head, struct list *item)
 
 	void *data = item->data;
 
-	free_buffer(item);
+	free(item);
 
 	return data;
 }
@@ -73,7 +75,7 @@ struct list* remove_from_list(struct list **head, struct list *item)
 
 	void *data = extract_from_list(head, item);
 	
-	free_buffer(data);
+	free(data);
 
 	return next;
 }
@@ -95,8 +97,8 @@ void destroy_list(struct list **head)
 	{
 		struct list *next = item->next;
 		
-		free_buffer(item->data);
-		free_buffer(item);
+		free(item->data);
+		free(item);
 		
 		item = next;
 	}

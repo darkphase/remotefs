@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "attr_cache.h"
@@ -32,7 +33,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 
 	struct command cmd = { cmd_link, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(target, target_len, 
 	pack(path, path_len, 
@@ -44,11 +45,11 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -85,7 +86,7 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 
 	struct command cmd = { cmd_symlink, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(target, target_len, 
 	pack(path, path_len, 
@@ -97,11 +98,11 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -187,7 +188,7 @@ static char *transform_symlink(struct rfs_instance *instance, const char *path, 
 
 	if (tail_len == 0)
 	{
-		char *dot = get_buffer(2);
+		char *dot = malloc(2);
 		dot[0] = '.';
 		dot[1] = 0;
 		return dot;
@@ -201,7 +202,7 @@ static char *transform_symlink(struct rfs_instance *instance, const char *path, 
 
 	if (components == 0)
 	{
-		char *tail_copy = get_buffer(tail_len + 1);
+		char *tail_copy = malloc(tail_len + 1);
 		memcpy(tail_copy, tail, tail_len);
 		tail_copy[tail_len] = 0;
 		return tail_copy;
@@ -213,7 +214,7 @@ static char *transform_symlink(struct rfs_instance *instance, const char *path, 
 	unsigned tail_pos = components * prepend_len;
 	unsigned need_memory = tail_pos + tail_len + 1;
 
-	char *new_link = get_buffer(need_memory);
+	char *new_link = malloc(need_memory);
 	unsigned i = 0; for (i = 0; i < components; ++i)
 	{
 		memcpy(new_link + prepend_len * i, prepend, prepend_len);
@@ -243,7 +244,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	
 	struct command cmd = { cmd_readlink, overall_size };
 
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 
 	pack(path, path_len, 
 	pack_32(&bsize, buffer
@@ -254,11 +255,11 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -279,18 +280,18 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 		return -ans.ret_errno;
 	}
 
-	buffer = get_buffer(ans.data_len);
+	buffer = malloc(ans.data_len);
 	memset(link_buffer, 0, ans.data_len);
 
 	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 	
 	if (ans.data_len >= size) /* >= to fit ending \0 into link_buffer */
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -EBADMSG;
 	}
 			
@@ -307,11 +308,11 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 			if (transformed_link_len >= size)
 			{
-				free_buffer(transformed_link);
+				free(transformed_link);
 			}
 			else
 			{
-				free_buffer(buffer);
+				free(buffer);
 				link_len = strlen(transformed_link);
 				link = transformed_link;
 			}
@@ -320,7 +321,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 	strncpy(link_buffer, link, link_len);
 	link_buffer[link_len] = 0;
-	free_buffer(link);
+	free(link);
 	
 	return 0;
 }

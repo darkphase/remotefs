@@ -24,7 +24,7 @@ See the file LICENSE.
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {
-	char *name = get_buffer(FILENAME_MAX + 1);
+	char *name = malloc(FILENAME_MAX + 1);
 
 	if (name == NULL)
 	{
@@ -79,7 +79,7 @@ int nss_create_socket(struct rfs_instance *instance)
 
 	chmod(socket_name, 0600);
 
-	free_buffer(socket_name);
+	free(socket_name);
 
 	instance->nss.socket = sock;
 
@@ -97,7 +97,7 @@ int nss_close_socket(struct rfs_instance *instance)
 
 		char *socket_name = nss_socket_name(instance);
 		unlink(socket_name);
-		free_buffer(socket_name);
+		free(socket_name);
 	}
 
 	return 0;
@@ -128,7 +128,7 @@ static int nss_answer(int sock, struct answer *ans, const char *data)
 
 static unsigned check_name(int sock, const struct list *names, struct command *cmd)
 {
-	char *name = get_buffer(cmd->data_len);
+	char *name = malloc(cmd->data_len);
 
 	if (recv(sock, name, cmd->data_len, 0) != cmd->data_len)
 	{
@@ -159,7 +159,7 @@ static unsigned check_name(int sock, const struct list *names, struct command *c
 	
 	DEBUG("name (%s) valid: %d\n", name, name_valid);
 		
-	free_buffer(name);
+	free(name);
 	
 	struct answer ans = { cmd->command, 0, 0, (name_valid != 0 ? 0 : EINVAL) };
 	int answer_ret = nss_answer(sock, &ans, NULL);

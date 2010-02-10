@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "buffer.h"
@@ -36,7 +37,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		
 		unsigned overall_size = sizeof(options) + path_len;
 		
-		char *buffer = get_buffer(overall_size);
+		char *buffer = malloc(overall_size);
 		
 		pack(export_rec->path, path_len, 
 		pack_32(&options, buffer
@@ -49,11 +50,11 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 			queue_data(buffer, overall_size, 
 			queue_ans(&ans, &token))) < 0)
 		{
-			free_buffer(buffer);
+			free(buffer);
 			return -1;
 		}
 		
-		free_buffer(buffer);
+		free(buffer);
 		
 		export_node = export_node->next;
 	}

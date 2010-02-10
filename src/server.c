@@ -288,7 +288,7 @@ void server_close_connection(struct rfsd_instance *instance)
 	
 	if (instance->server.mounted_export != NULL)
 	{
-		free_buffer(instance->server.mounted_export);
+		free(instance->server.mounted_export);
 	}
 	
 	destroy_uids_lookup(&instance->id_lookup.uids);

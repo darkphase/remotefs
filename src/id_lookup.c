@@ -147,7 +147,7 @@ const char* get_gid_name(const struct list *gids, gid_t gid)
 
 static inline void* alloc_uid_ent(char *name, const void *id)
 {
-	struct uid_look_ent *entry = get_buffer(sizeof(*entry));
+	struct uid_look_ent *entry = malloc(sizeof(*entry));
 	if (entry == NULL)
 	{
 		return NULL;
@@ -161,7 +161,7 @@ static inline void* alloc_uid_ent(char *name, const void *id)
 
 static inline void* alloc_gid_ent(char *name, const void *id)
 {
-	struct gid_look_ent *entry = get_buffer(sizeof(*entry));
+	struct gid_look_ent *entry = malloc(sizeof(*entry));
 	if (entry == NULL)
 	{
 		return NULL;
@@ -191,7 +191,7 @@ static int put_to_ids(struct list **ids, const char *name, const void *id, alloc
 	if (add_to_list(ids, entry) == NULL)
 	{
 		free(dup_name);
-		free_buffer(entry);
+		free(entry);
 		
 		return -1;
 	}

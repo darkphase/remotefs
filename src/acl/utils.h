@@ -46,7 +46,7 @@ acl_t rfs_acl_from_text(const char *text,
 	resolve custom_resolve, 
 	void *custom_resolve_data);
 
-/* don't forget to free_buffer result 
+/* don't forget to free result 
 \return ACL represented as text 
 \param custom_resolve resolve funtion for IDs recorded in ACL 
 \param custom_resolve_data resolve function params 

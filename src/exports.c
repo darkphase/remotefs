@@ -158,7 +158,7 @@ struct list* parse_list(const char *buffer, const char *border)
 		
 		len = item_end - local_buffer;
 		
-		char *item = get_buffer(len + 1);
+		char *item = malloc(len + 1);
 		memcpy(item, local_buffer, len);
 		item[len] = 0;
 		
@@ -204,7 +204,7 @@ static struct list* parse_users(const struct list *users_list)
 	while (item != NULL)
 	{
 		const char *id = (const char *)item->data;
-		struct user_rec *rec = get_buffer(sizeof(*rec));
+		struct user_rec *rec = malloc(sizeof(*rec));
 
 		rec->username = NULL;
 		rec->network = NULL;
@@ -276,12 +276,12 @@ error:
 
 		if (rec->username != NULL)
 		{
-			free_buffer(rec->username);
+			free(rec->username);
 		}
 
 		if (rec->network != NULL)
 		{
-			free_buffer(rec->network);
+			free(rec->network);
 		}
 
 		fixed_item = fixed_item->next;
@@ -317,7 +317,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	}
 	
 	unsigned share_len = share_end - local_buffer;
-	char *share = get_buffer(share_len + 1);
+	char *share = malloc(share_len + 1);
 	memset(share, 0, share_len + 1);
 	memcpy(share, local_buffer, share_len);
 	
@@ -329,7 +329,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	
 	if (strlen(share) < 1)
 	{
-		free_buffer(share);
+		free(share);
 		return (char *)-1;
 	}
 	
@@ -347,7 +347,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	|| users_end > border 
 	|| users == users_end)
 	{
-		free_buffer(share);
+		free(share);
 		return (char *)-1;
 	}
 
@@ -399,7 +399,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	return next_line == NULL ? NULL : next_line + 1;
 
 parse_error:
-	free_buffer(share);
+	free(share);
 	destroy_list(&this_line_users);
 	destroy_list(&this_line_options);
 	return (char *)-1;
@@ -505,7 +505,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 	
 	long size = ftell(fd);
 	
-	char *buffer = get_buffer(size + 1);
+	char *buffer = malloc(size + 1);
 	memset(buffer, 0, size + 1);
 	
 	if (buffer == NULL)
@@ -520,7 +520,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 	{
 		int saved_errno = errno;
 
-		free_buffer(buffer);
+		free(buffer);
 		fclose(fd);
 		return -saved_errno;
 	}
@@ -529,7 +529,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 	{
 		int saved_errno = errno;
 		
-		free_buffer(buffer);
+		free(buffer);
 		fclose(fd);
 		return -saved_errno;
 	}
@@ -540,7 +540,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 	{
 		++line_number;
 
-		struct rfs_export *line_export = get_buffer(sizeof(struct rfs_export));
+		struct rfs_export *line_export = malloc(sizeof(struct rfs_export));
 		memset(line_export, 0, sizeof(*line_export));
 		
 		line_export->export_uid = (uid_t)-1;
@@ -548,7 +548,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		next_line = parse_line(next_line, (buffer + size) - next_line, line_export);
 		if (next_line == (char *)-1)
 		{
-			free_buffer(line_export);
+			free(line_export);
 			fclose(fd);
 			release_exports(exports);
 			return line_number;
@@ -558,7 +558,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		because those are to be checked */
 		if (validate_export(line_export, *exports) != 0)
 		{
-			free_buffer(line_export);
+			free(line_export);
 			fclose(fd);
 			release_exports(exports);
 			return line_number;
@@ -573,12 +573,12 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		|| line_export->users == NULL
 		|| add_to_list(exports, line_export) == NULL)
 		{
-			free_buffer(line_export);
+			free(line_export);
 		}
 	}
 	while (next_line != NULL);
 
-	free_buffer(buffer);
+	free(buffer);
 	fclose(fd);
 	
 	return 0;
@@ -586,7 +586,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 
 static void release_export(struct rfs_export *single_export)
 {
-	free_buffer(single_export->path);
+	free(single_export->path);
 
 	struct list *user_item = single_export->users;
 	while (user_item != NULL)
@@ -594,12 +594,12 @@ static void release_export(struct rfs_export *single_export)
 		struct user_rec *rec = (struct user_rec *)user_item->data;
 		if (rec->username != NULL)
 		{
-			free_buffer(rec->username);
+			free(rec->username);
 		}
 
 		if (rec->network != NULL)
 		{
-			free_buffer(rec->network);
+			free(rec->network);
 		}
 		
 		user_item = user_item->next;

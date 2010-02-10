@@ -24,7 +24,7 @@ char* extract_server(const char *full_name)
 
 	size_t server_len = strlen(delim + 1) + 1;
 
-	char *server = get_buffer(server_len);
+	char *server = malloc(server_len);
 	memcpy(server, delim + 1, server_len);
 
 	return server;
@@ -41,7 +41,7 @@ char* extract_name(const char *full_name)
 
 	size_t name_len = (delim - full_name) + 1;
 
-	char *name = get_buffer(name_len);
+	char *name = malloc(name_len);
 	memcpy(name, full_name, name_len - 1);
 	name[name_len - 1] = 0;
 
@@ -86,7 +86,7 @@ char* remote_nss_name(const char *short_name, const struct rfs_instance *instanc
 	size_t hostname_len = strlen(instance->config.host);
 	size_t overall_len = name_len + 1 + hostname_len;
 
-	char *long_name = get_buffer(overall_len + 1);
+	char *long_name = malloc(overall_len + 1);
 
 	memcpy(long_name, short_name, name_len);
 	memcpy(long_name + name_len + 1, instance->config.host, hostname_len);

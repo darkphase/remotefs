@@ -11,6 +11,7 @@ See the file LICENSE.
 #ifdef RFSNSS_AVAILABLE
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "server.h"
@@ -58,11 +59,11 @@ int rfs_getnames(struct rfs_instance *instance)
 	
 	if (ans.data_len > 0)
 	{
-		char *users = get_buffer(ans.data_len);
+		char *users = malloc(ans.data_len);
 		
 		if (rfs_receive_data(&instance->sendrecv, users, ans.data_len) == -1)
 		{
-			free_buffer(users);
+			free(users);
 			return -ECONNABORTED;
 		}
 
@@ -71,7 +72,7 @@ int rfs_getnames(struct rfs_instance *instance)
 		{
 			size_t user_len = strlen(user) + 1;
 
-			char *nss_user = get_buffer(user_len);
+			char *nss_user = malloc(user_len);
 			memcpy(nss_user, user, user_len);
 
 			add_to_list(&instance->nss.users_storage, nss_user);
@@ -79,7 +80,7 @@ int rfs_getnames(struct rfs_instance *instance)
 			user += user_len;
 		}
 
-		free_buffer(users);
+		free(users);
 	}
 	
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
@@ -101,11 +102,11 @@ int rfs_getnames(struct rfs_instance *instance)
 
 	if (ans.data_len > 0)
 	{
-		char *groups = get_buffer(ans.data_len);
+		char *groups = malloc(ans.data_len);
 		
 		if (rfs_receive_data(&instance->sendrecv, groups, ans.data_len) == -1)
 		{
-			free_buffer(groups);
+			free(groups);
 			return -ECONNABORTED;
 		}
 
@@ -114,7 +115,7 @@ int rfs_getnames(struct rfs_instance *instance)
 		{
 			size_t group_len = strlen(group) + 1;
 
-			char *nss_group = get_buffer(group_len);
+			char *nss_group = malloc(group_len);
 			memcpy(nss_group, group, group_len);
 
 			add_to_list(&instance->nss.groups_storage, nss_group);
@@ -122,7 +123,7 @@ int rfs_getnames(struct rfs_instance *instance)
 			group += group_len;
 		}
 
-		free_buffer(groups);
+		free(groups);
 	}
 
 	return 0;

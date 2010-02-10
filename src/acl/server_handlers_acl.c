@@ -11,6 +11,7 @@ See the file LICENSE.
 #if defined ACL_AVAILABLE
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/acl.h>
 
@@ -26,7 +27,7 @@ See the file LICENSE.
 
 int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 
 	if (buffer == NULL)
 	{
@@ -35,7 +36,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 
@@ -53,7 +54,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (strlen(path) + 1 != path_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EBADMSG) == 0 ? 1 : -1;
 	}
 	
@@ -63,7 +64,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (strlen(name) + 1 != name_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EBADMSG) == 0 ? 1 : -1;
 	}
 	
@@ -72,7 +73,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	acl_t acl = NULL;
 	int get_acl_ret = rfs_get_file_acl(path, name, &acl);
 
-	free_buffer(buffer);
+	free(buffer);
 
 	if (get_acl_ret != 0)
 	{
@@ -92,7 +93,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 		if (acl_text == NULL)
 		{
-			free_buffer(acl);
+			free(acl);
 			return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 		}
 	
@@ -110,18 +111,18 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 		queue_data(acl_text == NULL ? "" : acl_text, ans_data_len, /* FIXME: won't be really packed if ans_data_len == 0 */
 		queue_ans(&ans, &token))) < 0)
 	{
-		free_buffer(acl_text);
+		free(acl_text);
 		return -1;
 	}
 	
-	free_buffer(acl_text);
+	free(acl_text);
 	
 	return 0;
 }
 
 int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -129,7 +130,7 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -143,7 +144,7 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (strlen(path) + 1 != path_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EBADMSG) == 0 ? 1 : -1;
 	}
 	
@@ -153,7 +154,7 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (strlen(name) + 1 != name_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EBADMSG) == 0 ? 1 : -1;
 	}
 	
@@ -169,13 +170,13 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (acl == NULL)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 	}
 
 	int set_acl_ret = rfs_set_file_acl(path, name, acl);
 	
-	free_buffer(buffer);
+	free(buffer);
 	acl_free(acl);
 		
 	struct answer ans = { cmd_setxattr, 0, set_acl_ret == 0 ? 0 : -1, -set_acl_ret };

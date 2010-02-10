@@ -10,6 +10,7 @@ See the file LICENSE.
 
 #ifdef ACL_AVAILABLE
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "id_lookup_resolve.h"
@@ -66,7 +67,7 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 	{
 	case ACL_USER:
 		{
-		char *username = get_buffer(name_len + 1);
+		char *username = malloc(name_len + 1);
 		memcpy(username, name, name_len);
 		username[name_len] = 0;
 	
@@ -74,7 +75,7 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 		
 		uid_t uid = get_uid(lookup->uids, username);
 				
-		free_buffer(username);
+		free(username);
 				
 		if (uid == (uid_t)-1)
 		{
@@ -85,7 +86,7 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 		}
 	case ACL_GROUP:
 		{
-		char *groupname = get_buffer(name_len + 1);
+		char *groupname = malloc(name_len + 1);
 		memcpy(groupname, name, name_len);
 		groupname[name_len] = 0;
 				
@@ -93,7 +94,7 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 
 		gid_t gid = get_gid(lookup->gids, groupname);
 				
-		free_buffer(groupname);
+		free(groupname);
 				
 		if (gid == (gid_t)-1)
 		{

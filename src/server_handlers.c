@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/time.h>
@@ -26,7 +27,7 @@ See the file LICENSE.
 
 int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	
 	if (buffer == NULL)
 	{
@@ -35,7 +36,7 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -44,7 +45,7 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -53,11 +54,11 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	{
 		int saved_errno = errno;
 		
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 	
-	free_buffer(buffer);
+	free(buffer);
 
 	uint32_t user_len = 0, user_len_hton = 0;
 	uint32_t group_len = 0, group_len_hton = 0;
@@ -106,7 +107,7 @@ static int process_utime(struct rfsd_instance *instance, const struct command *c
 	
 	if (is_null == 0)
 	{
-		buf = get_buffer(sizeof(*buf));
+		buf = malloc(sizeof(*buf));
 		buf->modtime = modtime;
 		buf->actime = actime;
 	}
@@ -118,7 +119,7 @@ static int process_utime(struct rfsd_instance *instance, const struct command *c
 	
 	if (buf != NULL)
 	{
-		free_buffer(buf);
+		free(buf);
 	}
 		
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
@@ -131,7 +132,7 @@ static int process_utime(struct rfsd_instance *instance, const struct command *c
 
 int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -139,7 +140,7 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -158,20 +159,20 @@ int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	+ sizeof(is_null)
 	+ strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 
 	int ret = process_utime(instance, cmd, path, is_null, actime, modtime);
 
-	free_buffer(buffer);
+	free(buffer);
 
 	return ret;
 }
 
 int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -179,7 +180,7 @@ int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -204,20 +205,20 @@ int _handle_utimens(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	+ sizeof(is_null)
 	+ strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
 	int ret = process_utime(instance, cmd, path, is_null, actime_sec, modtime_sec);
 
-	free_buffer(buffer);
+	free(buffer);
 	
 	return ret;
 }
 
 int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -225,7 +226,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -234,7 +235,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	if (strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -242,7 +243,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	int result = statvfs(path, &buf);
 	int saved_errno = errno;
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (result != 0)
 	{
@@ -274,7 +275,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	struct answer ans = { cmd_statfs, overall_size, 0, 0 };
 
-	buffer = get_buffer(ans.data_len);
+	buffer = malloc(ans.data_len);
 	if (buffer == NULL)
 	{
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
@@ -294,11 +295,11 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		queue_data(buffer, overall_size, 
 		queue_ans(&ans, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	return 0;
 }

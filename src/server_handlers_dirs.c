@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <dirent.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <unistd.h>
@@ -25,7 +26,7 @@ See the file LICENSE.
 
 int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	
 	if (buffer == NULL)
 	{
@@ -34,7 +35,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 
@@ -43,13 +44,13 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (path_len != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
 	if (path_len > FILENAME_MAX)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -60,7 +61,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	{
 		int saved_errno = errno;
 		
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, saved_errno) == 0 ? 1 : -1;
 	}
 
@@ -148,13 +149,13 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 			))))))))) < 0)
 		{
 			closedir(dir);
-			free_buffer(buffer);
+			free(buffer);
 			return -1;
 		}
 	}
 
 	closedir(dir);
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer last_ans = { cmd_readdir, 0, 0, 0 };
 	if (rfs_send_answer(&instance->sendrecv, &last_ans) == -1)
@@ -167,7 +168,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -175,7 +176,7 @@ int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -187,7 +188,7 @@ int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	if (sizeof(mode)
 	+ strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -196,7 +197,7 @@ int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	struct answer ans = { cmd_mkdir, 0, result, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
@@ -208,7 +209,7 @@ int _handle_mkdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 
 int _handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -216,7 +217,7 @@ int _handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -224,7 +225,7 @@ int _handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -233,7 +234,7 @@ int _handle_rmdir(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	struct answer ans = { cmd_rmdir, 0, result, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{

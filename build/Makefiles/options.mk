@@ -10,8 +10,8 @@ OPT_1 = -DWITH_IPV6
 ###############################################
 # SSL support
 
-#OPT_2 = -DWITH_SSL
-#OPT_2_LD = $(LDFLAGS_SSL)
+OPT_2 = -DWITH_SSL
+OPT_2_LD = $(LDFLAGS_SSL)
 
 ###############################################
 # Support of exports listing
@@ -22,8 +22,8 @@ OPT_3 = -DWITH_EXPORTS_LIST
 # Support for POSIX ACL
 # Linux only
 
-#OPT_4 = -DWITH_ACL
-#OPT_4_LD = $(LDFLAGS_ACL)
+OPT_4 = -DWITH_ACL
+OPT_4_LD = $(LDFLAGS_ACL)
 
 ###############################################
 # Support for UGO
@@ -40,12 +40,12 @@ OPT_6 = -DWITH_SCHEDULING
 
 ###############################################
 
-#OPT_7 = -DWITH_MEMCACHE
+OPT_7 = -DWITH_MEMCACHE
 
 ###############################################
 # for debug only
 
-#OPT_99 = -DWITH_MEASURES
+OPT_99 = -DWITH_MEASURES
 
 ###############################################
 # End of user configuration, don't change the

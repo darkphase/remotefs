@@ -8,7 +8,6 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <stdlib.h>
-
 #include <string.h>
 
 #include "attr_cache.h"
@@ -156,8 +155,8 @@ static void* write_behind(void *void_instance)
 	write_behind_request->block->offset,
 	write_behind_request->block->descriptor);
 
-	free_buffer(write_behind_request->block->data);
-	free_buffer(write_behind_request->block);
+	free(write_behind_request->block->data);
+	free(write_behind_request->block);
 
 	write_behind_request->block = NULL;
 

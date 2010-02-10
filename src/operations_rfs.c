@@ -450,7 +450,7 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 
 	struct command cmd = { cmd_auth, overall_size };
 
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 
 	pack(user, user_len, 
 	pack(crypted, crypted_len, 
@@ -462,13 +462,13 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		free(crypted);
 
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 	free(crypted);
 
 	struct answer ans = { 0 };

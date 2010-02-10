@@ -10,6 +10,7 @@ See the file LICENSE.
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
+#include <stdlib.h>
 
 #include "buffer.h"
 #include "config.h"

@@ -212,7 +212,7 @@ int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_i
 
 int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -220,7 +220,7 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -234,7 +234,7 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	+ sizeof(passwd_len) 
 	+ strlen(passwd) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 		
@@ -243,7 +243,7 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	instance->server.auth_user = strdup(user);
 	instance->server.auth_passwd = strdup(passwd);
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	struct answer ans = { cmd_auth, 0, 0, 0 };
 	
@@ -345,7 +345,7 @@ static int setup_export_groups(uid_t user_uid)
 
 int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -353,13 +353,13 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
 	if (strlen(buffer) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -378,7 +378,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	if (export_info == NULL 
 	|| check_permissions(instance, export_info, inet_ntoa(client_addr->sin_addr)) != 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}
 #else
@@ -396,7 +396,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	if (export_info == NULL 
 	|| check_permissions(instance, export_info, straddr) != 0) 
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}
 #endif
@@ -411,7 +411,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		struct passwd *pwd = getpwuid(export_info->export_uid);
 		if (pwd == NULL)
 		{
-			free_buffer(buffer);
+			free(buffer);
 			return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 		}
 
@@ -433,7 +433,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		}
 		else
 		{
-			free_buffer(buffer);
+			free(buffer);
 			return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 		}
 
@@ -445,7 +445,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	/* we need to setup groups before chroot() */
 	if (setup_export_groups(user_uid) != 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 
 		destroy_uids_lookup(&instance->id_lookup.uids);
 		destroy_gids_lookup(&instance->id_lookup.gids);
@@ -458,7 +458,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 
 	struct answer ans = { cmd_changepath, 0, result, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (result == 0)
 	{
@@ -480,7 +480,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	if (result == 0)
 	{	
 		instance->server.directory_mounted = 1;
-		instance->server.mounted_export = get_buffer(sizeof(*instance->server.mounted_export));
+		instance->server.mounted_export = malloc(sizeof(*instance->server.mounted_export));
 		memcpy(instance->server.mounted_export, export_info, sizeof(*instance->server.mounted_export));
 		
 		release_passwords(&instance->passwd.auths);

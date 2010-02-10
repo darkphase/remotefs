@@ -14,6 +14,7 @@ See the file LICENSE.
 /** memory cached read-ahead on server */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 #include "buffer.h"
@@ -45,7 +46,7 @@ int memcache_block(struct memcached_block *cache, uint64_t desc, off_t offset, s
 	if (data != NULL 
 	&& cache->data != NULL)
 	{
-		free_buffer(cache->data);
+		free(cache->data);
 	}
 
 	cache->desc = desc;
@@ -65,7 +66,7 @@ void destroy_memcache(struct memcached_block *cache)
 {
 	if (cache->data != NULL)
 	{
-		free_buffer(cache->data);
+		free(cache->data);
 		cache->data = NULL;
 	}
 

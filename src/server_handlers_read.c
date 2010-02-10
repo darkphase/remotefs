@@ -9,6 +9,7 @@ See the file LICENSE.
 #include "options.h"
 
 #include <errno.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -199,11 +200,11 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		{
 			if (cache->data != NULL)
 			{
-				free_buffer(cache->data);
+				free(cache->data);
 				cache->data = NULL;
 			}
 
-			cache->data = get_buffer(size);
+			cache->data = malloc(size);
 			DEBUG("reserved cache data at %p\n", cache->data);
 			if (cache->data == NULL)
 			{

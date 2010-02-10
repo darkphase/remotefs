@@ -8,6 +8,7 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -22,7 +23,7 @@ See the file LICENSE.
 
 int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -30,7 +31,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -41,7 +42,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	if (sizeof(rfs_flags) 
 	+ strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -53,7 +54,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	struct answer ans = { cmd_open, (fd == -1 ? 0 : sizeof(handle)), (fd == -1 ? -1 : 0), errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (fd != -1)
 	{
@@ -89,7 +90,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 
 int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -97,14 +98,14 @@ int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
 	uint64_t handle = (uint64_t)-1;
 	unpack_64(&handle, buffer);
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (handle == (uint64_t)-1)
 	{

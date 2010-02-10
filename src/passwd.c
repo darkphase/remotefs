@@ -40,7 +40,7 @@ int add_or_replace_auth(struct list **auths, const char *user, const char *passw
 	}
 	else
 	{
-		struct auth_entry *auth = get_buffer(sizeof(struct auth_entry));
+		struct auth_entry *auth = malloc(sizeof(struct auth_entry));
 		auth->user = strdup(user);
 		auth->passwd = strdup(passwd);
 		

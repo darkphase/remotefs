@@ -168,7 +168,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 
 	struct command cmd = { cmd_utime, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_64(&actime, 
@@ -181,11 +181,11 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -245,7 +245,7 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 
 	struct command cmd = { cmd_utimens, overall_size };
 
-	char *buffer = get_buffer(cmd.data_len);
+	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
 	pack_16(&is_null, 
@@ -260,11 +260,11 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
-	free_buffer(buffer);
+	free(buffer);
 
 	struct answer ans = { 0 };
 
@@ -340,11 +340,11 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 		return cleanup_badmsg(instance, &ans);
 	}
 
-	char *buffer = get_buffer(ans.data_len);
+	char *buffer = malloc(ans.data_len);
 
 	if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 
@@ -357,7 +357,7 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 	unpack_32(&bsize, buffer
 	)))))));
 	
-	free_buffer(buffer);
+	free(buffer);
 
 	buf->f_bsize = bsize;
 	buf->f_blocks = blocks;

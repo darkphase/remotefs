@@ -10,6 +10,8 @@ See the file LICENSE.
 
 #ifdef ACL_OPERATIONS_AVAILABLE
 
+#include <stdlib.h>
+
 #include "local_resolve.h"
 #include "../buffer.h"
 #include "../config.h"
@@ -57,7 +59,7 @@ uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *i
 
 			if (id != ACL_UNDEFINED_ID)
 			{
-				free_buffer(dup_name);
+				free(dup_name);
 				return id;
 			}
 		}
@@ -67,7 +69,7 @@ uint32_t local_resolve(acl_tag_t tag, const char *name, size_t name_len, void *i
 	can't be resolved */
 	uint32_t id = resolve_name(tag, dup_name, instance);
 	
-	free_buffer(dup_name);
+	free(dup_name);
 
 	DEBUG("id: %lu\n", (unsigned long)id);
 	return id;

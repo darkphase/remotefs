@@ -31,7 +31,7 @@ int resume_add_file_to_open_list(struct list **head, const char *path, int flags
 		item = item->next;
 	}
 	
-	struct open_rec *new_item = get_buffer(sizeof(*new_item));
+	struct open_rec *new_item = malloc(sizeof(*new_item));
 	if (new_item == NULL)
 	{
 		return -1;
@@ -45,7 +45,7 @@ int resume_add_file_to_open_list(struct list **head, const char *path, int flags
 	if (add_to_list(head, new_item) == NULL)
 	{
 		free(new_item->path);
-		free_buffer(new_item);
+		free(new_item);
 		return -1;
 	}
 	
@@ -107,7 +107,7 @@ int resume_add_file_to_locked_list(struct list **head, const char *path, int loc
 		item = item->next;
 	}
 
-	struct lock_rec *new_item = get_buffer(sizeof(*new_item));
+	struct lock_rec *new_item = malloc(sizeof(*new_item));
 	if (new_item == NULL)
 	{
 		return -1;
@@ -120,7 +120,7 @@ int resume_add_file_to_locked_list(struct list **head, const char *path, int loc
 	if (add_to_list(head, new_item) == NULL)
 	{
 		free(new_item->path);
-		free_buffer(new_item);
+		free(new_item);
 		return -1;
 	}
 

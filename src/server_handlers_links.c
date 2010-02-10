@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -20,7 +21,7 @@ See the file LICENSE.
 
 int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -28,7 +29,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -42,7 +43,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	+ strlen(path) + 1
 	+ strlen(target) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -51,7 +52,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	
 	struct answer ans = { cmd_symlink, 0, result, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
@@ -63,7 +64,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -71,7 +72,7 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -85,7 +86,7 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	+ strlen(path) + 1
 	+ strlen(target) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 
@@ -94,7 +95,7 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	struct answer ans = { cmd_link, 0, result, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
@@ -106,7 +107,7 @@ int _handle_link(struct rfsd_instance *instance, const struct sockaddr_in *clien
 
 int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	
 	if (buffer == NULL)
 	{
@@ -115,7 +116,7 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -125,18 +126,18 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	if (buffer[cmd->data_len-1] != 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 
-	char *link_buffer = get_buffer(bsize + 1); /* include size for \0 */
+	char *link_buffer = malloc(bsize + 1); /* include size for \0 */
 
 	errno = 0;
 	int ret = readlink(path, link_buffer, bsize);
 	
 	struct answer ans = { cmd_readlink, 0, ret, errno };
 
-	free_buffer(buffer);
+	free(buffer);
 
 	if ( ret != -1 )
 	{
@@ -150,11 +151,11 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 		queue_data(link_buffer, (ret != -1 ? ret + 1 : 0), 
 		queue_ans(&ans, &token))) < 0)
 	{
-		free_buffer(link_buffer);
+		free(link_buffer);
 		return -1;
 	}
 
-	free_buffer(link_buffer);
+	free(link_buffer);
 
 	return 0;
 }

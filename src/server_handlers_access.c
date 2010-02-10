@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -23,7 +24,7 @@ See the file LICENSE.
 
 int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -31,7 +32,7 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -41,7 +42,7 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (sizeof(mode) + strlen(path) + 1 != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -50,7 +51,7 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	struct answer ans = { cmd_chmod, 0, ret, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
@@ -62,7 +63,7 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 
 int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
-	char *buffer = get_buffer(cmd->data_len);
+	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
 	{
 		return -1;
@@ -70,7 +71,7 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -1;
 	}
 	
@@ -89,7 +90,7 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	if (sizeof(user_len) + sizeof(group_len)
 	+ path_len + user_len + group_len != cmd->data_len)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -99,7 +100,7 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	if (uid == -1 
 	&& gid == -1) /* if both == -1, then this is error. however one of them == -1 is ok */
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
@@ -108,7 +109,7 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	struct answer ans = { cmd_chown, 0, ret, errno };
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{

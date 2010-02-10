@@ -22,18 +22,6 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** allocate buffer of specified size */
-static inline void* get_buffer(const size_t size)
-{
-	return malloc(size);
-}
-
-/** free buffer */
-static inline void free_buffer(void *buffer)
-{
-	free(buffer);
-}
-
 /** copy data to buffer */
 static inline char* pack(const void *data, const size_t size, char *buffer)
 {

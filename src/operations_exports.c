@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <errno.h>
+#include <stdlib.h>
 
 #include "buffer.h"
 #include "command.h"
@@ -59,11 +60,11 @@ int rfs_list_exports(struct rfs_instance *instance)
 		
 		++exports_count;
 		
-		char *buffer = get_buffer(ans.data_len);
+		char *buffer = malloc(ans.data_len);
 		
 		if (rfs_receive_data(&instance->sendrecv, buffer, ans.data_len) == -1)
 		{
-			free_buffer(buffer);
+			free(buffer);
 			return -ECONNABORTED;
 		}
 		
@@ -100,7 +101,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 		INFO("%s\n", "");
 		}
 		
-		free_buffer(buffer);
+		free(buffer);
 	}
 	while (ans.data_len != 0
 	&& ans.ret == 0

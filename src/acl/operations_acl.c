@@ -44,7 +44,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 	+ path_len 
 	+ name_len;
 	
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 	
 	pack(name, name_len, 
 	pack(path, path_len, 
@@ -60,11 +60,11 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	struct answer ans = { 0 };
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
@@ -89,11 +89,11 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 		return (ans.ret >= 0 ? ans.ret : -ans.ret_errno);
 	}
 
-	char *acl_text = get_buffer(ans.data_len);
+	char *acl_text = malloc(ans.data_len);
 		
 	if (rfs_receive_data(&instance->sendrecv, acl_text, ans.data_len) == -1)
 	{
-		free_buffer(acl_text);
+		free(acl_text);
 		return -ECONNABORTED;
 	}
 		
@@ -101,7 +101,7 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 
 	acl_t acl = rfs_acl_from_text(acl_text, local_resolve, (void *)instance);
 
-	free_buffer(acl_text);
+	free(acl_text);
 		
 	if (acl == NULL)
 	{
@@ -180,7 +180,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	+ name_len
 	+ acl_text_len + 1;
 	
-	char *buffer = get_buffer(overall_size);
+	char *buffer = malloc(overall_size);
 	
 	pack(acl_text, acl_text_len + 1, 
 	pack(name, name_len, 
@@ -189,7 +189,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	pack_32(&path_len, buffer
 	)))));
 
-	free_buffer(acl_text);
+	free(acl_text);
 	
 	struct command cmd = { cmd_setxattr, overall_size };
 	
@@ -198,11 +198,11 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)
 	{
-		free_buffer(buffer);
+		free(buffer);
 		return -ECONNABORTED;
 	}
 	
-	free_buffer(buffer);
+	free(buffer);
 	
 	struct answer ans = { 0 };
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)

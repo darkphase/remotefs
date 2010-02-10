@@ -6,6 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "../buffer.h"
@@ -34,7 +35,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	struct answer ans = { cmd_getnames, users_len, 0, 0 };
 
-	char *users = get_buffer(users_len);
+	char *users = malloc(users_len);
 	size_t written = 0;
 
 	uid = instance->id_lookup.uids;
@@ -59,11 +60,11 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 		queue_data(users, users_len, 
 		queue_ans(&ans, &users_token))) < 0)
 	{
-		free_buffer(users);
+		free(users);
 		return -1;
 	}
 
-	free_buffer(users);
+	free(users);
 
 	/* send groups */
 
@@ -81,7 +82,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	ans.command = cmd_getnames;
 	ans.data_len = groups_len;
 
-	char *groups = get_buffer(groups_len);
+	char *groups = malloc(groups_len);
 	written = 0;
 
 	gid = instance->id_lookup.gids;
@@ -104,11 +105,11 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 		queue_data(groups, groups_len, 
 		queue_ans(&ans, &groups_token))) < 0)
 	{
-		free_buffer(groups);
+		free(groups);
 		return -1;
 	}
 
-	free_buffer(groups);
+	free(groups);
 
 	return 0;
 }

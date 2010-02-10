@@ -14,7 +14,7 @@ See the file LICENSE.
 
 char* buffer_dup(const char *buffer, size_t buffer_len)
 {
-	char *ret = get_buffer(buffer_len);
+	char *ret = malloc(buffer_len);
 	if (ret != NULL)
 	{
 		memcpy(ret, buffer, buffer_len);
@@ -24,7 +24,7 @@ char* buffer_dup(const char *buffer, size_t buffer_len)
 
 char* buffer_dup_str(const char *buffer, size_t str_len)
 {
-	char *ret = get_buffer(str_len + 1);
+	char *ret = malloc(str_len + 1);
 	if (ret != NULL)
 	{
 		memcpy(ret, buffer, str_len);
