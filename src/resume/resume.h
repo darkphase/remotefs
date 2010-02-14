@@ -60,6 +60,10 @@ int resume_add_file_to_locked_list(struct list **head, const char *path, int loc
 \return 0 if successfully removed */
 int resume_remove_file_from_locked_list(struct list **head, const char *path);
 
+/** check if file is recorded as locked 
+\return !0 if file is recorder as locked */
+unsigned resume_is_file_in_locked_list(const struct list *head, const char *path);
+
 /** delete lists of open and locked files */
 void destroy_resume_lists(struct list **open, struct list **locked);
 

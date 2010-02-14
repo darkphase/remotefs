@@ -147,6 +147,21 @@ int resume_remove_file_from_locked_list(struct list **head, const char *path)
 	return 0;
 }
 
+unsigned resume_is_file_in_locked_list(const struct list *head, const char *path)
+{
+	const struct list *item = head;
+	while (item != NULL)
+	{
+		struct lock_rec *data = (struct lock_rec *)item->data;
+		if (strcmp(data->path, path) == 0)
+		{
+			return 1;
+		}
+		item = item->next;
+	}
+
+	return 0;
+}
 void destroy_resume_lists(struct list **open, struct list **locked)
 {
 	DEBUG("%s\n", "destroying resume lists");

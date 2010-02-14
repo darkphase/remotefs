@@ -307,6 +307,12 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 		return -ECONNABORTED;
 	}
 	
+	if (fl->l_type == F_UNLCK 
+	&& resume_is_file_in_locked_list(instance->resume.locked_files, path) == 0)
+	{
+		return 0;
+	}
+
 	uint16_t flags = 0;
 	
 	switch (lock_cmd)
