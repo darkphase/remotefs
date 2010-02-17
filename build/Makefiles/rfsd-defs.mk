@@ -30,6 +30,7 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/ssl/server_handlers_ssl.o \
             src/ssl/server.o \
             src/ssl/ssl.o \
+            src/auth.o \
             src/buffer.o \
             src/command.o \
             src/crypt.o \
