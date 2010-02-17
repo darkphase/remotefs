@@ -151,13 +151,6 @@ int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		return reject_request(instance, cmd, EBADF) == 0 ? 1 : -1;
 	}
 
-#ifdef WITH_MEMCACHE
-	if (instance->memcache.desc == handle)
-	{
-		destroy_memcache(&instance->memcache);
-	}
-#endif
-	
 	int fd = (int)handle;
 	errno = 0;
 	int ret = close(fd);

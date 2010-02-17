@@ -46,16 +46,6 @@ static void init_exports(struct rfsd_instance *instance)
 	instance->exports.list = NULL;
 }
 
-#ifdef WITH_MEMCACHE
-static void init_memcache(struct memcached_block *cache)
-{
-	cache->desc = (uint64_t)(-1);
-	cache->offset = (off_t)(-1);
-	cache->size = 0;
-	cache->data = NULL;
-}
-#endif
-
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
 #ifndef WITH_IPV6
@@ -91,9 +81,6 @@ void init_rfsd_instance(struct rfsd_instance *instance)
 	init_sendrecv(&instance->sendrecv);
 #ifdef WITH_SSL
 	init_ssl(&instance->ssl);
-#endif
-#ifdef WITH_MEMCACHE
-	init_memcache(&instance->memcache);
 #endif
 	
 	init_rfsd_config(instance);

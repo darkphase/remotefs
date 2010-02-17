@@ -38,7 +38,6 @@ struct list;
 #define SENDFILE_LIMIT          4 * 1024    /* bytes */
 #define SSL_READ_BLOCK          8 * 1024    /* bytes */
 #define SSL_WRITE_BLOCK         8 * 1024    /* bytes */
-#define MEMCACHE_THRESHOLD      128 * 1024  /* bytes */
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 #define DEFAULT_IPV4_ADDRESS    "0.0.0.0"
 #ifdef WITH_IPV6

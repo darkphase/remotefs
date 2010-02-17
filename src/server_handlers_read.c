@@ -18,7 +18,6 @@ See the file LICENSE.
 #include "config.h"
 #include "instance_server.h"
 #include "measure.h"
-#include "memcache.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "sendfile/sendfile_rfs.h"
@@ -154,77 +153,6 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		return reject_request(instance, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
-#ifdef WITH_MEMCACHE
-	if (size >= MEMCACHE_THRESHOLD 
-	&& memcache_fits(&instance->memcache, handle, offset, size) != 0)
-	{
-		DEBUG("%s\n", "hooray! memcache fits!");
-		
-		struct memcached_block *cache = &instance->memcache;
-
-		struct answer ans = { cmd_read, (uint32_t)cache->size, (int32_t)cache->size, 0 };
-
-		send_token_t token = { 0, {{ 0 }} };
-
-		if (do_send(&instance->sendrecv, 
-			queue_data(cache->data, cache->size, 
-			queue_ans(&ans, &token))) < 0)
-		{
-			return -1;
-		}
-	}
-	else 
-	{
-#endif
-		int ret = choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
-
-		if (ret != 0)
-		{
-			return ret;
-		}
-#ifdef WITH_MEMCACHE
-	} /* else */
-
-	/* try to read-ahead 
-	we will ignore any errors at this point since real read operation is already complete */
-	if (size >= MEMCACHE_THRESHOLD)
-	{
-		DEBUG("memcaching block at %llu of size %llu (desc %llu)\n", 
-		(long long unsigned)offset + size, 
-		(long long unsigned)size, 
-		(long long unsigned)handle);
-
-		struct memcached_block *cache = &instance->memcache;
-
-		if (cache->size != size)
-		{
-			if (cache->data != NULL)
-			{
-				free(cache->data);
-				cache->data = NULL;
-			}
-
-			cache->data = malloc(size);
-			DEBUG("reserved cache data at %p\n", cache->data);
-			if (cache->data == NULL)
-			{
-				destroy_memcache(cache);
-				return 0;
-			}
-		}
-
-		ssize_t result = pread((int)handle, cache->data, size, offset + size);
-		if (result != size)
-		{
-			destroy_memcache(cache);
-		}
-		else
-		{
-			memcache_block(cache, handle, offset + size, size, NULL);
-		}
-	}
-#endif
-
-	return 0;
+	return choose_read_method(instance, (size_t)size)(instance, cmd, handle, (off_t)offset, (size_t)size);
 }
 
