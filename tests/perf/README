@@ -21,7 +21,7 @@ must be run as root, This can be do as follow:
 $ make remount
 $ sudo -s
 # chown root:root remount
-# chmod 5755 remount
+# chmod 4755 remount
 # exit
 
 You may also use su on systems for which su is not disabled.
@@ -41,7 +41,7 @@ the filesystem at place which are important:
 
 -r "./remount ./nsf"
 
-Don't forgot to make the script executable.
+Don't forgot to make the script (.nfs for the example) executable.
 
 WARNING: remount is only for test and shall be removed after the
 tests are completed. Anyone may become root while using remount!
@@ -67,3 +67,16 @@ perf copy -d testdir -m 1k -s 2x -M 256M -f 1024 -t 256M
 - Copy files as previous example but perform n copy in parallel.
 
 perf copy -d testdir -m 1k -s 2x -M 256M -f 1024 -t 256M -n 2
+
+- Create a file and read it again without storing it on the harddisk.
+
+perf copy -d testdir -M 256M -b96M -R
+
+This can be used in order to measure the write and read speed from
+the harddisk. The value for the -b (buffer size) shall be high enough in
+order to avoid caching within the kernel and low enough in order to
+not get swapping.
+
+- create 1000 files and delete them
+
+perf create -d testdir -M1000

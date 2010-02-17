@@ -34,6 +34,7 @@ static int   rwBufSize = 4096;
 static int   createFileBefore = 1;
 static int   printCreateTime = 0;
 static int   doSleep = 0;
+static int   toNull = 0; /* for copy test don't write the data back to the disk (read) */
 
 #ifdef HAS_CLOCK_GETTIME
 static struct timespec start;
@@ -201,6 +202,60 @@ int copyFile(char *src, char *tgt)
       if ( wr != nb )
          fprintf(stderr,"fwrite() wrote %d bytes instead of %d %s\n",
                  wr, nb, strerror(errno));
+      errno = 0;
+   }
+
+   fclose(tgtFp);
+   fclose(srcFp);
+   free(rwBuf);
+
+   return 1;
+}
+
+/***************************************************
+ * readFile()
+ *
+ * Rerturn 1 on success, 0 on error
+ *
+ **************************************************/
+ 
+int readFile(char *src, char *tgt)
+{
+   FILE *srcFp;
+   FILE *tgtFp;
+   char *rwBuf = malloc(rwBufSize);
+   char buffer[4096];
+   size_t nb;
+   size_t wr;
+
+   if ( rwBuf == NULL )
+   {
+      fprintf(stderr,"No more memory\n");
+      return 0;
+   }
+
+   errno = 0;
+   if ( (srcFp = fopen(src,"r")) == NULL )
+   {
+      fprintf(stderr,"copyFile open src %s: %s\n",src,strerror(errno));
+      return 0;
+   }
+
+   if ( (tgtFp = fopen(tgt,"w")) == NULL )
+   {
+      fprintf(stderr,"copyFile open tgt %s: %s\n",tgt,strerror(errno));
+      fclose(srcFp);
+       return 0;
+   }
+   
+   errno = 0;
+   while((nb=fread(rwBuf, 1, rwBufSize,srcFp))>0)
+   {
+      if ( nb < 0 )
+      {
+         fprintf(stderr,"Read error %s\n",strerror(errno));
+         break;
+      }
       errno = 0;
    }
 
@@ -803,7 +858,10 @@ int copy(void)
          if ( numberOp == 1 )
          {
             snprintf(buf,sizeof(buf), "%s/%s_%d",testDir,s,i);
-            result = copyFile(buf, "sourceFile_0");
+            if ( toNull == 0 )
+               result = copyFile(buf, "sourceFile_0");
+            else
+               result = readFile(buf, "sourceFile_0");
          }
          else
          {
@@ -821,7 +879,7 @@ int copy(void)
       /*******************/
       /* check file size */
       /*******************/
-      for( i=0;i < numberOp; i++)
+      for( i=0;i < numberOp && toNull == 0; i++)
       {
          struct stat st;
          snprintf(buf,sizeof(buf), "sourceFile_%d", i);
@@ -1060,6 +1118,7 @@ void syntax()
    fprintf(stderr,"   -r remount_command                command to unmount/mount\n");
    fprintf(stderr,"   -L count                          repeat test count times\n");
    fprintf(stderr,"   -l                                repeat infinitelly \n");
+   fprintf(stderr,"   -R                                for copy don't write back to a file \n");
    fprintf(stderr,"\n");
    fprintf(stderr,"   size may be for example 412 1K 3M and so on\n");
    fprintf(stderr,"      eg 412 Bytes / 1 KByte / 3 MegaBytes\n");
@@ -1145,7 +1204,7 @@ int main(int argc, char **argv)
 
    while(idx < argc)
    {
-      switch(getOpts("d:f:m:M:s:t:cr:n:b:DNPS:lL:", argc, argv, &opt, &idx))
+      switch(getOpts("d:f:m:M:s:t:cr:n:b:DNPS:lL:R", argc, argv, &opt, &idx))
       {
          case 'd': if ( opt) testDir = opt; else syntax(); break;
          case 'f': if ( opt) maxFile = atoi(opt); else syntax(); break;
@@ -1163,6 +1222,7 @@ int main(int argc, char **argv)
          case 'S': if ( opt) doSleep=atoi(opt); else syntax();break;
          case 'l': loop = 1;break;
          case 'L': if ( opt) loops = atoi(opt); else syntax();break;
+         case 'R': toNull = 1;break;
          default: printf("Wrong option\n");syntax();
       }
    }
