@@ -25,8 +25,6 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-int rfs_connect(struct sendrecv_info *info, const char *ip, unsigned port, unsigned force_ipv4, unsigned force_ipv6);
-
 typedef struct iovec send_token_entry_t;
 /** 16 iovectors max */
 typedef struct

@@ -85,7 +85,7 @@ struct answer
 	uint32_t command;
 	uint32_t data_len;
 	int32_t ret;
-	int16_t ret_errno;
+	int32_t ret_errno;
 };
 
 /** get description of command. debug only */

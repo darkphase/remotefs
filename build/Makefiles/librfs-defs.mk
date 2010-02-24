@@ -37,6 +37,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/attr_cache.o \
               src/buffer.o \
               src/command.o \
+              src/connect.o \
               src/crypt.o \
               src/data_cache.o \
               src/id_lookup.o \

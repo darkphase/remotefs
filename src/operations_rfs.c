@@ -22,6 +22,7 @@ See the file LICENSE.
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
+#include "connect.h"
 #include "crypt.h"
 #include "id_lookup.h"
 #include "instance_client.h"

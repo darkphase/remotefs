@@ -39,10 +39,6 @@ OPT_5 = -DWITH_UGO
 OPT_6 = -DWITH_SCHEDULING
 
 ###############################################
-
-#OPT_7 = -DWITH_MEMCACHE
-
-###############################################
 # for debug only
 
 #OPT_99 = -DWITH_MEASURES

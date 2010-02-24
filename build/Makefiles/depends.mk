@@ -17,6 +17,9 @@ src/buffer.o:src/buffer.h
 src/buffer.o:src/config.h
 src/command.o:src/command.h
 src/command.o:src/config.h
+src/connect.o:src/config.h
+src/connect.o:src/instance.h
+src/connect.o:src/ssl/ssl.h
 src/crypt.o:src/config.h
 src/crypt.o:src/crypt.h
 src/crypt.o:src/md5crypt/crypt_md5.h
@@ -158,6 +161,7 @@ src/operations_rfs.o:src/attr_cache.h
 src/operations_rfs.o:src/buffer.h
 src/operations_rfs.o:src/command.h
 src/operations_rfs.o:src/config.h
+src/operations_rfs.o:src/connect.h
 src/operations_rfs.o:src/crypt.h
 src/operations_rfs.o:src/id_lookup.h
 src/operations_rfs.o:src/instance_client.h
@@ -384,6 +388,7 @@ src/attr_cache.o:src/attr_cache.c
 src/auth.o:src/auth.c
 src/buffer.o:src/buffer.c
 src/command.o:src/command.c
+src/connect.o:src/connect.c
 src/crypt.o:src/crypt.c
 src/data_cache.o:src/data_cache.c
 src/error.o:src/error.c
