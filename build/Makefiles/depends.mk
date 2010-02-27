@@ -467,6 +467,7 @@ src/acl/operations_acl.o:src/acl/../id_lookup_client.h
 src/acl/operations_acl.o:src/acl/../instance_client.h
 src/acl/operations_acl.o:src/acl/../operations_rfs.h
 src/acl/operations_acl.o:src/acl/../sendrecv_client.h
+src/acl/operations_acl.o:src/acl/libacl/include/acl_ea.h
 src/acl/server.o:src/acl/../options.h
 src/acl/server.o:src/acl/server.h
 src/acl/server.o:src/acl/../config.h

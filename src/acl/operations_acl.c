@@ -25,12 +25,19 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../operations_rfs.h"
 #include "../sendrecv_client.h"
+#include "libacl/include/acl_ea.h"
 
 int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size)
 {
 	if (instance->sendrecv.socket == -1)
 	{
 		return -ECONNABORTED;
+	}
+
+	if (strcmp(name, ACL_EA_ACCESS) != 0 
+	&& strcmp(name, ACL_EA_DEFAULT) != 0)
+	{
+		return -ENOTSUP;
 	}
 	
 	uint32_t path_len = strlen(path) + 1;
@@ -146,6 +153,12 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 		return -ECONNABORTED;
 	}
 	
+	if (strcmp(name, ACL_EA_ACCESS) != 0 
+	&& strcmp(name, ACL_EA_DEFAULT) != 0)
+	{
+		return -ENOTSUP;
+	}
+
 	acl_t acl = NULL;
 	int copy_ret = rfs_acl_from_xattr(value, size, &acl);
 	if (copy_ret != 0)
