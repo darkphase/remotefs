@@ -125,7 +125,7 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
 	uint64_t offset = 0;
-	uint32_t size = 0;
+	uint32_t size = 0; /* TODO: make size of uint64_t */
 	
 	char read_buffer[overall_size] = { 0 };
 
