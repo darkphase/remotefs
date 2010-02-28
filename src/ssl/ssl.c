@@ -142,14 +142,28 @@ char* rfs_last_ssl_error(char *prev_error)
 
 int rfs_ssl_write(SSL *socket, const char *buffer, size_t size)
 {
-	/* TODO: check SSL_ERROR_WANT_WRITE */
-	return SSL_write(socket, (void *)buffer, (int)size);
+	while (1)
+	{
+		int ret = SSL_write(socket, (void *)buffer, (int)size);
+		if ((size_t)ret == (int)size 
+		|| SSL_get_error(socket, ret) != SSL_ERROR_WANT_WRITE)
+		{
+			return ret;
+		}
+	}
 }
 
 int rfs_ssl_read(SSL *socket, char *buffer, size_t size)
 {
-	/* TODO: check SSL_ERROR_WANT_READ */
-	return SSL_read(socket, (void *)buffer, (int)size);
+	while (1)
+	{
+		int ret = SSL_read(socket, (void *)buffer, (int)size);
+		if ((size_t)ret == size 
+		|| SSL_get_error(socket, ret) != SSL_ERROR_WANT_READ)
+		{
+			return ret;
+		}
+	}
 }
 
 #else
