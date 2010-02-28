@@ -102,13 +102,11 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	DEBUG("acl text: \n%s\n", acl_text == NULL ? "NULL" : acl_text);
 	
-	/* TODO: refix with rfs_acl_to_text() to return string len with \0 included */
-	size_t ans_data_len = (acl_text == NULL ? 0 : acl_text_len + 1);
-	struct answer ans = { cmd_getxattr, ans_data_len, 0, 0 };
+	struct answer ans = { cmd_getxattr, acl_text_len, 0, 0 };
 
 	send_token_t token = { 0, {{ 0 }} };
 	if (do_send(&instance->sendrecv, 
-		queue_data(acl_text == NULL ? "" : acl_text, ans_data_len, /* FIXME: won't be really packed if ans_data_len == 0 */
+		queue_data(acl_text == NULL ? "" : acl_text, acl_text == NULL ? 1 : acl_text_len, 
 		queue_ans(&ans, &token))) < 0)
 	{
 		free(acl_text);

@@ -356,7 +356,7 @@ char* rfs_acl_to_text(const acl_t acl,
 		return NULL;
 	}
 
-	text_acl[write_params.len] = 0; /* final zero */
+	text_acl[write_params.len++] = 0; /* final zero */
 	
 	if (len != NULL)
 	{
