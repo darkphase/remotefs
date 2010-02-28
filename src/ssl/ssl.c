@@ -142,11 +142,13 @@ char* rfs_last_ssl_error(char *prev_error)
 
 int rfs_ssl_write(SSL *socket, const char *buffer, size_t size)
 {
+	/* TODO: check SSL_ERROR_WANT_WRITE */
 	return SSL_write(socket, (void *)buffer, (int)size);
 }
 
 int rfs_ssl_read(SSL *socket, char *buffer, size_t size)
 {
+	/* TODO: check SSL_ERROR_WANT_READ */
 	return SSL_read(socket, (void *)buffer, (int)size);
 }
 

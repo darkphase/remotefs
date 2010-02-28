@@ -125,7 +125,7 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;
 	uint64_t offset = 0;
-	uint32_t size = 0; /* TODO: make size of uint64_t */
+	uint64_t size = 0;
 	
 	char read_buffer[overall_size] = { 0 };
 
@@ -143,10 +143,10 @@ int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	unpack_64(&handle, 
 	unpack_64(&offset, 
-	unpack_32(&size, read_buffer
+	unpack_64(&size, read_buffer
 	)));
 
-	DEBUG("handle: %llu, offset: %llu, size: %u\n", (unsigned long long)handle, (unsigned long long)offset, size);
+	DEBUG("handle: %llu, offset: %llu, size: %llu\n", (unsigned long long)handle, (unsigned long long)offset, (long long unsigned)size);
 	
 	if (handle == (uint64_t)-1)
 	{

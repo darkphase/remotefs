@@ -29,7 +29,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	
 	uint64_t handle = desc;
 	uint64_t foffset = offset;
-	uint32_t fsize = size;
+	uint64_t fsize = size;
 
 #define overall_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
 	struct command cmd = { cmd_read, overall_size };
@@ -38,7 +38,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 
 	pack_64(&handle, 
 	pack_64(&foffset, 
-	pack_32(&fsize, buffer
+	pack_64(&fsize, buffer
 	)));
 
 	send_token_t token = { 2, {{ 0 }} };
