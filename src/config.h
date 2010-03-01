@@ -35,9 +35,9 @@ struct list;
 #define MAX_SUPPORTED_NAME_LEN  32          /* used in chown(), getattr() and etc related to stat() */
 #define RFS_WRITE_BLOCK         32 * 1024   /* bytes */
 #define RFS_READ_BLOCK          32 * 1024   /* bytes */
-#define SENDFILE_LIMIT          4 * 1024    /* bytes */
-#define SSL_READ_BLOCK          8 * 1024    /* bytes */
-#define SSL_WRITE_BLOCK         8 * 1024    /* bytes */
+#define RFS_APPROX_READ_BLOCK 	256 * 1024  /* bytes */
+#define RFS_MAX_READ_BLOCK 		4096 * 1024 /* bytes */
+#define SENDFILE_THRESHOLD      4 * 1024    /* bytes */
 #define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 #define DEFAULT_IPV4_ADDRESS    "0.0.0.0"
 #ifdef WITH_IPV6
