@@ -39,11 +39,6 @@ OPT_5 = -DWITH_UGO
 OPT_6 = -DWITH_SCHEDULING
 
 ###############################################
-# for debug only
-
-#OPT_99 = -DWITH_MEASURES
-
-###############################################
 # End of user configuration, don't change the
 # following lines
 

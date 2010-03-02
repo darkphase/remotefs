@@ -17,7 +17,6 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "instance_server.h"
-#include "measure.h"
 #include "sendrecv_server.h"
 #include "server.h"
 #include "sendfile/sendfile_rfs.h"

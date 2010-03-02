@@ -242,7 +242,6 @@ src/sendrecv.o:src/command.h
 src/sendrecv.o:src/config.h
 src/sendrecv.o:src/error.h
 src/sendrecv.o:src/instance.h
-src/sendrecv.o:src/measure.h
 src/sendrecv.o:src/sendrecv.h
 src/sendrecv.o:src/ssl/ssl.h
 src/server.o:src/buffer.h
@@ -326,7 +325,6 @@ src/server_handlers_read.o:src/buffer.h
 src/server_handlers_read.o:src/command.h
 src/server_handlers_read.o:src/config.h
 src/server_handlers_read.o:src/instance_server.h
-src/server_handlers_read.o:src/measure.h
 src/server_handlers_read.o:src/sendrecv_server.h
 src/server_handlers_read.o:src/server.h
 src/server_handlers_read.o:src/sendfile/sendfile_rfs.h
@@ -562,7 +560,6 @@ src/sendfile/read_with_sendfile.o:src/sendfile/../options.h
 src/sendfile/read_with_sendfile.o:src/sendfile/../buffer.h
 src/sendfile/read_with_sendfile.o:src/sendfile/../command.h
 src/sendfile/read_with_sendfile.o:src/sendfile/../instance_server.h
-src/sendfile/read_with_sendfile.o:src/sendfile/../measure.h
 src/sendfile/read_with_sendfile.o:src/sendfile/../sendrecv_server.h
 src/sendfile/read_with_sendfile.o:src/sendfile/../server.h
 src/sendfile/read_with_sendfile.o:src/sendfile/sendfile_rfs.h

@@ -12,7 +12,6 @@ See the file LICENSE.
 #include "../buffer.h"
 #include "../command.h"
 #include "../instance_server.h"
-#include "../measure.h"
 #include "../sendrecv_server.h"
 #include "../server.h"
 
@@ -21,8 +20,6 @@ See the file LICENSE.
 #ifdef SENDFILE_AVAILABLE
 int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
-	BEGIN_MEASURE(read_sendfile_time);
-
 	DEBUG("%s\n", "reading with sendfile");
 	
 	int fd = (int)handle;
@@ -57,8 +54,6 @@ int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd
 	{	
 		ssize_t result = rfs_sendfile(instance->sendrecv.socket, fd, offset + done, read_size - done);
 		
-		CHECKPOINT(read_sendfile_time);
-
 		if (result <= 0)
 		{
 			ans.command = cmd_read;
@@ -87,8 +82,6 @@ int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd
 		return rfs_send_answer_oob(&instance->sendrecv, &ans) == -1 ? -1 : 1;
 	}
 	
-	CHECKPOINT(read_sendfile_time);
-
 	return 0;
 }
 
