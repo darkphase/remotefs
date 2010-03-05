@@ -11,6 +11,7 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "../buffer.h"
 #include "../command.h"

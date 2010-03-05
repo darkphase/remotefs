@@ -15,6 +15,7 @@ See the file LICENSE.
 #if defined SOLARIS
 #include <sys/sockio.h>
 #endif
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include "buffer.h"
