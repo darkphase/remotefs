@@ -16,7 +16,6 @@ See the file LICENSE.
 #include "../config.h"
 #include "../instance_client.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
 #include "utils.h"
 
 int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, int flags, uint64_t *desc)

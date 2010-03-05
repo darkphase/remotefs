@@ -11,9 +11,15 @@ See the file LICENSE.
 #ifndef OPERATIONS_SSL_H
 #define OPERATIONS_SSL_H
 
-struct rfs_instance;
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
 
-int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors);
+#include "enablessl.h"
+
+#if defined (__cplusplus) || defined (c_plusplus)
+}
+#endif
 
 #endif /* OPERATIONS_SSL_H */
 #endif /* WITH_SSL */

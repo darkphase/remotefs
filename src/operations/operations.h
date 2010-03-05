@@ -11,9 +11,6 @@ See the file LICENSE.
 
 /** not-safe operations */
 
-#include "../options.h"
-#include "../acl/operations_acl.h"
-
 /* if connection lost after executing the operation
 and operation failed, then try it one more time 
 
@@ -56,6 +53,12 @@ extern "C" {
 #include "unlink.h"
 #include "utime.h"
 #include "utimens.h"
+
+#include "operations_rfs.h"
+
+#include "../nss/operations_nss.h"
+#include "../acl/operations_acl.h"
+#include "../ssl/operations_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

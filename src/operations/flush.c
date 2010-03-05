@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "../list.h"
 #include "../sendrecv_client.h"
 #include "operations.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {

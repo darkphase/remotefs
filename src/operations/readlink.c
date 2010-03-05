@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../list.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 static unsigned count_components(const char *path)
 {

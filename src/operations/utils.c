@@ -11,12 +11,15 @@ See the file LICENSE.
 #include <stdlib.h>
 
 #include "../buffer.h"
+#include "../command.h"
 #include "../config.h"
 #include "../defines.h"
 #include "../id_lookup_client.h"
 #include "../instance_client.h"
 #include "../names.h"
 #include "../resume/resume.h"
+#include "../sendrecv_client.h"
+#include "operations_rfs.h"
 #include "flush.h"
 
 uint16_t rfs_file_flags(int os_flags)
@@ -149,4 +152,50 @@ int _flush_file(struct rfs_instance *instance, const char *path)
 	}
 
 	return 0;
+}
+
+int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
+{
+	DEBUG("%s\n", "cleaning bad msg");
+	
+	if (ans->command <= cmd_first
+	|| ans->command >= cmd_last)
+	{
+		DEBUG("%s\n", "disconnecting");
+		rfs_disconnect(instance, 0);
+		return -ECONNABORTED;
+	}
+	
+	if (rfs_ignore_incoming_data(&instance->sendrecv, ans->data_len) != ans->data_len)
+	{
+		DEBUG("%s\n", "disconnecting");
+		rfs_disconnect(instance, 0);
+		return -ECONNABORTED;
+	}
+	
+	return -EBADMSG;
+}
+
+int check_connection(struct rfs_instance *instance)
+{
+	if (instance->sendrecv.connection_lost == 0)
+	{
+		return 0;
+	}
+
+	if(instance->sendrecv.socket != -1)
+	{
+		rfs_disconnect(instance, 0);
+	}
+
+#ifdef RFS_DEBUG
+	if (rfs_reconnect(instance, 1, 1) == 0)
+#else
+	if (rfs_reconnect(instance, 0, 1) == 0)
+#endif
+	{
+		return 0;
+	}
+
+	return -1;
 }

@@ -14,7 +14,7 @@ See the file LICENSE.
 #include "../instance.h"
 #include "../keep_alive_client.h"
 #include "operations.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 #define DECORATE(func, instance, args...)                           \
 	int ret = -ECONNABORTED;                                    \

@@ -15,6 +15,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+struct answer;
 struct rfs_instance;
 struct stat;
 
@@ -26,6 +27,9 @@ const char* unpack_stat(struct stat *result, const char *buffer);
 
 uid_t resolve_username(struct rfs_instance *instance, const char *user);
 gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const char *user);
+
+int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans);
+int check_connection(struct rfs_instance *instance);
 
 int _flush_file(struct rfs_instance *instance, const char *path);
 

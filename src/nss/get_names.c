@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "../exports.h"
 #include "../instance_client.h"
 #include "../list.h"
-#include "../operations/operations_rfs.h"
+#include "../operations/utils.h"
 #include "../sendrecv_client.h"
 
 int rfs_getnames(struct rfs_instance *instance)
@@ -124,38 +124,6 @@ int rfs_getnames(struct rfs_instance *instance)
 		}
 
 		free(groups);
-	}
-
-	return 0;
-}
-
-int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
-{
-	if ((instance->client.export_opts & OPT_UGO) != 0)
-	{
-		if (is_nss_running(instance) == 0)
-		{
-			int getnames_ret = rfs_getnames(instance);
-			if (getnames_ret != 0)
-			{
-				if (show_errors != 0)
-				{
-					ERROR("Error getting NSS lists from server: %s\n", strerror(-getnames_ret));
-				}
-				return -1;
-			}
-
-			int nss_start_ret = start_nss_server(instance);
-			DEBUG("nss start ret: %d\n", nss_start_ret);
-			if (nss_start_ret != 0)
-			{
-				if (show_errors != 0)
-				{
-					WARN("Error starting NSS server: %s\n", strerror(-nss_start_ret));
-				}
-				return -1;
-			}
-		}		
 	}
 
 	return 0;

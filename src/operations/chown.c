@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../names.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {

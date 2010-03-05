@@ -22,17 +22,18 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-librfs_OBJS = src/acl/local_resolve.o \
-              src/acl/operations_acl.o \
+librfs_OBJS = src/acl/getxattr.o \
+              src/acl/local_resolve.o \
+              src/acl/setxattr.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \
               src/nss/client.o \
-              src/nss/operations_nss.o \
+              src/nss/get_names.o \
               src/nss/server.o \
               src/resume/client.o \
               src/resume/resume.o \
               src/ssl/client.o \
-              src/ssl/operations_ssl.o \
+              src/ssl/enablessl.o \
               src/ssl/ssl.o \
               src/attr_cache.o \
               src/buffer.o \
@@ -53,17 +54,25 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations/getattr.o \
               src/operations/flush.o \
               src/operations/link.o \
-              src/operations/list_exports.o \
               src/operations/lock.o \
               src/operations/mkdir.o \
               src/operations/mknod.o \
               src/operations/open.o \
-              src/operations/operations_rfs.o \
               src/operations/read.o \
               src/operations/readdir.o \
               src/operations/readlink.o \
               src/operations/rename.o \
               src/operations/release.o \
+              src/operations/rfs/auth.o \
+              src/operations/rfs/disconnect.o \
+              src/operations/rfs/destroy.o \
+              src/operations/rfs/getexportopts.o \
+              src/operations/rfs/init.o \
+              src/operations/rfs/keep_alive.o \
+              src/operations/rfs/list_exports.o \
+              src/operations/rfs/mount.o \
+              src/operations/rfs/reconnect.o \
+              src/operations/rfs/request_salt.o \
               src/operations/rmdir.o \
               src/operations/statfs.o \
               src/operations/symlink.o \

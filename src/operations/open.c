@@ -17,7 +17,6 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../resume/resume.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
 #include "utils.h"
 
 int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)

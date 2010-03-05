@@ -16,7 +16,7 @@ See the file LICENSE.
 #include "../config.h"
 #include "../instance_client.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 int _rfs_rename(struct rfs_instance *instance, const char *path, const char *new_path)
 {

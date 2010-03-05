@@ -48,6 +48,7 @@ rfspasswd: dummy
 clean_build: dummy
 	$(RM) -f src/*.o
 	$(RM) -f src/operations/*.o
+	$(RM) -f src/operations/rfs/*.o
 	$(RM) -f src/handlers/*.o
 	$(RM) -f src/acl/*.o
 	$(RM) -f src/md5crypt/*.o
@@ -80,16 +81,17 @@ builddep: dummy
 depends:
 	echo -n "" > build/Makefiles/depends.mk
 	
-	SCANDIR="src\/"             $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/operations\/" $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/acl\/"        $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/md5crypt\/"   $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/nss\/"        $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/resume\/"     $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/sendfile\/"   $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/ssl\/"        $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="rfs_nss\/src\/"    $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/"                  $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/operations\/"      $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/operations\/rfs\/" $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/handlers\/"        $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/acl\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/md5crypt\/"        $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/nss\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/resume\/"          $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/sendfile\/"        $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/ssl\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="rfs_nss\/src\/"         $(MAKE) -f build/Makefiles/base.mk builddep
 
 ########################################
 # Packaging

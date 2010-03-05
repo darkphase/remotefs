@@ -18,8 +18,8 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../resume/resume.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
 #include "flush.h"
+#include "utils.h"
 
 int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 {

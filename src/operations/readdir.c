@@ -17,7 +17,6 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../path.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
 #include "readdir.h"
 #include "utils.h"
 

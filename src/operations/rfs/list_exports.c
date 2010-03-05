@@ -6,18 +6,19 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#ifdef WITH_EXPORTS_LIST
+
 #include <errno.h>
 #include <stdlib.h>
 
-#include "../buffer.h"
-#include "../command.h"
-#include "../config.h"
-#include "../instance_client.h"
-#include "../sendrecv_client.h"
+#include "../../buffer.h"
+#include "../../command.h"
+#include "../../config.h"
+#include "../../instance_client.h"
+#include "../../sendrecv_client.h"
+#include "../../utils.h"
 #include "../utils.h"
-#include "operations_rfs.h"
 
-#ifdef WITH_EXPORTS_LIST
 int rfs_list_exports(struct rfs_instance *instance)
 {
 	if (instance->sendrecv.socket == -1)
@@ -118,6 +119,7 @@ int rfs_list_exports(struct rfs_instance *instance)
 	
 	return 0;
 }
+
 #else
 int operations_exports_c_empty_module_makes_suncc_angry = 0;
 #endif /* WITH_EXPORTS_LIST */

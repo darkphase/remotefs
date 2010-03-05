@@ -16,7 +16,6 @@ See the file LICENSE.
 #include "../keep_alive_client.h"
 #include "../sendrecv_client.h"
 #include "operations.h"
-#include "operations_rfs.h"
 #include "write.h"
 
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)

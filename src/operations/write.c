@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../psemaphore.h"
 #include "../sendrecv_client.h"
 #include "operations.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 static void* write_behind(void *void_instance);
 

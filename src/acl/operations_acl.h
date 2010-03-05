@@ -21,10 +21,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct rfs_instance;
-
-int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *name, char *value, size_t size);
-int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *name, const char *value, size_t size, int flags);
+#include "getxattr.h"
+#include "setxattr.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

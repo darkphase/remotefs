@@ -10,18 +10,11 @@ See the file LICENSE.
 
 #ifdef RFSNSS_AVAILABLE
 
-#ifndef OPERATIONS_NSS_H
-#define OPERATIONS_NSS_H
+#ifndef OPERATIONS_NSS_GETNAMES_H
+#define OPERATIONS_NSS_GETNAMES_H
 
-#if defined (__cplusplus) || defined (c_plusplus)
-extern "C" {
-#endif
+struct rfs_instance;
+int rfs_getnames(struct rfs_instance *instance);
 
-#include "get_names.h"
-
-#if defined (__cplusplus) || defined (c_plusplus)
-}
-#endif
-
-#endif /* OPERATIONS_NSS_H */
+#endif /* OPERATIONS_NSS_GETNAMES_H */
 #endif /* RFNSS_AVAILABLE */

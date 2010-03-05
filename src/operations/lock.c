@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../instance_client.h"
 #include "../resume/resume.h"
 #include "../sendrecv_client.h"
-#include "operations_rfs.h"
+#include "utils.h"
 
 static unsigned is_file_fully_locked(const struct flock *fl)
 {

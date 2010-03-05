@@ -17,6 +17,7 @@ extern "C" {
 
 struct rfs_instance;
 
+int init_nss_server(struct rfs_instance *instance, unsigned show_errors);
 int start_nss_server(struct rfs_instance *instance);
 int stop_nss_server(struct rfs_instance *instance);
 unsigned is_nss_running(struct rfs_instance *instance);
@@ -26,4 +27,3 @@ unsigned is_nss_running(struct rfs_instance *instance);
 #endif
 
 #endif /* NSS_SERVER_H */
-
