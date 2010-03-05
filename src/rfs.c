@@ -17,7 +17,7 @@ See the file LICENSE.
 #include "crypt.h"
 #include "id_lookup.h"
 #include "instance_client.h"
-#include "operations_rfs.h"
+#include "operations/operations_rfs.h"
 #include "passwd.h"
 #include "sug_client.h"
 #include "version.h"

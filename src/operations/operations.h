@@ -14,8 +14,8 @@ See the file LICENSE.
 #include <stdint.h>
 #include <sys/types.h>
 
-#include "acl/operations_acl.h"
-#include "options.h"
+#include "../options.h"
+#include "../acl/operations_acl.h"
 
 /* if connection lost after executing the operation
 and operation failed, then try it one more time 

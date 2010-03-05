@@ -10,14 +10,14 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "exports.h"
-#include "instance_server.h"
-#include "list.h"
-#include "sendrecv_server.h"
-#include "server.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../exports.h"
+#include "../instance_server.h"
+#include "../list.h"
+#include "../sendrecv_server.h"
+#include "../server.h"
 
 #ifdef WITH_EXPORTS_LIST
 int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

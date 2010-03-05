@@ -10,20 +10,20 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "attr_cache.h"
-#include "buffer.h"
-#include "command.h"
-#include "compat.h"
-#include "config.h"
-#include "data_cache.h"
-#include "instance_client.h"
+#include "../attr_cache.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../compat.h"
+#include "../config.h"
+#include "../data_cache.h"
+#include "../instance_client.h"
+#include "../path.h"
+#include "../resume/resume.h"
+#include "../sendrecv_client.h"
 #include "operations.h"
 #include "operations_rfs.h"
 #include "operations_write.h"
 #include "operations_utils.h"
-#include "path.h"
-#include "resume/resume.h"
-#include "sendrecv_client.h"
 
 int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64_t *desc)
 {

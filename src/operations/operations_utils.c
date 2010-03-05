@@ -12,12 +12,12 @@ See the file LICENSE.
 #include <pwd.h>
 #include <stdlib.h>
 
-#include "buffer.h"
-#include "config.h"
-#include "defines.h"
-#include "id_lookup_client.h"
-#include "instance_client.h"
-#include "names.h"
+#include "../buffer.h"
+#include "../config.h"
+#include "../defines.h"
+#include "../id_lookup_client.h"
+#include "../instance_client.h"
+#include "../names.h"
 #include "operations_utils.h"
 
 uint16_t rfs_file_flags(int os_flags)

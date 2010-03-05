@@ -47,18 +47,18 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/keep_alive_client.o \
               src/list.o \
               src/names.o \
-              src/operations.o \
-              src/operations_access.o \
-              src/operations_dirs.o \
-              src/operations_exports.o \
-              src/operations_files.o \
-              src/operations_io.o \
-              src/operations_links.o \
-              src/operations_rfs.o \
-              src/operations_read.o \
-              src/operations_sync.o \
-              src/operations_write.o \
-              src/operations_utils.o \
+              src/operations/operations.o \
+              src/operations/operations_access.o \
+              src/operations/operations_dirs.o \
+              src/operations/operations_exports.o \
+              src/operations/operations_files.o \
+              src/operations/operations_io.o \
+              src/operations/operations_links.o \
+              src/operations/operations_rfs.o \
+              src/operations/operations_read.o \
+              src/operations/operations_sync.o \
+              src/operations/operations_write.o \
+              src/operations/operations_utils.o \
               src/path.o \
               src/error.o \
               src/sendrecv.o \

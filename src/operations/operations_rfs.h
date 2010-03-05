@@ -15,10 +15,10 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include "options.h"
-#include "exports.h"
-#include "ssl/operations_ssl.h"
-#include "nss/operations_nss.h"
+#include "../options.h"
+#include "../exports.h"
+#include "../ssl/operations_ssl.h"
+#include "../nss/operations_nss.h"
 
 struct answer;
 struct rfs_instance;

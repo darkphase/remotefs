@@ -22,6 +22,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "exports.h"
+#include "handlers/server_handlers_sync.h"
 #include "id_lookup.h"
 #include "instance_server.h"
 #include "keep_alive_server.h"
@@ -31,7 +32,6 @@ See the file LICENSE.
 #include "scheduling.h"
 #include "sendrecv_server.h"
 #include "server.h"
-#include "server_handlers_sync.h"
 #include "sockets.h"
 
 static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)

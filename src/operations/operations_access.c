@@ -12,15 +12,15 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "attr_cache.h"
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "id_lookup_client.h"
-#include "instance_client.h"
-#include "names.h"
+#include "../attr_cache.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../id_lookup_client.h"
+#include "../instance_client.h"
+#include "../names.h"
+#include "../sendrecv_client.h"
 #include "operations_rfs.h"
-#include "sendrecv_client.h"
 
 int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t gid)
 {

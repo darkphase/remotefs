@@ -11,9 +11,9 @@ See the file LICENSE.
 
 /** rfs specific server handlers  */
 
-#include "options.h"
-#include "nss/server_handlers_nss.h"
-#include "ssl/server_handlers_ssl.h"
+#include "../options.h"
+#include "../nss/server_handlers_nss.h"
+#include "../ssl/server_handlers_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

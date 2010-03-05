@@ -9,17 +9,17 @@ See the file LICENSE.
 #include <errno.h>
 #include <string.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_client.h"
-#include "keep_alive_client.h"
-#include "list.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../keep_alive_client.h"
+#include "../list.h"
+#include "../resume/resume.h"
+#include "../sendrecv_client.h"
 #include "operations.h"
 #include "operations_rfs.h"
 #include "operations_write.h"
-#include "resume/resume.h"
-#include "sendrecv_client.h"
 
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)
 {

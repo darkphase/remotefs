@@ -10,11 +10,11 @@ See the file LICENSE.
 
 #include <errno.h>
 
-#include "instance.h"
-#include "keep_alive_client.h"
+#include "../options.h"
+#include "../instance.h"
+#include "../keep_alive_client.h"
 #include "operations.h"
 #include "operations_rfs.h"
-#include "options.h"
 
 #define DECORATE(func, instance, args...)                       \
 	int ret = -ECONNABORTED;                                    \

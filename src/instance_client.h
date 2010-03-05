@@ -15,7 +15,7 @@ See the file LICENSE.
 #include "config.h"
 #include "exports.h"
 #include "instance.h"
-#include "operations_write.h"
+#include "operations/operations_write.h"
 #include "psemaphore.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)

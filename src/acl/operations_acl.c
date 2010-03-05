@@ -23,7 +23,7 @@ See the file LICENSE.
 #include "../command.h"
 #include "../id_lookup_client.h"
 #include "../instance_client.h"
-#include "../operations_rfs.h"
+#include "../operations/operations_rfs.h"
 #include "../sendrecv_client.h"
 #include "libacl/include/acl_ea.h"
 

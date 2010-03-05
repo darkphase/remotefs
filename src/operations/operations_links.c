@@ -10,14 +10,14 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "attr_cache.h"
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_client.h"
-#include "list.h"
+#include "../attr_cache.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../list.h"
+#include "../sendrecv_client.h"
 #include "operations_rfs.h"
-#include "sendrecv_client.h"
 
 int _rfs_link(struct rfs_instance *instance, const char *path, const char *target)
 {

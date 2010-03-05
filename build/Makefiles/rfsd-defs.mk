@@ -45,18 +45,18 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/error.o \
             src/sendrecv.o \
             src/server.o \
-            src/server_handlers.o \
-            src/server_handlers_access.o \
-            src/server_handlers_dirs.o \
-            src/server_handlers_exports.o \
-            src/server_handlers_files.o \
-            src/server_handlers_io.o \
-            src/server_handlers_links.o \
-            src/server_handlers_read.o \
-            src/server_handlers_rfs.o \
-            src/server_handlers_sync.o \
-            src/server_handlers_write.o \
-            src/server_handlers_utils.o \
+            src/handlers/server_handlers.o \
+            src/handlers/server_handlers_access.o \
+            src/handlers/server_handlers_dirs.o \
+            src/handlers/server_handlers_exports.o \
+            src/handlers/server_handlers_files.o \
+            src/handlers/server_handlers_io.o \
+            src/handlers/server_handlers_links.o \
+            src/handlers/server_handlers_read.o \
+            src/handlers/server_handlers_rfs.o \
+            src/handlers/server_handlers_sync.o \
+            src/handlers/server_handlers_write.o \
+            src/handlers/server_handlers_utils.o \
             src/signals.o \
             src/sockets.o \
             src/utils.o \

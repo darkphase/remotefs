@@ -8,8 +8,8 @@ See the file LICENSE.
 
 /** syncronized server handlers. will lock keep alive when it's needed */
 
-#include "options.h"
-#include "keep_alive_server.h"
+#include "../options.h"
+#include "../keep_alive_server.h"
 #include "server_handlers.h"
 
 /* need to define client_addr and cmd before using this macro */

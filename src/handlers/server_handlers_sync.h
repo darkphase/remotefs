@@ -11,7 +11,7 @@ See the file LICENSE.
 
 /** synced server handlers of rfs operations */
 
-#include "options.h"
+#include "../options.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

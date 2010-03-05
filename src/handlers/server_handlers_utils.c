@@ -11,11 +11,11 @@ See the file LICENSE.
 #include <string.h>
 #include <sys/stat.h>
 
-#include "buffer.h"
-#include "config.h"
-#include "defines.h"
-#include "exports.h"
-#include "instance_server.h"
+#include "../buffer.h"
+#include "../config.h"
+#include "../defines.h"
+#include "../exports.h"
+#include "../instance_server.h"
 #include "server_handlers_utils.h"
 
 int stat_file(struct rfsd_instance *instance, const char *path, struct stat *stbuf)

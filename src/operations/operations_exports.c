@@ -9,13 +9,13 @@ See the file LICENSE.
 #include <errno.h>
 #include <stdlib.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_client.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_client.h"
+#include "../sendrecv_client.h"
+#include "../utils.h"
 #include "operations_rfs.h"
-#include "sendrecv_client.h"
-#include "utils.h"
 
 #ifdef WITH_EXPORTS_LIST
 int rfs_list_exports(struct rfs_instance *instance)

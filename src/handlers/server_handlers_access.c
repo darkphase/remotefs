@@ -12,14 +12,14 @@ See the file LICENSE.
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "exports.h"
-#include "id_lookup.h"
-#include "instance_server.h"
-#include "sendrecv_server.h"
-#include "server.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../exports.h"
+#include "../id_lookup.h"
+#include "../instance_server.h"
+#include "../sendrecv_server.h"
+#include "../server.h"
 #include "server_handlers_utils.h"
 
 int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

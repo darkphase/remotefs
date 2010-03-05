@@ -6,20 +6,19 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "options.h"
-
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "buffer.h"
-#include "command.h"
-#include "config.h"
-#include "instance_server.h"
-#include "sendrecv_server.h"
-#include "server.h"
-#include "sendfile/sendfile_rfs.h"
+#include "../options.h"
+#include "../buffer.h"
+#include "../command.h"
+#include "../config.h"
+#include "../instance_server.h"
+#include "../sendrecv_server.h"
+#include "../server.h"
+#include "../sendfile/sendfile_rfs.h"
 
 typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
 

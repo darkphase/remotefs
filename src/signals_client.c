@@ -9,7 +9,7 @@ See the file LICENSE.
 #include <stdlib.h>
 
 #include "config.h"
-#include "operations_rfs.h"
+#include "operations/operations_rfs.h"
 #include "signals.h"
 
 static void signal_handler_client(int signal, siginfo_t *sig_info, void *ucontext_t_casted)

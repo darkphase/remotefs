@@ -11,9 +11,8 @@ See the file LICENSE.
 
 /** server handlers of rfs operations */
 
-#include "options.h"
-
-#include "acl/server_handlers_acl.h"
+#include "../options.h"
+#include "../acl/server_handlers_acl.h"
 #include "server_handlers_rfs.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)

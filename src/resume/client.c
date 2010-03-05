@@ -16,10 +16,10 @@ See the file LICENSE.
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "../operations.h"
 #include "../config.h"
 #include "../instance_client.h"
 #include "../list.h"
+#include "../operations/operations.h"
 #include "client.h"
 #include "resume.h"
 
