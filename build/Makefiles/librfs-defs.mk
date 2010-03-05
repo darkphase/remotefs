@@ -47,18 +47,33 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/keep_alive_client.o \
               src/list.o \
               src/names.o \
-              src/operations/operations.o \
-              src/operations/operations_access.o \
-              src/operations/operations_dirs.o \
-              src/operations/operations_exports.o \
-              src/operations/operations_files.o \
-              src/operations/operations_io.o \
-              src/operations/operations_links.o \
+              src/operations/chmod.o \
+              src/operations/chown.o \
+              src/operations/create.o \
+              src/operations/getattr.o \
+              src/operations/flush.o \
+              src/operations/link.o \
+              src/operations/list_exports.o \
+              src/operations/lock.o \
+              src/operations/mkdir.o \
+              src/operations/mknod.o \
+              src/operations/open.o \
               src/operations/operations_rfs.o \
-              src/operations/operations_read.o \
-              src/operations/operations_sync.o \
-              src/operations/operations_write.o \
-              src/operations/operations_utils.o \
+              src/operations/read.o \
+              src/operations/readdir.o \
+              src/operations/readlink.o \
+              src/operations/rename.o \
+              src/operations/release.o \
+              src/operations/rmdir.o \
+              src/operations/statfs.o \
+              src/operations/symlink.o \
+              src/operations/synced.o \
+              src/operations/truncate.o \
+              src/operations/write.o \
+              src/operations/utils.o \
+              src/operations/utime.o \
+              src/operations/utimens.o \
+              src/operations/unlink.o \
               src/path.o \
               src/error.o \
               src/sendrecv.o \

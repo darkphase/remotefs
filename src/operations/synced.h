@@ -11,6 +11,7 @@ See the file LICENSE.
 
 /** rfs synced operations */
 
+#include <stdint.h>
 #include <sys/types.h>
 
 #if defined (__cplusplus) || defined (c_plusplus)

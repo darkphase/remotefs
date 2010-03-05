@@ -10,7 +10,6 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "../attr_cache.h"
 #include "../buffer.h"
 #include "../command.h"
 #include "../config.h"
@@ -23,10 +22,9 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 
-static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 static void* write_behind(void *void_instance);
 
-static void reset_write_behind(struct rfs_instance *instance)
+void reset_write_behind(struct rfs_instance *instance)
 {
 	DEBUG("%s\n", "reseting write behind");
 	
@@ -170,60 +168,6 @@ static void* write_behind(void *void_instance)
 	} /* while (1) */
 }
 
-int flush_write(struct rfs_instance *instance, const char *path, uint64_t descriptor)
-{
-	DEBUG("flushing file %llu\n", (unsigned long long)descriptor);
-	
-	struct write_behind_request *write_behind_request = &instance->write_cache.write_behind_request;
-
-	const struct list *cache_item = instance->write_cache.cache;
-	
-	while (cache_item != NULL)
-	{
-		struct cache_block *block = (struct cache_block *)cache_item->data;
-		
-		if (block->descriptor == descriptor)
-		{
-			int ret = 0;
-			PARTIALY_DECORATE(ret,
-			_write,
-			instance, 
-			path,
-			block->data,
-			block->used, 
-			block->offset, 
-			block->descriptor);
-			
-			if (ret < 0)
-			{
-				return ret;
-			}
-
-			cache_item = cache_item->next; /* fix list pointer before deletion */
-
-			if (block == write_behind_request->block)
-			{
-				reset_write_behind(instance);
-			}
-			else
-			{
-				delete_block_from_cache(&instance->write_cache.cache, block);
-			}
-
-			continue; /* since list pointer is already fixed */
-		}
-		
-		cache_item = cache_item->next;
-	}
-	
-	return 0;
-}
-
-int _rfs_flush(struct rfs_instance *instance, const char *path, uint64_t desc)
-{
-	return flush_write(instance, path, desc);
-}
-
 static int _rfs_flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
 	if (client_keep_alive_lock(instance) != 0)
@@ -231,7 +175,7 @@ static int _rfs_flush_write(struct rfs_instance *instance, const char *path, uin
 		return -EIO;
 	}
 		
-	int ret = flush_write(instance, path, desc);
+	int ret = _flush_write(instance, path, desc);
 	if (ret < 0)
 	{
 		client_keep_alive_unlock(instance);
@@ -250,7 +194,7 @@ static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *pa
 		return -EIO;
 	}
 		
-	int flush_ret = flush_write(instance, path, desc);
+	int flush_ret = _flush_write(instance, path, desc);
 	if (flush_ret < 0)
 	{
 		client_keep_alive_unlock(instance);
@@ -388,7 +332,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
 }
 
-static int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
+int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
 	struct write_behind_request *write_behind_request = &instance->write_cache.write_behind_request;
 	
@@ -485,4 +429,3 @@ int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf,
 	
 	return ret;
 }
-

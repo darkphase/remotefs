@@ -16,16 +16,16 @@ See the file LICENSE.
 #include "operations.h"
 #include "operations_rfs.h"
 
-#define DECORATE(func, instance, args...)                       \
+#define DECORATE(func, instance, args...)                           \
 	int ret = -ECONNABORTED;                                    \
 	if (client_keep_alive_lock((instance)) == 0)                \
 	{                                                           \
-		PARTIALY_DECORATE(ret, (func), (instance), args)        \
-		client_keep_alive_unlock((instance));                   \
+		PARTIALY_DECORATE(ret, (func), (instance), args)    \
+		client_keep_alive_unlock((instance));               \
 	}                                                           \
 	else                                                        \
 	{                                                           \
-		ret = -EIO;                                             \
+		ret = -EIO;                                         \
 	}                                                           \
 	return ret
 

@@ -20,6 +20,8 @@ extern "C" {
 #include "../ssl/operations_ssl.h"
 #include "../nss/operations_nss.h"
 
+#include "list_exports.h"
+
 struct answer;
 struct rfs_instance;
 
@@ -27,10 +29,6 @@ void* rfs_init(struct rfs_instance *instance);
 void  rfs_destroy(struct rfs_instance *instance);
 int   rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsigned int change_path);
 void  rfs_disconnect(struct rfs_instance *instance, int gently);
-
-#ifdef WITH_EXPORTS_LIST
-int rfs_list_exports(struct rfs_instance *instance);
-#endif
 
 int rfs_request_salt(struct rfs_instance *instance);
 int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd);

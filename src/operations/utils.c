@@ -8,8 +8,6 @@ See the file LICENSE.
 
 #include <errno.h>
 #include <fcntl.h>
-#include <grp.h>
-#include <pwd.h>
 #include <stdlib.h>
 
 #include "../buffer.h"
@@ -18,7 +16,8 @@ See the file LICENSE.
 #include "../id_lookup_client.h"
 #include "../instance_client.h"
 #include "../names.h"
-#include "operations_utils.h"
+#include "../resume/resume.h"
+#include "flush.h"
 
 uint16_t rfs_file_flags(int os_flags)
 {
@@ -139,3 +138,15 @@ gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const 
 	return gid;
 }
 
+
+int _flush_file(struct rfs_instance *instance, const char *path)
+{	
+	uint64_t desc = resume_is_file_in_open_list(instance->resume.open_files, path);
+
+	if (desc != (uint64_t)-1)
+	{
+		return _flush_write(instance, path, desc);
+	}
+
+	return 0;
+}

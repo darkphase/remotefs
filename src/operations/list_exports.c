@@ -121,4 +121,3 @@ int rfs_list_exports(struct rfs_instance *instance)
 #else
 int operations_exports_c_empty_module_makes_suncc_angry = 0;
 #endif /* WITH_EXPORTS_LIST */
-

@@ -39,7 +39,7 @@ See the file LICENSE.
 #include "../ssl/client.h"
 #include "operations.h"
 #include "operations_rfs.h"
-#include "operations_write.h"
+#include "write.h"
 
 int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
 {
