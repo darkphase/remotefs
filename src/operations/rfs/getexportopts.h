@@ -11,8 +11,9 @@ See the file LICENSE.
 
 /** rfs_getexportopts */
 
+#include "../../exports.h"
+
 struct rfs_instance;
-enum rfs_export_opts;
 int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts);
 
 #endif /* OPERATIONS_RFS_GETEXPORTOPTS_H */
