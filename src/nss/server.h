@@ -9,6 +9,8 @@ See the file LICENSE.
 #ifndef NSS_SERVER_H
 #define NSS_SERVER_H
 
+#ifdef WITH_UGO
+
 /** nss server */
 
 #if defined (__cplusplus) || defined (c_plusplus)
@@ -26,4 +28,5 @@ unsigned is_nss_running(struct rfs_instance *instance);
 }
 #endif
 
+#endif /* WITH_UGO */
 #endif /* NSS_SERVER_H */

@@ -23,6 +23,8 @@ See the file LICENSE.
 #include "operations_nss.h"
 #include "server.h"
 
+#ifdef WITH_UGO
+
 static char* nss_socket_name(struct rfs_instance *instance)
 {
 	char *name = malloc(FILENAME_MAX + 1);
@@ -420,3 +422,7 @@ int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
 
 	return 0;
 }
+
+#else
+int nss_server_c_empty_module = 0;
+#endif /* WITH_UGO */
