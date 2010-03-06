@@ -292,7 +292,7 @@ int list_exports_main()
 		return -conn_ret;
 	}
 	
-	int list_ret = rfs_list_exports(&rfs_instance);
+	int list_ret = rfs_listexports(&rfs_instance);
 	if (list_ret < 0)
 	{
 		ERROR("Error listing exports: %s\n", strerror(-list_ret));

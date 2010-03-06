@@ -42,4 +42,3 @@ unsigned server_keep_alive_period(void);
 #endif
 
 #endif /* KEEP_ALIVE_H */
-

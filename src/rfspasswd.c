@@ -386,4 +386,3 @@ int delete_password(const char *login)
 	
 	return 0;
 }
-

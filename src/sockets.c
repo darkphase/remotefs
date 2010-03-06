@@ -48,4 +48,3 @@ int setup_socket_ipv6_only(int socket)
 	return setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on))  == 0 ? 0 : -errno;
 }
 #endif /* WITH_IPV6 */
-

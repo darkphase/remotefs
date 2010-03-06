@@ -27,4 +27,3 @@ int generate_salt(char *salt, size_t max_size);
 #endif
 
 #endif /* AUTH_H */
-

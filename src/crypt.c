@@ -24,4 +24,3 @@ char *passwd_hash(const char *password, const char *salt)
 	passwd = strdup(passwd + strlen(salt) + 1);
 	return passwd;
 }
-

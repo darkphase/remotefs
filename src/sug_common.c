@@ -91,4 +91,3 @@ int check_ssl(SSL_METHOD *method, const char *keyfile, const char *certfile, con
 }
 
 #endif /* WITH_SSL */
-

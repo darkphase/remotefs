@@ -60,4 +60,3 @@ void destroy_gids_lookup(struct list **gids);
 #endif
 
 #endif /* ID_LOOKUP_H */
-

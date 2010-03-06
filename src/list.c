@@ -119,4 +119,3 @@ unsigned list_length(const struct list *head)
 
 	return count;
 }
-

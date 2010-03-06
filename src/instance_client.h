@@ -103,4 +103,3 @@ void release_rfs_instance(struct rfs_instance *instance);
 #endif
 
 #endif /* INSTANCE_CLIENT_H */
-

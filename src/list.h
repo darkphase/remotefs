@@ -44,4 +44,3 @@ unsigned list_length(const struct list *head);
 #endif
 
 #endif /* LIST_H */
-

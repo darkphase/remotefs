@@ -95,4 +95,3 @@ void release_rfsd_instance(struct rfsd_instance *instance);
 #endif
 
 #endif /* INSTANCE_SERVER_H */
-

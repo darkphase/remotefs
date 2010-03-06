@@ -23,4 +23,3 @@ void install_signal_handlers_client(void);
 #endif
 
 #endif /* SIGNALS_CLIENT_H */
-

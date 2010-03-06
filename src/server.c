@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "exports.h"
-#include "handlers/server_handlers_sync.h"
+#include "handlers.h"
 #include "id_lookup.h"
 #include "instance_server.h"
 #include "keep_alive_server.h"
@@ -610,4 +610,3 @@ void check_keep_alive(struct rfsd_instance *instance)
 	
 	alarm(server_keep_alive_period());
 }
-

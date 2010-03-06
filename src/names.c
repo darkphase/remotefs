@@ -96,4 +96,3 @@ char* remote_nss_name(const char *short_name, const struct rfs_instance *instanc
 
 	return long_name;
 }
-

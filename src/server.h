@@ -51,4 +51,3 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 #endif
 
 #endif /* SERVER_H */
-

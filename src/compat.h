@@ -35,4 +35,3 @@ See the file LICENSE.
 #endif
 
 #endif /* COMPAT_H */
-

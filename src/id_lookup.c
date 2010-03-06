@@ -294,4 +294,3 @@ void destroy_gids_lookup(struct list **gids)
 	
 	destroy_ids(gids, destroy_gid);
 }
-

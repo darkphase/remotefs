@@ -18,4 +18,3 @@ struct rfs_instance;
 void suggest_client(const struct rfs_instance *instance);
 
 #endif /* SUG_CLIENT_H */
-

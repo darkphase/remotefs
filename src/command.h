@@ -104,4 +104,3 @@ void dump_answer(const struct answer *cmd);
 #endif
 
 #endif /* COMMAND_H */
-

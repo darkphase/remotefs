@@ -132,4 +132,3 @@ void release_rfs_instance(struct rfs_instance *instance)
 	free(instance->config.ssl_cert_file);
 #endif
 }
-

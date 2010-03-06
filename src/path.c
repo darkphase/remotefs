@@ -38,4 +38,3 @@ int path_join(char *full_path, size_t max_len, const char *path, const char *fil
 
 	return path_len + add_slash + filename_len;
 }
-

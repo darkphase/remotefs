@@ -19,4 +19,3 @@ int check_ssl(SSL_METHOD *method, const char *keyfile, const char *certfile, con
 #endif /* WITH_SSL */
 
 #endif /* SUG_COMMON_H */
-

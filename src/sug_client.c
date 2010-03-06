@@ -104,4 +104,3 @@ void suggest_client(const struct rfs_instance *instance)
 		check_passwd_file(instance->config.auth_passwd_file);
 	}
 }
-

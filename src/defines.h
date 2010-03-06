@@ -52,4 +52,3 @@ enum rfs_lock_type
 #endif
 
 #endif /* DEFINES_H */
-

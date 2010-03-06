@@ -98,4 +98,3 @@ void release_rfsd_instance(struct rfsd_instance *instance)
 	free(instance->config.ssl_cert_file);
 #endif
 }
-

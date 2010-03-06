@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../../scheduling.h"
 #include "../../sendrecv_client.h"
 #include "../utils.h"
-#include "keep_alive.h"
+#include "keepalive.h"
 
 static void* maintenance(void *void_instance)
 {

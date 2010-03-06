@@ -64,4 +64,3 @@ void init_ssl(struct ssl_info *ssl);
 #endif
 
 #endif /* INSTANCE_H */
-

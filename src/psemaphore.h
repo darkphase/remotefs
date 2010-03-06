@@ -73,4 +73,3 @@ static inline int rfs_sem_destroy(rfs_sem_t *sem)
 }
 
 #endif /* PT_SEMAPHORE_H */
-

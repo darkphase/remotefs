@@ -69,4 +69,3 @@ int fuse_rfs_setxattr(const char *path, const char *name, const char *vslue, siz
 #endif
 
 #endif /* FUSE_RFS_H */
-

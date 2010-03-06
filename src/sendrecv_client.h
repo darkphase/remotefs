@@ -53,4 +53,3 @@ static inline ssize_t rfs_receive_answer(struct sendrecv_info *info, struct answ
 #endif
 
 #endif /* SENDRECV_CLIENT_H */
-

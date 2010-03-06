@@ -149,4 +149,3 @@ struct rfsd_config
 #endif
 
 #endif /* CONFIG_H */
-

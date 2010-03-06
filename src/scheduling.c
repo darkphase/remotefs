@@ -36,4 +36,3 @@ void set_scheduler(void)
 #if ! (defined SCHEDULING_AVAILABLE)
 int scheduling_not_used = 0;
 #endif
-

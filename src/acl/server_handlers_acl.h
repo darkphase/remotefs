@@ -8,12 +8,12 @@ See the file LICENSE.
 
 #include "../options.h"
 
-#ifndef ACL_AVAILABLE
+#if defined ACL_AVAILABLE
 
 #ifndef SERVER_HANDLERS_ACL_H
 #define SERVER_HANDLERS_ACL_H
 
-/** server handlers of rfs operations */
+/** ACL-specific server handlers */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

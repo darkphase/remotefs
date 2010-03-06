@@ -54,11 +54,9 @@ extern "C" {
 #include "utime.h"
 #include "utimens.h"
 
-#include "operations_rfs.h"
-
-#include "../nss/operations_nss.h"
 #include "../acl/operations_acl.h"
-#include "../ssl/operations_ssl.h"
+
+#include "operations_rfs.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

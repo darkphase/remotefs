@@ -21,8 +21,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include "getxattr.h"
-#include "setxattr.h"
+#include "operations/getxattr.h"
+#include "operations/setxattr.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

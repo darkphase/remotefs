@@ -12,12 +12,12 @@ See the file LICENSE.
 /** rfs specific server handlers  */
 
 #include "../options.h"
-#include "../nss/server_handlers_nss.h"
-#include "../ssl/server_handlers_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
+
+#include "rfs/listexports.h"
 
 struct command;
 struct rfsd_instance;
@@ -29,13 +29,12 @@ int _handle_closeconnection(struct rfsd_instance *instance, const struct sockadd
 int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_keepalive(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#ifdef WITH_EXPORTS_LIST
-int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-#endif
+
+#include "../nss/server_handlers_nss.h"
+#include "../ssl/server_handlers_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
 #endif /* SERVER_HANDLERS_RFS_H */
-

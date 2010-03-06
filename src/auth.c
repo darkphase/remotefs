@@ -169,4 +169,3 @@ int generate_salt(char *salt, size_t max_size)
 	
 	return 0;
 }
-

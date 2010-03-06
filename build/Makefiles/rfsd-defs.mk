@@ -45,18 +45,32 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/error.o \
             src/sendrecv.o \
             src/server.o \
-            src/handlers/server_handlers.o \
-            src/handlers/server_handlers_access.o \
-            src/handlers/server_handlers_dirs.o \
-            src/handlers/server_handlers_exports.o \
-            src/handlers/server_handlers_files.o \
-            src/handlers/server_handlers_io.o \
-            src/handlers/server_handlers_links.o \
-            src/handlers/server_handlers_read.o \
-            src/handlers/server_handlers_rfs.o \
-            src/handlers/server_handlers_sync.o \
-            src/handlers/server_handlers_write.o \
-            src/handlers/server_handlers_utils.o \
+            src/handlers.o \
+            src/handlers/chmod.o \
+            src/handlers/chown.o \
+            src/handlers/create.o \
+            src/handlers/getattr.o \
+            src/handlers/link.o \
+            src/handlers/lock.o \
+            src/handlers/mkdir.o \
+            src/handlers/mknod.o \
+            src/handlers/open.o \
+            src/handlers/read.o \
+            src/handlers/readdir.o \
+            src/handlers/readlink.o \
+            src/handlers/release.o \
+            src/handlers/rename.o \
+            src/handlers/rfs/listexports.o \
+            src/handlers/rfs/server_handlers_rfs.o \
+            src/handlers/rmdir.o \
+            src/handlers/statfs.o \
+            src/handlers/symlink.o \
+            src/handlers/truncate.o \
+            src/handlers/write.o \
+            src/handlers/unlink.o \
+            src/handlers/utils.o \
+            src/handlers/utime.o \
+            src/handlers/utimens.o \
             src/signals.o \
             src/sockets.o \
             src/utils.o \

@@ -18,4 +18,3 @@ struct rfsd_instance;
 int suggest_server(const struct rfsd_instance *instance);
 
 #endif /* SUG_SERVER_H */
-

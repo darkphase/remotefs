@@ -36,4 +36,3 @@ void init_id_lookup(struct id_lookup_info *id_lookup)
 	id_lookup->uids = NULL;
 	id_lookup->gids = NULL;
 }
-

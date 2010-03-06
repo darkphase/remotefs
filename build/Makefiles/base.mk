@@ -50,12 +50,19 @@ clean_build: dummy
 	$(RM) -f src/operations/*.o
 	$(RM) -f src/operations/rfs/*.o
 	$(RM) -f src/handlers/*.o
+	$(RM) -f src/handlers/rfs/*.o
 	$(RM) -f src/acl/*.o
+	$(RM) -f src/acl/operations/*.o
+	$(RM) -f src/acl/handlers/*.o
 	$(RM) -f src/md5crypt/*.o
 	$(RM) -f src/nss/*.o
+	$(RM) -f src/nss/operations/*.o
+	$(RM) -f src/nss/handlers/*.o
 	$(RM) -f src/resume/*.o
 	$(RM) -f src/sendfile/*.o
 	$(RM) -f src/ssl/*.o
+	$(RM) -f src/ssl/operations/*.o
+	$(RM) -f src/ssl/handlers/*.o
 	$(RM) -f rfs_nss/src/*.o
 
 clean_bins: dummy
@@ -85,12 +92,19 @@ depends:
 	SCANDIR="src\/operations\/"      $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/operations\/rfs\/" $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/handlers\/"        $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/handlers\/rfs\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/acl\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+	SCANDIR="src\/acl\/operations\/" $(MAKE) -f build/Makefiles/base.mk builddep
+#	SCANDIR="src\/acl\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/md5crypt\/"        $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/nss\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+#	SCANDIR="src\/nss\/operations\/" $(MAKE) -f build/Makefiles/base.mk builddep
+#	SCANDIR="src\/nss\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/resume\/"          $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/sendfile\/"        $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/ssl\/"             $(MAKE) -f build/Makefiles/base.mk builddep
+#	SCANDIR="src\/ssl\/operations\/" $(MAKE) -f build/Makefiles/base.mk builddep
+#	SCANDIR="src\/ssl\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="rfs_nss\/src\/"         $(MAKE) -f build/Makefiles/base.mk builddep
 
 ########################################

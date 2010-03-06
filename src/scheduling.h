@@ -27,4 +27,3 @@ void set_scheduler(void);
 #endif
 
 #endif /* SCHEDULING_H */
-

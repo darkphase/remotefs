@@ -157,4 +157,3 @@ const char* lookup_gid(const struct rfs_instance *instance, gid_t gid, uid_t uid
 	
 	return "root"; /* default to root */
 }
-

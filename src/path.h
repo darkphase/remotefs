@@ -28,4 +28,3 @@ int path_join(char *full_path, size_t max_len, const char *path, const char *fil
 #endif
 
 #endif /* PATH_H */
-

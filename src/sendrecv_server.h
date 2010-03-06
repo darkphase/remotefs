@@ -62,4 +62,3 @@ static inline ssize_t rfs_receive_cmd(struct sendrecv_info *info, struct command
 #endif
 
 #endif /* SENDRECV_SERVER_H */
-

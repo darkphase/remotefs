@@ -152,4 +152,3 @@ void dump_sendrecv_stats(struct sendrecv_info *info);
 #endif
 
 #endif /* SENDRECV_H */
-

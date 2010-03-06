@@ -31,4 +31,3 @@ See the file LICENSE.
 #endif
 
 #endif /* OPTIONS_H */
-

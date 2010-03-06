@@ -151,4 +151,3 @@ int suggest_server(const struct rfsd_instance *instance)
 	
 	return ret;
 }
-

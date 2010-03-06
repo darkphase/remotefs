@@ -301,4 +301,3 @@ int ntoh_errno(int net_errno)
 	default:                return EIO;
 	}
 }
-

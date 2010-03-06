@@ -26,4 +26,3 @@ void install_signal_handlers_client()
 {
 	install_signal_handler(SIGTERM, signal_handler_client);
 }
-

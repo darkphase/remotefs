@@ -38,4 +38,3 @@ int setup_socket_ipv6_only(int socket);
 #endif
 
 #endif // SOCKETS_H
-

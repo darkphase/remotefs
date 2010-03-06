@@ -22,9 +22,9 @@ librfs_LDFLAGS = $(LDFLAGS_MAIN) \
 # Define target and object files
 #######################################
 
-librfs_OBJS = src/acl/getxattr.o \
-              src/acl/local_resolve.o \
-              src/acl/setxattr.o \
+librfs_OBJS = src/acl/local_resolve.o \
+              src/acl/operations/getxattr.o \
+              src/acl/operations/setxattr.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \
               src/nss/client.o \
@@ -48,6 +48,7 @@ librfs_OBJS = src/acl/getxattr.o \
               src/keep_alive_client.o \
               src/list.o \
               src/names.o \
+              src/operations.o \
               src/operations/chmod.o \
               src/operations/chown.o \
               src/operations/create.o \
@@ -68,15 +69,14 @@ librfs_OBJS = src/acl/getxattr.o \
               src/operations/rfs/destroy.o \
               src/operations/rfs/getexportopts.o \
               src/operations/rfs/init.o \
-              src/operations/rfs/keep_alive.o \
-              src/operations/rfs/list_exports.o \
+              src/operations/rfs/keepalive.o \
+              src/operations/rfs/listexports.o \
               src/operations/rfs/mount.o \
               src/operations/rfs/reconnect.o \
-              src/operations/rfs/request_salt.o \
+              src/operations/rfs/requestsalt.o \
               src/operations/rmdir.o \
               src/operations/statfs.o \
               src/operations/symlink.o \
-              src/operations/synced.o \
               src/operations/truncate.o \
               src/operations/write.o \
               src/operations/utils.o \

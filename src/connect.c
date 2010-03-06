@@ -112,4 +112,3 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 	
 	return (sock <= 0 ? -saved_errno : sock);
 }
-

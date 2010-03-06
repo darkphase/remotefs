@@ -45,4 +45,3 @@ int server_keep_alive_unlock(struct rfsd_instance *instance)
 	instance->keep_alive.lock = 0;
 	return 0;
 }
-

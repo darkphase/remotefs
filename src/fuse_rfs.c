@@ -8,8 +8,8 @@ See the file LICENSE.
 
 #include "fuse_rfs.h" /* need this before config.h because of O_ASYNC defined in compat.h */
 #include "config.h"
+#include "operations.h"
 #include "operations/operations_rfs.h"
-#include "operations/synced.h"
 #include "options.h"
 
 struct rfs_instance *instance = NULL;
@@ -218,4 +218,3 @@ int fuse_rfs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 }
 
 #undef FUSE_DECORATE
-

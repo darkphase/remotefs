@@ -15,19 +15,19 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include "../ssl/operations_ssl.h"
-#include "../nss/operations_nss.h"
-
 #include "rfs/auth.h"
 #include "rfs/init.h"
 #include "rfs/reconnect.h"
 #include "rfs/disconnect.h"
 #include "rfs/destroy.h"
 #include "rfs/getexportopts.h"
-#include "rfs/keep_alive.h"
-#include "rfs/list_exports.h"
+#include "rfs/keepalive.h"
+#include "rfs/listexports.h"
 #include "rfs/mount.h"
-#include "rfs/request_salt.h"
+#include "rfs/requestsalt.h"
+
+#include "../nss/operations_nss.h"
+#include "../ssl/operations_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

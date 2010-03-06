@@ -311,4 +311,3 @@ void dump_sendrecv_stats(struct sendrecv_info *info)
 	DEBUG("bytes recv: %lu (%.2fM, %.2fK)\n", info->bytes_recv, (float)info->bytes_recv / (1024 * 1024), (float)info->bytes_recv / 1024);
 }
 #endif
-

@@ -24,4 +24,3 @@ int rfs_connect(struct sendrecv_info *info, const char *ip, unsigned port, unsig
 #endif
 
 #endif /* CONNECT_H */
-
