@@ -17,7 +17,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include "get_names.h"
+#include "operations/getnames.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

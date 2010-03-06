@@ -28,12 +28,12 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \
               src/nss/client.o \
-              src/nss/get_names.o \
+              src/nss/operations/getnames.o \
               src/nss/server.o \
               src/resume/client.o \
               src/resume/resume.o \
               src/ssl/client.o \
-              src/ssl/enablessl.o \
+              src/ssl/operations/enablessl.o \
               src/ssl/ssl.o \
               src/attr_cache.o \
               src/buffer.o \
@@ -73,7 +73,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations/rfs/listexports.o \
               src/operations/rfs/mount.o \
               src/operations/rfs/reconnect.o \
-              src/operations/rfs/requestsalt.o \
+              src/operations/rfs/request_salt.o \
               src/operations/rmdir.o \
               src/operations/statfs.o \
               src/operations/symlink.o \

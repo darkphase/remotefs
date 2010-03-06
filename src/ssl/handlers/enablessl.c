@@ -13,12 +13,12 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "server.h"
-#include "../buffer.h"
-#include "../command.h"
-#include "../config.h"
-#include "../instance_server.h"
-#include "../sendrecv_server.h"
+#include "../../buffer.h"
+#include "../../command.h"
+#include "../../config.h"
+#include "../../instance_server.h"
+#include "../../sendrecv_server.h"
+#include "../../server.h"
 #include "../server.h"
 
 int _handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
@@ -83,5 +83,5 @@ int _handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *
 	return 0;
 }
 #else
-int server_handlers_ssl_c_empty_module = 0;
+int server_handlers_ssl_enable_ssl_c_empty_module = 0;
 #endif /* WITH_SSL */

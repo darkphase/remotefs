@@ -6,7 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "../options.h"
+#include "../../options.h"
 
 #ifdef RFSNSS_AVAILABLE
 

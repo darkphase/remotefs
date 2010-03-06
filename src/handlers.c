@@ -10,7 +10,7 @@ See the file LICENSE.
 
 #include "options.h"
 #include "keep_alive_server.h"
-#include "handlers/server_handlers.h"
+#include "handlers/handlers.h"
 
 /* need to define client_addr and cmd before using this macro */
 #define DECORATE(decorate_func)                                        \

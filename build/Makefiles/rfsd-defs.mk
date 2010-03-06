@@ -21,13 +21,14 @@ rfsd_LDFLAGS = $(LDFLAGS_MAIN) \
 #######################################
 
 rfsd_OBJS = src/acl/id_lookup_resolve.o \
+            src/acl/handlers/getxattr.o \
+            src/acl/handlers/setxattr.o \
             src/acl/server.o \
-            src/acl/server_handlers_acl.o \
             src/acl/utils.o \
-            src/nss/server_handlers_nss.o \
+            src/nss/handlers/getnames.o \
             src/resume/cleanup.o \
             src/sendfile/read_with_sendfile.o \
-            src/ssl/server_handlers_ssl.o \
+            src/ssl/handlers/enablessl.o \
             src/ssl/server.o \
             src/ssl/ssl.o \
             src/auth.o \
@@ -60,8 +61,13 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/handlers/readlink.o \
             src/handlers/release.o \
             src/handlers/rename.o \
+            src/handlers/rfs/auth.o \
+            src/handlers/rfs/changepath.o \
+            src/handlers/rfs/closeconnection.o \
+            src/handlers/rfs/getexportopts.o \
+            src/handlers/rfs/keepalive.o \
             src/handlers/rfs/listexports.o \
-            src/handlers/rfs/server_handlers_rfs.o \
+            src/handlers/rfs/request_salt.o \
             src/handlers/rmdir.o \
             src/handlers/statfs.o \
             src/handlers/symlink.o \

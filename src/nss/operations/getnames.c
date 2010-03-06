@@ -6,7 +6,7 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include "../options.h"
+#include "../../options.h"
 
 #ifdef RFSNSS_AVAILABLE
 
@@ -14,15 +14,15 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "server.h"
-#include "../buffer.h"
-#include "../command.h"
-#include "../config.h"
-#include "../exports.h"
-#include "../instance_client.h"
-#include "../list.h"
-#include "../operations/utils.h"
-#include "../sendrecv_client.h"
+#include "../../buffer.h"
+#include "../../command.h"
+#include "../../config.h"
+#include "../../exports.h"
+#include "../../instance_client.h"
+#include "../../list.h"
+#include "../../operations/utils.h"
+#include "../../sendrecv_client.h"
+#include "../server.h"
 
 int rfs_getnames(struct rfs_instance *instance)
 {

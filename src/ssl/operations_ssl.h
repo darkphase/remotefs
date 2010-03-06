@@ -15,7 +15,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-#include "enablessl.h"
+#include "operations/enablessl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

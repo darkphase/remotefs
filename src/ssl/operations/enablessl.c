@@ -12,12 +12,12 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "client.h"
-#include "../buffer.h"
-#include "../command.h"
-#include "../config.h"
-#include "../instance_client.h"
-#include "../sendrecv_client.h"
+#include "../../buffer.h"
+#include "../../command.h"
+#include "../../config.h"
+#include "../../instance_client.h"
+#include "../../sendrecv_client.h"
+#include "../client.h"
 
 int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors)
 {
@@ -129,5 +129,5 @@ int rfs_enablessl(struct rfs_instance *instance, unsigned show_errors)
 	return 0;
 }
 #else 
-int operations_c_empty_module = 0;
+int operations_ssl_enablessl_c_empty_module = 0;
 #endif /* WITH_SSL */

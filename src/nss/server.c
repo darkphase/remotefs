@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../config.h"
 #include "../instance_client.h"
 #include "../list.h"
-#include "get_names.h"
+#include "operations_nss.h"
 #include "server.h"
 
 static char* nss_socket_name(struct rfs_instance *instance)

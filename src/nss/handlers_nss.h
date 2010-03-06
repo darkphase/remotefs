@@ -9,10 +9,6 @@ See the file LICENSE.
 #ifndef SERVER_HANDLERS_NSS_H
 #define SERVER_HANDLERS_NSS_H
 
-struct command;
-struct rfsd_instance;
-struct sockaddr_in;
-
-int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#include "handlers/getnames.h"
 
 #endif /* SERVER_HANDLERS_NSS_H */

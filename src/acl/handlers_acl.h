@@ -19,12 +19,8 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct command;
-struct rfsd_instance;
-struct sockaddr_in;
-
-int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
-int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+#include "handlers/getxattr.h"
+#include "handlers/setxattr.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

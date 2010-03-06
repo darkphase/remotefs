@@ -9,14 +9,14 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "../buffer.h"
-#include "../config.h"
-#include "../command.h"
-#include "../id_lookup.h"
-#include "../instance_server.h"
-#include "../list.h"
-#include "../sendrecv.h"
-#include "../server.h"
+#include "../../buffer.h"
+#include "../../config.h"
+#include "../../command.h"
+#include "../../id_lookup.h"
+#include "../../instance_server.h"
+#include "../../list.h"
+#include "../../sendrecv.h"
+#include "../../server.h"
 
 int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

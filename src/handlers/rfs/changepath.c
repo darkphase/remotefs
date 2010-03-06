@@ -22,112 +22,8 @@ See the file LICENSE.
 #include "../../id_lookup.h"
 #include "../../instance_server.h"
 #include "../../passwd.h"
-#include "../../sockets.h"
 #include "../../server.h"
 #include "../../sendrecv_server.h"
-#ifdef WITH_SSL
-#	include "../../ssl/server.h"
-#endif
-
-int handle_keepalive(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	/* no need of actual handling, 
-	rfsd will update keep-alive on each operation anyway */
-	return 0;
-}
-
-int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	memset(instance->server.auth_salt, 0, sizeof(instance->server.auth_salt));
-	if (generate_salt(instance->server.auth_salt, sizeof(instance->server.auth_salt) - 1) != 0)
-	{
-		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
-	}
-	
-	uint32_t salt_len = strlen(instance->server.auth_salt) + 1;
-	
-	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
-	
-	send_token_t token = { 0, {{ 0 }} };
-	if (do_send(&instance->sendrecv, 
-		queue_data(instance->server.auth_salt, salt_len, 
-		queue_ans(&ans, &token))) < 0)
-	{
-		return -1;
-	}
-
-	return 0;
-}
-
-int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	char *buffer = malloc(cmd->data_len);
-	if (buffer == NULL)
-	{
-		return -1;
-	}
-
-	if (rfs_receive_data(&instance->sendrecv, buffer, cmd->data_len) == -1)
-	{
-		free(buffer);
-		return -1;
-	}
-	
-	uint32_t passwd_len = 0;
-	
-	const char *passwd = 
-	unpack_32(&passwd_len, buffer);
-	const char *user = passwd + passwd_len;
-	
-	if (strlen(user) + 1 
-	+ sizeof(passwd_len) 
-	+ strlen(passwd) + 1 != cmd->data_len)
-	{
-		free(buffer);
-		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
-	}
-		
-	DEBUG("user: %s, passwd: %s, salt: %s\n", user, passwd, instance->server.auth_salt);
-	
-	instance->server.auth_user = strdup(user);
-	instance->server.auth_passwd = strdup(passwd);
-	
-	free(buffer);
-	
-	struct answer ans = { cmd_auth, 0, 0, 0 };
-	
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return 0;
-}
-
-int _handle_closeconnection(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-#ifndef WITH_IPV6
-	DEBUG("connection to %s is closed\n", inet_ntoa(client_addr->sin_addr));
-#else
-#ifdef RFS_DEBUG
-	const struct sockaddr_in6 *sa6 = (struct sockaddr_in6*)client_addr;
-	char straddr[INET6_ADDRSTRLEN];
-	if (client_addr->sin_family == AF_INET)
-	{
-		inet_ntop(AF_INET, &client_addr->sin_addr, straddr,sizeof(straddr));
-	}
-	else
-	{
-		inet_ntop(AF_INET6, &sa6->sin6_addr, straddr,sizeof(straddr));
-	}
-#endif
-	DEBUG("connection to %s is closed\n", straddr);
-
-#endif
-	release_rfsd_instance(instance);
-	server_close_connection(instance);
-	exit(0);
-}
 
 static int setup_groups_by_uid(uid_t uid)
 {
@@ -342,19 +238,4 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	}
 
 	return 0;
-}
-
-int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	struct answer ans = { cmd_getexportopts, 
-	0,
-	(instance->server.mounted_export != NULL ? instance->server.mounted_export->options : -1),
-	(instance->server.mounted_export != NULL ? 0 : EACCES) };
-
-	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
-	{
-		return -1;
-	}
-	
-	return (instance->server.mounted_export != NULL ? 0 : 1);
 }

@@ -6,31 +6,28 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#ifndef OPERATIONS_RFS_H
-#define OPERATIONS_RFS_H
+#ifndef SERVER_HANDLERS_RFS_H
+#define SERVER_HANDLERS_RFS_H
 
-/** rfs internal operations */
+/** rfs specific server handlers  */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
 #include "rfs/auth.h"
-#include "rfs/init.h"
-#include "rfs/reconnect.h"
-#include "rfs/disconnect.h"
-#include "rfs/destroy.h"
+#include "rfs/changepath.h"
+#include "rfs/closeconnection.h"
 #include "rfs/getexportopts.h"
 #include "rfs/keepalive.h"
 #include "rfs/listexports.h"
-#include "rfs/mount.h"
 #include "rfs/request_salt.h"
 
-#include "../nss/operations_nss.h"
-#include "../ssl/operations_ssl.h"
+#include "../nss/handlers_nss.h"
+#include "../ssl/handlers_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }
 #endif
 
-#endif /* OPERATIONS_RFS_H */
+#endif /* SERVER_HANDLERS_RFS_H */
