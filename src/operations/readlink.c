@@ -62,7 +62,7 @@ static const char* common_tail(const char *mounted_path, const char *link)
 	return tail;
 }
 
-static char *transform_symlink(struct rfs_instance *instance, const char *path, const char *link)
+char* _transform_symlink(struct rfs_instance *instance, const char *path, const char *link)
 {
 	DEBUG("transforming symlink with path %s (%s)\n", path, link);
 
@@ -193,7 +193,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 		
 	if (instance->config.transform_symlinks != 0)
 	{
-		char *transformed_link = transform_symlink(instance, path, link);
+		char *transformed_link = _transform_symlink(instance, path, link);
 
 		if (transformed_link != NULL)
 		{

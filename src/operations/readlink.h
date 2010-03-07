@@ -16,4 +16,6 @@ See the file LICENSE.
 struct rfs_instance;
 int _rfs_readlink(struct rfs_instance *instance, const char *path, char *buffer, size_t size);
 
+char* _transform_symlink(struct rfs_instance *instance, const char *path, const char *link);
+
 #endif /* OPERATIONS_READLINK_H */
