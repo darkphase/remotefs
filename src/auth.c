@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "passwd.h"
 #include "utils.h"
 
-int check_password(struct rfsd_instance *instance)
+static int check_password(struct rfsd_instance *instance)
 {
 	const char *stored_passwd = get_auth_password(instance->passwd.auths, instance->server.auth_user);
 	
@@ -42,13 +42,18 @@ int check_password(struct rfsd_instance *instance)
 
 int check_permissions(struct rfsd_instance *instance, const struct rfs_export *export_info, const char *client_ip_addr)
 {
+	if (client_ip_addr == NULL)
+	{
+		return -1;
+	}
+
 	const char *client_ip = client_ip_addr;
 
 #ifdef WITH_IPV6
 	const char ipv4_to_ipv6_mapping[] = "::ffff:";
-	if (strncmp(ipv4_to_ipv6_mapping, client_ip_addr, sizeof(ipv4_to_ipv6_mapping) - 1) == 0)
+	if (strstr(client_ip_addr, ipv4_to_ipv6_mapping) == client_ip_addr)
 	{
-		client_ip += sizeof(ipv4_to_ipv6_mapping) - 1;
+		client_ip += strlen(ipv4_to_ipv6_mapping);
 	}
 #endif
 
@@ -140,7 +145,7 @@ int generate_salt(char *salt, size_t max_size)
 	
 	enum e_set { set_al = 0, set_alu, set_num, set_additional, set_max };
 	
-	int i; for (i = empty_len; i < max_size; ++i)
+	int i; for (i = empty_len; i < max_size - 1; ++i)
 	{
 		char ch = '\0';
 		
@@ -166,6 +171,8 @@ int generate_salt(char *salt, size_t max_size)
 		
 		salt[i] = ch;
 	}
+
+	salt[max_size - 1] = 0;
 	
 	return 0;
 }
