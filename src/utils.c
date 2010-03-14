@@ -103,7 +103,7 @@ static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned
 {
 	DEBUG("comparing %s with %s/%u assuming it's ipv4\n", addr, net, prefix_len);
 
-	if ( prefix_len > 2<<sizeof(struct in_addr) )
+	if ( prefix_len > 32 )
 	{
 		return 0;
 	}
@@ -125,22 +125,36 @@ static unsigned compare_ipv4_netmask(const char *addr, const char *net, unsigned
 
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len)
 {
+	const char *fixed_net = NULL;
+
 #ifdef WITH_IPV6
 	unsigned is_ipv6_addr = (strchr(addr, ':') != NULL ? 1 : 0);
 	unsigned is_ipv6_net  = (strchr(net, ':') != NULL ? 1 : 0);
 
+	if (is_ipv6_addr != 0 
+	&& is_ipv6_net == 0 
+	&& strcmp(net, "0") == 0)
+	{
+		is_ipv6_net = is_ipv6_addr;
+		fixed_net = "::";
+	}
+
 	if (is_ipv6_addr != 0 && is_ipv6_net != 0)
 	{
-		return compare_ipv6_netmask(addr, net, prefix_len);
+		return compare_ipv6_netmask(addr, fixed_net != NULL ? fixed_net : net, prefix_len);
 	}
-	else if ((is_ipv6_addr != 0 && is_ipv6_net == 0) 
-	|| (is_ipv6_addr == 0 && is_ipv6_net != 0))
+	else if (is_ipv6_addr != is_ipv6_net)
 	{
 		return 0;
 	}
 #endif
 	
-	return compare_ipv4_netmask(addr, net, prefix_len);
+	if (strcmp(net, "0") == 0)
+	{
+		fixed_net = "0.0.0.0";
+	}
+
+	return compare_ipv4_netmask(addr, fixed_net != NULL ? fixed_net : net, prefix_len);
 }
 
 #ifdef WITH_IPV6
