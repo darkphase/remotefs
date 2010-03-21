@@ -96,7 +96,8 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 			DEBUG("passed check for network %s/%u: %u\n", rec->network, rec->prefix_len, can_pass);
 		}
 
-		if (strcmp(rec->username, ALL_ACCESS_USERNAME) == 0)
+		if (rec->username != NULL 
+		&& strcmp(rec->username, ALL_ACCESS_USERNAME) == 0)
 		{
 			DEBUG("allowing access according to \"%s\" specified\n", ALL_ACCESS_USERNAME);
 			can_pass = 1;

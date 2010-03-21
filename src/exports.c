@@ -489,7 +489,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 
 	/* check for "*" case */
 	if (line_export->users != NULL 
-	&& list_length(line_export->users) > 0)
+	&& list_length(line_export->users) > 1)
 	{
 		struct list *user_item = line_export->users;
 		while (user_item != NULL)
