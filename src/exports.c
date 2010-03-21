@@ -408,6 +408,7 @@ parse_error:
 static int validate_export(const struct rfs_export *line_export, struct list *exports)
 {
 #ifdef WITH_UGO
+	/* check if exports with ugo are specified correctly */
 	if ((line_export->options & OPT_UGO) != 0)
 	{
 		if ((line_export->options & OPT_RO) != 0
@@ -436,6 +437,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	}
 #endif
 
+	/* check prefix lengths for specified networks */
 	struct list *user_item = line_export->users;
 	while (user_item != NULL)
 	{
@@ -468,6 +470,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		user_item = user_item->next;
 	}
 
+	/* check for duplicate exports */
 	if (line_export->path != NULL)
 	{
 		struct list *item = exports;
@@ -481,6 +484,24 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 			}
 
 			item = item->next;
+		}
+	}
+
+	/* check for "*" case */
+	if (line_export->users != NULL 
+	&& list_length(line_export->users) > 0)
+	{
+		struct list *user_item = line_export->users;
+		while (user_item != NULL)
+		{
+			struct user_rec *rec = (struct user_rec *)user_item->data;
+			if (rec->username != NULL 
+			&& strcmp(rec->username, ALL_ACCESS_USERNAME) == 0)
+			{
+				WARN("WARNING: Specifying \"%s\" discards all other users specifications for this export.\n", ALL_ACCESS_USERNAME);
+			}
+			
+			user_item = user_item->next;
 		}
 	}
 

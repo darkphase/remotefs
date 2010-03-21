@@ -45,6 +45,7 @@ struct list;
 #endif
 #define LISTEN_BACKLOG          10
 #define MAX_LISTEN_ADDRESSES    16
+#define ALL_ACCESS_USERNAME     "*"
 
 #define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \
 	+ sizeof(uint64_t) /* size */                   \

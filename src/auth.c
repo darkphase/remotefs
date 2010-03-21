@@ -73,13 +73,13 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 		}
 #endif
 
-		unsigned can_pass = 1;
+		unsigned can_pass = 0;
 
 		if (rec->network != NULL)
 		{
-			if (compare_netmask(client_ip, rec->network, rec->prefix_len) == 0)
+			if (compare_netmask(client_ip, rec->network, rec->prefix_len) != 0)
 			{
-				can_pass = 0;
+				can_pass = 1;
 			}
 
 #ifdef WITH_IPV6
@@ -96,15 +96,21 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 			DEBUG("passed check for network %s/%u: %u\n", rec->network, rec->prefix_len, can_pass);
 		}
 
-
-		if (rec->username != NULL)
+		if (strcmp(rec->username, ALL_ACCESS_USERNAME) == 0)
 		{
-			if (instance->server.auth_user == NULL
-			|| instance->server.auth_passwd == NULL
-			|| strcmp(rec->username, instance->server.auth_user) != 0
-			|| check_password(instance) != 0)
+			DEBUG("allowing access according to \"%s\" specified\n", ALL_ACCESS_USERNAME);
+			can_pass = 1;
+		}
+
+		if (can_pass == 0 
+		&& rec->username != NULL)
+		{
+			if (instance->server.auth_user != NULL
+			&& instance->server.auth_passwd != NULL
+			&& strcmp(rec->username, instance->server.auth_user) == 0
+			&& check_password(instance) == 0)
 			{
-				can_pass = 0;
+				can_pass = 1;
 			}
 			
 			DEBUG("passed check for username %s: %u\n", rec->username, can_pass);
