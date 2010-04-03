@@ -102,9 +102,6 @@ depends:
 	SCANDIR="src\/nss\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/resume\/"          $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="src\/sendfile\/"        $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/ssl\/"             $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/ssl\/operations\/" $(MAKE) -f build/Makefiles/base.mk builddep
-	SCANDIR="src\/ssl\/handlers\/"   $(MAKE) -f build/Makefiles/base.mk builddep
 	SCANDIR="rfs_nss\/src\/"         $(MAKE) -f build/Makefiles/base.mk builddep
 
 ########################################

@@ -15,8 +15,6 @@ See the file LICENSE.
 #include "instance_server.h"
 #include "list.h"
 #include "passwd.h"
-#include "ssl/server.h"
-#include "sug_common.h"
 #include "utils.h"
 
 static int check_listen_addresses(const struct list *addresses)
@@ -103,16 +101,6 @@ static int check_root_uid()
 	return 0;
 }
 
-#ifdef WITH_SSL
-int check_server_ssl(const struct rfsd_instance *instance)
-{
-	return check_ssl(choose_ssl_server_method(), 
-		instance->config.ssl_key_file, 
-		instance->config.ssl_cert_file, 
-		instance->config.ssl_ciphers);
-}
-#endif
-
 int suggest_server(const struct rfsd_instance *instance)
 {
 	int ret = 0;
@@ -137,13 +125,6 @@ int suggest_server(const struct rfsd_instance *instance)
 		ret = -1;
 	}
 
-#ifdef WITH_SSL
-	if (check_server_ssl(instance) != 0)
-	{
-		ret = -1;
-	}
-#endif
-	
 	if (ret != 0)
 	{
 		INFO("%s\n", "INFO: Please consider SECURITY NOTES section of rfsd man page (`man rfsd`)");

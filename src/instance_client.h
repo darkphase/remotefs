@@ -68,11 +68,6 @@ struct rfs_instance
 	/* sendrecv */
 	struct sendrecv_info sendrecv;
 	
-#ifdef WITH_SSL
-	/* ssl */
-	struct ssl_info ssl;
-#endif
-
 	/* nss server */
 	struct
 	{

@@ -20,9 +20,6 @@ See the file LICENSE.
 
 #include "config.h"
 #include "instance.h"
-#ifdef WITH_SSL
-#include "ssl/ssl.h"
-#endif
 
 #include <netinet/tcp.h>
 

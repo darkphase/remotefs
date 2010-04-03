@@ -63,11 +63,6 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 #ifdef WITH_IPV6
 	instance->config.force_ipv4 = 0;
 #endif
-#ifdef WITH_SSL
-	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);
-	instance->config.ssl_key_file = strdup(DEFAULT_SERVER_KEY_FILE);
-	instance->config.ssl_cert_file = strdup(DEFAULT_SERVER_CERT_FILE);
-#endif /* WITH_SSL */
 }
 
 void init_rfsd_instance(struct rfsd_instance *instance)
@@ -79,9 +74,6 @@ void init_rfsd_instance(struct rfsd_instance *instance)
 	init_exports(instance);
 	init_id_lookup(&instance->id_lookup);
 	init_sendrecv(&instance->sendrecv);
-#ifdef WITH_SSL
-	init_ssl(&instance->ssl);
-#endif
 	
 	init_rfsd_config(instance);
 }
@@ -92,9 +84,4 @@ void release_rfsd_instance(struct rfsd_instance *instance)
 	free(instance->config.pid_file);
 	free(instance->config.exports_file);
 	free(instance->config.passwd_file);
-#ifdef WITH_SSL
-	free(instance->config.ssl_ciphers);
-	free(instance->config.ssl_key_file);
-	free(instance->config.ssl_cert_file);
-#endif
 }

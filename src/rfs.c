@@ -57,10 +57,6 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("wr_cache=%u", use_write_cache, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	RFS_OPT("transform_symlinks", transform_symlinks, 1),
-#ifdef WITH_SSL
-	RFS_OPT("ssl", enable_ssl, 1),
-	RFS_OPT("ciphers=%s", ssl_ciphers, 0),
-#endif
 	
 	FUSE_OPT_END
 };
@@ -91,9 +87,6 @@ static void usage(const char *program)
 	"    -o password=filename    filename with password for auth\n"
 	"    -o wr_cache=0           disable write cache\n"
 	"    -o transform_symlinks   transform absolute symlinks to relative\n"
-#ifdef WITH_SSL
-	"    -o ssl                  enable SSL\n"
-#endif
 	"\n"
 	"\n", 
 	program);
@@ -112,17 +105,6 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	{
 		rfs_instance.config.set_fsname = 0;
 	}
-
-#ifndef WITH_SSL
-	if (strcmp(arg, "ssl") == 0
-	|| strstr(arg, "ciphers=") == arg)
-	{
-		ERROR("%s\n\n", "SSL options aren't supported in this remotefs build");
-		
-		usage(outargs->argv[0]);
-		exit(1);
-	}
-#endif
 
 	switch (key)
 	{	

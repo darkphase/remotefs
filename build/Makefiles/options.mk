@@ -8,22 +8,16 @@
 OPT_1 = -DWITH_IPV6
 
 ###############################################
-# SSL support
-
-#OPT_2 = -DWITH_SSL
-#OPT_2_LD = $(LDFLAGS_SSL)
-
-###############################################
 # Support of exports listing
 
-OPT_3 = -DWITH_EXPORTS_LIST
+OPT_2 = -DWITH_EXPORTS_LIST
 
 ###############################################
 # Support for POSIX ACL
 # Linux only
 
-#OPT_4 = -DWITH_ACL
-#OPT_4_LD = $(LDFLAGS_ACL)
+#OPT_3 = -DWITH_ACL
+#OPT_3_LD = $(LDFLAGS_ACL)
 
 ###############################################
 # Support for UGO
@@ -31,12 +25,12 @@ OPT_3 = -DWITH_EXPORTS_LIST
 # so, since it is designed for use with OpenWrt, it should be useful to remove
 # unneeded parts from OpenWrt build
 
-OPT_5 = -DWITH_UGO
+OPT_4 = -DWITH_UGO
 
 ###############################################
 # Experimental scheduling for MacOS only
 
-OPT_6 = -DWITH_SCHEDULING
+OPT_5 = -DWITH_SCHEDULING
 
 ###############################################
 # End of user configuration, don't change the

@@ -17,7 +17,6 @@ See the file LICENSE.
 #include "../../config.h"
 #include "../../instance_client.h"
 #include "../../sendrecv_client.h"
-#include "../../ssl/client.h"
 
 void rfs_disconnect(struct rfs_instance *instance, int gently)
 {
@@ -38,14 +37,6 @@ void rfs_disconnect(struct rfs_instance *instance, int gently)
 	instance->sendrecv.connection_lost = 1;
 	instance->sendrecv.socket = -1;
 	
-#ifdef WITH_SSL
-	if (instance->config.enable_ssl != 0)
-	{
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-		instance->sendrecv.ssl_enabled = 0;
-	}
-#endif
-
 #ifdef RFS_DEBUG
 	dump_sendrecv_stats(&instance->sendrecv);
 #endif

@@ -27,7 +27,6 @@ extern "C" {
 #include "rfs/request_salt.h"
 
 #include "../nss/operations_nss.h"
-#include "../ssl/operations_ssl.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -46,13 +46,6 @@ int handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_i
 	DECORATE(_handle_getexportopts)
 }
 
-#ifdef WITH_SSL
-int handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
-{
-	DECORATE(_handle_enablessl)
-}
-#endif
-
 #ifdef WITH_EXPORTS_LIST
 int handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd) 
 {

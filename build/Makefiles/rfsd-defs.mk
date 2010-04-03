@@ -28,9 +28,6 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/nss/handlers/getnames.o \
             src/resume/cleanup.o \
             src/sendfile/read_with_sendfile.o \
-            src/ssl/handlers/enablessl.o \
-            src/ssl/server.o \
-            src/ssl/ssl.o \
             src/auth.o \
             src/buffer.o \
             src/command.o \
@@ -86,7 +83,5 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             \
             src/rfsd.o \
             src/signals_server.o \
-            src/sug_common.o \
             src/sug_server.o \
             src/scheduling.o
-

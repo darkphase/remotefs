@@ -17,7 +17,6 @@ See the file LICENSE.
 #include "../../instance_client.h"
 #include "../../resume/client.h"
 #include "../../sockets.h"
-#include "../../ssl/client.h"
 #include "../operations_rfs.h"
 
 int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsigned int change_path)
@@ -42,30 +41,6 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	{
 		instance->sendrecv.socket = sock;
 	}
-	
-#ifdef WITH_SSL
-	if (instance->config.enable_ssl != 0)
-	{
-		int ssl_ret = rfs_enablessl(instance, show_errors);
-		if (ssl_ret != 0)
-		{
-			#if 0
-			if (show_errors != 0)
-			{
-				/* errors should be handled in rfs_enablessl() */
-			}
-			#endif
-			
-			rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-			if (instance->ssl.last_error != NULL)
-			{
-				free(instance->ssl.last_error);
-				instance->ssl.last_error = NULL;
-			}
-			return ssl_ret;
-		}
-	}
-#endif
 	
 	int setpid_ret = setup_soket_pid(sock, instance->client.my_pid);
 	if (setpid_ret != 0)

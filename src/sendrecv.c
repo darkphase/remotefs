@@ -24,9 +24,6 @@ See the file LICENSE.
 #include "error.h"
 #include "instance.h"
 #include "sendrecv.h"
-#ifdef WITH_SSL
-#include "ssl/ssl.h"
-#endif
 
 #ifdef RFS_DEBUG
 static void dump_iov(struct iovec *iov, unsigned count)
@@ -118,19 +115,8 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 		int done = 0;
 		
 		errno = 0;
-#ifdef WITH_SSL
-		if (info->ssl_enabled != 0)
-		{
-			DEBUG("%s\n", "using SSL for write");
-			done = rfs_ssl_write(info->ssl_socket, iov[0].iov_base, iov[0].iov_len);
-		}
-		else
-		{
-#endif
-			done = writev(info->socket, iov, count);
-#ifdef WITH_SSL
-		}
-#endif
+		done = writev(info->socket, iov, count);
+		
 		if (done <= 0)
 		{
 			if (errno == EAGAIN || errno == EINTR)
@@ -212,37 +198,25 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 	{
 		errno = 0;
 		ssize_t done = 0;
-#ifdef WITH_SSL
-		if (info->ssl_enabled != 0)
+		if (check_oob != 0)
 		{
-			DEBUG("%s\n", "using SSL for read");
-			done = rfs_ssl_read(info->ssl_socket, buffer + size_recv, size - size_recv);
-		}
-		else
-		{
-#endif
-			if (check_oob != 0)
+			/* is_mark() will clear stream from OOB message */
+			int check_mark = is_mark(info->socket);
+
+			DEBUG("is mark: %d\n", check_mark);
+
+			if (check_mark < 0)
 			{
-				/* is_mark() will clear stream from OOB message */
-				int check_mark = is_mark(info->socket);
-
-				DEBUG("is mark: %d\n", check_mark);
-
-				if (check_mark < 0)
-				{
-					return check_mark;
-				}
-				else if (check_mark != 0)
-				{
-					info->oob_received = 1;
-					return -EIO;
-				}
+				return check_mark;
 			}
-			
-			done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
-#ifdef WITH_SSL
+			else if (check_mark != 0)
+			{
+				info->oob_received = 1;
+				return -EIO;
+			}
 		}
-#endif
+			
+		done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
 
 #ifdef RFS_DEBUG
 		if (done != size - size_recv)

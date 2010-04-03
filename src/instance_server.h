@@ -14,10 +14,6 @@ See the file LICENSE.
 #include <sys/types.h>
 #include <pthread.h>
 
-#ifdef WITH_SSL
-#include <openssl/ssl.h>
-#endif
-
 #include "config.h"
 #include "psemaphore.h"
 #include "instance.h"
@@ -72,11 +68,6 @@ struct rfsd_instance
 	/* id lookup */
 	struct id_lookup_info id_lookup;
 	
-#ifdef WITH_SSL
-	/* ssl */
-	struct ssl_info ssl;
-#endif
-
 	/* server's config */
 	struct rfsd_config config;
 };

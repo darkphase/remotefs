@@ -29,9 +29,8 @@ enum server_commands
 	cmd_changepath,              /* 0d */
 	cmd_keepalive,               /* 0e */
 	cmd_getexportopts,           /* 0f */
-	cmd_enablessl,               /* 12 */
-	cmd_listexports,             /* 13 */
-	cmd_getnames,                /* 14 */
+	cmd_listexports,             /* 12 */
+	cmd_getnames,                /* 13 */
 	
 	/* reserved */
 

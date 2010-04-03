@@ -54,7 +54,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	return do_send(&instance->sendrecv, &token) < 0 ? -1 : 0;
 }
 
-#if (defined WITH_SSL || (! defined SENDFILE_AVAILABLE)) /* we don't need this on Linux/Solaris/FreeBSD/Darwin if SSL isn't enabled */
+#if (! defined SENDFILE_AVAILABLE) /* we don't need this on Linux/Solaris/FreeBSD */
 static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	/* this method used not only when sendfile() isn't available 
@@ -105,28 +105,17 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 
 	return result >= 0 ? 0 : 1;
 }
-#endif /* defined WITH_SSL || ! defined SENDFILE_AVAILABLE */
+#endif /* ! defined SENDFILE_AVAILABLE */
 
+
+static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
+{
 #if defined SENDFILE_AVAILABLE
-static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
-{
-#ifdef WITH_SSL
-	if (read_size <= SENDFILE_THRESHOLD)
-	{
-		return read_small_block;
-	}
-
-	return (instance->sendrecv.ssl_enabled != 0 ? read_as_always : read_with_sendfile);
-#else
 	return (read_size <= SENDFILE_THRESHOLD ? read_small_block : read_with_sendfile);
-#endif /* SENDFILE_AVAILABLE */
-}
-#else /* sendfile isn't available */
-static inline read_method choose_read_method(struct rfsd_instance *instance, size_t read_size)
-{
+#else
 	return (read_size <= SENDFILE_THRESHOLD ? read_small_block : read_as_always);
-}
 #endif /* defined SENDFILE_AVAILABLE */
+}
 
 int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

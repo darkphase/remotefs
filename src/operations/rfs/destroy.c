@@ -19,7 +19,6 @@ See the file LICENSE.
 #include "../../nss/server.h"
 #include "../../resume/resume.h"
 #include "../../sendrecv_client.h"
-#include "../../ssl/client.h"
 #include "disconnect.h"
 
 void rfs_destroy(struct rfs_instance *instance)
@@ -56,13 +55,6 @@ void rfs_destroy(struct rfs_instance *instance)
 
 	destroy_uids_lookup(&(instance->id_lookup.uids));
 	destroy_gids_lookup(&(instance->id_lookup.gids));
-	
-#ifdef WITH_SSL
-	if (instance->config.enable_ssl != 0)
-	{
-		rfs_clear_ssl(&instance->sendrecv.ssl_socket, &instance->ssl.ctx);
-	}
-#endif
 	
 #ifdef RFS_DEBUG
 	dump_attr_stats(&instance->attr_cache);

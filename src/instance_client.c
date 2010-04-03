@@ -69,39 +69,6 @@ static void init_rfs_config(struct rfs_instance *instance)
 {
 	instance->config.server_port = DEFAULT_SERVER_PORT;
 	instance->config.quiet = 0;
-#ifdef WITH_SSL
-	instance->config.enable_ssl = 0;
-	instance->config.ssl_ciphers = strdup(RFS_DEFAULT_CIPHERS);
-
-#ifndef RFS_DEBUG
-	char *home_dir = getenv("HOME");
-#else
-	char *home_dir = ".";
-#endif
-	char *key = NULL;
-	char *cert = NULL;
-
-	if (home_dir != NULL)
-	{
-		size_t key_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_KEY_FILE) + 2; /* 2 == '/' + '\0' */
-		key = malloc(key_path_size);
-		if (key != NULL)
-		{
-			snprintf(key, key_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_KEY_FILE);
-		}
-	
-		size_t cert_path_size = strlen(home_dir) + strlen(DEFAULT_CLIENT_CERT_FILE) + 2;
-		cert = malloc(cert_path_size);
-		if (cert != NULL)
-		{
-			snprintf(cert, cert_path_size, "%s/%s", home_dir, DEFAULT_CLIENT_CERT_FILE);
-		}
-	}
-
-	instance->config.ssl_key_file = key;
-	instance->config.ssl_cert_file = cert;
-#endif /* WITH_SSL */
-	
 	instance->config.use_write_cache = 1;
 	instance->config.transform_symlinks = 0;
 	instance->config.allow_other = 0;
@@ -116,9 +83,6 @@ void init_rfs_instance(struct rfs_instance *instance)
 	init_resume(instance);
 	init_write_cache(instance);
 	init_sendrecv(&instance->sendrecv);
-#ifdef WITH_SSL
-	init_ssl(&instance->ssl);
-#endif
 	init_nss(instance);
 
 	init_rfs_config(instance);
@@ -126,9 +90,4 @@ void init_rfs_instance(struct rfs_instance *instance)
 
 void release_rfs_instance(struct rfs_instance *instance)
 {
-#ifdef WITH_SSL
-	free(instance->config.ssl_ciphers);
-	free(instance->config.ssl_key_file);
-	free(instance->config.ssl_cert_file);
-#endif
 }

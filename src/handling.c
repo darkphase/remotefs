@@ -75,12 +75,6 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	case cmd_getexportopts:
 		return handle_getexportopts(instance, client_addr, cmd);
 	
-	case cmd_enablessl:
-#ifdef WITH_SSL
-		return handle_enablessl(instance, client_addr, cmd);
-#else
-		return reject_request_with_cleanup(instance, cmd, ENOTSUP) == 0 ? 1 : -1;
-#endif
 	case cmd_listexports:
 #ifdef WITH_EXPORTS_LIST
 		return handle_listexports(instance, client_addr, cmd);

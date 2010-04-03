@@ -4,9 +4,8 @@ DESCRIPTION="remote filesystem client"
 HOMEPAGE="http://remotefs.sourceforge.net"
 LICENSE="GPL"
 
-IUSE="+ugo +exports_list ipv6 ssl acl"
-DEPEND="ssl? ( net-fs/rfs-ssl ) 
-	acl? ( sys-apps/acl )
+IUSE="+ugo +exports_list ipv6 acl"
+DEPEND="acl? ( sys-apps/acl )
 	>=sys-fs/fuse-2.6
 	virtual/libc"
 RDEPEND="${DEPEND}"
@@ -28,13 +27,9 @@ setup_compile() {
     if use ipv6; then
 	echo "OPT_3=-DWITH_IPV6" >> "${BUILDDIR}/build/Makefiles/options.mk"
     fi
-    if use ssl; then
-	echo "OPT_4=-DWITH_SSL" >> "${BUILDDIR}/build/Makefiles/options.mk"
-	echo "OPT_4_LD=\$(LDFLAGS_SSL)" >> "${BUILDDIR}/build/Makefiles/options.mk"
-    fi
     if use acl; then
-	echo "OPT_5=-DWITH_ACL" >> "${BUILDDIR}/build/Makefiles/options.mk"
-	echo "OPT_5_LD=\$(LDFLAGS_ACL)" >> "${BUILDDIR}/build/Makefiles/options.mk"
+	echo "OPT_4=-DWITH_ACL" >> "${BUILDDIR}/build/Makefiles/options.mk"
+	echo "OPT_4_LD=\$(LDFLAGS_ACL)" >> "${BUILDDIR}/build/Makefiles/options.mk"
     fi
     echo "CFLAGS_OPTS = \$(CFLAGS) \$(OPT_1) \$(OPT_2) \$(OPT_3) \$(OPT_4) \$(OPT_5)" >> "${BUILDDIR}/build/Makefiles/options.mk"
     echo "LDFLAGS_OPTS = \$(LDFLAGS) \$(OPT_2_LD) \$(OPT_3_LD) \$(OPT_4_LD) \$(OPT_5_LD)" >> "${BUILDDIR}/build/Makefiles/options.mk"

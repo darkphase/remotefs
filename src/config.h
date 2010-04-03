@@ -38,7 +38,6 @@ struct list;
 #define RFS_APPROX_READ_BLOCK 	256 * 1024  /* bytes */
 #define RFS_MAX_READ_BLOCK 		4096 * 1024 /* bytes */
 #define SENDFILE_THRESHOLD      4 * 1024    /* bytes */
-#define RFS_DEFAULT_CIPHERS     "RC4-MD5:AES128-MD5:RC4:AES128:ALL:@STRENGTH"
 #define DEFAULT_IPV4_ADDRESS    "0.0.0.0"
 #ifdef WITH_IPV6
 #define DEFAULT_IPV6_ADDRESS    "::"
@@ -59,18 +58,10 @@ struct list;
 #define DEFAULT_PASSWD_FILE      "./rfs-passwd"
 #define DEFAULT_EXPORTS_FILE     "./rfs-exports"
 #define DEFAULT_PID_FILE         "./rfsd.pid"
-#define DEFAULT_CLIENT_KEY_FILE  "rfs-key.pem"
-#define DEFAULT_CLIENT_CERT_FILE "rfs-cert.pem"
-#define DEFAULT_SERVER_KEY_FILE  DEFAULT_CLIENT_KEY_FILE 
-#define DEFAULT_SERVER_CERT_FILE DEFAULT_CLIENT_CERT_FILE
 #else
 #define DEFAULT_PASSWD_FILE      "/etc/rfs-passwd"
 #define DEFAULT_EXPORTS_FILE     "/etc/rfs-exports"
 #define DEFAULT_PID_FILE         "/var/run/rfsd.pid"
-#define DEFAULT_CLIENT_KEY_FILE  ".rfs/rfs-key.pem"    /* client's files will be concatenated with $HOME */
-#define DEFAULT_CLIENT_CERT_FILE ".rfs/rfs-cert.pem"
-#define DEFAULT_SERVER_KEY_FILE  "/etc/rfsd-key.pem"
-#define DEFAULT_SERVER_CERT_FILE "/etc/rfsd-cert.pem"
 #endif /* RFS_DEBUG */
 
 #ifdef RFS_DEBUG
@@ -116,12 +107,6 @@ struct rfs_config
 	unsigned force_ipv4;
 	unsigned force_ipv6;
 #endif
-#ifdef WITH_SSL
-	unsigned int enable_ssl;
-	char *ssl_key_file;
-	char *ssl_cert_file;
-	char *ssl_ciphers;
-#endif
 };
 
 /** server options */
@@ -137,11 +122,6 @@ struct rfsd_config
 #ifdef WITH_IPV6
 	unsigned force_ipv4;
 	unsigned force_ipv6;
-#endif
-#ifdef WITH_SSL
-	char *ssl_key_file;
-	char *ssl_cert_file;
-	char *ssl_ciphers;
 #endif
 };
 

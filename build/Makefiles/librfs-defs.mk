@@ -33,9 +33,6 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/nss/server.o \
               src/resume/client.o \
               src/resume/resume.o \
-              src/ssl/client.o \
-              src/ssl/operations/enablessl.o \
-              src/ssl/ssl.o \
               src/attr_cache.o \
               src/buffer.o \
               src/command.o \
@@ -100,4 +97,3 @@ librfs_OBJS = src/acl/local_resolve.o \
 #######################################
 
 TARGET  = $(librfs_TARGET)
-

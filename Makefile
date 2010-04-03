@@ -128,11 +128,9 @@ rfsdebuild: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk rfsdebuild
 rfsebuild: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk rfsebuild
-rfssslebuild: dummy
-	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk rfssslebuild
 rfsnssebuild: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk rfsnssebuild
-ebuilds: rfsdebuild rfsebuild rfssslebuild rfsnssebuild
+ebuilds: rfsdebuild rfsebuild rfsnssebuild
 
 tbz: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk tbz
