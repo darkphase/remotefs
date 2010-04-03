@@ -15,9 +15,9 @@ See the file LICENSE.
 #include "../buffer.h"
 #include "../command.h"
 #include "../config.h"
+#include "../handling.h"
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
-#include "../server.h"
 #include "../sendfile/sendfile_rfs.h"
 
 typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);

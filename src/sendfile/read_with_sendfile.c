@@ -13,7 +13,7 @@ See the file LICENSE.
 #include "../command.h"
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
-#include "../server.h"
+#include "../handling.h"
 
 #include "sendfile_rfs.h"
 

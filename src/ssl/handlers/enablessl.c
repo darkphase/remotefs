@@ -16,9 +16,9 @@ See the file LICENSE.
 #include "../../buffer.h"
 #include "../../command.h"
 #include "../../config.h"
+#include "../../handling.h"
 #include "../../instance_server.h"
 #include "../../sendrecv_server.h"
-#include "../../server.h"
 #include "../server.h"
 
 int _handle_enablessl(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)

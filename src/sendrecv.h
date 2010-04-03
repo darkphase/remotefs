@@ -26,7 +26,8 @@ extern "C" {
 #endif
 
 typedef struct iovec send_token_entry_t;
-/** 16 iovectors max */
+
+/** IOV_MAX iovectors max */
 typedef struct
 {
 	unsigned count;

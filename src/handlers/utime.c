@@ -19,10 +19,10 @@ See the file LICENSE.
 #include "../command.h"
 #include "../config.h"
 #include "../exports.h"
+#include "../handling.h"
 #include "../id_lookup.h"
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
-#include "../server.h"
 #include "utils.h"
 
 int _process_utime(struct rfsd_instance *instance, const struct command *cmd, const char *path, unsigned is_null, uint64_t actime, uint64_t modtime)

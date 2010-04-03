@@ -15,9 +15,9 @@ See the file LICENSE.
 #include "../buffer.h"
 #include "../command.h"
 #include "../config.h"
+#include "../handling.h"
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
-#include "../server.h"
 
 int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {

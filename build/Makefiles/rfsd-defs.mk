@@ -36,6 +36,7 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/command.o \
             src/crypt.o \
             src/exports.o \
+            src/handling.o \
             src/id_lookup.o \
             src/instance.o \
             src/instance_server.o \

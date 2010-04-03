@@ -19,10 +19,10 @@ See the file LICENSE.
 #include "../../command.h"
 #include "../../config.h"
 #include "../../exports.h"
+#include "../../handling.h"
 #include "../../id_lookup.h"
 #include "../../instance_server.h"
 #include "../../passwd.h"
-#include "../../server.h"
 #include "../../sendrecv_server.h"
 
 static int setup_groups_by_uid(uid_t uid)

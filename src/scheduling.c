@@ -25,8 +25,8 @@ See the file LICENSE.
 
 void set_scheduler(void)
 {
-	struct sched_param param;
-	memset(&param, 0, sizeof(struct sched_param));
+	struct sched_param param = { 0 };
+	
 	param.sched_priority = sched_get_priority_max(SCHED_RR);
 	pthread_setschedparam(pthread_self(), SCHED_RR, &param);
 }

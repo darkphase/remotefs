@@ -16,10 +16,10 @@ See the file LICENSE.
 #include "../command.h"
 #include "../config.h"
 #include "../defines.h"
+#include "../handling.h"
 #include "../instance_server.h"
 #include "../resume/cleanup.h"
 #include "../sendrecv_server.h"
-#include "../server.h"
 #include "utils.h"
 
 int _handle_create(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
