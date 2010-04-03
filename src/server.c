@@ -22,7 +22,6 @@ See the file LICENSE.
 #include "command.h"
 #include "config.h"
 #include "exports.h"
-#include "handlers.h"
 #include "handling.h"
 #include "id_lookup.h"
 #include "instance_server.h"

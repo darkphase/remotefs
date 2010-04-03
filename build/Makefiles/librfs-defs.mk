@@ -28,6 +28,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/acl/utils.o \
               src/acl/xattr_linux.o \
               src/nss/client.o \
+              src/nss/processing.o \
               src/nss/operations/getnames.o \
               src/nss/server.o \
               src/resume/client.o \

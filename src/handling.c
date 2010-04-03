@@ -6,33 +6,20 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <arpa/inet.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#if defined QNX
-#include <sys/select.h>
-#endif
 
 #include "buffer.h"
 #include "command.h"
 #include "config.h"
 #include "exports.h"
 #include "handlers.h"
-#include "id_lookup.h"
 #include "instance_server.h"
 #include "keep_alive_server.h"
-#include "list.h"
-#include "passwd.h"
-#include "resume/cleanup.h"
-#include "scheduling.h"
 #include "sendrecv_server.h"
-#include "server.h"
-#include "sockets.h"
 
 static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
