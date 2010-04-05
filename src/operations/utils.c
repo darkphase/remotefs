@@ -88,6 +88,11 @@ uid_t resolve_username(struct rfs_instance *instance, const char *user)
 {
 	uid_t uid = instance->client.my_uid;
 
+	if (strcmp(user, instance->config.auth_user) == 0)
+	{
+		return uid;
+	}
+
 #ifdef WITH_UGO
 #ifdef RFSNSS_AVAILABLE	
 	char *name = strdup(user);
@@ -113,6 +118,12 @@ uid_t resolve_username(struct rfs_instance *instance, const char *user)
 gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const char *user)
 {
 	gid_t gid = instance->client.my_gid;
+
+	if (user != NULL 
+	&& strcmp(user, instance->config.auth_user) == 0)
+	{
+		return gid;
+	}
 
 #ifdef WITH_UGO
 #ifdef RFSNSS_AVAILABLE	
