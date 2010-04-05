@@ -41,4 +41,3 @@ LDFLAGS_OPTS = $(OPT_1_LD) $(OPT_2_LD) $(OPT_3_LD) $(OPT_4_LD) $(OPT_5_LD) $(OPT
 
 # Default entry for main Makefile
 help:
-

@@ -26,4 +26,3 @@ flags:
 	@echo CFLAGS = $(nssd_CFLAGS)
 	@echo LDFLAGS = $(nssd_LDFLAGS)
 	@echo
-

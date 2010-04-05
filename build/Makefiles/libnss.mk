@@ -28,4 +28,3 @@ flags:
 	@echo CFLAGS = $(libnss_CFLAGS)
 	@echo LDFLAGS = $(libnss_LDFLAGS)
 	@echo
-

@@ -18,7 +18,7 @@ libnss_LDFLAGS = $(LDFLAGS_MAIN) \
                  $(LDFLAGS_OS) \
                  $(LDFLAGS_NET) \
                  $(LDFLAGS_OPTS) \
-				 -L. -lrfs
+                 -L. -lrfs
 
 #######################################
 # Define target and object files

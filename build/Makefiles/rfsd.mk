@@ -26,4 +26,3 @@ flags:
 	@echo CFLAGS = $(rfsd_CFLAGS)
 	@echo LDFLAGS = $(rfsd_LDFLAGS)
 	@echo
-

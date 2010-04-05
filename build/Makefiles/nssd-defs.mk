@@ -39,4 +39,3 @@ nssd_OBJS = rfs_nss/src/check_options.o \
             rfs_nss/src/nss_cmd.o \
             rfs_nss/src/rfs_nssd.o \
             rfs_nss/src/server.o
-

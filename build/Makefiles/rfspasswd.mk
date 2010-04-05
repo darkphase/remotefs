@@ -26,4 +26,3 @@ flags:
 	@echo CFLAGS = $(rfspasswd_CFLAGS)
 	@echo LDFLAGS = $(rfspasswd_LDFLAGS)
 	@echo
-	

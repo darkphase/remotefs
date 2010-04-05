@@ -25,4 +25,3 @@ make_version:
 	if [ ! -f "$(VERSION_FILE)" ]; then \
 		$(MAKE) -f build/Makefiles/version.mk force_version; \
 	fi
-

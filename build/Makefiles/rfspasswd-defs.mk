@@ -27,4 +27,3 @@ rfspasswd_OBJS   = src/buffer.o \
                    src/signals.o \
                    \
                    src/rfspasswd.o
-

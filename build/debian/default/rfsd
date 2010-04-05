@@ -15,4 +15,3 @@ RFSD_PIDFILE="/var/run/rfsd.pid"
 # Uncomment to disable 'warnings considered as error'
 # WARNING: Maybe a big security-risk when running rfsd on unsecured interfaces
 #RFSD_QUIET="-q"
-
