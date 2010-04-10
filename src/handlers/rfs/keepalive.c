@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "../../command.h"
 #include "../../instance_server.h"
