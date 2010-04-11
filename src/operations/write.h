@@ -34,7 +34,7 @@ void kill_write_behind(struct rfs_instance *instance);
 
 void reset_write_behind(struct rfs_instance *instance);
 
-int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
+int _do_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 
 #if defined (__cplusplus) || defined (c_plusplus)

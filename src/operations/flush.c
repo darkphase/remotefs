@@ -19,6 +19,7 @@ See the file LICENSE.
 #include "../sendrecv_client.h"
 #include "operations.h"
 #include "utils.h"
+#include "write.h"
 
 int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
@@ -36,7 +37,7 @@ int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 		{
 			int ret = 0;
 			PARTIALY_DECORATE(ret,
-			_write,
+			_do_write,
 			instance, 
 			path,
 			block->data,

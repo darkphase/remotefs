@@ -145,7 +145,7 @@ static void* write_behind(void *void_instance)
 	
 	write_behind_request->last_ret = 0;
 	PARTIALY_DECORATE(write_behind_request->last_ret,
-	_write,
+	_do_write,
 	instance, 
 	write_behind_request->path,
 	write_behind_request->block->data, 
@@ -203,7 +203,7 @@ static int _rfs_write_missed_cache(struct rfs_instance *instance, const char *pa
 		
 	int ret = 0;
 	PARTIALY_DECORATE(ret, 
-	_write, 
+	_do_write, 
 	instance, 
 	path, 
 	buf, 
@@ -332,7 +332,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
 }
 
-int _write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
+int _do_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc)
 {
 	struct write_behind_request *write_behind_request = &instance->write_cache.write_behind_request;
 	
@@ -417,7 +417,7 @@ int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf,
 	
 	int ret = 0;
 	PARTIALY_DECORATE(ret, 
-	_write, 
+	_do_write, 
 	instance, 
 	path, 
 	buf, 
