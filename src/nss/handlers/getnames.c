@@ -9,12 +9,16 @@ See the file LICENSE.
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+#include <string.h>
+
 #include "../../buffer.h"
 #include "../../config.h"
 #include "../../command.h"
 #include "../../id_lookup.h"
 #include "../../instance_server.h"
 #include "../../list.h"
+#include "../../compat.h"
 #include "../../sendrecv.h"
 #include "../../server.h"
 

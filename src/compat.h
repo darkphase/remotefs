@@ -21,12 +21,16 @@ See the file LICENSE.
 #endif /* SOLARIS */
 
 #if defined QNX
+#include <sys/time.h>
 #	if ! defined AI_ADDRCONFIG
 #		define AI_ADDRCONFIG 0
 #	endif
 #
 #	if ! defined IOV_MAX
 #		define IOV_MAX _XOPEN_IOV_MAX
+#	endif 
+#	if ! defined IOV_MAX
+#		define IOV_MAX 16
 #	endif 
 #endif /* QNX */
 
