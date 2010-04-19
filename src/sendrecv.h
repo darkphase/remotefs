@@ -15,9 +15,6 @@ See the file LICENSE.
 #include <limits.h>
 #include <unistd.h>
 #include <sys/uio.h>
-#if defined QNX && ! defined IOV_MAX
-#define IOV_MAX 16
-#endif
 #include "buffer.h"
 #include "command.h"
 #include "compat.h"

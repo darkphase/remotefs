@@ -95,9 +95,9 @@ uid_t resolve_username(struct rfs_instance *instance, const char *user)
 	}
 
 #ifdef WITH_UGO
-#ifdef RFSNSS_AVAILABLE	
 	char *name = strdup(user);
 
+#ifdef RFSNSS_AVAILABLE	
 	if (instance->nss.use_nss != 0)
 	{
 		free(name);
@@ -128,10 +128,10 @@ gid_t resolve_groupname(struct rfs_instance *instance, const char *group, const 
 	}
 
 #ifdef WITH_UGO
-#ifdef RFSNSS_AVAILABLE	
 	char *group_name = strdup(group);
 	char *user_name = strdup(user);
 
+#ifdef RFSNSS_AVAILABLE	
 	if (instance->nss.use_nss != 0)
 	{
 		free(group_name);
