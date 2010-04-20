@@ -24,7 +24,7 @@ See the file LICENSE.
 #include "processing.h"
 #include "server.h"
 
-#ifdef WITH_UGO
+#if defined WITH_UGO && defined RFSNSS_AVAILABLE
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {
