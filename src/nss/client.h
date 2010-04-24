@@ -31,6 +31,5 @@ int nss_get_groups(const char *server, struct list **groups);
 #endif
 
 #endif /* NSS_CLIENT_H */
-
 #endif /* RFSNSS_AVAILABLE */
 

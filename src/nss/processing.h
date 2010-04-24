@@ -6,10 +6,10 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#if defined RFSNSS_AVAILABLE
+
 #ifndef NSS_PROCESSING_H
 #define NSS_PROCESSING_H
-
-#ifdef WITH_UGO
 
 /** nss commands processing */
 
@@ -26,5 +26,6 @@ int process_command(struct rfs_instance *instance, int sock, struct command *cmd
 }
 #endif
 
-#endif /* WITH_UGO */
 #endif /* NSS_PROCESSING_H */
+#endif /* RFSNSS_AVAILABLE */
+

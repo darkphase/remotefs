@@ -6,6 +6,10 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "../options.h"
+
+#if defined RFSNSS_AVAILABLE
+
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -18,8 +22,6 @@ See the file LICENSE.
 #include "../config.h"
 #include "../instance_client.h"
 #include "../list.h"
-
-#ifdef WITH_UGO
 
 static int nss_answer(int sock, struct answer *ans, const char *data)
 {
@@ -156,4 +158,5 @@ int process_command(struct rfs_instance *instance, int sock, struct command *cmd
 
 #else
 int nss_processing_c_empty_module = 0;
-#endif /* WITH_UGO */
+#endif /* RFSNSS_AVAILABLE */
+

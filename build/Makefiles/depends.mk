@@ -856,11 +856,13 @@ src/nss/client.o:src/nss/../command.h
 src/nss/client.o:src/nss/../config.h
 src/nss/client.o:src/nss/../list.h
 src/nss/client.o:src/nss/../names.h
+src/nss/processing.o:src/nss/../options.h
 src/nss/processing.o:src/nss/../buffer.h
 src/nss/processing.o:src/nss/../command.h
 src/nss/processing.o:src/nss/../config.h
 src/nss/processing.o:src/nss/../instance_client.h
 src/nss/processing.o:src/nss/../list.h
+src/nss/server.o:src/nss/../options.h
 src/nss/server.o:src/nss/../buffer.h
 src/nss/server.o:src/nss/../command.h
 src/nss/server.o:src/nss/../config.h

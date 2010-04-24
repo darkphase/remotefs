@@ -6,10 +6,12 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "../options.h"
+
+#if defined RFSNSS_AVAILABLE
+
 #ifndef NSS_SERVER_H
 #define NSS_SERVER_H
-
-#ifdef WITH_UGO
 
 /** nss server */
 
@@ -28,5 +30,6 @@ unsigned is_nss_running(struct rfs_instance *instance);
 }
 #endif
 
-#endif /* WITH_UGO */
 #endif /* NSS_SERVER_H */
+#endif /* RFSNSS_AVAILABLE */
+

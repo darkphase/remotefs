@@ -6,6 +6,10 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include "../options.h"
+
+#if defined RFSNSS_AVAILABLE
+
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -23,8 +27,6 @@ See the file LICENSE.
 #include "operations_nss.h"
 #include "processing.h"
 #include "server.h"
-
-#if defined WITH_UGO && defined RFSNSS_AVAILABLE
 
 static char* nss_socket_name(struct rfs_instance *instance)
 {
@@ -293,4 +295,5 @@ int init_nss_server(struct rfs_instance *instance, unsigned show_errors)
 
 #else
 int nss_server_c_empty_module = 0;
-#endif /* WITH_UGO */
+#endif /* RFSNSS_AVAILABLE */
+
