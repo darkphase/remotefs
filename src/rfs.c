@@ -268,6 +268,33 @@ static int read_password()
 	return 0;
 }
 
+static void setup_fsname(const struct rfs_instance *instance, struct fuse_args *args, int *argc)
+{
+	char fsname_opt_tmpl[] = "-ofsname=";
+	const char *host = rfs_instance.config.host;
+	const char *path = rfs_instance.config.path;
+
+	size_t fsname_len = strlen(fsname_opt_tmpl) + strlen(host) + strlen(path) + 2; /* including \0 and : */
+	char *fsname_opt = malloc(fsname_len);
+	snprintf(fsname_opt, fsname_len, "%s%s:%s", fsname_opt_tmpl, host, path);
+		
+	DEBUG("setting fsname: %s\n", fsname_opt);
+
+	fuse_opt_add_arg(args, fsname_opt);
+	++(*argc);
+
+	char subtype_opt_tmpl[] = "-osubtype=";
+	const char *subtype = "rfs";
+	size_t subtype_len = strlen(subtype_opt_tmpl) + strlen(subtype) + 1;
+	char *subtype_opt = malloc(subtype_len);
+	snprintf(subtype_opt, subtype_len, "%s%s", subtype_opt_tmpl, subtype);
+
+	DEBUG("setting subtype: %s\n", subtype_opt);
+
+	fuse_opt_add_arg(args, subtype_opt);
+	++(*argc);
+}
+
 int main(int argc, char **argv)
 {
 	init_rfs_instance(&rfs_instance);
@@ -361,15 +388,7 @@ int main(int argc, char **argv)
 	char *fsname_opt = NULL;
 	if (rfs_instance.config.set_fsname != 0)
 	{
-		char opt_tmpl[] = "-ofsname=rfs@";
-		size_t fsname_len = strlen(opt_tmpl) + strlen(rfs_instance.config.host) + 1;
-		fsname_opt = malloc(fsname_len);
-		snprintf(fsname_opt, fsname_len, "%s%s", opt_tmpl, rfs_instance.config.host);
-		
-		DEBUG("setting fsname: %s\n", fsname_opt);
-
-		fuse_opt_add_arg(&args, fsname_opt);
-		++argc;
+		setup_fsname(&rfs_instance, &args, &argc);
 	}
 
 #if FUSE_USE_VERSION >= 26
