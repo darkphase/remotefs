@@ -1,0 +1,103 @@
+#!/bin/sh
+###########################################################################
+# mount.rfs
+# get parameters from mount and mount an rfs file system
+#
+# Example for a fstab entry:
+#  nas:/exports/user /home/user/nas rfs username=XX,password=/home/user/.rfs/nas.passwd,kernel_cache,atomic_o_trunc,auto_cache,uid=user,gid=disk,users,defaults,noauto 0 0
+#  nas:/exports/user /home/user/nas rfs username=XX,password=/home/user/.rfs/nas.passwd,kernel_cache,atomic_o_trunc,auto_cache,uid=user,defaults,mountbyroot,_netdev 0 0
+#
+# The remote system name is nas and the exported dir is /exports/user
+#
+# The mountpoint will is nas and is located under the directory name of user user
+#
+# File system type is rfs so that /sbin/mount.rfs will be called.
+#
+# username=XX,password=/home/user/.rfs/nas.passwd,users,kernel_cache,atomic_o_trunc,auto_cache
+# These options are for rfs
+#
+# uid=user,gid=disk,users,defaults,noauto 0 0
+#  uid=user   allow only user to mount this
+#  gid=disk   allow only mount if user is member of the group sys
+# one of both parameter must be sez within the fstab entry
+#
+# users,noauto
+# allow user to mount/unmount, don't mount at boot time
+#
+# Mouunt at boot time is also possible if the special
+# heyword 'mountbyroot' is used instead of user or users (second example)
+#
+#############################################################################
+
+groupOK=1
+params=
+uid=`id -u`
+seeUid=0
+seeGid=0
+mountByRoot=0
+
+# Extract and check options for rfs and the special
+# options for this script (uid, gid and mountbyroot
+
+for param in `echo $4 | tr ',' ' '`
+do
+	#echo Check $param
+	case $param in
+			# rfs parameters
+		username=*|password=*|atomic_o_trunc|auto_cache|kernel_cache)
+			if [ "$params" == "" ]
+			then
+				params="$param"
+			else
+				params="$params,$param"
+			fi ;;
+		mountbyroot)
+			mountByRoot=1 ;;
+		uid=*)
+			# Check if user is allowed to mount
+			eval $param
+			seeUid=1 ;;
+		gid=*)
+			# Check if user membership allows mount
+			eval $param
+			groupOK=0
+			seeGid=1
+			for  i in `id -G`
+			do
+				if [ $i -eq $gid ]
+				then
+					groupOK=1
+				fi
+			done ;;
+	esac
+done
+
+# Check for needed fstab entry (security) and
+# for the mountByRoot which tell that root can
+# mount the remote file system for the given user.
+if [ $seeUid == 0 -a $seeGid == 0 ]
+then
+	echo "`basename $0`: wrong fstab entry, uid/gid not found"
+	exit 1
+fi
+
+if [ $uid -ne `id -u` -o $groupOK -eq 0 ]
+then
+	if [ $mountByRoot -eq 0 ]
+	then
+		echo "`basename $0`: Permission denied"
+		exit 1
+	elif [ $seeUid -eq 0 ]
+	then
+		echo "`basename $0`: wrong fstab entry, uid not found"
+		exit 1
+	fi
+fi
+
+if [ $mountByRoot -eq 1 ]
+then
+	usr=`sed -n "s/\(.*\):x:$uid:.*/\1/p" /etc/passwd`
+	su - $usr -c "rfs $1 $2 $3 $params"
+else
+	rfs $1 $2 $3 "$params"
+fi
