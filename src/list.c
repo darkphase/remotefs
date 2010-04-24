@@ -7,6 +7,7 @@ See the file LICENSE.
 */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "config.h"
