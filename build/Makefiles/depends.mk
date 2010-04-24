@@ -74,6 +74,10 @@ src/keep_alive_server.o:src/instance_server.h
 src/list.o:src/buffer.h
 src/list.o:src/config.h
 src/list.o:src/list.h
+src/list_exports.o:src/buffer.h
+src/list_exports.o:src/config.h
+src/list_exports.o:src/instance_client.h
+src/list_exports.o:src/operations/operations_rfs.h
 src/names.o:src/buffer.h
 src/names.o:src/config.h
 src/names.o:src/instance_client.h
@@ -94,6 +98,7 @@ src/rfs.o:src/config.h
 src/rfs.o:src/crypt.h
 src/rfs.o:src/id_lookup.h
 src/rfs.o:src/instance_client.h
+src/rfs.o:src/list_exports.h
 src/rfs.o:src/operations/operations_rfs.h
 src/rfs.o:src/passwd.h
 src/rfs.o:src/sug_client.h
@@ -178,6 +183,7 @@ src/instance_server.o:src/instance_server.c
 src/keep_alive_client.o:src/keep_alive_client.c
 src/keep_alive_server.o:src/keep_alive_server.c
 src/list.o:src/list.c
+src/list_exports.o:src/list_exports.c
 src/names.o:src/names.c
 src/operations.o:src/operations.c
 src/passwd.o:src/passwd.c
@@ -225,6 +231,7 @@ src/operations/flush.o:src/operations/../list.h
 src/operations/flush.o:src/operations/../sendrecv_client.h
 src/operations/flush.o:src/operations/operations.h
 src/operations/flush.o:src/operations/utils.h
+src/operations/flush.o:src/operations/write.h
 src/operations/getattr.o:src/operations/../attr_cache.h
 src/operations/getattr.o:src/operations/../buffer.h
 src/operations/getattr.o:src/operations/../command.h
@@ -883,6 +890,7 @@ src/nss/handlers/getnames.o:src/nss/handlers/../../command.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../id_lookup.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../instance_server.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../list.h
+src/nss/handlers/getnames.o:src/nss/handlers/../../compat.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../sendrecv.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../server.h
 src/nss/handlers/getnames.o:src/nss/handlers/getnames.c

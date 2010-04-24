@@ -17,6 +17,9 @@ See the file LICENSE.
 #include "crypt.h"
 #include "id_lookup.h"
 #include "instance_client.h"
+#ifdef WITH_EXPORTS_LIST
+# 	include "list_exports.h"
+#endif
 #include "operations/operations_rfs.h"
 #include "passwd.h"
 #include "sug_client.h"
@@ -265,39 +268,6 @@ static int read_password()
 	return 0;
 }
 
-#ifdef WITH_EXPORTS_LIST
-int list_exports_main()
-{
-	int conn_ret = rfs_reconnect(&rfs_instance, 1, 0);
-	if (conn_ret != 0)
-	{
-		return -conn_ret;
-	}
-	
-	int list_ret = rfs_listexports(&rfs_instance);
-	if (list_ret < 0)
-	{
-		ERROR("Error listing exports: %s\n", strerror(-list_ret));
-	}
-	
-	rfs_disconnect(&rfs_instance, 1);
-	
-	free(rfs_instance.config.host);
-	
-	if (rfs_instance.config.path != 0)
-	{
-		free(rfs_instance.config.path);
-	}
-	
-	if (rfs_instance.config.auth_passwd != NULL)
-	{
-		free(rfs_instance.config.auth_passwd);
-	}
-	
-	return list_ret;
-}
-#endif
-
 int main(int argc, char **argv)
 {
 	init_rfs_instance(&rfs_instance);
@@ -324,7 +294,7 @@ int main(int argc, char **argv)
 	if (just_list_exports != 0)
 	{
 		fuse_opt_free_args(&args);
-		exit(list_exports_main());
+		exit(list_exports_main(&rfs_instance));
 	}
 #else
 	if (just_list_exports != 0)
@@ -429,3 +399,4 @@ int main(int argc, char **argv)
 	
 	return ret;
 }
+

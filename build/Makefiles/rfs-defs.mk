@@ -25,5 +25,6 @@ rfs_LDFLAGS = $(LDFLAGS_MAIN) \
 #######################################
 
 rfs_OBJS = src/fuse_rfs.o \
+           src/list_exports.o \
            src/rfs.o \
            src/sug_client.o
