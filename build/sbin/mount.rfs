@@ -44,7 +44,7 @@ do
 	#echo Check $param
 	case $param in
 			# rfs parameters
-		username=*|password=*|atomic_o_trunc|auto_cache|kernel_cache)
+		username=*|password=*|atomic_o_trunc|auto_cache|kernel_cache|allow_other)
 			if [ "$params" == "" ]
 			then
 				params="$param"
