@@ -50,6 +50,8 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 	const char *client_ip = client_ip_addr;
 
 #ifdef WITH_IPV6
+	/* check if it's not IPv4 connection came to IPv6 interface 
+	and fix it back to IPv4 for correct authentication  */
 	const char ipv4_to_ipv6_mapping[] = "::ffff:";
 	if (strstr(client_ip_addr, ipv4_to_ipv6_mapping) == client_ip_addr)
 	{
@@ -65,8 +67,9 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 		const struct user_rec *rec = (const struct user_rec *)user_entry->data;
 
 #ifdef WITH_UGO
+		// UGO exports can't be authenticated w/o username
 		if ((export_info->options & OPT_UGO) != 0 
-		&& rec->username == NULL)
+		&& (rec->username == NULL || instance->server.auth_user == NULL))
 		{
 			user_entry = user_entry->next;
 			continue;
