@@ -51,7 +51,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	if (path_len > FILENAME_MAX)
 	{
 		free(buffer);
-		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
+		return reject_request(instance, cmd, E2BIG) == 0 ? 1 : -1;
 	}
 	
 	errno = 0;
@@ -71,7 +71,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	char stat_buffer[STAT_BLOCK_SIZE] = { 0 };
 	char full_path[FILENAME_MAX + 1] = { 0 };
 	
-	while ((dir_entry = readdir(dir)) != 0)
+	while ((dir_entry = readdir(dir)) != NULL)
 	{	
 		const char *entry_name = dir_entry->d_name;
 		uint32_t entry_len = strlen(entry_name) + 1, entry_len_hton = entry_len;
