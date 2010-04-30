@@ -1,7 +1,4 @@
 #!/bin/sh
-###########################################################################
-# mount.rfs
-# get parameters from mount and mount an rfs file system
 #
 # Example for a fstab entry:
 #  nas:/exports/user /home/user/nas rfs \
@@ -10,77 +7,49 @@
 #
 #  nas:/exports/user /home/user/nas rfs username=XX,\
 #   password=/home/user/.rfs/nas.passwd,kernel_cache,atomic_o_trunc,\
-#   auto_cache,uid=user,defaults,_netdev 0 0
+#   auto_cache,uid=user_id,defaults,_netdev 0 0
 #
-# The remote system name is nas and the exported dir is /exports/user
+#  uid=user_id is optional, if present, will run rfs connection with priveleges
+#   of specified user
 #
-# The mountpoint will is nas and is located under the directory name of user user
-#
-# File system type is rfs so that /sbin/mount.rfs will be called.
-#
-# username=XX,password=/home/user/.rfs/nas.passwd,users,kernel_cache,\
-#   atomic_o_trunc,auto_cache,allow_other,check_permissions
-#
-# These options are for rfs
-#
-# uid=user,users,defaults,noauto 0 0
-#  uid=user this is mandatory and used for checks
-#
-# users,noauto
-# allow user to mount/unmount, don't mount at boot time
-#
-# Mount at boot time is also possible.
-# The options uid=<user> is required for security reason-
-#
-#############################################################################
 
-spec=$1
-uid=-1
-callerid=`id -u`
-params=
-groupOK=0
+remote_export=$1
+mount_point=$2
+uid=0 # default to root
+params=""
 
 for param in `echo $4 | tr ',' ' '`
 do
 	#echo Check $param
 	case $param in
-			# rfs parameters
+		# rfs parameters
 		username=*|password=*|atomic_o_trunc|auto_cache|fsname=*|\
 		kernel_cache|allow_other|default_permissions|no_remote_lock)
-			if [ "$params" == "" ]
+			if [ -z "$params" ]
 			then
 				params="$param"
 			else
 				params="$params,$param"
 			fi ;;
 		uid=*)
-			# Check if user is allowed to mount
+			# get user id to use for mounting operation
 			eval $param ;;
 	esac
 done
 
-mountByRoot=0
-if [ $callerid -eq 0 ]
+# drop "-o" if there are no parameters
+if [ -z "$params" ]
 then
-	if [ $uid -eq -1 ]
-	then
-		echo "`basename $0`: wrong fstab entry, uid not found"
-		exit 1
-	else
-		mountByRoot=1
-	fi
+	cmd_line="rfs $remote_export $mount_point"
 else
-	if [ $uid -ne $callerid ]
-	then
-		echo "`basename $0`: Permission denied"
-		exit 1
-	fi	
+	cmd_line="rfs $remote_export $mount_point $3 $params"
 fi
 
-if [ $mountByRoot -eq 1 ]
+if [ $uid -ne 0  ]
 then
 	usr=`sed -n "s/\(.*\):x:$uid:.*/\1/p" /etc/passwd`
-	su - $usr -c "rfs $spec $2 $3 $params"
+	su - $usr -c "$cmd_line"
 else
-	rfs $spec $2 $3 "$params"
+	$cmd_line
 fi
+
