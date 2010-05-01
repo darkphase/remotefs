@@ -12,7 +12,7 @@
 # /tmp 127.0.0.1, alex@10.0.0.0/8
 # /tmp 127.0.0.1, alex, 10.0.0.2 (ro)
 # /tmp 0.0.0.0/0 (ro) 
-# /mnt * (ro)
+# /tmp * (ro)
 #
 # privileges lowering:
 # /tmp 127.0.0.1, alex, 10.0.0.2 (ro,user=alex)
@@ -20,6 +20,7 @@
 #
 # UGO model enabled: (if compiled with it)
 # /tmp alex@10.0.0.2 (ugo)
+# /tmp * (ugo)
 #
 # NOTE: you can not authenticate user 
 # by network or IP-address only if UGO is enabled
