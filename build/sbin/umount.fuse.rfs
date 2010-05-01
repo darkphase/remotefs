@@ -1,5 +1,4 @@
 #!/bin/sh
-# umount.rfs
 fusermount -u $1
 
 # avoid twice call if the unmount was not OK
