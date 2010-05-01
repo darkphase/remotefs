@@ -5,7 +5,9 @@
 
 rfs_man:
 	mkdir -p build/man/gz/man1
+	mkdir -p build/man/gz/man8
 	gzip -c < build/man/rfs.1 > build/man/gz/man1/rfs.1.gz
+	gzip -c < build/man/mount.rfs.8 > build/man/gz/man8/mount.rfs.8.gz
 
 rfsd_man:
 	mkdir -p build/man/gz/man8

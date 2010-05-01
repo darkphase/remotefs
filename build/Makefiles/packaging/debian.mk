@@ -21,13 +21,18 @@ debbase:
 rfsmanpages: dummy
 	$(MAKE) -sf build/Makefiles/base.mk man
 	mkdir -p dpkg_man/man1/
+	mkdir -p dpkg_man/man8/
 	cp build/man/gz/man1/rfs.1.gz dpkg_man/man1/
+	cp build/man/gz/man8/mount.rfs.8.gz dpkg_man/man8/
 
 rfsdeb: dummy clean_build clean_debian_tmp debbase rfsmanpages
 	echo "Building package rfs_$(VERSION)-$(RELEASE)_$(ARCH).deb"
-	mkdir -p "dpkg$(INSTALL_DIR)/lib";
+	mkdir -p "dpkg$(INSTALL_DIR)/lib"
+	mkdir -p "dpkg/sbin"
+	cp build/sbin/mount.rfs "dpkg/sbin/"
+	cp build/sbin/umount.fuse.rfs "dpkg/sbin/"
 	$(MAKE) -f build/Makefiles/base.mk rfs >$(OUTPUT)
-	cp rfs "dpkg$(INSTALL_DIR)/bin/";
+	cp rfs "dpkg$(INSTALL_DIR)/bin/"
 	cp librfs.$(SO_EXT).$(VERSION) "dpkg$(INSTALL_DIR)/lib/"
 	ln -sf "librfs.$(SO_EXT).$(VERSION)" "dpkg$(INSTALL_DIR)/lib/librfs.$(SO_EXT)"
 	CONTROL_TEMPLATE="build/debian/control.rfs" \

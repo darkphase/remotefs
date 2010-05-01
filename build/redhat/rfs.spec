@@ -30,10 +30,15 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/bin
 cp rfs $RPM_BUILD_ROOT%{_prefix}/bin/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man1
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/share/man/man8
 cp build/man/man1/rfs.1.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man1/
+cp build/man/man8/mount.rfs.8.gz $RPM_BUILD_ROOT%{_prefix}/share/man/man8/
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
 cp librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib
 ln -s librfs.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/librfs.so
+mkdir -p $RPM_BUILD_ROOT/sbin
+cp build/sbin/mount.rfs $RPM_BUILD_ROOT/sbin/
+cp build/sbin/umount.fuse.rfs $RPM_BUILD_ROOT/sbin/
 
 # ------------------------     clean     -----------------------------------
 %clean
@@ -47,9 +52,11 @@ rm -rf $RPM_BUILD_ROOT
 #%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfs
 %attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
+%attr(611, root,root) %{_prefix}/share/man/man8/mount.rfs.8.gz
 %attr(655, root,root) %{_prefix}/lib/librfs.so.%{version}
 %attr(777, root,root) %{_prefix}/lib/librfs.so
-
+%attr(755, root,root) /sbin/mount.rfs
+%attr(755, root,root) /sbin/umount.fuse.rfs
 %post
 
 # -------------------------    changelog    --------------------------------
