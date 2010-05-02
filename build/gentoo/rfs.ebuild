@@ -53,6 +53,16 @@ make_install() {
     make -C "${BUILDDIR}/" install
     
     ln -sf "librfs.so.JUST VERSION" "${D}/usr/lib/librfs.so"
+
+    mkdir "${D}/sbin/"
+
+    cp "${BUILDDIR}/build/sbin/mount.rfs" "${D}/sbin/"
+    chmod 755 "${D}/sbin/mount.rfs"
+    chown root:root "${D}/sbin/mount.rfs"
+
+    cp "${BUILDDIR}/build/sbin/umount.fuse.rfs" "${D}/sbin/"
+    chmod 755 "${D}/sbin/umount.fuse.rfs"
+    chown root:root "${D}/sbin/umount.fuse.rfs"
 }
 
 src_install() {
