@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# See `man mount.rfs` for details
+# Authors: Jean-Jacques Sarton <jjsarton@users.sourceforge.net>, Aleksey Tulinov <aleksey_t@users.sourceforge.net>
+
 remote_export=$1
 mount_point=$2
 myuid=`id -u`
