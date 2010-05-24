@@ -1,3 +1,23 @@
+0.14
+
+[*] license updated to GPLv3
+[*] several optimizations of rfs_lock/rfs_open
+[*] minor bugfixes
+
+[-] removed embedded SSL support (see wiki://Help:Secure_Connection)
+
+rfsd:
+
+[+] introduced * special case (everyone) in exports file
+
+[*] fixed init-script for OpenWrt
+
+rfs:
+
+[+] introduced mount.rfs script
+
+[*] default fsname changed according to fstab requirements
+
 0.13-2
 
 [*] fixed hang with ACL under some conditions
