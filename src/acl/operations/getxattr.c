@@ -121,11 +121,13 @@ int _rfs_getxattr(struct rfs_instance *instance, const char *path, const char *n
 
 	if (size == 0)
 	{
+		acl_free(acl);
 		return xattr_size;
 	}
 
 	if (xattr_size > size)
 	{
+		acl_free(acl);
 		return -ERANGE;
 	}
 
