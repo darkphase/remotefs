@@ -99,14 +99,19 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 		acl_free(acl);
 	}
+	else
+	{
+		acl_text_len = 1; /* empty string */
+	}
 
-	DEBUG("acl text: \n%s\n", acl_text == NULL ? "NULL" : acl_text);
+	DEBUG("acl text len: %llu\n", (long long unsigned)acl_text_len);
+	DEBUG("acl text: \n%s\n", acl_text != NULL ? acl_text : "");
 	
 	struct answer ans = { cmd_getxattr, acl_text_len, 0, 0 };
 
 	send_token_t token = { 0, {{ 0 }} };
 	if (do_send(&instance->sendrecv, 
-		queue_data(acl_text == NULL ? "" : acl_text, acl_text == NULL ? 1 : acl_text_len, 
+		queue_data(acl_text != NULL ? acl_text : "", acl_text_len, 
 		queue_ans(&ans, &token))) < 0)
 	{
 		free(acl_text);

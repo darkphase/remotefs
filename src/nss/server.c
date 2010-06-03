@@ -197,7 +197,7 @@ int start_nss_server(struct rfs_instance *instance)
 
 	snprintf(cmd_line, 
 		sizeof(cmd_line) - 1, 
-		"%s %s %s %s %s >/dev/null 2>&1", 
+		"%s %s %s %s %s 2>&1 >/dev/null", 
 		RFS_NSS_BIN, 
 		RFS_NSS_RFSHOST_OPTION, 
 		instance->config.host, 
