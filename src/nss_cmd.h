@@ -45,13 +45,13 @@ enum nss_commands
 
 struct nss_command
 {
-	uint16_t command;
+	uint32_t command;
 	uint32_t data_len;
 };
 
 struct nss_answer
 {
-	uint16_t command;
+	uint32_t command;
 	uint32_t data_len;
 	int32_t  ret;
 	uint32_t ret_errno;
