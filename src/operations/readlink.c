@@ -143,7 +143,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 	pack_32(&bsize, buffer
 	));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

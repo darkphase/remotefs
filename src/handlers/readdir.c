@@ -74,7 +74,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	while ((dir_entry = readdir(dir)) != NULL)
 	{	
 		const char *entry_name = dir_entry->d_name;
-		uint32_t entry_len = strlen(entry_name) + 1, entry_len_hton = entry_len;
+		uint32_t entry_len = strlen(entry_name) + 1;
 		
 		stat_failed = 0;
 		char *send_path = full_path;
@@ -119,14 +119,14 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		if (user == NULL) { user = ""; }
 		if (group == NULL) { group = ""; }
 
-		uint32_t user_len = strlen(user) + 1, user_len_hton = user_len;
-		uint32_t group_len = strlen(group) + 1, group_len_hton = group_len;
+		uint32_t user_len = strlen(user) + 1;
+		uint32_t group_len = strlen(group) + 1;
 		
 		unsigned overall_size = sizeof(stat_failed) 
 			+ STAT_BLOCK_SIZE 
-			+ sizeof(user_len_hton) 
-			+ sizeof(group_len_hton) 
-			+ sizeof(entry_len_hton) 
+			+ sizeof(user_len) 
+			+ sizeof(group_len) 
+			+ sizeof(entry_len) 
 			+ user_len 
 			+ group_len
 			+ entry_len;
@@ -135,14 +135,14 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
 	
-		send_token_t token = { 0, {{ 0 }} };
+		send_token_t token = { 0 };
 		if (do_send(&instance->sendrecv, 
 			queue_data(entry_name, entry_len, 
 			queue_data(group, group_len, 
 			queue_data(user, user_len, 
-			queue_32(&entry_len_hton, 
-			queue_32(&group_len_hton, 
-			queue_32(&user_len_hton, 
+			queue_32(&entry_len, 
+			queue_32(&group_len, 
+			queue_32(&user_len, 
 			queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
 			queue_16(&stat_failed, 
 			queue_ans(&ans, &token) 

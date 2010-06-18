@@ -60,7 +60,7 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 		link_buffer[ret] = '\0';
 	}
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(link_buffer, (ret != -1 ? ret + 1 : 0), 
 		queue_ans(&ans, &token))) < 0)

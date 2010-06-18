@@ -99,7 +99,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	pack_32(&bsize, buffer
 	)))))));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_ans(&ans, &token))) < 0)

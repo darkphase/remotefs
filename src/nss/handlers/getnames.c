@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../../instance_server.h"
 #include "../../list.h"
 #include "../../compat.h"
-#include "../../sendrecv.h"
+#include "../../sendrecv_server.h"
 #include "../../server.h"
 
 int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
@@ -59,7 +59,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	dump(users, users_len);
 #endif
 
-	send_token_t users_token = { 0, {{ 0 }} };
+	send_token_t users_token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(users, users_len, 
 		queue_ans(&ans, &users_token))) < 0)
@@ -104,7 +104,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	dump(groups, groups_len);
 #endif
 
-	send_token_t groups_token = { 0, {{ 0 }} };
+	send_token_t groups_token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(groups, groups_len, 
 		queue_ans(&ans, &groups_token))) < 0)

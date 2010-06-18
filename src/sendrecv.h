@@ -25,57 +25,29 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+enum data_widths { none = 0, command, answer, w16 = 16, w32 = 32, w64 = 64 };
+
+#define W16 sizeof(uint16_t)
+#define W32 sizeof(uint32_t)
+#define W64 sizeof(uint64_t)
+
 typedef struct iovec send_token_entry_t;
 
 /** IOV_MAX iovectors max */
 typedef struct
 {
 	unsigned count;
+	enum data_widths data_width[IOV_MAX];
 	send_token_entry_t iov[IOV_MAX];
 } send_token_t;
 
 /* low lev */
-
 ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count);
 ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob);
 
-/* utils */
-
-static inline struct command* hton_cmd(struct command *cmd)
-{
-	cmd->command = htonl(cmd->command);
-	cmd->data_len = htonl(cmd->data_len);
-	return cmd;
-}
-
-static inline struct command* ntoh_cmd(struct command *cmd)
-{
-	cmd->command = ntohl(cmd->command);
-	cmd->data_len = ntohl(cmd->data_len);
-	return cmd;
-}
-
-static inline struct answer* hton_ans(struct answer *ans)
-{
-	ans->command = htonl(ans->command);
-	ans->data_len = htonl(ans->data_len);
-	ans->ret = htonl(ans->ret);
-	ans->ret_errno = hton_errno(ans->ret_errno);
-	return ans;
-}
-
-static inline struct answer* ntoh_ans(struct answer *ans)
-{
-	ans->command = ntohl(ans->command);
-	ans->data_len = ntohl(ans->data_len);
-	ans->ret = ntohl(ans->ret);
-	ans->ret_errno = ntoh_errno(ans->ret_errno);
-	return ans;
-}
-
 /* common */
 
-static inline send_token_t* queue_data(const char *buffer, size_t len, send_token_t *token)
+static inline send_token_t* queue_buffer(enum data_widths width, const char *buffer, size_t len, send_token_t *token)
 {
 	DEBUG("data of size %lu\n", (unsigned long)len);
 	if (token != NULL && len > 0)
@@ -85,6 +57,7 @@ static inline send_token_t* queue_data(const char *buffer, size_t len, send_toke
 			return NULL;
 		}
 
+		token->data_width[token->count] = width;
 		token->iov[token->count].iov_base = (void *)buffer;
 		token->iov[token->count].iov_len = len;
 		++(token->count);
@@ -92,38 +65,24 @@ static inline send_token_t* queue_data(const char *buffer, size_t len, send_toke
 	return token;
 }
 
-static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
+static inline send_token_t* queue_data(const char *buffer, size_t len, send_token_t *token)
 {
-#ifdef RFS_DEBUG
-	dump_command(cmd);
-#endif
-	return queue_data((char *)hton_cmd(cmd), sizeof(*cmd), token);
-}
-
-static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
-{
-#ifdef RFS_DEBUG
-	dump_answer(ans);
-#endif
-	return queue_data((char *)hton_ans(ans), sizeof(*ans), token);
+	return queue_buffer(none, buffer, len, token);
 }
 
 static inline send_token_t* queue_16(uint16_t *value, send_token_t *token)
 {
-	*value = htons(*value);
-	return queue_data((char *)value, sizeof(*value), token);
+	return queue_buffer(w16, (const char *)value, sizeof(*value), token);
 }
 
 static inline send_token_t* queue_32(uint32_t *value, send_token_t *token)
 {
-	*value = htonl(*value);
-	return queue_data((char *)value, sizeof(*value), token);
+	return queue_buffer(w32, (const char *)value, sizeof(*value), token);
 }
 
 static inline send_token_t* queue_64(uint64_t *value, send_token_t *token)
 {
-	*value = htonll(*value);
-	return queue_data((char *)value, sizeof(*value), token);
+	return queue_buffer(w64, (const char *)value, sizeof(*value), token);
 }
 
 static inline ssize_t do_send(struct sendrecv_info *info, send_token_t *token)
@@ -131,6 +90,44 @@ static inline ssize_t do_send(struct sendrecv_info *info, send_token_t *token)
 	if (token == NULL)
 	{
 		return -EINVAL;
+	}
+
+	size_t i = 0; for (; i < token->count; ++i)
+	{
+		switch (token->data_width[i])
+		{
+		case command:
+			{
+			struct command *cmd = (struct command *)(token->iov[i].iov_base);
+			cmd->command = htonl(cmd->command);
+			cmd->data_len = htonl(cmd->data_len);
+			}
+			break;
+		case answer:
+			{
+			struct answer *ans = (struct answer *)(token->iov[i].iov_base);
+			ans->command = htonl(ans->command);
+			ans->data_len = htonl(ans->data_len);
+			ans->ret = htonl(ans->ret);
+			ans->ret_errno = hton_errno(ans->ret_errno);
+			}
+			break;
+		case w16:
+			DEBUG("htons'ing iov %lu\n", (unsigned long)i);
+			*((uint16_t *)token->iov[i].iov_base) = htons(*((uint16_t *)token->iov[i].iov_base));
+			break;
+		case w32:
+			DEBUG("htonl'ing iov %lu\n", (unsigned long)i);
+			*((uint32_t *)token->iov[i].iov_base) = htonl(*((uint32_t *)token->iov[i].iov_base));
+			break;
+		case w64:	
+			DEBUG("htonll'ing iov %lu\n", (unsigned long)i);
+			*((uint64_t *)token->iov[i].iov_base) = htonll(*((uint64_t *)token->iov[i].iov_base));
+			break;
+		default:
+			DEBUG("skipping iov %lu\n", (unsigned long)i);
+			break;
+		}
 	}
 
 	DEBUG("sending token with %u records\n", token->count);

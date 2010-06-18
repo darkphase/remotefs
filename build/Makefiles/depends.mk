@@ -892,7 +892,7 @@ src/nss/handlers/getnames.o:src/nss/handlers/../../id_lookup.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../instance_server.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../list.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../compat.h
-src/nss/handlers/getnames.o:src/nss/handlers/../../sendrecv.h
+src/nss/handlers/getnames.o:src/nss/handlers/../../sendrecv_server.h
 src/nss/handlers/getnames.o:src/nss/handlers/../../server.h
 src/nss/handlers/getnames.o:src/nss/handlers/getnames.c
 src/resume/cleanup.o:src/resume/../buffer.h

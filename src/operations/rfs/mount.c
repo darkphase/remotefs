@@ -28,7 +28,7 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 	unsigned path_len = strlen(path);
 	struct command cmd = { cmd_changepath, path_len + 1};
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len + 1, 
 		queue_cmd(&cmd, &token))) < 0)
@@ -48,5 +48,5 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 		return cleanup_badmsg(instance, &ans);
 	}
 
-	return ans.ret == -1 ? -ans.ret_errno : ans.ret;
+	return ans.ret != 0 ? -ans.ret_errno : 0;
 }

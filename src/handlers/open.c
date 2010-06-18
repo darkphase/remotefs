@@ -83,8 +83,8 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 
 	stat_failed = (fstat(fd, &stbuf) == 0 ? 0 : 1);
 
-	uint32_t user_len = 0, user_len_hton = 0;
-	uint32_t group_len = 0, group_len_hton = 0;
+	uint32_t user_len = 0;
+	uint32_t group_len = 0;
 	char stat_buffer[STAT_BLOCK_SIZE] = { 0 };
 	const char *user = NULL, *group = NULL;
 
@@ -100,8 +100,8 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	if (user == NULL) { user = ""; }
 	if (group == NULL) { group = ""; }
 	
-	user_len = user_len_hton = strlen(user) + 1;
-	group_len = group_len_hton = strlen(group) + 1;
+	user_len = strlen(user) + 1;
+	group_len = strlen(group) + 1;
 	
 	unsigned overall_size = sizeof(handle) + sizeof(stat_failed) + STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) + user_len + group_len;
 
@@ -115,12 +115,12 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		user, (unsigned long)user_len, 
 		group, (unsigned long)group_len);
 	
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	return (do_send(&instance->sendrecv, 
 		queue_data(group, group_len, 
 		queue_data(user, user_len, 
-		queue_32(&group_len_hton, 
-		queue_32(&user_len_hton, 
+		queue_32(&group_len, 
+		queue_32(&user_len, 
 		queue_data((const char *)stat_buffer, sizeof(stat_buffer), 
 		queue_32(&stat_failed, 
 		queue_64(&handle, 

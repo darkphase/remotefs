@@ -45,13 +45,12 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 		return reject_request(instance, cmd, errno) == 0 ? 1 : -1;
 	}
 
-	send_token_t token = { 2, {{ 0 }} };
-	token.iov[0].iov_base = (void *)hton_ans(&ans);
-	token.iov[0].iov_len = sizeof(ans);
-	token.iov[1].iov_base = (void *)buffer;
-	token.iov[1].iov_len = (result >= 0 ? result : 0);
-
-	return do_send(&instance->sendrecv, &token) < 0 ? -1 : 0;
+	send_token_t token = { 0 };
+	
+	return do_send(&instance->sendrecv, 
+		queue_data(buffer, (result >= 0 ? result : 0), 
+		queue_ans(&ans, &token
+		))) < 0 ? -1 : 0;
 }
 
 #if (! defined SENDFILE_AVAILABLE) /* we don't need this on Linux/Solaris/FreeBSD */

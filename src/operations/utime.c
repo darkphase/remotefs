@@ -60,7 +60,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 	pack_16(&is_null, buffer
 	))));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

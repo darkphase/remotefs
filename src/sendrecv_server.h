@@ -21,15 +21,30 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+static inline struct command* ntoh_cmd(struct command *cmd)
+{
+	cmd->command = ntohl(cmd->command);
+	cmd->data_len = ntohl(cmd->data_len);
+	return cmd;
+}
+
+static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
+{
+#ifdef RFS_DEBUG
+	dump_answer(ans);
+#endif
+	return queue_buffer(answer, (char *)ans, sizeof(*ans), token);
+}
+
 static inline ssize_t rfs_send_answer(struct sendrecv_info *info, struct answer *ans)
 {
 #ifdef RFS_DEBUG
 	dump_answer(ans);
 #endif
-	send_token_t token = { 1, {{ 0 }} };
-	token.iov[0].iov_base = (void *)hton_ans(ans);
-	token.iov[0].iov_len = sizeof(*ans);
-	return (do_send(info, &token) == sizeof(*ans) ? 0 : -1);
+	send_token_t token = { 0 };
+	return (do_send(info, 
+		queue_ans(ans, &token
+		)) == sizeof(*ans) ? 0 : -1);
 }
 
 static inline ssize_t rfs_send_answer_oob(struct sendrecv_info *info, struct answer *ans)

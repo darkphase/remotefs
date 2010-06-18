@@ -126,7 +126,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	pack_32(&user_len, buffer
 	)))));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

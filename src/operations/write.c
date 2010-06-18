@@ -367,15 +367,12 @@ int _do_write(struct rfs_instance *instance, const char *path, const char *buf, 
 	pack_32(&fsize, header
 	)));
 
-	send_token_t token = { 3, {{ 0 }} };
-	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
-	token.iov[0].iov_len = sizeof(cmd);
-	token.iov[1].iov_base = (void *)header;
-	token.iov[1].iov_len = header_size;
-	token.iov[2].iov_base = (void *)buf;
-	token.iov[2].iov_len = size;
-
-	if (do_send(&instance->sendrecv, &token) < 0)
+	send_token_t token = { 0 };
+	if (do_send(&instance->sendrecv, 
+		queue_data(buf, size, 
+		queue_data(header, header_size, 
+		queue_cmd(&cmd, &token 
+		)))) < 0)
 	{
 		return -ECONNABORTED;
 	}

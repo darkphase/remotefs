@@ -38,7 +38,7 @@ int _rfs_symlink(struct rfs_instance *instance, const char *path, const char *ta
 	pack_32(&path_len, buffer
 	)));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

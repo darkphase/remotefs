@@ -38,7 +38,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	pack_32(&foffset, buffer
 	));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

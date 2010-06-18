@@ -17,15 +17,32 @@ See the file LICENSE.
 extern "C" {
 #endif
 
+static inline struct answer* ntoh_ans(struct answer *ans)
+{
+	ans->command = ntohl(ans->command);
+	ans->data_len = ntohl(ans->data_len);
+	ans->ret = ntohl(ans->ret);
+	ans->ret_errno = ntoh_errno(ans->ret_errno);
+	return ans;
+}
+
+static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
+{
+#ifdef RFS_DEBUG
+	dump_command(cmd);
+#endif
+	return queue_buffer(command, (char *)cmd, sizeof(*cmd), token);
+}
+
 static inline ssize_t rfs_send_cmd(struct sendrecv_info *info, struct command *cmd)
 {
 #ifdef RFS_DEBUG
 	dump_command(cmd);
 #endif
-	send_token_t token = { 1, {{ 0 }} };
-	token.iov[0].iov_base = (void *)hton_cmd(cmd);
-	token.iov[0].iov_len = sizeof(*cmd);
-	return (do_send(info, &token) == sizeof(*cmd) ? 0 : -1);
+	send_token_t token = { 0 };
+	return (do_send(info, 
+		queue_cmd(cmd, &token
+		)) == sizeof(*cmd) ? 0 : -1);
 }
 
 static inline ssize_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len)

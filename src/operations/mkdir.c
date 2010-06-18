@@ -39,7 +39,7 @@ int _rfs_mkdir(struct rfs_instance *instance, const char *path, mode_t mode)
 	pack_32(&fmode, buffer
 	));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

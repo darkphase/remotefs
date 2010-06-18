@@ -40,7 +40,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data((void *)&handle, sizeof(handle), 
 		queue_cmd(&cmd, &token))) < 0)

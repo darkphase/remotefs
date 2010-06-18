@@ -23,6 +23,8 @@ See the file LICENSE.
 
 static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
+	DEBUG("%s\n", "rejecting request");
+
 	struct answer ans = { cmd->command, 0, -1, ret_errno };
 
 	if (data_is_in_queue != 0 

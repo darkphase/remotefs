@@ -38,11 +38,11 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	pack_64(&fsize, buffer
 	)));
 
-	send_token_t token = { 2, {{ 0 }} };
-	token.iov[0].iov_base = (void *)hton_cmd(&cmd);
-	token.iov[0].iov_len = sizeof(cmd);
-	token.iov[1].iov_base = buffer;
-	token.iov[1].iov_len = overall_size;
+	send_token_t token = { 0 };
+	
+	queue_data(buffer, overall_size, 
+	queue_cmd(&cmd, &token
+	));
 #undef overall_size
 
 	if (do_send(&instance->sendrecv, &token) < 0)

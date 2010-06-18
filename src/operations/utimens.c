@@ -66,7 +66,7 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 	pack_64(&modtime_sec, buffer
 	))))));
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(buffer, overall_size, 
 		queue_cmd(&cmd, &token))) < 0)

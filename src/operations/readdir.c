@@ -31,7 +31,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	struct command cmd = { cmd_readdir, path_len };
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(path, path_len, 
 		queue_cmd(&cmd, &token))) < 0)
