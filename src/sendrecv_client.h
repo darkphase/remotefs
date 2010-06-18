@@ -47,7 +47,8 @@ static inline ssize_t rfs_send_cmd(struct sendrecv_info *info, struct command *c
 
 static inline ssize_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len)
 {
-	return (rfs_recv(info, (char *)data, data_len, 1) == data_len ? 0 : -1);
+	ssize_t ret = rfs_recv(info, (char *)data, data_len, 1);
+	return ((ret < 0 || (size_t)ret != data_len) ? 0 : -1);
 }
 
 static inline ssize_t rfs_receive_answer(struct sendrecv_info *info, struct answer *ans)
