@@ -246,6 +246,7 @@ int create_gids_lookup(struct list **gids)
 		
 		if (put_to_ids(gids, grp->gr_name, (const void *)&(grp->gr_gid), alloc_gid_ent) != 0)
 		{
+			endgrent();
 			return -1;
 		}
 	}
