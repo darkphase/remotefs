@@ -19,6 +19,23 @@ extern "C" {
 
 struct rfs_instance;
 
+/* FUSE stuff */
+
+struct fuse_rfs_instance
+{
+	char *fsname;
+	char *subtype;
+};
+
+#define DEFINE_FUSE_RFS_INSTANCE(instance) struct fuse_rfs_instance instance = { 0 };
+
+void init_fuse_rfs_instance(struct fuse_rfs_instance *instance);
+void release_fuse_rfs_instance(struct fuse_rfs_instance *instance);
+
+void setup_fsname(struct fuse_rfs_instance *instance, struct rfs_instance *rfs_instance, int *argc, struct fuse_args *args);
+
+/* rfs stuff */
+
 extern struct rfs_instance *instance;
 struct fuse_operations fuse_rfs_operations;
 

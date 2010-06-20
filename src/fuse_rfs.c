@@ -6,11 +6,63 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "fuse_rfs.h" /* need this before config.h because of O_ASYNC defined in compat.h */
 #include "config.h"
 #include "operations.h"
 #include "operations/operations_rfs.h"
 #include "options.h"
+#include "instance_client.h"
+
+void init_fuse_rfs_instance(struct fuse_rfs_instance *instance)
+{
+	instance->fsname = NULL;
+	instance->subtype = NULL;
+}
+
+void release_fuse_rfs_instance(struct fuse_rfs_instance *instance)
+{
+	if (instance->fsname != NULL)
+	{
+		free(instance->fsname);
+		instance->fsname = NULL;
+	}
+
+	if (instance->subtype != NULL)
+	{
+		free(instance->subtype);
+		instance->subtype = NULL;
+	}
+}
+
+void setup_fsname(struct fuse_rfs_instance *instance, struct rfs_instance *rfs_instance, int *argc, struct fuse_args *args)
+{
+	if (rfs_instance->config.set_fsname != 0)
+	{
+		char fsname_opt_tmpl[] = "-ofsname=";
+		const char *host = rfs_instance->config.host;
+		const char *path = rfs_instance->config.path;
+
+		size_t fsname_len = strlen(fsname_opt_tmpl) + strlen(host) + strlen(path) + 2; /* including \0 and : */
+		char *fsname_opt = malloc(fsname_len);
+		snprintf(fsname_opt, fsname_len, "%s%s:%s", fsname_opt_tmpl, host, path);
+		
+		DEBUG("setting fsname: %s\n", fsname_opt);
+
+		instance->fsname = fsname_opt;
+
+		fuse_opt_add_arg(args, instance->fsname);
+		++(*argc);
+	}
+
+	instance->subtype = strdup("-osubtype=rfs");
+	DEBUG("setting subtype: %s\n", instance->subtype);
+
+	fuse_opt_add_arg(args, instance->subtype);
+	++(*argc);
+}
 
 struct rfs_instance *instance = NULL;
 

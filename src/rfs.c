@@ -9,7 +9,6 @@ See the file LICENSE.
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "fuse_rfs.h" /* need this before config.h because of O_ASYNC defined in compat.h */
 #include "buffer.h"
@@ -268,33 +267,6 @@ static int read_password()
 	return 0;
 }
 
-static void setup_fsname(const struct rfs_instance *instance, struct fuse_args *args, int *argc)
-{
-	char fsname_opt_tmpl[] = "-ofsname=";
-	const char *host = rfs_instance.config.host;
-	const char *path = rfs_instance.config.path;
-
-	size_t fsname_len = strlen(fsname_opt_tmpl) + strlen(host) + strlen(path) + 2; /* including \0 and : */
-	char *fsname_opt = malloc(fsname_len);
-	snprintf(fsname_opt, fsname_len, "%s%s:%s", fsname_opt_tmpl, host, path);
-		
-	DEBUG("setting fsname: %s\n", fsname_opt);
-
-	fuse_opt_add_arg(args, fsname_opt);
-	++(*argc);
-
-	char subtype_opt_tmpl[] = "-osubtype=";
-	const char *subtype = "rfs";
-	size_t subtype_len = strlen(subtype_opt_tmpl) + strlen(subtype) + 1;
-	char *subtype_opt = malloc(subtype_len);
-	snprintf(subtype_opt, subtype_len, "%s%s", subtype_opt_tmpl, subtype);
-
-	DEBUG("setting subtype: %s\n", subtype_opt);
-
-	fuse_opt_add_arg(args, subtype_opt);
-	++(*argc);
-}
-
 int main(int argc, char **argv)
 {
 	init_rfs_instance(&rfs_instance);
@@ -385,11 +357,10 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	char *fsname_opt = NULL;
-	if (rfs_instance.config.set_fsname != 0)
-	{
-		setup_fsname(&rfs_instance, &args, &argc);
-	}
+	DEFINE_FUSE_RFS_INSTANCE(fuse_rfs_instance);
+	init_fuse_rfs_instance(&fuse_rfs_instance);
+
+	setup_fsname(&fuse_rfs_instance, &rfs_instance, &argc, &args);
 
 #if FUSE_USE_VERSION >= 26
 	int ret = fuse_main(args.argc, args.argv, &fuse_rfs_operations, NULL);
@@ -401,11 +372,6 @@ int main(int argc, char **argv)
 	
 	fuse_opt_free_args(&args);
 
-	if (fsname_opt != NULL)
-	{
-		free(fsname_opt);
-	}
-
 	free(rfs_instance.config.host);
 	free(rfs_instance.config.path);
 	
@@ -414,6 +380,7 @@ int main(int argc, char **argv)
 		free(rfs_instance.config.auth_passwd);
 	}
 	
+	release_fuse_rfs_instance(&fuse_rfs_instance);
 	release_rfs_instance(&rfs_instance);
 	
 	return ret;
