@@ -109,7 +109,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	
 	struct answer ans = { cmd_getxattr, acl_text_len, 0, 0 };
 
-	send_token_t token = { 0, {{ 0 }} };
+	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
 		queue_data(acl_text != NULL ? acl_text : "", acl_text_len, 
 		queue_ans(&ans, &token))) < 0)
