@@ -13,24 +13,24 @@ OPT_1 = -DWITH_IPV6
 OPT_2 = -DWITH_EXPORTS_LIST
 
 ###############################################
-# Support for POSIX ACL
-# Linux only
-
-#OPT_3 = -DWITH_ACL
-#OPT_3_LD = $(LDFLAGS_ACL)
-
-###############################################
 # Support for UGO
 # this normally should be embedded, but OpenWrt is commonly single-user system
 # so, since it is designed for use with OpenWrt, it should be useful to remove
 # unneeded parts from OpenWrt build
 
-OPT_4 = -DWITH_UGO
+OPT_3 = -DWITH_UGO
+
+###############################################
+# Support for POSIX ACL
+# Linux only
+
+#OPT_4 = -DWITH_ACL
+#OPT_4_LD = $(LDFLAGS_ACL)
 
 ###############################################
 # Experimental scheduling for MacOS only
 
-OPT_5 = -DWITH_SCHEDULING
+#OPT_5 = -DWITH_SCHEDULING
 
 ###############################################
 # End of user configuration, don't change the

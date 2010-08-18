@@ -28,6 +28,10 @@ See the file LICENSE.
 
 #if (defined DARWIN && defined WITH_SCHEDULING)
 #	define SCHEDULING_AVAILABLE
+#else
+#if (!defined DARWIN && defined WITH_SCHEDULING)
+#error WITH_SCHEDULING is available for MacOS only
+#endif
 #endif
 
 #endif /* OPTIONS_H */
