@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../instance.h"
 
 #define RFS_XATTR_NAME_ACL_ACCESS  "system.posix_acl_access"
-#define RFS_XATTR_NAME_ACL_DEFAULT "system.posix_acl_defult"
+#define RFS_XATTR_NAME_ACL_DEFAULT "system.posix_acl_default"
 
 char* id_lookup_reverse_resolve(acl_tag_t tag, const void *id, void *lookup_casted)
 {
