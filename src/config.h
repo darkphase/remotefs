@@ -40,9 +40,9 @@ struct list;
 #endif
 
 #ifdef RFS_DEBUG
-#define DEBUG(format, args...) do { fprintf(stderr, format, args); } while (0)
+#define DEBUG(format, ...) do { fprintf(stderr, format, ## __VA_ARGS__); } while (0)
 #else
-#define DEBUG(format, args...)
+#define DEBUG(format, ...)
 #endif
 
 struct user_info

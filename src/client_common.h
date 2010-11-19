@@ -39,19 +39,19 @@ int recv_answer(int sock, struct nss_answer *ans, char **data);
 unsigned rfsnss_is_server_running(uid_t uid);
 
 /** macro to make use of private and shared servers */
-#define CHECK_BOTH_SERVERS(func, args...)                                   \
-	void *ret = func(getuid(), (args));    /* use private server first */ \
-	if (ret != NULL) { return ret; }         /* if no result */             \
-	return func((uid_t)(-1), (args))      /* try shared server */        \
+#define CHECK_BOTH_SERVERS(func, ...)                                                 \
+	void *ret = func(getuid(), ## __VA_ARGS__);    /* use private server first */ \
+	if (ret != NULL) { return ret; }         /* if no result */                   \
+	return func((uid_t)(-1), ## __VA_ARGS__)      /* try shared server */         \
 
-#define CHECK_BOTH_SERVERS_VOID(func)                                       \
-	void *ret = (func)(getuid());            /* use private server first */ \
-	if (ret != NULL) { return ret; }         /* if no result */             \
-	return (func)((uid_t)(-1))              /* try shared server */        \
+#define CHECK_BOTH_SERVERS_VOID(func)                                                 \
+	void *ret = (func)(getuid());            /* use private server first */       \
+	if (ret != NULL) { return ret; }         /* if no result */                   \
+	return (func)((uid_t)(-1))              /* try shared server */               \
 
-#define APPLY_TO_BOTH_SERVERS(func)                                         \
-	(func)(getuid());                                                       \
-	(func)((uid_t)-1)                                                      \
+#define APPLY_TO_BOTH_SERVERS(func)                                                   \
+	(func)(getuid());                                                             \
+	(func)((uid_t)-1)                                                             \
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

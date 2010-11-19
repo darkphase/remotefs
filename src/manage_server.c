@@ -118,7 +118,7 @@ int add_user(struct list **root, const char *user, uid_t uid)
 		return -1;
 	}
 
-	DEBUG("added user %s with uid %d (%p)\n", user, uid, user_rec);
+	DEBUG("added user %s with uid %d (%p)\n", user, uid, (void *)user_rec);
 
 	return 0;
 }
