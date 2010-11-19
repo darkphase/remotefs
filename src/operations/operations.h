@@ -15,15 +15,15 @@ See the file LICENSE.
 and operation failed, then try it one more time 
 
 pass ret (int) as return value of this macro */
-#define PARTIALY_DECORATE(ret, func, instance, args...)     \
-	if(check_connection((instance)) == 0)               \
-	{                                                   \
-		(ret) = (func)((instance), args);           \
-		if ((ret) == -ECONNABORTED                  \
-		&& check_connection((instance)) == 0)       \
-		{                                           \
-			(ret) = (func)((instance), args);   \
-		}                                           \
+#define PARTIALY_DECORATE(ret, func, instance, ...)                 \
+	if(check_connection((instance)) == 0)                       \
+	{                                                           \
+		(ret) = (func)((instance), ## __VA_ARGS__);         \
+		if ((ret) == -ECONNABORTED                          \
+		&& check_connection((instance)) == 0)               \
+		{                                                   \
+			(ret) = (func)((instance), ## __VA_ARGS__); \
+		}                                                   \
 	}
 
 #if defined (__cplusplus) || defined (c_plusplus)

@@ -141,7 +141,7 @@ static void* write_behind(void *void_instance)
 	(unsigned int )write_behind_request->block->used,
 	(unsigned long long)write_behind_request->block->offset,
 	(unsigned long long)write_behind_request->block->descriptor,
-	write_behind_request->block);
+	(void *)write_behind_request->block);
 	
 	write_behind_request->last_ret = 0;
 	PARTIALY_DECORATE(write_behind_request->last_ret,
@@ -225,7 +225,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	}
 	
 	struct cache_block *block = find_suitable_cache_block(instance->write_cache.cache, size, offset, desc);
-	DEBUG("cache block: %p\n", block);
+	DEBUG("cache block: %p\n", (void *)block);
 	
 	/* check if cache is full and so no appropriate cache block found */
 	if (block == NULL 
@@ -269,7 +269,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	if (block != NULL
 	&& free_space >= size)
 	{
-		DEBUG("*** writing data to cache (%p)\n", block);
+		DEBUG("*** writing data to cache (%p)\n", (void *)block);
 		memcpy(block->data + block->used, buf, size);
 		block->used += size;
 		

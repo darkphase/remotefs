@@ -56,7 +56,7 @@ struct cache_block* find_suitable_cache_block(const struct list *head, size_t si
 		(unsigned int)block->used,
 		(unsigned long long)block->offset,
 		(unsigned long long)block->descriptor,
-		block);
+		(void *)block);
 		
 		if (block->descriptor == descriptor
 		&& block->offset <= offset
@@ -156,7 +156,7 @@ struct list* delete_block_from_cache(struct list **head, struct cache_block *blo
 #ifdef RFS_DEBUG
 void dump_block(const struct cache_block *block)
 {
-	DEBUG("dumping cache block at %p\n", block);
+	DEBUG("dumping cache block at %p\n", (void *)block);
 	if (block != NULL)
 	{
 		DEBUG("descriptor: %llu, allocated: %u, used: %u, offset: %llu, data: %p\n",

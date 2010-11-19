@@ -111,12 +111,12 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		int resume_ret = resume_files(instance);
 		if (resume_ret != 0)
 		{
-			/* we're not supposed to show error, since resume should happend
-			only on reconnect when rfs is in background */
+			/* we're not supposed to show error, since resume should happen
+			only on reconnect (when rfs is in background) */
 			
 			if (show_errors != 0) /* oh, this is odd */
 			{
-				ERROR(
+				const char *message = 
 #ifndef RFS_DEBUG
 				"Hello there!\n"
 				"Normally you should not be seeing this message.\n"
@@ -124,8 +124,9 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				"You'll find his e-mail at http://remotefs.sourceforge.net . Thank you.\n"
 				"Anyway, here's the actual message:\n"
 #endif
-				"Error restoring remote files state after reconnect: %s\n",
-				strerror(-resume_ret));
+				"Error restoring remote files state after reconnect: %s\n";
+				
+				ERROR(message, strerror(-resume_ret));
 			}
 			
 			/* well, we have to count this error

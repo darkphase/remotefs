@@ -76,14 +76,14 @@ struct list;
 #define RFS_NSS_SHARED_OPTION   "-a"
 
 #ifdef RFS_DEBUG
-#        define DEBUG(format, args...) do { fprintf(stderr, "%u: ", (unsigned)getpid()); fprintf(stderr, format, args); } while (0)
+#        define DEBUG(format, ...) do { fprintf(stderr, "%u: ", (unsigned)getpid()); fprintf(stderr, format, ## __VA_ARGS__); } while (0)
 #else
-#        define DEBUG(format, args...) {}
+#        define DEBUG(format, ...)
 #endif
 
-#define ERROR(format, args...) do { fprintf(stderr, format, args); } while (0)
-#define INFO(format, args...) do { fprintf(stdout, format, args); } while (0)
-#define WARN(format, args...) do { fprintf(stdout, format, args); } while (0)
+#define ERROR(format, ...) do { fprintf(stderr, format, ## __VA_ARGS__); } while (0)
+#define INFO(format, ...) do { fprintf(stdout, format, ## __VA_ARGS__); } while (0)
+#define WARN(format, ...) do { fprintf(stdout, format, ## __VA_ARGS__ ); } while (0)
 
 #ifndef NULL
 #        define NULL (void *)(0)

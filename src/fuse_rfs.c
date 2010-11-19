@@ -105,8 +105,8 @@ struct fuse_operations fuse_rfs_operations = {
 #endif
 };
 
-#define FUSE_DECORATE(func, instance, args...)        \
-	return (func)((instance), args)
+#define FUSE_DECORATE(func, instance, ...)        \
+	return (func)((instance), ## __VA_ARGS__)
 
 #if FUSE_USE_VERSION >= 26
 void* fuse_rfs_init(struct fuse_conn_info *conn)

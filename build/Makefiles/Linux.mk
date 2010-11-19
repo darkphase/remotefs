@@ -13,8 +13,8 @@ LN = ln -sf
 ################################
 
 CFLAGS_OS      = -Wall -Werror -DLINUX -D_XOPEN_SOURCE=500 -D_BSD_SOURCE # -Wno-strict-aliasing
-CFLAGS_DEBUG   = -g -fPIC
-CFLAGS_RELEASE = -O3
+CFLAGS_DEBUG   = -g -fPIC -pedantic --std=c99
+CFLAGS_RELEASE = -O3 -pedantic --std=c99
 
 ###############################
 # Flags needed for Fuse

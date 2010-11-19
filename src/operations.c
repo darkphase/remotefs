@@ -16,17 +16,17 @@ See the file LICENSE.
 #include "operations/operations.h"
 #include "operations/utils.h"
 
-#define DECORATE(func, instance, args...)                           \
-	int ret = -ECONNABORTED;                                    \
-	if (client_keep_alive_lock((instance)) == 0)                \
-	{                                                           \
-		PARTIALY_DECORATE(ret, (func), (instance), args)    \
-		client_keep_alive_unlock((instance));               \
-	}                                                           \
-	else                                                        \
-	{                                                           \
-		ret = -EIO;                                         \
-	}                                                           \
+#define DECORATE(func, instance, ...)                                      \
+	int ret = -ECONNABORTED;                                           \
+	if (client_keep_alive_lock((instance)) == 0)                       \
+	{                                                                  \
+		PARTIALY_DECORATE(ret, (func), (instance), ## __VA_ARGS__) \
+		client_keep_alive_unlock((instance));                      \
+	}                                                                  \
+	else                                                               \
+	{                                                                  \
+		ret = -EIO;                                                \
+	}                                                                  \
 	return ret
 
 int rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev_t dev)
