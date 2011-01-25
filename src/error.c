@@ -103,109 +103,109 @@ int hton_errno(int host_errno)
 	{
 	case 0:             return RFS_SUCCESS;
 	
-	case E2BIG:         return htons(RFS_E2BIG);
-	case EACCES:        return htons(RFS_EACCES);
-	case EADDRINUSE:    return htons(RFS_EADDRINUSE);
-	case EADDRNOTAVAIL: return htons(RFS_EADDRNOTAVAIL);
-	case EAFNOSUPPORT:  return htons(RFS_EAFNOSUPPORT);
-	case EAGAIN:        return htons(RFS_EAGAIN);
+	case E2BIG:         return htonl(RFS_E2BIG);
+	case EACCES:        return htonl(RFS_EACCES);
+	case EADDRINUSE:    return htonl(RFS_EADDRINUSE);
+	case EADDRNOTAVAIL: return htonl(RFS_EADDRNOTAVAIL);
+	case EAFNOSUPPORT:  return htonl(RFS_EAFNOSUPPORT);
+	case EAGAIN:        return htonl(RFS_EAGAIN);
 #if EWOULDBLOCK != EAGAIN
-	case EWOULDBLOCK:   return htons(RFS_EWOULDBLOCK);
+	case EWOULDBLOCK:   return htonl(RFS_EWOULDBLOCK);
 #endif
 #if EALREADY != EBUSY
-	case EALREADY:      return htons(RFS_EALREADY);
+	case EALREADY:      return htonl(RFS_EALREADY);
 #endif
-	case EBADF:         return htons(RFS_EBADF);
-	case EBADMSG:       return htons(RFS_EBADMSG);
-	case EBUSY:         return htons(RFS_EBUSY);
-	case ECANCELED:     return htons(RFS_ECANCELED);
-	case ECHILD:        return htons(RFS_ECHILD);
-	case ECONNABORTED:  return htons(RFS_ECONNABORTED);
-	case ECONNREFUSED:  return htons(RFS_ECONNREFUSED);
-	case ECONNRESET:    return htons(RFS_ECONNRESET);
-	case EDEADLK:       return htons(RFS_EDEADLK);
-	case EDESTADDRREQ:  return htons(RFS_EDESTADDRREQ);
-	case EDOM:          return htons(RFS_EDOM);
-	case EDQUOT:        return htons(RFS_EDQUOT);
-	case EEXIST:        return htons(RFS_EEXIST);
-	case EFAULT:        return htons(RFS_EFAULT);
-	case EFBIG:         return htons(RFS_EFBIG);
-	case EHOSTUNREACH:  return htons(RFS_EHOSTUNREACH);
-	case EIDRM:         return htons(RFS_EIDRM);
-	case EILSEQ:        return htons(RFS_EILSEQ);
-	case EINPROGRESS:   return htons(RFS_EINPROGRESS);
-	case EINTR:         return htons(RFS_EINTR);
-	case EINVAL:        return htons(RFS_EINVAL);
-	case EIO:           return htons(RFS_EIO);
-	case EISCONN:       return htons(RFS_EISCONN);
-	case EISDIR:        return htons(RFS_EISDIR);
-	case ELOOP:         return htons(RFS_ELOOP);
-	case EMFILE:        return htons(RFS_EMFILE);
-	case EMLINK:        return htons(RFS_EMLINK);
-	case EMSGSIZE:      return htons(RFS_EMSGSIZE);
-	case EMULTIHOP:     return htons(RFS_EMULTIHOP);
-	case ENAMETOOLONG:  return htons(RFS_ENAMETOOLONG);
-	case ENETDOWN:      return htons(RFS_ENETDOWN);
-	case ENETRESET:     return htons(RFS_ENETRESET);
-	case ENETUNREACH:   return htons(RFS_ENETUNREACH);
-	case ENFILE:        return htons(RFS_ENFILE);
-	case ENOBUFS:       return htons(RFS_ENOBUFS);
+	case EBADF:         return htonl(RFS_EBADF);
+	case EBADMSG:       return htonl(RFS_EBADMSG);
+	case EBUSY:         return htonl(RFS_EBUSY);
+	case ECANCELED:     return htonl(RFS_ECANCELED);
+	case ECHILD:        return htonl(RFS_ECHILD);
+	case ECONNABORTED:  return htonl(RFS_ECONNABORTED);
+	case ECONNREFUSED:  return htonl(RFS_ECONNREFUSED);
+	case ECONNRESET:    return htonl(RFS_ECONNRESET);
+	case EDEADLK:       return htonl(RFS_EDEADLK);
+	case EDESTADDRREQ:  return htonl(RFS_EDESTADDRREQ);
+	case EDOM:          return htonl(RFS_EDOM);
+	case EDQUOT:        return htonl(RFS_EDQUOT);
+	case EEXIST:        return htonl(RFS_EEXIST);
+	case EFAULT:        return htonl(RFS_EFAULT);
+	case EFBIG:         return htonl(RFS_EFBIG);
+	case EHOSTUNREACH:  return htonl(RFS_EHOSTUNREACH);
+	case EIDRM:         return htonl(RFS_EIDRM);
+	case EILSEQ:        return htonl(RFS_EILSEQ);
+	case EINPROGRESS:   return htonl(RFS_EINPROGRESS);
+	case EINTR:         return htonl(RFS_EINTR);
+	case EINVAL:        return htonl(RFS_EINVAL);
+	case EIO:           return htonl(RFS_EIO);
+	case EISCONN:       return htonl(RFS_EISCONN);
+	case EISDIR:        return htonl(RFS_EISDIR);
+	case ELOOP:         return htonl(RFS_ELOOP);
+	case EMFILE:        return htonl(RFS_EMFILE);
+	case EMLINK:        return htonl(RFS_EMLINK);
+	case EMSGSIZE:      return htonl(RFS_EMSGSIZE);
+	case EMULTIHOP:     return htonl(RFS_EMULTIHOP);
+	case ENAMETOOLONG:  return htonl(RFS_ENAMETOOLONG);
+	case ENETDOWN:      return htonl(RFS_ENETDOWN);
+	case ENETRESET:     return htonl(RFS_ENETRESET);
+	case ENETUNREACH:   return htonl(RFS_ENETUNREACH);
+	case ENFILE:        return htonl(RFS_ENFILE);
+	case ENOBUFS:       return htonl(RFS_ENOBUFS);
 #if defined ENODATA
-	case ENODATA:       return htons(RFS_ENODATA);
+	case ENODATA:       return htonl(RFS_ENODATA);
 #endif
-	case ENODEV:        return htons(RFS_ENODEV);
-	case ENOENT:        return htons(RFS_ENOENT);
-	case ENOEXEC:       return htons(RFS_ENOEXEC);
-	case ENOLCK:        return htons(RFS_ENOLCK);
-	case ENOLINK:       return htons(RFS_ENOLINK);
-	case ENOMEM:        return htons(RFS_ENOMEM);
-	case ENOMSG:        return htons(RFS_ENOMSG);
-	case ENOPROTOOPT:   return htons(RFS_ENOPROTOOPT);
-	case ENOSPC:        return htons(RFS_ENOSPC);
+	case ENODEV:        return htonl(RFS_ENODEV);
+	case ENOENT:        return htonl(RFS_ENOENT);
+	case ENOEXEC:       return htonl(RFS_ENOEXEC);
+	case ENOLCK:        return htonl(RFS_ENOLCK);
+	case ENOLINK:       return htonl(RFS_ENOLINK);
+	case ENOMEM:        return htonl(RFS_ENOMEM);
+	case ENOMSG:        return htonl(RFS_ENOMSG);
+	case ENOPROTOOPT:   return htonl(RFS_ENOPROTOOPT);
+	case ENOSPC:        return htonl(RFS_ENOSPC);
 #if defined ENOSR
-	case ENOSR:         return htons(RFS_ENOSR);
+	case ENOSR:         return htonl(RFS_ENOSR);
 #endif
 #if defined ENOSTR
-	case ENOSTR:        return htons(RFS_ENOSTR);
+	case ENOSTR:        return htonl(RFS_ENOSTR);
 #endif
-	case ENOSYS:        return htons(RFS_ENOSYS);
-	case ENOTCONN:      return htons(RFS_ENOTCONN);
-	case ENOTDIR:       return htons(RFS_ENOTDIR);
-	case ENOTEMPTY:     return htons(RFS_ENOTEMPTY);
-	case ENOTSOCK:      return htons(RFS_ENOTSOCK);
-	case ENOTSUP:       return htons(RFS_ENOTSUP);
+	case ENOSYS:        return htonl(RFS_ENOSYS);
+	case ENOTCONN:      return htonl(RFS_ENOTCONN);
+	case ENOTDIR:       return htonl(RFS_ENOTDIR);
+	case ENOTEMPTY:     return htonl(RFS_ENOTEMPTY);
+	case ENOTSOCK:      return htonl(RFS_ENOTSOCK);
+	case ENOTSUP:       return htonl(RFS_ENOTSUP);
 #if EOPNOTSUPP != ENOTSUP
-	case EOPNOTSUPP:    return htons(RFS_EOPNOTSUPP);
+	case EOPNOTSUPP:    return htonl(RFS_EOPNOTSUPP);
 #endif
-	case ENOTTY:        return htons(RFS_ENOTTY);
-	case ENXIO:         return htons(RFS_ENXIO);
-	case EOVERFLOW:     return htons(RFS_EOVERFLOW);
-	case EPERM:         return htons(RFS_EPERM);
-	case EPIPE:         return htons(RFS_EPIPE);
-	case EPROTO:        return htons(RFS_EPROTO);
-	case EPROTONOSUPPORT: return htons(RFS_EPROTONOSUPPORT);
-	case EPROTOTYPE:    return htons(RFS_EPROTOTYPE);
-	case ERANGE:        return htons(RFS_ERANGE);
-	case EROFS:         return htons(RFS_EROFS);
-	case ESPIPE:        return htons(RFS_ESPIPE);
-	case ESRCH:         return htons(RFS_ESRCH);
-	case ESTALE:        return htons(RFS_ESTALE);
+	case ENOTTY:        return htonl(RFS_ENOTTY);
+	case ENXIO:         return htonl(RFS_ENXIO);
+	case EOVERFLOW:     return htonl(RFS_EOVERFLOW);
+	case EPERM:         return htonl(RFS_EPERM);
+	case EPIPE:         return htonl(RFS_EPIPE);
+	case EPROTO:        return htonl(RFS_EPROTO);
+	case EPROTONOSUPPORT: return htonl(RFS_EPROTONOSUPPORT);
+	case EPROTOTYPE:    return htonl(RFS_EPROTOTYPE);
+	case ERANGE:        return htonl(RFS_ERANGE);
+	case EROFS:         return htonl(RFS_EROFS);
+	case ESPIPE:        return htonl(RFS_ESPIPE);
+	case ESRCH:         return htonl(RFS_ESRCH);
+	case ESTALE:        return htonl(RFS_ESTALE);
 #if defined ETIME
-	case ETIME:         return htons(RFS_ETIME);
+	case ETIME:         return htonl(RFS_ETIME);
 #endif
 #if defined ETIMEDOUT
-	case ETIMEDOUT:     return htons(RFS_ETIMEDOUT);
+	case ETIMEDOUT:     return htonl(RFS_ETIMEDOUT);
 #endif
-	case ETXTBSY:       return htons(RFS_ETXTBSY);
-	case EXDEV:         return htons(RFS_EXDEV);
+	case ETXTBSY:       return htonl(RFS_ETXTBSY);
+	case EXDEV:         return htonl(RFS_EXDEV);
 	
-	default:            return htons(RFS_EIO);
+	default:            return htonl(RFS_EIO);
 	}
 }
 
 int ntoh_errno(int net_errno)
 {
-	switch (ntohs(net_errno))
+	switch (ntohl(net_errno))
 	{
 	case RFS_SUCCESS:       return 0;
 	
