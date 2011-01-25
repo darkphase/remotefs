@@ -8,17 +8,17 @@ $(rfs_OBJS):
 
 build: $(rfs_OBJS)
 	@echo Link $(rfs_TARGET)
-	$(CC) -o $(rfs_TARGET) $(rfs_OBJS) $(rfs_LDFLAGS)
+	$(CC) -o "$(rfs_TARGET)" $(rfs_OBJS) $(rfs_LDFLAGS)
 
 install_rfs:
-	if [ -f $(rfs_TARGET) ]; then \
-	    mkdir -p $(INSTALL_DIR)/bin; \
-	    cp $(rfs_TARGET) $(INSTALL_DIR)/bin; \
+	if [ -f "$(rfs_TARGET)" ]; then \
+	    mkdir -p "$(INSTALL_DIR)/bin"; \
+	    cp "$(rfs_TARGET)" "$(INSTALL_DIR)/bin"; \
 	fi
 	
 uninstall_rfs:
-	if [ -f $(INSTALL_DIR)/bin/$(rfs_TARGET) ]; then \
-	    rm -f $(INSTALL_DIR)/bin/$(rfs_TARGET); \
+	if [ -f "$(INSTALL_DIR)/bin/$(rfs_TARGET)" ]; then \
+	    rm -f "$(INSTALL_DIR)/bin/$(rfs_TARGET)"; \
 	fi
 
 flags:
