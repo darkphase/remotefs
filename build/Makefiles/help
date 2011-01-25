@@ -6,7 +6,7 @@ rfsddeb:   Create server package for Debian/Ubuntu
 rpms:      Create packages for Redhat/Fedora
 rpm-rfs:   Create client package for Redhat/Fedora
 rpm-rfsd:  Create server package for Redhat/Fedora
-ebuild:    Create Gentoo-ebuilds
+ebuilds:   Create Gentoo-ebuilds
 ipks:      Create OpenWrt packages (server only)
 rfsdipk:   Create OpenWrt server package
 
