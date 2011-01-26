@@ -27,32 +27,32 @@ uninstall_man: dummy
 # Installing
 #############################
 install_client:
-	@$(MAKE) -$(V)f build/Makefiles/librfs.mk install_librfs
-	@$(MAKE) -$(V)f build/Makefiles/rfs.mk install_rfs
+	@$(MAKE) $(SILENT) -f build/Makefiles/librfs.mk install_librfs
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfs.mk install_rfs
 install_server:
-	@$(MAKE) -$(V)f build/Makefiles/rfsd.mk install_rfsd
-	@$(MAKE) -$(V)f build/Makefiles/rfspasswd.mk install_rfspasswd
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfsd.mk install_rfsd
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfspasswd.mk install_rfspasswd
 install: dummy install_client install_server
-	@$(MAKE) -$(V)f build/Makefiles/base.mk install_man
+	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk install_man
 
 install_nss: dummy 
-	@$(MAKE) -$(V)f build/Makefiles/libnss.mk install_libnss
-	@$(MAKE) -$(V)f build/Makefiles/nssd.mk install_nssd
-	@$(MAKE) -$(V)f build/Makefiles/base.mk install_man
+	@$(MAKE) $(SILENT) -f build/Makefiles/libnss.mk install_libnss
+	@$(MAKE) $(SILENT) -f build/Makefiles/nssd.mk install_nssd
+	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk install_man
 
 #############################
 # Uninstalling
 #############################
 uninstall_client:
-	@$(MAKE) -$(V)f build/Makefiles/librfs.mk uninstall_librfs
-	@$(MAKE) -$(V)f build/Makefiles/rfs.mk uninstall_rfs
+	@$(MAKE) $(SILENT) -f build/Makefiles/librfs.mk uninstall_librfs
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfs.mk uninstall_rfs
 uninstall_server:
-	@$(MAKE) -$(V)f build/Makefiles/rfsd.mk uninstall_rfsd
-	@$(MAKE) -$(V)f build/Makefiles/rfspasswd.mk uninstall_rfspasswd
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfsd.mk uninstall_rfsd
+	@$(MAKE) $(SILENT) -f build/Makefiles/rfspasswd.mk uninstall_rfspasswd
 uninstall: dummy uninstall_client uninstall_server
-	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall_man
+	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk uninstall_man
 
 uninstall_nss: dummy
-	@$(MAKE) -$(V)f build/Makefiles/nssd.mk uninstall_nssd
-	@$(MAKE) -$(V)f build/Makefiles/libnss.mk uninstall_libnss
-	@$(MAKE) -$(V)f build/Makefiles/base.mk uninstall_man
+	@$(MAKE) $(SILENT) -f build/Makefiles/nssd.mk uninstall_nssd
+	@$(MAKE) $(SILENT) -f build/Makefiles/libnss.mk uninstall_libnss
+	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk uninstall_man
