@@ -18,6 +18,7 @@ OS:sh=uname
 include build/Makefiles/$(OS)$(ALT).mk
 include build/Makefiles/options.mk
 include build/Makefiles/shortcuts.mk
+include build/Makefiles/packaging/installing.mk
 
 #############################
 # Compile flags
@@ -134,16 +135,6 @@ ebuilds: rfsdebuild rfsebuild rfsnssebuild
 
 tbz: dummy
 	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk tbz
-
-install: dummy
-	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk install
-install_nss: dummy 
-	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk install_nss
-
-uninstall: dummy
-	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk uninstall
-uninstall_nss: dummy
-	@$(MAKE) $(SILENT) -f build/Makefiles/base.mk uninstall_nss
 
 ########################################
 # Redirects for man
