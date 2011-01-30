@@ -51,8 +51,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755, root,root) %{_prefix}/bin/rfspasswd
 %attr(755, root,root) /etc/init.d/rfsd
 %attr(600, root,root) /etc/rfs-exports
-%attr(611, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
-%attr(611, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
+%attr(644, root,root) %{_prefix}/share/man/man8/rfsd.8.gz
+%attr(644, root,root) %{_prefix}/share/man/man8/rfspasswd.8.gz
 %config(noreplace) /etc/init.d/rfsd
 %config(noreplace) /etc/rfs-exports
 

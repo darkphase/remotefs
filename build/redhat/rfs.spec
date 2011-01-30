@@ -51,8 +51,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 #%doc homepage/* 
 %attr(755, root,root) %{_prefix}/bin/rfs
-%attr(611, root,root) %{_prefix}/share/man/man1/rfs.1.gz
-%attr(611, root,root) %{_prefix}/share/man/man8/mount.rfs.8.gz
+%attr(644, root,root) %{_prefix}/share/man/man1/rfs.1.gz
+%attr(644, root,root) %{_prefix}/share/man/man8/mount.rfs.8.gz
 %attr(655, root,root) %{_prefix}/lib/librfs.so.%{version}
 %attr(777, root,root) %{_prefix}/lib/librfs.so
 %attr(755, root,root) /sbin/mount.rfs
