@@ -121,7 +121,7 @@ static int create_pidfile(const char *pidfile)
 	return 0;
 }
 
-static int start_listening(struct list *addresses, int port, unsigned force_ipv4, unsigned force_ipv6, int *listen_sockets, unsigned *listen_number)
+static int start_listening(struct list *addresses, int port, int *listen_sockets, unsigned *listen_number)
 {
 	int max_socket_number = -1;
 	unsigned max_listen_number = *listen_number;
@@ -337,7 +337,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 
 }
 
-int start_server(struct rfsd_instance *instance, unsigned daemonize, unsigned force_ipv4, unsigned force_ipv6)
+int start_server(struct rfsd_instance *instance, unsigned daemonize)
 {
 	if (create_pidfile(instance->config.pid_file) != 0)
 	{
@@ -356,8 +356,6 @@ int start_server(struct rfsd_instance *instance, unsigned daemonize, unsigned fo
 	int max_socket_number = start_listening(
 		instance->config.listen_addresses, 
 		instance->config.listen_port, 
-		force_ipv4, 
-		force_ipv6, 
 		listen_sockets, 
 		&listen_number);
 	

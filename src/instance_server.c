@@ -48,9 +48,8 @@ static void init_exports(struct rfsd_instance *instance)
 
 static void init_rfsd_config(struct rfsd_instance *instance)
 {
-#ifndef WITH_IPV6
 	add_to_list(&instance->config.listen_addresses, strdup(DEFAULT_IPV4_ADDRESS));
-#else
+#ifdef WITH_IPV6
 	add_to_list(&instance->config.listen_addresses, strdup(DEFAULT_IPV6_ADDRESS));
 #endif
 	instance->config.listen_port = DEFAULT_SERVER_PORT;
@@ -60,9 +59,6 @@ static void init_rfsd_config(struct rfsd_instance *instance)
 	instance->config.pid_file = strdup(DEFAULT_PID_FILE);
 	instance->config.exports_file = strdup(DEFAULT_EXPORTS_FILE);
 	instance->config.passwd_file = strdup(DEFAULT_PASSWD_FILE);
-#ifdef WITH_IPV6
-	instance->config.force_ipv4 = 0;
-#endif
 }
 
 void init_rfsd_instance(struct rfsd_instance *instance)

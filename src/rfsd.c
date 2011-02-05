@@ -49,10 +49,6 @@ static void usage(const char *app_name)
 	"-s [path]           passwd file\n"
 	"-q                  quite mode - supress warnings\n"
 	"                    (and don't treat them as errors)\n"
-#ifdef WITH_IPV6
-	"-4                  force listen to IPv4 connections\n"
-	"-6                  force listen to IPv6 connections\n"
-#endif
 	"\n"
 	, app_name);
 }
@@ -114,22 +110,10 @@ static int parse_opts(int argc, char **argv)
 				break;
 #ifdef WITH_IPV6
 			case '4':
-				rfsd_instance.config.force_ipv4 = 1;
-				if (list_length(rfsd_instance.config.listen_addresses) == 1 
-				&& strcmp(rfsd_instance.config.listen_addresses->data, DEFAULT_IPV6_ADDRESS) == 0)
-				{
-					destroy_list(&rfsd_instance.config.listen_addresses);
-					add_to_list(&rfsd_instance.config.listen_addresses, strdup(DEFAULT_IPV4_ADDRESS));
-				}
+				WARN("%s\n", "WARNING: -4 option is deprecated. Use -a with an IPv4 address instead.");
 				break;
 			case '6':
-				rfsd_instance.config.force_ipv6 = 1;
-				if (list_length(rfsd_instance.config.listen_addresses) == 1 
-				&& strcmp(rfsd_instance.config.listen_addresses->data, DEFAULT_IPV4_ADDRESS) == 0)
-				{
-					destroy_list(&rfsd_instance.config.listen_addresses);
-					add_to_list(&rfsd_instance.config.listen_addresses, strdup(DEFAULT_IPV6_ADDRESS));
-				}
+				WARN("%s\n", "WARNING: -6 option is deprecated. Use -a with an IPv6 address instead.");
 				break;
 #endif
 			default:
@@ -144,31 +128,9 @@ static int validate_config(const struct rfsd_config *config)
 {
 	if (list_length(config->listen_addresses) > MAX_LISTEN_ADDRESSES)
 	{
-		ERROR("Maximum number of %d listen addresses is allowed\n", MAX_LISTEN_ADDRESSES);
+		ERROR("Exceeded maximum number (%d) of listen addresses\n", MAX_LISTEN_ADDRESSES);
 		return -1;
 	}
-
-#ifdef WITH_IPV6
-	struct list *item = config->listen_addresses;
-	while (item != NULL)
-	{
-		if (config->force_ipv4 
-		&& strchr(item->data, ':') != NULL)
-		{
-			ERROR("You can't use IPv6 addresses (like %s) with -4 option\n", (const char *)item->data);
-			return -1;
-		}
-	
-		if (config->force_ipv6 != 0 
-		&& strchr(item->data, ':') == NULL)
-		{
-			ERROR("You can't use IPv4 addresses (like %s) with -6 option\n", (const char *)item->data);
-			return -1;
-		}
-
-		item = item->next;
-	}
-#endif
 
 	return 0;
 }
@@ -241,13 +203,7 @@ int main(int argc, char **argv)
 	
 	install_signal_handlers_server();
 
-	int ret = start_server(&rfsd_instance, daemonize, 
-#ifdef WITH_IPV6
-	rfsd_instance.config.force_ipv4, rfsd_instance.config.force_ipv6
-#else
-	1, 0
-#endif
-	);
+	int ret = start_server(&rfsd_instance, daemonize);
 
 	release_server(&rfsd_instance);
 	return ret;

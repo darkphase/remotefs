@@ -20,7 +20,7 @@ extern "C" {
 struct rfsd_instance;
 
 /** start listening and accepting connections */
-int start_server(struct rfsd_instance *instance, unsigned daemonize, unsigned force_ipv4, unsigned force_ipv6);
+int start_server(struct rfsd_instance *instance, unsigned daemonize);
 
 /** close connection, release server and exit */
 void stop_server(struct rfsd_instance *instance);

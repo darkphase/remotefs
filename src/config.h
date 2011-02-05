@@ -119,10 +119,6 @@ struct rfsd_config
 	unsigned int quiet;
 	char *exports_file;
 	char *passwd_file;
-#ifdef WITH_IPV6
-	unsigned force_ipv4;
-	unsigned force_ipv6;
-#endif
 };
 
 #if defined (__cplusplus) || defined (c_plusplus)
