@@ -195,7 +195,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 		destroy_uids_lookup(&instance->id_lookup.uids);
 		destroy_gids_lookup(&instance->id_lookup.gids);
 			
-		return reject_request(instance, cmd, -EACCES) == 0 ? 1 : -1;
+		return reject_request(instance, cmd, EACCES) == 0 ? 1 : -1;
 	}
 
 	errno = 0;

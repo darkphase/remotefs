@@ -199,7 +199,7 @@ static int start_listening(struct list *addresses, int port, unsigned force_ipv4
 		}
 
 #if defined WITH_IPV6
-		if (force_ipv6 != 0)
+		if (listen_family == AF_INET6)
 		{
 			if (setup_socket_ipv6_only(listen_socket) != 0)
 			{
