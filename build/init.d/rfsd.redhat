@@ -16,7 +16,7 @@
 # Description: A fast remote file system
 ### END INIT INFO
 
-LISTEN="0.0.0.0"
+LISTEN="0.0.0.0,::"
 PORT="5001"
 RFSD_USER="root"
 PIDFILE="/var/run/rfsd.pid"

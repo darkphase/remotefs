@@ -1,7 +1,7 @@
 # defaults file for rfsd
 
 # The address rfsd will listen to
-RFSD_LISTEN="0.0.0.0"
+RFSD_LISTEN="0.0.0.0,::"
 
 # The tcp-port rfsd will listen to
 RFSD_PORT="5001"
