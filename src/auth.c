@@ -67,7 +67,7 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 		const struct user_rec *rec = (const struct user_rec *)user_entry->data;
 
 #ifdef WITH_UGO
-		// UGO exports can't be authenticated w/o username
+		/* UGO exports can't be authenticated w/o username */
 		if ((export_info->options & OPT_UGO) != 0 
 		&& (rec->username == NULL || instance->server.auth_user == NULL))
 		{
