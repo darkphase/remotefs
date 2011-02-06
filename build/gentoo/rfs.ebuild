@@ -4,7 +4,7 @@ DESCRIPTION="remote filesystem client"
 HOMEPAGE="http://remotefs.sourceforge.net"
 LICENSE="GPL"
 
-IUSE="+ugo +exports_list ipv6 acl"
+IUSE="ipv6 acl"
 DEPEND="acl? ( sys-apps/acl )
 	>=sys-fs/fuse-2.6
 	virtual/libc"
@@ -18,12 +18,8 @@ BUILDDIR=INSERT BUILDDIR HERE
 
 setup_compile() {
     echo "" > "${BUILDDIR}/build/Makefiles/options.mk"
-    if use ugo; then
-	echo "OPT_1=-DWITH_UGO" >> "${BUILDDIR}/build/Makefiles/options.mk"
-    fi
-    if use exports_list; then
-	echo "OPT_2=-DWITH_EXPORTS_LIST" >> "${BUILDDIR}/build/Makefiles/options.mk"
-    fi
+    echo "OPT_1=-DWITH_UGO" >> "${BUILDDIR}/build/Makefiles/options.mk"
+    echo "OPT_2=-DWITH_EXPORTS_LIST" >> "${BUILDDIR}/build/Makefiles/options.mk"
     if use ipv6; then
 	echo "OPT_3=-DWITH_IPV6" >> "${BUILDDIR}/build/Makefiles/options.mk"
     fi

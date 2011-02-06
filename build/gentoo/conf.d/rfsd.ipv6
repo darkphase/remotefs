@@ -1,4 +1,10 @@
-# defaults file for rfsd
+# /etc/conf.d/rfsd: config file for /etc/init.d/rfsd
+
+# Author: Oliver Jaksch <ojaksch@gmx.de>
+
+
+# Options to pass to the rfsd daemon.
+# See the rfsd(8) man page for more info.
 
 # The address(es) (up to 16) rfsd will listen to
 RFSD_LISTEN="0.0.0.0,::"
@@ -9,9 +15,10 @@ RFSD_PORT="5001"
 # Run rfsd as this user
 RFSD_USER="root"
 
-# Pidfile path 
+# Where the pidfile should live
 RFSD_PIDFILE="/var/run/rfsd.pid"
 
+# Whether or not rfsd shall complain about 'interface outside of private network'
 # Uncomment to disable 'warnings considered as error'
 # WARNING: Maybe a big security-risk when running rfsd on unsecured interfaces
 #RFSD_QUIET="-q"

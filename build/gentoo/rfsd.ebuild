@@ -4,7 +4,7 @@ DESCRIPTION="remote filesystem client"
 HOMEPAGE="http://remotefs.sourceforge.net"
 LICENSE="GPL"
 
-IUSE="+ugo +exports_list ipv6 acl"
+IUSE="ipv6 acl"
 DEPEND="acl? ( sys-apps/acl )
 	>=sys-fs/fuse-2.6
 	virtual/libc"
@@ -18,12 +18,8 @@ BUILDDIR=INSERT BUILDDIR HERE
 
 setup_compile() {
     echo "" > "${BUILDDIR}/build/Makefiles/options.mk"
-    if use ugo; then
-	echo "OPT_1=-DWITH_UGO" >> "${BUILDDIR}/build/Makefiles/options.mk"
-    fi
-    if use exports_list; then
-	echo "OPT_2=-DWITH_EXPORTS_LIST" >> "${BUILDDIR}/build/Makefiles/options.mk"
-    fi
+    echo "OPT_1=-DWITH_UGO" >> "${BUILDDIR}/build/Makefiles/options.mk"
+    echo "OPT_2=-DWITH_EXPORTS_LIST" >> "${BUILDDIR}/build/Makefiles/options.mk"
     if use ipv6; then
 	echo "OPT_3=-DWITH_IPV6" >> "${BUILDDIR}/build/Makefiles/options.mk"
     fi
@@ -54,16 +50,20 @@ setup_install() {
 
 make_install() {
     make -C "${BUILDDIR}/" install
-    
+
     cp "${BUILDDIR}/build/etc/rfs-exports" "${D}/etc/"
     chmod 600 "${D}/etc/rfs-exports"
     chown root:root "${D}/etc/rfs-exports"
-    
+
     cp "${BUILDDIR}/build/init.d/rfsd.gentoo" "${D}/etc/init.d/rfsd"
     chmod 700 "${D}/etc/init.d/rfsd"
     chown root:root "${D}/etc/init.d/rfsd"
-    
-    cp "${BUILDDIR}/build/gentoo/conf.d/rfsd" "${D}/etc/conf.d/rfsd"
+
+    if use ipv6; then
+	cp "${BUILDDIR}/build/gentoo/conf.d/rfsd.ipv6" "${D}/etc/conf.d/rfsd"
+    else
+	cp "${BUILDDIR}/build/gentoo/conf.d/rfsd.ipv4" "${D}/etc/conf.d/rfsd"
+    fi
     chmod 644 "${D}/etc/conf.d/rfsd"
     chown root:root "${D}/etc/conf.d/rfsd"
 }

@@ -6,7 +6,8 @@
 # Options to pass to the rfsd daemon.
 # See the rfsd(8) man page for more info.
 
-# The address rfsd will listen to
+# The address(es) (up to 16) rfsd will listen to
+#RFSD_LISTEN="0.0.0.0,::"
 RFSD_LISTEN="0.0.0.0"
 
 # The tcp-port rfsd will listen to
