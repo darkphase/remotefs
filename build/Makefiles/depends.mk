@@ -39,6 +39,7 @@ src/fuse_rfs.o:src/config.h
 src/fuse_rfs.o:src/operations.h
 src/fuse_rfs.o:src/operations/operations_rfs.h
 src/fuse_rfs.o:src/options.h
+src/fuse_rfs.o:src/instance_client.h
 src/handlers.o:src/options.h
 src/handlers.o:src/keep_alive_server.h
 src/handlers.o:src/handlers/handlers.h
