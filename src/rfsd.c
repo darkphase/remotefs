@@ -39,7 +39,7 @@ static void usage(const char *app_name)
 	"\n"
 	"Options:\n"
 	"-h                  print help\n"
-	"-v                  print version and build date and time\n"
+	"-v                  print version and quit\n"
 	"-a [address]        listen to connections on [address]\n"
 	"-p [port number]    listen to connections on [port number]\n"
 	"-u [username]       run worker process with privileges of [username]\n"

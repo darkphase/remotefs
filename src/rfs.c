@@ -75,7 +75,7 @@ static void usage(const char *program)
 	"general options:\n"
 	"    -o opt,[opt...]         mount options\n"
 	"    -h   --help             print help\n"
-	"    -v                      print version and build date and time\n"
+	"    -v                      print version and quit\n"
 	"\n"
 	"RFS options:\n"
 	"    -q                      suppress warnings\n"
