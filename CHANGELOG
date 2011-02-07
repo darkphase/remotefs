@@ -1,3 +1,20 @@
+0.15
+
+[*] fixed bug with creation of new files on big-endian arches
+[*] underhood changes to network i/o
+
+rfsd:
+
+[*] IPv6 sockets won't accept IPv4 connections anymore
+[*] 0.0.0.0,:: is the new default listening addresses if build with IPv6 support
+
+[-] -4 option is deprecated
+[-] -6 option is deprecated 
+
+rfs:
+
+[*] fixed memory leak during fs-name setup
+
 0.14
 
 [*] license updated to GPLv3
