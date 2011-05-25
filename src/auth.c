@@ -76,37 +76,39 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 		}
 #endif
 
-		unsigned can_pass = 0;
+		unsigned can_pass_by_netmask = (rec->network != NULL ? 0 : 1); // if no netmask specified for this export - can pass
 
 		if (rec->network != NULL)
 		{
 			if (compare_netmask(client_ip, rec->network, rec->prefix_len) != 0)
 			{
-				can_pass = 1;
+				can_pass_by_netmask = 1;
 			}
 
 #ifdef WITH_IPV6
 			/* do double check because ::ffff:/80 might not be allowed in exports
 			but actual IPv4 address might be */
-			if (can_pass == 0 
+			if (can_pass_by_netmask == 0
 			&& client_ip > client_ip_addr 
 			&& compare_netmask(client_ip_addr, rec->network, rec->prefix_len) != 0)
 			{
-				can_pass = 1;
+				can_pass_by_netmask = 1;
 			}
 #endif
 		
-			DEBUG("passed check for network %s/%u: %u\n", rec->network, rec->prefix_len, can_pass);
+			DEBUG("passed check for network %s/%u: %u\n", rec->network, rec->prefix_len, can_pass_by_netmask);
 		}
+
+		unsigned can_pass_by_user = (rec->username != NULL ? 0 : 1); // no username for this export - can pass
 
 		if (rec->username != NULL 
 		&& strcmp(rec->username, ALL_ACCESS_USERNAME) == 0)
 		{
 			DEBUG("allowing access according to \"%s\" specified\n", ALL_ACCESS_USERNAME);
-			can_pass = 1;
+			can_pass_by_user = 1;
 		}
 
-		if (can_pass == 0 
+		if (can_pass_by_user == 0
 		&& rec->username != NULL)
 		{
 			if (instance->server.auth_user != NULL
@@ -114,13 +116,13 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 			&& strcmp(rec->username, instance->server.auth_user) == 0
 			&& check_password(instance) == 0)
 			{
-				can_pass = 1;
+				can_pass_by_user = 1;
 			}
 			
-			DEBUG("passed check for username %s: %u\n", rec->username, can_pass);
+			DEBUG("passed check for username %s: %u\n", rec->username, can_pass_by_user);
 		}
 
-		if (can_pass != 0)
+		if (can_pass_by_user != 0 && can_pass_by_netmask != 0)
 		{
 			return 0;
 		}
