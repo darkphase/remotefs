@@ -1,3 +1,9 @@
+0.15-2
+
+rfsd:
+
+[*] fixed auth bug (ID: 3307010)
+
 0.15
 
 [*] fixed bug with creation of new files on big-endian arches
