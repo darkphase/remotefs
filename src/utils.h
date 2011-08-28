@@ -26,9 +26,6 @@ unsigned int is_ipaddr(const char *string);
 /** check if IPv4 address belongs to private network */
 unsigned int is_ipv4_local(const char *ip_addr);
 
-/** don't forget to free() returned value */
-char* host_ip(const char *host, int *resolved_address_family);
-
 /** check if addr belongs to specified network */
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len);
 

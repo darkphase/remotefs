@@ -20,86 +20,91 @@ See the file LICENSE.
 
 #include "config.h"
 #include "instance.h"
+#include "list.h"
+#include "resolve.h"
 
 #include <netinet/tcp.h>
 
 int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, unsigned force_ipv4, unsigned force_ipv6)
 {
-	struct addrinfo *addr_info = NULL;
-	struct addrinfo hints = { 0 };
+	struct list *ips = host_ips(host, NULL);
 
-	/* resolve name or address */
-#if defined WITH_IPV6
-	hints.ai_family    = AF_UNSPEC;
-#else
-	hints.ai_family    = AF_INET;
-#endif
-	hints.ai_socktype  = SOCK_STREAM; 
-	hints.ai_flags     = AI_ADDRCONFIG;
-#if defined WITH_IPV6
-	if ( force_ipv4 )
+	if (ips == NULL)
 	{
-		hints.ai_family = AF_INET;
-	}
-	else if ( force_ipv6 )
-	{
-		hints.ai_family = AF_INET6;
-	}
-#endif
-
-	int resolve_result = getaddrinfo(host, NULL, &hints, &addr_info);
-	if (resolve_result != 0)
-	{
-		DEBUG("Can't resolve address for %s : %s\n", host, gai_strerror(resolve_result));
+		DEBUG("Can't resolve address for %s\n", host);
 		return -EHOSTUNREACH;
 	}
 	
 	int sock = -1;
-	struct addrinfo *next = addr_info;
 	int saved_errno = 0;
 
-	while (next != NULL)
+	union
 	{
+		struct sockaddr_storage ss;
+		struct sockaddr_in si;
+		struct sockaddr_in6 si6;
+	} sockaddr;
+
+	struct list *resolved_item = ips;
+
+	while (resolved_item != NULL)
+	{
+		struct resolved_addr *addr = (struct resolved_addr *)resolved_item->data;
+
 		sock = -1;
 
-		if (next->ai_family == AF_INET)
+		int pton_result = 0;
+		sockaddr.ss.ss_family = addr->addr_family;
+		switch (addr->addr_family)
 		{
-			struct sockaddr_in *addr = (struct sockaddr_in *)next->ai_addr;
-			addr->sin_port = htons(port);
-			sock = socket(AF_INET, SOCK_STREAM, 0);
-		}
+		case AF_INET:
+			{
+			pton_result = inet_pton(addr->addr_family, addr->ip, &(sockaddr.si.sin_addr));
+			sockaddr.si.sin_port = htons(port);
+			}
+			break;
 #ifdef WITH_IPV6
-		else if (next->ai_family == AF_INET6)
-		{
-			struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)next->ai_addr;
-			addr6->sin6_port = htons(port);
-			sock = socket(AF_INET6, SOCK_STREAM, 0);
-		}
+		case AF_INET6:
+			{
+			pton_result = inet_pton(addr->addr_family, addr->ip, &(sockaddr.si6.sin6_addr));
+			sockaddr.si6.sin6_port = htons(port);
+			}
+			break;
 #endif
+		default:
+			break;
+		}
+
+		if (pton_result != 1)
+		{
+			saved_errno = EINVAL;
+			resolved_item = resolved_item->next;
+			continue;
+		}
+
+		sock = socket(sockaddr.ss.ss_family, SOCK_STREAM, 0);
+
 		if (sock == -1)
 		{
-			DEBUG("sock = %d, errno %s\n",sock, strerror(errno));
+			DEBUG("sock = %d, errno %s\n", sock, strerror(errno));
 			
-			next = next->ai_next;
+			resolved_item = resolved_item->next;
 			continue;
 		}
 			
 		errno = 0;
-		if (connect(sock, (struct sockaddr *)next->ai_addr, next->ai_addrlen) == -1)
+
+		if (connect(sock, (struct sockaddr *)&sockaddr.ss, sizeof(sockaddr.ss)) != 0)
 		{
 			saved_errno = errno;
 			close(sock);
 			sock = -1;
 		}
-		else
-		{
-			break;
-		}
 
-		next = next->ai_next;
+		resolved_item = resolved_item->next;
 	}
 
-	freeaddrinfo(addr_info);
+	destroy_list(&ips);
 
 	if (sock > 0)
 	{

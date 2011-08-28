@@ -162,56 +162,6 @@ unsigned int is_ipv6_local(const char *ip_addr)
 }
 #endif /* WITH_IPV6 */
 
-char* host_ip(const char *host, int *resolved_address_family)
-{
-	char *result = NULL;
-	
-	struct addrinfo *addr_info = NULL;
-	struct addrinfo hints = { 0 };
-
-	/* resolve name or address */
-#ifdef WITH_IPV6
-	hints.ai_family    = AF_UNSPEC;
-#else
-	hints.ai_family    = AF_INET;
-#endif
-	hints.ai_socktype  = SOCK_STREAM; 
-	hints.ai_flags     = AI_ADDRCONFIG;
-
-	if (resolved_address_family != NULL)
-	{
-		hints.ai_family = *resolved_address_family;
-		*resolved_address_family = AF_UNSPEC;
-	}
-	
-	int resolve_ret = getaddrinfo(host, NULL, &hints, &addr_info);
-	if (resolve_ret == 0)
-	{
-		if (resolved_address_family != NULL)
-		{
-			*resolved_address_family = addr_info->ai_family;
-		}
-		
-		unsigned max_len = 255;
-		result = malloc(max_len);
-		
-		inet_ntop(addr_info->ai_family, 
-#ifdef WITH_IPV6
-		addr_info->ai_family == AF_INET6 ?
-		(const void *)&((struct sockaddr_in6 *)addr_info->ai_addr)->sin6_addr :
-#endif
-		(const void *)&((struct sockaddr_in *)addr_info->ai_addr)->sin_addr,
-		result,
-		max_len - 1);
-		
-		freeaddrinfo(addr_info);
-		
-		DEBUG("real host: %s\n", result);
-	}
-	
-	return result;
-}
-
 #ifdef WITH_EXPORTS_LIST
 const char* describe_option(const enum rfs_export_opts option)
 {
