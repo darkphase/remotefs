@@ -9,9 +9,9 @@
 # examples:
 #
 # just fileserver:
-# /tmp 127.0.0.1, alex@10.0.0.0/8
-# /tmp 127.0.0.1, alex, 10.0.0.2 (ro)
-# /tmp 0.0.0.0/0 (ro) 
+# /tmp 127.0.0.1, alex@localhost/24
+# /tmp 10.0.0.2, @localhost, alex (ro)
+# /tmp 0.0.0.0/0 (ro)
 # /tmp * (ro)
 #
 # privileges lowering:

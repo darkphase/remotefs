@@ -15,6 +15,7 @@ See the file LICENSE.
 #include "config.h"
 #include "exports.h"
 #include "list.h"
+#include "resolve.h"
 #include "utils.h"
 
 #ifdef RFS_DEBUG

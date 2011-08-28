@@ -39,6 +39,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/connect.o \
               src/crypt.o \
               src/data_cache.o \
+              src/error.o \
               src/id_lookup.o \
               src/id_lookup_client.o \
               src/instance.o \
@@ -82,7 +83,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations/utimens.o \
               src/operations/unlink.o \
               src/path.o \
-              src/error.o \
+              src/resolve.o \
               src/sendrecv.o \
               src/signals.o \
               src/signals_client.o \

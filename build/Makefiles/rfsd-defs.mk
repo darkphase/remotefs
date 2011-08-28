@@ -33,6 +33,7 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/command.o \
             src/crypt.o \
             src/exports.o \
+            src/error.o \
             src/handling.o \
             src/id_lookup.o \
             src/instance.o \
@@ -41,7 +42,6 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/list.o \
             src/passwd.o \
             src/path.o \
-            src/error.o \
             src/sendrecv.o \
             src/server.o \
             src/handlers.o \
@@ -75,6 +75,7 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/handlers/utils.o \
             src/handlers/utime.o \
             src/handlers/utimens.o \
+            src/resolve.o \
             src/signals.o \
             src/sockets.o \
             src/utils.o \
