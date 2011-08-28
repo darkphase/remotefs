@@ -151,7 +151,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	gid_t user_gid = getegid();
 
 	/* if user= is specified, use that uid and primary gid of that user */
-	if (export_info->export_uid != -1)
+	if (export_info->export_uid != (uid_t)-1)
 	{
 		struct passwd *pwd = getpwuid(export_info->export_uid);
 		if (pwd == NULL)

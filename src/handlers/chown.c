@@ -55,11 +55,11 @@ int _handle_chown(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 	
-	uid_t uid = (strlen(user) == 0 ? - 1 : get_uid(instance->id_lookup.uids, user));
-	gid_t gid = (strlen(group) == 0 ? -1 : get_gid(instance->id_lookup.gids, group));
+	uid_t uid = (strlen(user) == 0 ? (uid_t)-1 : get_uid(instance->id_lookup.uids, user));
+	gid_t gid = (strlen(group) == 0 ? (gid_t)-1 : get_gid(instance->id_lookup.gids, group));
 	
-	if (uid == -1 
-	&& gid == -1) /* if both == -1, then this is error. however one of them == -1 is ok */
+	if (uid == (uid_t)-1
+	&& gid == (gid_t)-1) /* if both == -1, then this is error. however one of them == -1 is ok */
 	{
 		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;

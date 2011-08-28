@@ -42,8 +42,8 @@ struct list;
 #ifdef WITH_IPV6
 #define DEFAULT_IPV6_ADDRESS    "::"
 #endif
-#define LISTEN_BACKLOG          10
 #define MAX_LISTEN_ADDRESSES    16
+#define LISTEN_BACKLOG          MAX_LISTEN_ADDRESSES
 #define ALL_ACCESS_USERNAME     "*"
 
 #define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \

@@ -40,7 +40,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 {
 	size_t overall_size = 0;
 	
-	int i = 0; for (i = 0; i < count; ++i)
+	unsigned i = 0; for (i = 0; i < count; ++i)
 	{
 		overall_size += iov[i].iov_len;
 	}
@@ -97,12 +97,12 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count)
 {
 	size_t overall_size = 0;
-	int i = 0; for (i = 0; i < count; ++i)
+	unsigned i = 0; for (i = 0; i < count; ++i)
 	{
 		overall_size += iov[i].iov_len;
 	}
 	
-	ssize_t size_sent = 0;
+	size_t size_sent = 0;
 	while (size_sent < overall_size)
 	{
 		count = fix_iov(iov, count, overall_size - size_sent);
@@ -193,7 +193,7 @@ static inline int is_mark(int socket)
 
 ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
 {
-	ssize_t size_recv = 0;
+	size_t size_recv = 0;
 	while (size_recv < size)
 	{
 		errno = 0;

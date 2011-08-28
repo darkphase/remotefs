@@ -62,7 +62,7 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		
 		ssize_t result = pwrite(fd, data, current_block_size, offset + done);
 		
-		if (result == (size_t)-1)
+		if (result == -1)
 		{
 			saved_errno = errno;
 			done = (size_t)-1;

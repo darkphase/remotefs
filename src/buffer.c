@@ -37,7 +37,7 @@ char* buffer_dup_str(const char *buffer, size_t str_len)
 void dump(const void *data, const size_t data_len)
 {
 	DEBUG("dumping %u bytes:\n", (unsigned int)data_len);
-	int i = 0; for (i = 0; i < data_len; ++i)
+	size_t i = 0; for (i = 0; i < data_len; ++i)
 	{
 		fprintf(stderr, "%c%s", isgraph(((const char *)data)[i]) ? ((const char *)data)[i] : '.', (i == data_len - 1 ? "\n" : ""));
 	}

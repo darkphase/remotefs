@@ -46,7 +46,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	{
 		user = instance->config.auth_user; /* to tell server correct owner */
 	}
-	else if ( uid == -1 )
+	else if (uid == (uid_t)-1)
 	{
 		user = "";
 	}
@@ -66,7 +66,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	{
 		group = instance->config.auth_user; /* to tell server correct group */
 	}
-	else if ( gid == -1 )
+	else if (gid == (gid_t)-1)
 	{
 		group = "";
 	}

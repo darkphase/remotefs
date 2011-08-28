@@ -63,7 +63,7 @@ static const char* trim_right(const char *buffer, unsigned size)
 static const char* find_chr(const char *buffer, const char *border, const char *symbols)
 {
 	const char *min_ptr = NULL;
-	int i = 0; for (i = 0; i < strlen(symbols); ++i)
+	size_t i = 0; for (i = 0; i < strlen(symbols); ++i)
 	{
 		const char *ptr = strchr(buffer, symbols[i]);
 		if (ptr != NULL && ptr < border)
@@ -412,7 +412,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	if ((line_export->options & OPT_UGO) != 0)
 	{
 		if ((line_export->options & OPT_RO) != 0
-		|| line_export->export_uid != -1)
+		|| line_export->export_uid != (uid_t)(-1))
 		{
 			ERROR("Export validation error: you can't specify \"ro\" or \"user=\" options simultaneously "
 			"with \"ugo\" option. \"ugo\" will handle all security related issues for this export (%s).\n", 

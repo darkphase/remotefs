@@ -348,7 +348,8 @@ int start_server(struct rfsd_instance *instance, unsigned daemonize)
 
 	int listen_sockets[MAX_LISTEN_ADDRESSES];
 	unsigned listen_number = sizeof(listen_sockets) / sizeof(listen_sockets[0]);
-	int i = 0; for (; i < listen_number; ++i)
+
+	unsigned i = 0; for (; i < listen_number; ++i)
 	{
 		listen_sockets[i] = -1;
 	}

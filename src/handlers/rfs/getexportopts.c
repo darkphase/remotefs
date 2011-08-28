@@ -21,7 +21,7 @@ int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_
 {
 	struct answer ans = { cmd_getexportopts, 
 	0,
-	(instance->server.mounted_export != NULL ? instance->server.mounted_export->options : -1),
+	(instance->server.mounted_export != NULL ? instance->server.mounted_export->options : (unsigned)-1),
 	(instance->server.mounted_export != NULL ? 0 : EACCES) };
 
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
