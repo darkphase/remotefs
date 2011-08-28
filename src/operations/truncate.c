@@ -26,7 +26,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	}
 
 	unsigned path_len = strlen(path) + 1;
-	uint32_t foffset = offset;
+	uint64_t foffset = offset;
 
 	unsigned overall_size = sizeof(foffset) + path_len;
 
@@ -35,7 +35,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 	char *buffer = malloc(cmd.data_len);
 
 	pack(path, path_len, 
-	pack_32(&foffset, buffer
+	pack_64(&foffset, buffer
 	));
 
 	send_token_t token = { 0 };

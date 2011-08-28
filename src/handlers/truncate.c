@@ -36,9 +36,9 @@ int _handle_truncate(struct rfsd_instance *instance, const struct sockaddr_in *c
 		return -1;
 	}
 	
-	uint32_t offset = (uint32_t)-1;
+	uint64_t offset = (uint64_t)-1;
 	const char *path = 
-	unpack_32(&offset, buffer);
+	unpack_64(&offset, buffer);
 	
 	if (sizeof(offset)
 	+ strlen(path) + 1 != cmd->data_len)
