@@ -20,6 +20,14 @@ struct sockaddr_in6;
 extern "C" {
 # endif
 
+struct list;
+
+struct resolved_addr
+{
+	char *ip;
+	int addr_family;
+};
+
 /** check if specified string is actually an ip address */
 unsigned int is_ipaddr(const char *string);
 
@@ -28,6 +36,9 @@ unsigned int is_ipv4_local(const char *ip_addr);
 
 /** don't forget to free() returned value */
 char* host_ip(const char *host, int *resolved_address_family);
+
+/** don't forget to free() returned value */
+struct list* host_ips(const char *host, int *address_family);
 
 /** check if addr belongs to specified network */
 unsigned compare_netmask(const char *addr, const char *net, unsigned prefix_len);

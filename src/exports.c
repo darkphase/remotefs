@@ -182,16 +182,16 @@ struct list* parse_list(const char *buffer, const char *border)
 
 static inline unsigned default_prefix_len(const char *ip_addr)
 {
-	DEBUG("defaulting prefix length for %s\n", ip_addr);
-
 #ifdef WITH_IPV6
 	if (strchr(ip_addr, ':') != NULL)
 	{
+		DEBUG("defaulting prefix length for %s to 128\n", ip_addr);
 		return 128;
 	}
 	else
 #endif
 	{
+		DEBUG("defaulting prefix length for %s to 32\n", ip_addr);
 		return 32;
 	}
 }
@@ -231,17 +231,15 @@ static struct list* parse_users(const struct list *users_list)
 
 			if (prefix_delimiter == NULL)
 			{
-				rec->prefix_len = default_prefix_len(rec->network);
+				rec->prefix_len = (unsigned)-1;
 			}
-
-			DEBUG("%s %s\n", rec->username, rec->network);
 		}
 		else if (prefix_delimiter == NULL) /* no network delimiter and no prefix length */
 		{
 			if (is_ipaddr(id) != 0)
 			{
 				rec->network = buffer_dup(id, strlen(id) + 1);
-				rec->prefix_len = default_prefix_len(id);
+				rec->prefix_len = (unsigned)-1;
 			}
 			else
 			{
@@ -414,7 +412,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 		if ((line_export->options & OPT_RO) != 0
 		|| line_export->export_uid != (uid_t)(-1))
 		{
-			ERROR("Export validation error: you can't specify \"ro\" or \"user=\" options simultaneously "
+			ERROR("ERROR: you can't specify \"ro\" or \"user=\" options simultaneously "
 			"with \"ugo\" option. \"ugo\" will handle all security related issues for this export (%s).\n", 
 			line_export->path);
 			return -1;
@@ -426,7 +424,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 			const struct user_rec *rec = (const struct user_rec *)user_item->data;
 			if (rec->username == NULL)
 			{
-				ERROR("Export validation error: you can't authenticate user by IP-addresses "
+				ERROR("ERROR: you can't authenticate user by IP-addresses "
 				"while using \"ugo\" option for the same export (%s).\n", 
 				line_export->path);
 				return -1;
@@ -462,7 +460,13 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 
 			if (too_long_prefix != 0)
 			{
-				ERROR("Too long prefix length (%u) for network %s\n", rec->prefix_len, rec->network);
+				ERROR("ERROR: Too long prefix length (%u) for network %s\n", rec->prefix_len, rec->network);
+				return -1;
+			}
+
+			if (is_ipaddr(rec->network) == 0)
+			{
+				ERROR("ERROR: Hostname (%s) wasn't resolved to IP-address\n", rec->network);
 				return -1;
 			}
 		}
@@ -479,7 +483,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 			struct rfs_export *export = (struct rfs_export *)item->data;
 			if (strcmp(line_export->path, export->path) == 0)
 			{
-				ERROR("Duplicate export: %s\n", export->path);
+				ERROR("ERROR: Duplicate export: %s\n", export->path);
 				return -1;
 			}
 
@@ -506,6 +510,70 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	}
 
 	return 0;
+}
+
+static int resolve_networks(struct rfs_export *line_export, struct list *exports)
+{
+	int position = 0;
+
+	struct list *user_item = line_export->users;
+	while (user_item != NULL)
+	{
+		++position;
+
+		struct user_rec *rec = (struct user_rec *)user_item->data;
+
+		if (rec->network == NULL
+		|| is_ipaddr(rec->network) != 0)
+		{
+			user_item = user_item->next;
+			continue;
+		}
+
+		struct list *ips = host_ips(rec->network, NULL);
+		if (ips == NULL)
+		{
+			return position;
+		}
+
+		struct list *resolved = ips;
+		while (resolved != NULL)
+		{
+			struct resolved_addr *addr = (struct resolved_addr *)resolved->data;
+
+			struct user_rec *replacement = malloc(sizeof(*replacement));
+			replacement->username = strdup(rec->username);
+			replacement->prefix_len = rec->prefix_len;
+			replacement->network = strdup(addr->ip);
+
+			add_to_list(&(line_export->users), replacement);
+
+			resolved = resolved->next;
+		}
+
+		destroy_list(&ips);
+
+		struct list *next = user_item->next;
+		remove_from_list(&(line_export->users), user_item);
+		user_item = next;
+	}
+
+	return 0;
+}
+
+static void fix_prefix_length(struct rfs_export *line_export)
+{
+	struct list *user_item = line_export->users;
+	while (user_item != NULL)
+	{
+		struct user_rec *rec = (struct user_rec *)user_item->data;
+		if (rec->network != NULL && rec->prefix_len == (unsigned)-1)
+		{
+			rec->prefix_len = default_prefix_len(rec->network);
+		}
+
+		user_item = user_item->next;
+	}
 }
 
 int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid)
@@ -574,6 +642,56 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 			release_exports(exports);
 			return line_number;
 		}
+
+		/* expand records like @localhost to @127.0.0.1/32, @127.0.1.1/32 */
+		int resolve_result = resolve_networks(line_export, *exports);
+		if (resolve_result != 0)
+		{
+			int position = 0;
+
+			struct list *user_rec = line_export->users;
+			while (user_rec != NULL)
+			{
+				++position;
+
+				if (position == resolve_result)
+				{
+					break;
+				}
+
+				user_rec = user_rec->next;
+			}
+
+			if (position != resolve_result || user_rec == NULL)
+			{
+				/* what a shame, we didn't find errorneous record reported by
+				resolve_networks(), well, show error anyway */
+
+				ERROR("%s\n", "ERROR: Error resolving hostname");
+				return line_number;
+			}
+
+			struct user_rec *user = (struct user_rec *)user_rec->data;
+
+			if (user->network == NULL)
+			{
+				/* what is going on? */
+				ERROR("%s\n", "ERROR: Error resolving hostname");
+				return line_number;
+			}
+
+			ERROR("ERROR: Error resolving hostname: %s\n", user->network);
+			return line_number;
+		}
+
+		/* set default prefix lengths
+
+		this need to be done after resolve_networks() since later will set
+		default prefix length (if it was defaulted in export) to different
+		IP families: IPv4 and IPv6
+
+		so @localhost will be expanded to @127.0.0.1/32 and @::1/128 */
+		fix_prefix_length(line_export);
 
 		/* must be called before setting uid/gid to default values
 		because those are to be checked */
@@ -671,7 +789,7 @@ static void dump_export(const struct rfs_export *single_export)
 	{
 		const struct user_rec *rec = (const struct user_rec *)user->data;
 		
-		DEBUG("'%s@%s/%u'\n", 
+		DEBUG("'<%s>@(%s)/[%u]'\n",
 		rec->username != NULL ? rec->username : "", 
 		rec->network != NULL ? rec->network : "", 
 		rec->prefix_len);
