@@ -65,7 +65,7 @@ struct fuse_opt rfs_opts[] =
 
 static void usage(const char *program)
 {
-	printf(
+	fprintf(stderr,
 	"usage: %s host:path mountpoint [options]\n"
 #ifdef WITH_IPV6
 	"enclose IPv6 address with [] brackets\n"
