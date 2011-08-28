@@ -190,7 +190,7 @@ static int process_getent(int sock, const struct nss_command *cmd, struct config
 			break;
 	}
 
-	int i = 0; for (i = 0; i < ent_cookie->value; ++i)
+	unsigned i = 0; for (i = 0; i < ent_cookie->value; ++i)
 	{
 		item = item->next;
 

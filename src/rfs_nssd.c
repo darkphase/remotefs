@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	uid_t myuid = (server_config.allow_other ? -1 : getuid());
+	uid_t myuid = (server_config.allow_other ? (uid_t)-1 : getuid());
 
 	if (get_global_lock(&server_config) != 0)
 	{

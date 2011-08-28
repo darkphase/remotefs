@@ -168,7 +168,7 @@ int add_rfs_server(struct config *config, const char *server_name)
 		return -EIO;
 	}
 
-	uid_t myuid = (config->allow_other ? -1 : getuid());
+	uid_t myuid = (config->allow_other ? (uid_t)-1 : getuid());
 
 	struct list *user = users;
 	struct list *group = groups;
