@@ -22,6 +22,8 @@ See the file LICENSE.
 static void dump_export(const struct rfs_export *single_export);
 #endif /* RFS_DEBUG */
 
+#define NO_PREFIX (unsigned)(-1)
+
 static const char* trim_left(const char *buffer, unsigned size)
 {
 	const char *local_buffer = buffer;
@@ -209,7 +211,7 @@ static struct list* parse_users(const struct list *users_list)
 
 		rec->username = NULL;
 		rec->network = NULL;
-		rec->prefix_len = (unsigned)-1;
+		rec->prefix_len = NO_PREFIX;
 
 		DEBUG("%s\n", id);
 
@@ -232,7 +234,7 @@ static struct list* parse_users(const struct list *users_list)
 
 			if (prefix_delimiter == NULL)
 			{
-				rec->prefix_len = (unsigned)-1;
+				rec->prefix_len = NO_PREFIX; /* no netmask - default */
 			}
 		}
 		else if (prefix_delimiter == NULL) /* no network delimiter and no prefix length */
@@ -240,7 +242,7 @@ static struct list* parse_users(const struct list *users_list)
 			if (is_ipaddr(id) != 0)
 			{
 				rec->network = buffer_dup(id, strlen(id) + 1);
-				rec->prefix_len = (unsigned)-1;
+				rec->prefix_len = NO_PREFIX;
 			}
 			else
 			{
@@ -404,6 +406,27 @@ parse_error:
 	return (char *)-1;
 }
 
+static int prevalidate_export(const struct rfs_export *line_export, struct list *exports)
+{
+	/* check that resolvable hostnames doesn't have prefix length defined */
+	struct list *user_item = line_export->users;
+	while (user_item != NULL)
+	{
+		struct user_rec *rec = (struct user_rec *)user_item->data;
+		if (rec->network != NULL && is_ipaddr(rec->network) == 0)
+		{
+			if (rec->prefix_len != NO_PREFIX)
+			{
+				return -1;
+			}
+		}
+
+		user_item = user_item->next;
+	}
+
+	return 0;
+}
+
 static int validate_export(const struct rfs_export *line_export, struct list *exports)
 {
 #ifdef WITH_UGO
@@ -544,7 +567,7 @@ static int resolve_networks(struct rfs_export *line_export, struct list *exports
 
 			struct user_rec *replacement = malloc(sizeof(*replacement));
 			replacement->username = strdup(rec->username);
-			replacement->prefix_len = rec->prefix_len;
+			replacement->prefix_len = NO_PREFIX; /* ignore netmask. otherwise, it's a possible security issue */
 			replacement->network = strdup(addr->ip);
 
 			add_to_list(&(line_export->users), replacement);
@@ -568,7 +591,7 @@ static void fix_prefix_length(struct rfs_export *line_export)
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
-		if (rec->network != NULL && rec->prefix_len == (unsigned)-1)
+		if (rec->network != NULL && rec->prefix_len == NO_PREFIX)
 		{
 			rec->prefix_len = default_prefix_len(rec->network);
 		}
@@ -644,6 +667,18 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 			return line_number;
 		}
 
+		/* short check before resolving: hostnames shouldn't be specified with
+		prefix like "localhost/24" - this is possible security issue */
+		if (prevalidate_export(line_export, *exports) != 0)
+		{
+			ERROR("%s\n", "ERROR: hostname definition can't have prefix length specified for it\n");
+
+			free(line_export);
+			fclose(fd);
+			release_exports(exports);
+			return line_number;
+		}
+
 		/* expand records like @localhost to @127.0.0.1/32, @127.0.1.1/32 */
 		int resolve_result = resolve_networks(line_export, *exports);
 		if (resolve_result != 0)
@@ -665,9 +700,8 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 
 			if (position != resolve_result || user_rec == NULL)
 			{
-				/* what a shame, we didn't find errorneous record reported by
+				/* what a shame, we didn't find erroneous record reported by
 				resolve_networks(), well, show error anyway */
-
 				ERROR("%s\n", "ERROR: Error resolving hostname");
 				return line_number;
 			}
@@ -685,13 +719,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 			return line_number;
 		}
 
-		/* set default prefix lengths
-
-		this need to be done after resolve_networks() since later will set
-		default prefix length (if it was defaulted in export) to different
-		IP families: IPv4 and IPv6
-
-		so @localhost will be expanded to @127.0.0.1/32 and @::1/128 */
+		/* if no prefix length defined for user (IP-address actually), it is set to NO_PREFIX */
 		fix_prefix_length(line_export);
 
 		/* must be called before setting uid/gid to default values

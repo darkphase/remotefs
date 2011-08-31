@@ -21,7 +21,6 @@ See the file LICENSE.
 #include "list.h"
 #include "resolve.h"
 
-/* TODO: this should replace host_ip() */
 struct list* host_ips(const char *host, int *address_family)
 {
 	struct addrinfo *addr_info = NULL;
