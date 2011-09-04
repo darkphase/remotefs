@@ -19,6 +19,7 @@ extern "C" {
 #include "rfs/changepath.h"
 #include "rfs/closeconnection.h"
 #include "rfs/getexportopts.h"
+#include "rfs/handshake.h"
 #include "rfs/keepalive.h"
 #include "rfs/listexports.h"
 #include "rfs/request_salt.h"

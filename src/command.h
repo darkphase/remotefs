@@ -31,6 +31,7 @@ enum server_commands
 	cmd_getexportopts,           /* 0f */
 	cmd_listexports,             /* 12 */
 	cmd_getnames,                /* 13 */
+	cmd_handshake,               /* 14 */
 	
 	/* reserved */
 

@@ -68,6 +68,7 @@ librfs_OBJS = src/acl/local_resolve.o \
               src/operations/rfs/disconnect.o \
               src/operations/rfs/destroy.o \
               src/operations/rfs/getexportopts.o \
+              src/operations/rfs/handshake.o \
               src/operations/rfs/init.o \
               src/operations/rfs/keepalive.o \
               src/operations/rfs/listexports.o \

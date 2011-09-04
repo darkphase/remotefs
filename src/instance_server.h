@@ -30,6 +30,7 @@ struct rfsd_instance
 	/* server variables */
 	struct 
 	{
+		unsigned hand_shaken;
 		unsigned directory_mounted;
 		struct rfs_export *mounted_export;
 		char *auth_user;

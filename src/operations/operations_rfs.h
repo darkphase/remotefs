@@ -21,6 +21,7 @@ extern "C" {
 #include "rfs/disconnect.h"
 #include "rfs/destroy.h"
 #include "rfs/getexportopts.h"
+#include "rfs/handshake.h"
 #include "rfs/keepalive.h"
 #include "rfs/listexports.h"
 #include "rfs/mount.h"

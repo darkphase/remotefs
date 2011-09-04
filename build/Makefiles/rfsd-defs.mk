@@ -64,6 +64,7 @@ rfsd_OBJS = src/acl/id_lookup_resolve.o \
             src/handlers/rfs/changepath.o \
             src/handlers/rfs/closeconnection.o \
             src/handlers/rfs/getexportopts.o \
+            src/handlers/rfs/handshake.o \
             src/handlers/rfs/keepalive.o \
             src/handlers/rfs/listexports.o \
             src/handlers/rfs/request_salt.o \

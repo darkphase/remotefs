@@ -455,6 +455,16 @@ src/operations/rfs/getexportopts.o:src/operations/rfs/../../config.h
 src/operations/rfs/getexportopts.o:src/operations/rfs/../../instance_client.h
 src/operations/rfs/getexportopts.o:src/operations/rfs/../../sendrecv_client.h
 src/operations/rfs/getexportopts.o:src/operations/rfs/../utils.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../options.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../buffer.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../changelog.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../command.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../config.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../instance_client.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../sendrecv_client.h
+src/operations/rfs/handshake.o:src/operations/rfs/../../version.h
+src/operations/rfs/handshake.o:src/operations/rfs/../utils.h
+src/operations/rfs/handshake.o:src/operations/rfs/handshake.h
 src/operations/rfs/init.o:src/operations/rfs/../../options.h
 src/operations/rfs/init.o:src/operations/rfs/../../config.h
 src/operations/rfs/init.o:src/operations/rfs/../../id_lookup.h
@@ -500,6 +510,7 @@ src/operations/rfs/auth.o:src/operations/rfs/auth.c
 src/operations/rfs/destroy.o:src/operations/rfs/destroy.c
 src/operations/rfs/disconnect.o:src/operations/rfs/disconnect.c
 src/operations/rfs/getexportopts.o:src/operations/rfs/getexportopts.c
+src/operations/rfs/handshake.o:src/operations/rfs/handshake.c
 src/operations/rfs/init.o:src/operations/rfs/init.c
 src/operations/rfs/keepalive.o:src/operations/rfs/keepalive.c
 src/operations/rfs/listexports.o:src/operations/rfs/listexports.c
@@ -753,6 +764,14 @@ src/handlers/rfs/getexportopts.o:src/handlers/rfs/../../config.h
 src/handlers/rfs/getexportopts.o:src/handlers/rfs/../../exports.h
 src/handlers/rfs/getexportopts.o:src/handlers/rfs/../../instance_server.h
 src/handlers/rfs/getexportopts.o:src/handlers/rfs/../../sendrecv_server.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../auth.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../changelog.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../command.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../config.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../handling.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../instance_server.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../sendrecv_server.h
+src/handlers/rfs/handshake.o:src/handlers/rfs/../../version.h
 src/handlers/rfs/keepalive.o:src/handlers/rfs/../../command.h
 src/handlers/rfs/keepalive.o:src/handlers/rfs/../../instance_server.h
 src/handlers/rfs/listexports.o:src/handlers/rfs/../../buffer.h
@@ -774,6 +793,7 @@ src/handlers/rfs/auth.o:src/handlers/rfs/auth.c
 src/handlers/rfs/changepath.o:src/handlers/rfs/changepath.c
 src/handlers/rfs/closeconnection.o:src/handlers/rfs/closeconnection.c
 src/handlers/rfs/getexportopts.o:src/handlers/rfs/getexportopts.c
+src/handlers/rfs/handshake.o:src/handlers/rfs/handshake.c
 src/handlers/rfs/keepalive.o:src/handlers/rfs/keepalive.c
 src/handlers/rfs/listexports.o:src/handlers/rfs/listexports.c
 src/handlers/rfs/request_salt.o:src/handlers/rfs/request_salt.c

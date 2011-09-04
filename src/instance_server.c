@@ -29,6 +29,7 @@ static void init_keep_alive(struct rfsd_instance *instance)
 
 static void init_server(struct rfsd_instance *instance)
 {
+	instance->server.hand_shaken = 0;
 	instance->server.directory_mounted = 0;
 	instance->server.mounted_export = NULL;
 	instance->server.auth_user = NULL;

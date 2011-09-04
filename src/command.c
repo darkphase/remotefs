@@ -23,6 +23,7 @@ const char* describe_command(const uint32_t cmd)
 	case cmd_keepalive:                     return "keepalive";
 	case cmd_getexportopts:                 return "getexportopts";
 	case cmd_listexports:                   return "listexports";
+	case cmd_handshake:                     return "handshake";
 	
 	/* fs commands */
 	case cmd_readdir:                       return "readdir";

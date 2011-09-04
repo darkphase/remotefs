@@ -59,6 +59,19 @@ int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *cli
 
 	switch (cmd->command)
 	{
+	case cmd_handshake:
+		return handle_handshake(instance, client_addr, cmd);
+	}
+
+	/* client should do handshake before all other commands */
+	if (instance->server.hand_shaken == 0)
+	{
+		reject_request_with_cleanup(instance, cmd, EACCES);
+		return -1;
+	}
+
+	switch (cmd->command)
+	{
 	case cmd_closeconnection:
 		return handle_closeconnection(instance, client_addr, cmd);
 

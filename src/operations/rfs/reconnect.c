@@ -54,6 +54,20 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 	setup_socket_ndelay(sock, 1);
 
+	switch (rfs_handshake(instance) != 0)
+	{
+	case 0:
+		break;
+
+	case -EINVAL:
+		ERROR("%s\n", "Incompatible server's version");
+		return -1;
+
+	default:
+		ERROR("%s\n", "Can't shake hands with server (unknown error, server's version is probably too old)");
+		return -1;
+	}
+
 	if (instance->config.auth_user != NULL 
 	&& instance->config.auth_passwd != NULL)
 	{

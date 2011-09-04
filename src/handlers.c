@@ -53,6 +53,11 @@ int handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in 
 }
 #endif
 
+int handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+{
+	DECORATE(_handle_handshake)
+}
+
 int handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
 {
 	DECORATE(_handle_mknod)

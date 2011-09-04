@@ -23,6 +23,7 @@ static int incompat_list[] =
 	COMPAT_VERSION(0, 5), /* for testing purposes.
 	0.9-0.15 don't have this feature, so incompatible by default */
 
+
 	COMPAT_VERSION(0, 16), /* truncate modified to send offset as uint64_t instead of uint32_t */
 };
 
@@ -30,12 +31,12 @@ int versions_compatible(unsigned my_version, unsigned their_version)
 {
 	size_t changes = sizeof(incompat_list) / sizeof(incompat_list[0]);
 
-	DEBUG("checking %x against %x\n", my_version, their_version);
+	DEBUG("checking %d against %d\n", my_version, their_version);
 
 	int max_version = (my_version > their_version ? my_version : their_version);
 	int min_version = (max_version == my_version ? their_version : my_version);
 
-	DEBUG("max version: %x, min version: %x\n", max_version, min_version);
+	DEBUG("max version: %d, min version: %d\n", max_version, min_version);
 
 	size_t i = 0; for (i = 0; i < changes; ++i)
 	{

@@ -226,7 +226,7 @@ static struct list* parse_users(const struct list *users_list)
 
 		if (network_delimiter != NULL) /* it's something like root@127.0.0.1 */
 		{
-			rec->username = buffer_dup_str(id, network_delimiter - id);
+			rec->username = (network_delimiter - id == 0 ? NULL : buffer_dup_str(id, network_delimiter - id));
 			rec->network = buffer_dup_str(network_delimiter + 1, 
 				prefix_delimiter != NULL 
 				? prefix_delimiter - network_delimiter - 1 
@@ -566,7 +566,7 @@ static int resolve_networks(struct rfs_export *line_export, struct list *exports
 			struct resolved_addr *addr = (struct resolved_addr *)resolved->data;
 
 			struct user_rec *replacement = malloc(sizeof(*replacement));
-			replacement->username = strdup(rec->username);
+			replacement->username = (rec->username != NULL ? strdup(rec->username) : NULL);
 			replacement->prefix_len = NO_PREFIX; /* ignore netmask. otherwise, it's a possible security issue */
 			replacement->network = strdup(addr->ip);
 

@@ -32,6 +32,7 @@ int handle_setsockbuffer(struct rfsd_instance *instance, const struct sockaddr_i
 #ifdef WITH_EXPORTS_LIST
 int handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 #endif
+int handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 
 int handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
 int handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
