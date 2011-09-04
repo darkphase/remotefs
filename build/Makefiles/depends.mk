@@ -15,10 +15,15 @@ src/auth.o:src/passwd.h
 src/auth.o:src/utils.h
 src/buffer.o:src/buffer.h
 src/buffer.o:src/config.h
+src/changelog.o:src/config.h
+src/changelog.o:src/changelog.h
+src/changelog.o:src/version.h
 src/command.o:src/command.h
 src/command.o:src/config.h
 src/connect.o:src/config.h
 src/connect.o:src/instance.h
+src/connect.o:src/list.h
+src/connect.o:src/resolve.h
 src/crypt.o:src/config.h
 src/crypt.o:src/crypt.h
 src/crypt.o:src/md5crypt/crypt_md5.h
@@ -33,6 +38,7 @@ src/exports.o:src/buffer.h
 src/exports.o:src/config.h
 src/exports.o:src/exports.h
 src/exports.o:src/list.h
+src/exports.o:src/resolve.h
 src/exports.o:src/utils.h
 src/fuse_rfs.o:src/fuse_rfs.h
 src/fuse_rfs.o:src/config.h
@@ -92,6 +98,9 @@ src/passwd.o:src/config.h
 src/passwd.o:src/list.h
 src/passwd.o:src/passwd.h
 src/path.o:src/config.h
+src/resolve.o:src/config.h
+src/resolve.o:src/list.h
+src/resolve.o:src/resolve.h
 src/rfs.o:src/fuse_rfs.h
 src/rfs.o:src/buffer.h
 src/rfs.o:src/config.h
@@ -161,11 +170,13 @@ src/sug_server.o:src/list.h
 src/sug_server.o:src/passwd.h
 src/sug_server.o:src/utils.h
 src/utils.o:src/config.h
+src/utils.o:src/list.h
 src/utils.o:src/sendrecv.h
 src/utils.o:src/utils.h
 src/attr_cache.o:src/attr_cache.c
 src/auth.o:src/auth.c
 src/buffer.o:src/buffer.c
+src/changelog.o:src/changelog.c
 src/command.o:src/command.c
 src/connect.o:src/connect.c
 src/crypt.o:src/crypt.c
@@ -188,6 +199,7 @@ src/names.o:src/names.c
 src/operations.o:src/operations.c
 src/passwd.o:src/passwd.c
 src/path.o:src/path.c
+src/resolve.o:src/resolve.c
 src/rfs.o:src/rfs.c
 src/rfsd.o:src/rfsd.c
 src/rfspasswd.o:src/rfspasswd.c
