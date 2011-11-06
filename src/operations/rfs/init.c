@@ -79,11 +79,6 @@ void* rfs_init(struct rfs_instance *instance)
 		/* TODO: how to handle ? */
 	}
 	
-	if (instance->config.use_write_cache != 0)
-	{
-		init_write_behind(instance);
-	}
-
 #ifdef WITH_UGO
 	if ((instance->client.export_opts & OPT_UGO) != 1)
 	{

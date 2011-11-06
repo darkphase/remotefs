@@ -50,8 +50,6 @@ static void init_write_cache(struct rfs_instance *instance)
 	/* write cache */
 	instance->write_cache.max_cache_size = DEFAULT_RW_CACHE_SIZE;
 	instance->write_cache.cache = NULL;
-	instance->write_cache.write_behind_thread = 0;
-	memset(&instance->write_cache.write_behind_request, 0, sizeof(instance->write_cache.write_behind_request));
 }
 
 static void init_nss(struct rfs_instance *instance)

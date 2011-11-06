@@ -33,15 +33,14 @@ struct cache_block
 /** reserve block of size bytes and add it to list */
 struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t offset, uint64_t descriptor);
 
+int file_in_cache(const struct list *head, uint64_t descriptor);
+
 /** return found block for given file descriptor 
 if (allocated - used) > size && block.offset <= offset */
 struct cache_block* find_suitable_cache_block(const struct list *head, size_t size, off_t offset, uint64_t descriptor);
 
 /** delete all cache for descriptor */
 void clear_cache_by_desc(struct list **head, uint64_t descriptor);
-
-/** delete all cache for (block.offset + used) < offset */
-void clear_cache_by_offset(struct list **head, uint64_t descriptor, off_t offset);
 
 /** delete all allocated blocks */
 void destroy_data_cache(struct list **head);
