@@ -54,12 +54,12 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 	setup_socket_ndelay(sock, 1);
 
-	switch (rfs_handshake(instance) != 0)
+	switch (rfs_handshake(instance))
 	{
 	case 0:
 		break;
 
-	case -EINVAL:
+	case -EPROTONOSUPPORT:
 		ERROR("%s\n", "Incompatible server's version");
 		return -1;
 

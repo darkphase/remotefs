@@ -52,7 +52,7 @@ int _handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *
 	pack_16(&my_minor,
 	pack_16(&my_major, buffer));
 
-	struct answer ans = { cmd_handshake, overall_size, (compatible != 0 ? 0 : -1), (compatible != 0 ? 0 : EINVAL) };
+	struct answer ans = { cmd_handshake, overall_size, (compatible != 0 ? 0 : -1), (compatible != 0 ? 0 : EPROTONOSUPPORT) };
 #undef overall_size
 
 	if (ans.ret == 0)

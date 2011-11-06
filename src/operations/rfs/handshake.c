@@ -84,7 +84,7 @@ int rfs_handshake(struct rfs_instance *instance)
 
 	if (compatible == 0)
 	{
-		return -EINVAL;
+		return -EPROTONOSUPPORT;
 	}
 
 	return 0;
