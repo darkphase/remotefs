@@ -77,25 +77,13 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 		uint32_t entry_len = strlen(entry_name) + 1;
 		
 		stat_failed = 0;
-		char *send_path = full_path;
 		
 		int joined = path_join(full_path, sizeof(full_path), path, entry_name);
-		if (joined < 0)
+
+		if (joined < 0
+		|| stat_file(instance, full_path, &stbuf) != 0)
 		{
-			send_path = "???";
 			stat_failed = 1;
-		}
-		else
-		{
-			send_path = full_path;
-		}
-	
-		if (joined >= 0)
-		{
-			if (stat_file(instance, full_path, &stbuf) != 0)
-			{
-				stat_failed = 1;
-			}
 		}
 
 		const char *user = NULL, *group = NULL;
