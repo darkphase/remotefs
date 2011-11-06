@@ -1,0 +1,3 @@
+If you're changing anything in remotefs protocol (making it incompatible
+with older versions), take a look at changelog.c and add appropriate record.
+

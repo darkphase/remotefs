@@ -50,13 +50,13 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 		return -ans.ret_errno;
 	}
 
-	uint32_t bsize = 0;
-	uint32_t blocks = 0;
-	uint32_t bfree = 0;
-	uint32_t bavail = 0;
-	uint32_t files = 0;
-	uint32_t ffree = 0;
-	uint32_t namemax = 0;
+	uint64_t bsize = 0;
+	uint64_t blocks = 0;
+	uint64_t bfree = 0;
+	uint64_t bavail = 0;
+	uint64_t files = 0;
+	uint64_t ffree = 0;
+	uint64_t namemax = 0;
 
 	unsigned overall_size = sizeof(bsize)
 	+ sizeof(blocks)
@@ -80,13 +80,13 @@ int _rfs_statfs(struct rfs_instance *instance, const char *path, struct statvfs 
 		return -ECONNABORTED;
 	}
 
-	unpack_32(&namemax, 
-	unpack_32(&ffree, 
-	unpack_32(&files, 
-	unpack_32(&bavail, 
-	unpack_32(&bfree, 
-	unpack_32(&blocks, 
-	unpack_32(&bsize, buffer
+	unpack_64(&namemax,
+	unpack_64(&ffree,
+	unpack_64(&files,
+	unpack_64(&bavail,
+	unpack_64(&bfree,
+	unpack_64(&blocks,
+	unpack_64(&bsize, buffer
 	)))))));
 	
 	free(buffer);

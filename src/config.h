@@ -28,7 +28,7 @@ struct list;
 #define DEFAULT_SERVER_PORT     5001
 #define KEEP_ALIVE_PERIOD       60 * 5      /* secs */
 #define DEFAULT_RW_CACHE_SIZE   512 * 1024  /* bytes */
-#define ATTR_CACHE_TTL          5           /* secs */
+#define ATTR_CACHE_TTL          20          /* secs */
 #define ATTR_CACHE_MAX_ENTRIES  10000
 #define EMPTY_SALT              "$1$"       /* use md5 */
 #define MAX_SALT_LEN            3 + 8       /* "$1$" + 8 bytes of actual salt */

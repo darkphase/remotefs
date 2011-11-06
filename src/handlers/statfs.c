@@ -66,13 +66,13 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return 1;
 	}
 	
-	uint32_t bsize = buf.f_bsize;
-	uint32_t blocks = buf.f_blocks;
-	uint32_t bfree = buf.f_bfree;
-	uint32_t bavail = buf.f_bavail;
-	uint32_t files = buf.f_files;
-	uint32_t ffree = buf.f_bfree;
-	uint32_t namemax = buf.f_namemax;
+	uint64_t bsize = buf.f_bsize;
+	uint64_t blocks = buf.f_blocks;
+	uint64_t bfree = buf.f_bfree;
+	uint64_t bavail = buf.f_bavail;
+	uint64_t files = buf.f_files;
+	uint64_t ffree = buf.f_bfree;
+	uint64_t namemax = buf.f_namemax;
 	
 	unsigned overall_size = sizeof(bsize)
 	+ sizeof(blocks)
@@ -90,13 +90,13 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 		return reject_request(instance, cmd, ECANCELED) == 0 ? 1 : -1;
 	}
 	
-	pack_32(&namemax, 
-	pack_32(&ffree, 
-	pack_32(&files, 
-	pack_32(&bavail, 
-	pack_32(&bfree, 
-	pack_32(&blocks, 
-	pack_32(&bsize, buffer
+	pack_64(&namemax,
+	pack_64(&ffree,
+	pack_64(&files,
+	pack_64(&bavail,
+	pack_64(&bfree,
+	pack_64(&blocks,
+	pack_64(&bsize, buffer
 	)))))));
 
 	send_token_t token = { 0 };

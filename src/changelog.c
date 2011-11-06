@@ -24,7 +24,8 @@ static int incompat_list[] =
 	0.9-0.15 don't have this feature, so incompatible by default */
 
 
-	COMPAT_VERSION(0, 16), /* truncate modified to send offset as uint64_t instead of uint32_t */
+	COMPAT_VERSION(0, 16), /* truncate modified to send offset as uint64_t instead of uint32_t,
+	64-bit values in statfs() */
 };
 
 int versions_compatible(unsigned my_version, unsigned their_version)
