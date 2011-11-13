@@ -339,7 +339,7 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 	
 	if (users_end == NULL)
 	{
-		users_end = next_line;
+		users_end = (next_line != NULL ? next_line : border);
 	}
 	
 	if (users == NULL 
