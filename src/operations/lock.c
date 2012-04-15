@@ -59,20 +59,19 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	}
 	
 	uint16_t type = 0;
-	if (fl->l_type == F_UNLCK)
+	switch (fl->l_type)
 	{
+	case F_UNLCK:
 		type = RFS_UNLCK;
-	}
-	else 
-	{
-		if ((fl->l_type & F_RDLCK) != 0)
-		{
-			type |= RFS_RDLCK;
-		}
-		if ((fl->l_type & F_WRLCK) != 0)
-		{
-			type |= RFS_WRLCK;
-		}
+		break;
+	case F_RDLCK:
+		type = RFS_RDLCK;
+		break;
+	case F_WRLCK:
+		type = RFS_WRLCK;
+		break;
+	default:
+		return -EINVAL;
 	}
 	
 	uint16_t whence = fl->l_whence;
