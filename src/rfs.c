@@ -293,7 +293,7 @@ int main(int argc, char **argv)
 	if (just_list_exports != 0)
 	{
 		fuse_opt_free_args(&args);
-		exit(list_exports_main(&rfs_instance));
+		exit(-list_exports_main(&rfs_instance));
 	}
 #else
 	if (just_list_exports != 0)

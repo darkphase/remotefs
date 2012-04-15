@@ -19,7 +19,7 @@ int list_exports_main(struct rfs_instance *instance)
 	int conn_ret = rfs_reconnect(instance, 1, 0);
 	if (conn_ret != 0)
 	{
-		return -conn_ret;
+		return conn_ret;
 	}
 	
 	int list_ret = rfs_listexports(instance);

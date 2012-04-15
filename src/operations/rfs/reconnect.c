@@ -35,7 +35,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		{
 			ERROR("Error connecting to remote host: %s\n", strerror(-sock));
 		}
-		return 1;
+		return sock;
 	}
 	else
 	{
@@ -49,7 +49,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		{
 			ERROR("Error setting socket owner: %s\n", strerror(-setpid_ret));
 		}
-		return -1;
+		return setpid_ret;
 	}
 
 	setup_socket_ndelay(sock, 1);
@@ -61,7 +61,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 
 	case -EPROTONOSUPPORT:
 		ERROR("%s\n", "Incompatible server's version");
-		return -1;
+		return -EPROTONOSUPPORT;
 
 	default:
 		ERROR("%s\n", "Can't shake hands with server (unknown error, server's version is probably too old)");
@@ -81,7 +81,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				ERROR("Requesting salt for authentication error: %s\n", strerror(-req_ret));
 			}
 			rfs_disconnect(instance, 1);
-			return -1;
+			return req_ret;
 		}
 		
 		int auth_ret = rfs_auth(instance, instance->config.auth_user, instance->config.auth_passwd);
@@ -92,7 +92,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				ERROR("Authentication error: %s\n", strerror(-auth_ret));
 			}
 			rfs_disconnect(instance, 1);
-			return -1;
+			return auth_ret;
 		}
 	}
 	
@@ -108,7 +108,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				ERROR("Error mounting remote directory: %s\n", strerror(-mount_ret));
 			}
 			rfs_disconnect(instance, 1);
-			return -1;
+			return mount_ret;
 		}
 		
 		int getopts_ret = rfs_getexportopts(instance, &instance->client.export_opts);
@@ -119,7 +119,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 				ERROR("Error getting export options from server: %s\n", strerror(-getopts_ret));
 			}
 			rfs_disconnect(instance, 1);
-			return -1;
+			return getopts_ret;
 		}
 		
 		int resume_ret = resume_files(instance);
@@ -134,8 +134,8 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 #ifndef RFS_DEBUG
 				"Hello there!\n"
 				"Normally you should not be seeing this message.\n"
-				"Are you sure you are running the remotefs client you've downloaded from SourceForge? If that is the case, please notify the remotefs maintainer that you actually got this message.\n"
-				"You'll find his e-mail at http://remotefs.sourceforge.net . Thank you.\n"
+				"Are you sure you are running the remotefs client you've downloaded from SourceForge? If that is the case, please notify the remotefs developers that you actually got this message.\n"
+				"You'll find their e-mails at http://remotefs.sourceforge.net . Thank you.\n"
 				"Anyway, here's the actual message:\n"
 #endif
 				"Error restoring remote files state after reconnect: %s\n";
@@ -148,6 +148,8 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 			so we'll be trapped inside of reconnect.
 			i think it's better to show (some) error message later 
 			than broken connection */
+
+			return resume_ret;
 		}
 	}
 

@@ -65,6 +65,7 @@ clean_build: dummy
 	$(RM) -f src/ssl/handlers/*.o
 	$(RM) -f rfs_nss/src/*.o
 
+# FIXME: should refer to targets (rfs_TARGET, etc)
 clean_bins: dummy
 	$(RM) -f rfs
 	$(RM) -f rfsd

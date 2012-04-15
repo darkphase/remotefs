@@ -20,6 +20,7 @@ extern "C" {
 
 struct flock;
 struct rfs_instance;
+struct stat;
 struct statvfs;
 struct utimbuf;
 
