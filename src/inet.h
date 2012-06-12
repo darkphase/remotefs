@@ -40,7 +40,7 @@ extern "C" {
 #	endif
 
 #elif defined DARWIN
-#	include <machine/endian.h>
+#	include <libkern/OSByteOrder.h>
 #	define RFS_BSWAP_FUNC OSSwapConstInt64
 #
 #	if __DARWIN_BYTE_ORDER == __DARWIN_BIG_ENDIAN
