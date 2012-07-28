@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -19,16 +19,10 @@ extern "C" {
 
 struct list;
 
-struct uid_look_ent
+struct id_look_ent
 {
 	char *name;
-	uid_t uid;
-};
-
-struct gid_look_ent
-{
-	char *name;
-	gid_t gid;
+	uint64_t id;
 };
 
 /** get uid of named user */

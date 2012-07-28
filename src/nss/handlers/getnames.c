@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -31,7 +31,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	struct list *uid = instance->id_lookup.uids;
 	while (uid != NULL)
 	{
-		struct uid_look_ent *entry = (struct uid_look_ent *)uid->data;
+		struct id_look_ent *entry = (struct id_look_ent *)uid->data;
 		users_len += strlen(entry->name) + 1;
 
 		uid = uid->next;
@@ -44,8 +44,8 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	uid = instance->id_lookup.uids;
 	while (uid != NULL)
-	{	
-		struct uid_look_ent *entry = (struct uid_look_ent *)uid->data;
+	{
+		struct id_look_ent *entry = (struct id_look_ent *)uid->data;
 
 		DEBUG("%s\n", entry->name);
 
@@ -60,8 +60,8 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 #endif
 
 	send_token_t users_token = { 0 };
-	if (do_send(&instance->sendrecv, 
-		queue_data(users, users_len, 
+	if (do_send(&instance->sendrecv,
+		queue_data(users, users_len,
 		queue_ans(&ans, &users_token))) < 0)
 	{
 		free(users);
@@ -77,7 +77,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	struct list *gid = instance->id_lookup.gids;
 	while (gid != NULL)
 	{
-		struct gid_look_ent *entry = (struct gid_look_ent *)gid->data;
+		struct id_look_ent *entry = (struct id_look_ent *)gid->data;
 		groups_len += strlen(entry->name) + 1;
 
 		gid = gid->next;
@@ -91,22 +91,22 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	gid = instance->id_lookup.gids;
 	while (gid != NULL)
-	{	
-		struct gid_look_ent *entry = (struct gid_look_ent *)gid->data;
+	{
+		struct id_look_ent *entry = (struct id_look_ent *)gid->data;
 
 		memcpy(groups + written, entry->name, strlen(entry->name) + 1);
 		written += strlen(entry->name) + 1;
 
 		gid = gid->next;
 	}
-	
+
 #ifdef RFS_DEBUG
 	dump(groups, groups_len);
 #endif
 
 	send_token_t groups_token = { 0 };
-	if (do_send(&instance->sendrecv, 
-		queue_data(groups, groups_len, 
+	if (do_send(&instance->sendrecv,
+		queue_data(groups, groups_len,
 		queue_ans(&ans, &groups_token))) < 0)
 	{
 		free(groups);
