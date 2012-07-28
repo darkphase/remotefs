@@ -17,8 +17,6 @@ See the file LICENSE.
 #include "list.h"
 
 typedef const void* (*compare_func)(const void *entry, const void *value);
-typedef void (*destroy_func)(void *data);
-typedef void* (*alloc_func)(char *name, uint64_t id);
 
 static inline const void* compare_id_name(const void *entry, const void *name)
 {
@@ -135,21 +133,7 @@ const char* get_gid_name(const struct list *gids, gid_t gid)
 	return NULL;
 }
 
-static inline void* alloc_id_ent(char *name, uint64_t id)
-{
-	struct id_look_ent *entry = malloc(sizeof(*entry));
-	if (entry == NULL)
-	{
-		return NULL;
-	}
-
-	entry->name = name;
-	entry->id = id;
-
-	return entry;
-}
-
-static int put_to_ids(struct list **ids, const char *name, uint64_t id, alloc_func allocator)
+static int put_to_ids(struct list **ids, const char *name, uint64_t id)
 {
 	char *dup_name = strdup(name);
 	if (dup_name == NULL)
@@ -157,12 +141,15 @@ static int put_to_ids(struct list **ids, const char *name, uint64_t id, alloc_fu
 		return -1;
 	}
 
-	void *entry = allocator(dup_name, id);
+	struct id_look_ent *entry = malloc(sizeof(*entry));
 	if (entry == NULL)
 	{
 		free(dup_name);
 		return -1;
 	}
+
+	entry->name = dup_name;
+	entry->id = id;
 
 	if (add_to_list(ids, entry) == NULL)
 	{
@@ -191,7 +178,7 @@ int create_uids_lookup(struct list **uids)
 			break;
 		}
 
-		if (put_to_ids(uids, pwd->pw_name, pwd->pw_uid, alloc_id_ent) != 0)
+		if (put_to_ids(uids, pwd->pw_name, pwd->pw_uid) != 0)
 		{
 			endpwent();
 			return -1;
@@ -220,7 +207,7 @@ int create_gids_lookup(struct list **gids)
 			break;
 		}
 
-		if (put_to_ids(gids, grp->gr_name, grp->gr_gid, alloc_id_ent) != 0)
+		if (put_to_ids(gids, grp->gr_name, grp->gr_gid) != 0)
 		{
 			endgrent();
 			return -1;
@@ -233,19 +220,13 @@ int create_gids_lookup(struct list **gids)
 	return 0;
 }
 
-static inline void destroy_id(void *entry)
-{
-	free(((struct id_look_ent *)entry)->name);
-}
-
-static inline void destroy_ids(struct list **ids, destroy_func destroyer)
+static inline void destroy_ids(struct list **ids)
 {
 	struct list *entry = *ids;
 
 	while (entry != NULL)
 	{
-		destroyer(entry->data);
-
+		free(((struct id_look_ent *)entry->data)->name);
 		entry = entry->next;
 	}
 
@@ -257,12 +238,12 @@ void destroy_uids_lookup(struct list **uids)
 {
 	DEBUG("%s\n", "destroying uid lookup table");
 
-	destroy_ids(uids, destroy_id);
+	destroy_ids(uids);
 }
 
 void destroy_gids_lookup(struct list **gids)
 {
 	DEBUG("%s\n", "destroying gid lookup table");
 
-	destroy_ids(gids, destroy_id);
+	destroy_ids(gids);
 }
