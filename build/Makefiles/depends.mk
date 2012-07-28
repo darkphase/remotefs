@@ -24,6 +24,7 @@ src/connect.o:src/config.h
 src/connect.o:src/instance.h
 src/connect.o:src/list.h
 src/connect.o:src/resolve.h
+src/connect.o:src/sockets.h
 src/crypt.o:src/config.h
 src/crypt.o:src/crypt.h
 src/crypt.o:src/md5crypt/crypt_md5.h
@@ -160,6 +161,7 @@ src/signals_server.o:src/config.h
 src/signals_server.o:src/rfsd.h
 src/signals_server.o:src/server.h
 src/signals_server.o:src/signals.h
+src/sockets.o:src/config.h
 src/sug_client.o:src/config.h
 src/sug_client.o:src/instance_client.h
 src/sug_client.o:src/sug_client.h
