@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -11,6 +11,7 @@ See the file LICENSE.
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #if defined SOLARIS
@@ -22,6 +23,7 @@ See the file LICENSE.
 #include "instance.h"
 #include "list.h"
 #include "resolve.h"
+#include "sockets.h"
 
 #include <netinet/tcp.h>
 
@@ -34,7 +36,7 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 		DEBUG("Can't resolve address for %s\n", host);
 		return -EHOSTUNREACH;
 	}
-	
+
 	int sock = -1;
 	int saved_errno = 0;
 
@@ -87,16 +89,43 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 		if (sock == -1)
 		{
 			DEBUG("sock = %d, errno %s\n", sock, strerror(errno));
-			
+
 			resolved_item = resolved_item->next;
 			continue;
 		}
-			
-		errno = 0;
 
-		if (connect(sock, (struct sockaddr *)&sockaddr.ss, sizeof(sockaddr.ss)) != 0)
+		DEBUG("%s\n", "connecting...");
+
+		setup_socket_non_blocking(sock);
+
+		errno = 0;
+		int connect_ret = connect(sock, (struct sockaddr *)&sockaddr.ss, sizeof(sockaddr.ss));
+		if (connect_ret != 0)
 		{
 			saved_errno = errno;
+
+			if (errno == EINPROGRESS)
+			{
+				fd_set fds;
+				FD_ZERO(&fds);
+				FD_SET(sock, &fds);
+
+				struct timeval timeout = { DEFAULT_CONNECT_TIMEOUT / 1000000,
+					DEFAULT_CONNECT_TIMEOUT % 1000000 };
+
+				DEBUG("%s\n", "selecting...");
+
+				int select_ret = select(sock + 1, NULL, &fds, NULL, &timeout);
+
+				connect_ret = (select_ret > 0 ? 0 : connect_ret);
+				saved_errno = (select_ret == 0 ? ETIMEDOUT : errno);
+			}
+		}
+
+		setup_socket_blocking(sock);
+
+		if (connect_ret != 0)
+		{
 			close(sock);
 			sock = -1;
 		}
@@ -108,9 +137,11 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 
 	if (sock > 0)
 	{
+		DEBUG("%s\n", "connected");
+
 		info->socket = sock;
 		info->connection_lost = 0;
 	}
-	
+
 	return (sock <= 0 ? -saved_errno : sock);
 }

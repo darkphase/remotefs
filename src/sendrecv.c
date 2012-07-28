@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -39,19 +39,19 @@ static void dump_iov(struct iovec *iov, unsigned count)
 static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 {
 	size_t overall_size = 0;
-	
+
 	unsigned i = 0; for (i = 0; i < count; ++i)
 	{
 		overall_size += iov[i].iov_len;
 	}
-	
+
 	if (size_left == overall_size)
 	{
 		return count;
 	}
-	
+
 	size_t diff = overall_size - size_left;
-	
+
 	int ret = count;
 	while (1)
 	{
@@ -64,7 +64,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 			DEBUG("%s\n", "error while fixing iovs");
 			break; /* actually error */
 		}
-		
+
 		if (iov[0].iov_len > diff)
 		{
 			iov[0].iov_base = (char*)iov[0].iov_base + diff;
@@ -74,23 +74,23 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 		else if (diff != 0)
 		{
 			diff -= iov[0].iov_len;
-			
+
 			int j = 0; for (j = 0; j < ret; ++j)
 			{
 				iov[j].iov_len = iov[j + 1].iov_len;
 				iov[j].iov_base = iov[j + 1].iov_base;
 			}
-			
+
 			--ret;
-			
+
 			continue;
 		}
 	}
-	
+
 #ifdef RFS_DEBUG
 	dump_iov(iov, ret);
 #endif
-	
+
 	return ret;
 }
 
@@ -101,50 +101,50 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 	{
 		overall_size += iov[i].iov_len;
 	}
-	
+
 	size_t size_sent = 0;
 	while (size_sent < overall_size)
 	{
 		count = fix_iov(iov, count, overall_size - size_sent);
-		
+
 		if (count == 0)
 		{
 			return -EIO;
 		}
-		
+
 		int done = 0;
-		
+
 		errno = 0;
 		done = writev(info->socket, iov, count);
-		
+
 		if (done <= 0)
 		{
-			if (errno == EAGAIN || errno == EINTR)
+			if (errno == EINTR)
 			{
 				continue;
 			}
-			
+
 			if (errno != 0)
 			{
 				DEBUG("%s encountered\n", strerror(errno));
 			}
-			
+
 			DEBUG("connection lost in rfs_writev, size_sent: %u, %s\n", (unsigned int)size_sent, strerror(errno));
 			info->connection_lost = 1;
 			/* see comment for rfs_recv */
 			return errno == 0 ? -ECONNABORTED : -errno;
 		}
-		
+
 		size_sent += done;
 	}
-	
+
 #ifdef RFS_DEBUG
 	if (size_sent > 0)
 	{
 		info->bytes_sent += size_sent;
 	}
 #endif
-	
+
 	return size_sent;
 }
 
@@ -154,14 +154,16 @@ static inline int is_mark(int socket)
 	DEBUG("%s\n", "waiting for further data");
 
 	fd_set read_set;
-	
+
 	FD_ZERO(&read_set);
 	FD_SET(socket, &read_set);
 
 	int select_ret = 0;
 	do
 	{
-		select_ret = select(socket + 1, &read_set, NULL, NULL, NULL);
+		struct timeval timeout = { DEFAULT_RECV_TIMEOUT / 1000000,
+			DEFAULT_RECV_TIMEOUT % 1000000 };
+		select_ret = select(socket + 1, &read_set, NULL, NULL, &timeout);
 
 		if (select_ret < 0)
 		{
@@ -183,7 +185,7 @@ static inline int is_mark(int socket)
 	if (atmark != 0)
 	{
 		char oob = 0;
-		
+
 		errno = 0;
 		return (recv(socket, (char *)&oob, 1, MSG_OOB) < 0 ? -errno : 1);
 	}
@@ -215,7 +217,8 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 				return -EIO;
 			}
 		}
-			
+
+		errno = 0;
 		done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
 
 #ifdef RFS_DEBUG
@@ -227,30 +230,30 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 
 		if (done <= 0)
 		{
-			if (errno == EAGAIN || errno == EINTR)
+			if (errno == EINTR)
 			{
 				continue;
 			}
-			
+
 			if (errno != 0) /* THE CAKE IS A LIE */
 			{
 				DEBUG("%s encountered\n", strerror(errno));
 			}
-			
+
 			DEBUG("connection lost in rfs_recv, size_recv: %d, %s\n", (int)size_recv, strerror(errno));
 			info->connection_lost = 1;
 			/* if connection lost, then we could get Success
 			so fake ret code for upper layer to be able to recognize error */
 			return errno == 0 ? -ECONNABORTED : -errno;
 		}
-		
+
 		size_recv += (size_t)done;
 	}
 
 #ifdef RFS_DEBUG
 	info->bytes_recv += size_recv;
 #endif
-	
+
 	return size_recv;
 }
 
@@ -258,22 +261,22 @@ ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_l
 {
 	size_t size_ignored = 0;
 	char buffer[4096] = { 0 };
-	
+
 	while (size_ignored < data_len)
 	{
-		ssize_t ret = rfs_recv(info, 
-			buffer, 
-			(data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored), 
+		ssize_t ret = rfs_recv(info,
+			buffer,
+			(data_len - size_ignored > sizeof(buffer) ? sizeof(buffer) : data_len - size_ignored),
 			0);
 
 		if (ret < 0)
 		{
 			return ret;
 		}
-		
+
 		size_ignored += (size_t)ret;
 	}
-	
+
 	return size_ignored;
 }
 

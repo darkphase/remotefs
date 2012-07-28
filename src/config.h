@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -45,6 +45,9 @@ struct list;
 #define MAX_LISTEN_ADDRESSES    16
 #define LISTEN_BACKLOG          MAX_LISTEN_ADDRESSES
 #define ALL_ACCESS_USERNAME     "*"
+#define DEFAULT_RECV_TIMEOUT	1000000     /* usecs */
+#define DEFAULT_SEND_TIMEOUT	1000000     /* usecs */
+#define DEFAULT_CONNECT_TIMEOUT	1000000     /* usecs */
 
 #define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \
 	+ sizeof(uint64_t) /* size */                   \
