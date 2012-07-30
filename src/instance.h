@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -27,6 +27,11 @@ struct sendrecv_info
 #ifdef RFS_DEBUG
 	unsigned long bytes_sent;
 	unsigned long bytes_recv;
+	unsigned long recv_interrupts;
+	unsigned long send_interrupts;
+	unsigned long recv_timeouts;
+	unsigned long send_timeouts;
+	unsigned long conn_timeouts;
 #endif
 };
 

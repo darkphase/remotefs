@@ -119,6 +119,9 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 
 		if (done <= 0)
 		{
+#ifdef RFS_DEBUG
+			++(info->send_interrupts);
+#endif
 			if (errno == EINTR)
 			{
 				continue;
@@ -126,7 +129,7 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 
 			if (errno != 0)
 			{
-				DEBUG("%s encountered\n", strerror(errno));
+				DEBUG("rfs_writev: %s (%d)\n", strerror(errno), errno);
 			}
 
 			DEBUG("connection lost in rfs_writev, size_sent: %u, %s\n", (unsigned int)size_sent, strerror(errno));
@@ -148,7 +151,7 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 	return size_sent;
 }
 
-static inline int is_mark(int socket)
+static inline int is_mark(int socket, struct sendrecv_info *info)
 {
 	/* wait for further data become ready to not miss OOB byte */
 	DEBUG("%s\n", "waiting for further data");
@@ -158,19 +161,25 @@ static inline int is_mark(int socket)
 	FD_ZERO(&read_set);
 	FD_SET(socket, &read_set);
 
-	int select_ret = 0;
-	do
-	{
-		struct timeval timeout = { DEFAULT_RECV_TIMEOUT / 1000000,
-			DEFAULT_RECV_TIMEOUT % 1000000 };
-		select_ret = select(socket + 1, &read_set, NULL, NULL, &timeout);
+	struct timeval timeout = { DEFAULT_RECV_TIMEOUT / 1000000,
+		DEFAULT_RECV_TIMEOUT % 1000000 };
 
-		if (select_ret < 0)
-		{
-			return -errno;
-		}
+	DEBUG("%s\n", "selecting...");
+
+	int select_ret = select(socket + 1, &read_set, NULL, NULL, &timeout);
+
+	if (select_ret < 0)
+	{
+		return -errno;
 	}
-	while (FD_ISSET(socket, &read_set) == 0);
+
+	if (FD_ISSET(socket, &read_set) == 0)
+	{
+#ifdef RFS_DEBUG
+		++(info->recv_timeouts);
+#endif
+		return -ETIMEDOUT;
+	}
 
 	int atmark = 0;
 
@@ -203,12 +212,13 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 		if (check_oob != 0)
 		{
 			/* is_mark() will clear stream from OOB message */
-			int check_mark = is_mark(info->socket);
+			int check_mark = is_mark(info->socket, info);
 
 			DEBUG("is mark: %d\n", check_mark);
 
 			if (check_mark < 0)
 			{
+				info->connection_lost = 1;
 				return check_mark;
 			}
 			else if (check_mark != 0)
@@ -221,15 +231,12 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 		errno = 0;
 		done = recv(info->socket, buffer + size_recv, size - size_recv, MSG_WAITALL);
 
-#ifdef RFS_DEBUG
-		if (done != size - size_recv)
-		{
-			DEBUG("recv call has been interrupted with %s (%d), recv result is %ld\n", strerror(errno), errno, (long int)done);
-		}
-#endif
-
 		if (done <= 0)
 		{
+#ifdef RFS_DEBUG
+			++(info->recv_interrupts);
+#endif
+
 			if (errno == EINTR)
 			{
 				continue;
@@ -237,7 +244,7 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 
 			if (errno != 0) /* THE CAKE IS A LIE */
 			{
-				DEBUG("%s encountered\n", strerror(errno));
+				DEBUG("rfs_recv: %s (%d)\n", strerror(errno), errno);
 			}
 
 			DEBUG("connection lost in rfs_recv, size_recv: %d, %s\n", (int)size_recv, strerror(errno));
@@ -284,7 +291,12 @@ ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_l
 void dump_sendrecv_stats(struct sendrecv_info *info)
 {
 	DEBUG("%s\n", "dumping transfer statistics");
-	DEBUG("bytes sent: %lu (%.2fM, %.2fK)\n", info->bytes_sent, (float)info->bytes_sent / (1024 * 1024), (float)info->bytes_sent / 1024);
-	DEBUG("bytes recv: %lu (%.2fM, %.2fK)\n", info->bytes_recv, (float)info->bytes_recv / (1024 * 1024), (float)info->bytes_recv / 1024);
+	DEBUG("### bytes sent: %lu (%.2fM, %.2fK)\n", info->bytes_sent, (float)info->bytes_sent / (1024 * 1024), (float)info->bytes_sent / 1024);
+	DEBUG("### bytes recv: %lu (%.2fM, %.2fK)\n", info->bytes_recv, (float)info->bytes_recv / (1024 * 1024), (float)info->bytes_recv / 1024);
+	DEBUG("### recv interrupts: %lu\n", info->recv_interrupts);
+	DEBUG("### send interrupts: %lu\n", info->recv_interrupts);
+	DEBUG("### recv timeouts: %lu\n", info->recv_timeouts);
+	DEBUG("### send timeouts: %lu\n", info->send_timeouts);
+	DEBUG("### conn timeouts: %lu\n", info->conn_timeouts);
 }
 #endif

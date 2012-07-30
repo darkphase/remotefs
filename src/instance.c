@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -17,6 +17,11 @@ void init_sendrecv(struct sendrecv_info *sendrecv)
 #ifdef RFS_DEBUG
 	sendrecv->bytes_sent = 0;
 	sendrecv->bytes_recv = 0;
+	sendrecv->recv_interrupts = 0;
+	sendrecv->send_interrupts = 0;
+	sendrecv->recv_timeouts = 0;
+	sendrecv->send_timeouts = 0;
+	sendrecv->conn_timeouts = 0;
 #endif
 }
 

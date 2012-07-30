@@ -106,19 +106,30 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 
 			if (errno == EINPROGRESS)
 			{
-				fd_set fds;
-				FD_ZERO(&fds);
-				FD_SET(sock, &fds);
+				fd_set write_set;
+				FD_ZERO(&write_set);
+				FD_SET(sock, &write_set);
 
 				struct timeval timeout = { DEFAULT_CONNECT_TIMEOUT / 1000000,
 					DEFAULT_CONNECT_TIMEOUT % 1000000 };
 
 				DEBUG("%s\n", "selecting...");
 
-				int select_ret = select(sock + 1, NULL, &fds, NULL, &timeout);
+				errno = 0;
+				if (select(sock + 1, NULL, &write_set, NULL, &timeout) < 0)
+				{
+					return -errno;
+				}
 
-				connect_ret = (select_ret > 0 ? 0 : connect_ret);
-				saved_errno = (select_ret == 0 ? ETIMEDOUT : errno);
+#ifdef RFS_DEBUG
+				if (FD_ISSET(sock, &write_set) == 0)
+				{
+					++(info->conn_timeouts);
+				}
+#endif
+
+				connect_ret = (FD_ISSET(sock, &write_set) > 0  ? 0 : connect_ret);
+				saved_errno = (FD_ISSET(sock, &write_set) == 0 ? ETIMEDOUT : errno);
 			}
 		}
 

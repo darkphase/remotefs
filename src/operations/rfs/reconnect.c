@@ -33,7 +33,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	{
 		if (show_errors != 0)
 		{
-			ERROR("Error connecting to remote host: %s\n", strerror(-sock));
+			ERROR("Error connecting to remote host: %s (%d)\n", strerror(-sock), -sock);
 		}
 		return sock;
 	}
@@ -47,18 +47,42 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	{
 		if (show_errors != 0)
 		{
-			ERROR("Error setting socket owner: %s\n", strerror(-setpid_ret));
+			ERROR("Error setting socket owner: %s (%d)\n", strerror(-setpid_ret), -setpid_ret);
 		}
 		return setpid_ret;
 	}
 
-	setup_socket_ndelay(sock, 1);
+	int setndelay_ret = setup_socket_ndelay(sock, 1);
+	if (setndelay_ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			ERROR("Error setting socket options: %s (%d)\n", strerror(-setndelay_ret), -setndelay_ret);
+		}
+		return setndelay_ret;
+	}
 
 	/* no handling of error - it is supposedly done in rfs_recv() and rfs_send() */
-	setup_socket_recv_timeout(sock, DEFAULT_RECV_TIMEOUT);
-	setup_socket_send_timeout(sock, DEFAULT_SEND_TIMEOUT);
+	int setrecvt_ret = setup_socket_recv_timeout(sock, DEFAULT_RECV_TIMEOUT);
+	if (setrecvt_ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			WARN("Error setting socket recv timeout: %s (%d)\n", strerror(-setrecvt_ret), -setrecvt_ret);
+		}
+	}
 
-	switch (rfs_handshake(instance))
+	int setsendt_ret = setup_socket_send_timeout(sock, DEFAULT_SEND_TIMEOUT);
+	if (setsendt_ret != 0)
+	{
+		if (show_errors != 0)
+		{
+			WARN("Error setting socket send timeout: %s (%d)\n", strerror(-setsendt_ret), -setsendt_ret);
+		}
+	}
+
+	int handshake_ret = rfs_handshake(instance);
+	switch (handshake_ret)
 	{
 	case 0:
 		break;
@@ -68,8 +92,8 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		return -EPROTONOSUPPORT;
 
 	default:
-		ERROR("%s\n", "Can't shake hands with server (unknown error, server's version is probably too old)");
-		return -1;
+		ERROR("Can't shake hands with server: %s (%d)\n", strerror(-handshake_ret), -handshake_ret);
+		return handshake_ret;
 	}
 
 	if (instance->config.auth_user != NULL
