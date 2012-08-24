@@ -98,39 +98,52 @@ int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, uns
 
 		setup_socket_non_blocking(sock);
 
-		errno = 0;
+		saved_errno = errno = 0;
 		int connect_ret = connect(sock, (struct sockaddr *)&sockaddr.ss, sizeof(sockaddr.ss));
-		if (connect_ret != 0)
+
+		if (connect_ret != 0 && errno != EINPROGRESS)
 		{
-			saved_errno = errno;
+			return errno;
+		}
 
-			if (errno == EINPROGRESS)
+		if (connect_ret != 0 && errno == EINPROGRESS)
+		{
+			fd_set write_set;
+			FD_ZERO(&write_set);
+			FD_SET(sock, &write_set);
+
+			struct timeval timeout = { DEFAULT_CONNECT_TIMEOUT / 1000000,
+				DEFAULT_CONNECT_TIMEOUT % 1000000 };
+
+			DEBUG("%s\n", "selecting...");
+
+			if (select(sock + 1, NULL, &write_set, NULL, &timeout) < 0)
 			{
-				fd_set write_set;
-				FD_ZERO(&write_set);
-				FD_SET(sock, &write_set);
-
-				struct timeval timeout = { DEFAULT_CONNECT_TIMEOUT / 1000000,
-					DEFAULT_CONNECT_TIMEOUT % 1000000 };
-
-				DEBUG("%s\n", "selecting...");
-
-				errno = 0;
-				if (select(sock + 1, NULL, &write_set, NULL, &timeout) < 0)
-				{
-					return -errno;
-				}
+				int saved_errno = errno;
+				setup_socket_blocking(sock);
+				return -saved_errno;
+			}
 
 #ifdef RFS_DEBUG
-				if (FD_ISSET(sock, &write_set) == 0)
-				{
-					++(info->conn_timeouts);
-				}
+			if (FD_ISSET(sock, &write_set) == 0)
+			{
+				++(info->conn_timeouts);
+			}
 #endif
 
-				connect_ret = (FD_ISSET(sock, &write_set) > 0  ? 0 : connect_ret);
-				saved_errno = (FD_ISSET(sock, &write_set) == 0 ? ETIMEDOUT : errno);
+			int sock_error = 0;
+			socklen_t len = sizeof(sock_error);
+			getsockopt(sock, SOL_SOCKET, SO_ERROR, &sock_error, &len);
+
+#ifdef RFS_DEBUG
+			if (sock_error != 0)
+			{
+				DEBUG("sock error: %d\n", sock_error);
 			}
+#endif
+
+			connect_ret = ((FD_ISSET(sock, &write_set) > 0 && sock_error == 0) ? 0 : sock_error);
+			saved_errno = (FD_ISSET(sock, &write_set) == 0 ? ETIMEDOUT : sock_error);
 		}
 
 		setup_socket_blocking(sock);
