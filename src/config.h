@@ -45,8 +45,8 @@ struct list;
 #define MAX_LISTEN_ADDRESSES    16
 #define LISTEN_BACKLOG          MAX_LISTEN_ADDRESSES
 #define ALL_ACCESS_USERNAME     "*"
-#define DEFAULT_RECV_TIMEOUT	1000000     /* usecs */
-#define DEFAULT_SEND_TIMEOUT	1000000     /* usecs */
+#define DEFAULT_RECV_TIMEOUT	15 * 1000000     /* usecs */
+#define DEFAULT_SEND_TIMEOUT	15 * 1000000     /* usecs */
 #define DEFAULT_CONNECT_TIMEOUT	1000000     /* usecs */
 
 #define STAT_BLOCK_SIZE sizeof(uint32_t) /* mode */ \
