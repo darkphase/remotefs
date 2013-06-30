@@ -1,0 +1,156 @@
+What it is?
+===========
+
+This package adds compatibility with MD5-based encrypted login
+passwords (as found on recent versions of FreeBSD, for example) to
+Linux systems based on libc 5.x.  It is easy to install - no changes
+are necessary in most existing programs that need to perform user
+authentication.  Traditional (DES-based) passwords will continue to
+work, making the transition easier.
+
+The MD5-based passwords have several advantages: unlimited password
+length (in practice, limited to 127 characters by getpass(), which
+still should be more than enough; in traditional DES-based passwords,
+only first 8 characters are significant), longer salt string (maximum
+8 characters, instead of 2) making dictionary attacks more difficult,
+and no silly US export restrictions.
+
+The disadvantage is that most UN*X systems don't yet understand
+MD5 passwords - it may be a problem when sharing encrypted passwords
+from your Linux system over a network (NIS).  However, sharing
+encrypted passwords between Linux and FreeBSD machines should be no
+problem anymore.  Mixed setups (for example, some local users with
+MD5 passwords and some NIS users with traditional DES passwords) are
+also possible.
+
+Ideally, the functionality of this package should be included in libc
+5.x - but I didn't feel like recompiling the whole libc source tree,
+so I created this package as a proof of concept (that it can be done
+without recompiling libc).  The current solution should be considered
+a quick hack (which will disappear once the needed functionality is
+properly integrated in libc5).  It has its disadvantages, too: only
+works with dynamically linked (not static) binaries, causes slightly
+longer program startup times (so remove it before doing benchmarks),
+and some programs may get confused by output from "ldd" (for example,
+dpkg-shlibdeps gives harmless "unable to find dependency information"
+warnings when building Debian packages).
+
+Requirements
+============
+
+This package relies on some advanced features of ld.so (the Linux
+dynamic linker), namely: the ability to override certain symbols by
+shared libraries specified in the /etc/ld.so.preload configuration
+file (to be able to override the libc crypt() function), and the
+dlsym(RTLD_NEXT, ...) interface (so that the new crypt() function can
+call the original one for non-MD5-based passwords).  This means that
+ld.so-1.8.x is required for this package to work.  All current Linux
+distributions should have no problem with this requirement.
+
+If your system uses an earlier version of ld.so, you will need to
+upgrade it first.  Beware: doing it incorrectly can make your system
+unusable - please read all available documentation carefully, make
+sure to back up your data, have a working rescue floppy, etc. BEFORE
+proceeding.  If in doubt, ask somebody more experienced for help.
+
+If your system is based on libc 4.x (very unlikely these days), you
+will need to upgrade to libc 5.x first.  This package will not have
+any effect on a.out binaries.  Upgrading from a.out to ELF is way
+beyond the scope of this document.  The current version of libc 6.x
+(glibc) already supports MD5-based passwords.  Linux-PAM also supports
+the same MD5-based password hashing algorithm, but this package is
+still useful so that non-PAM-aware (yet) programs (such as sshd)
+won't stop working.
+
+Programs that are dynamically linked with libc 5.x, and only verify
+passwords (not generate them), shouldn't need any changes to work with
+this package.  Statically linked programs are not supported.  (The
+security hole in telnetd has been fixed a long time ago, so there is
+no need for a static /bin/login anymore.)  Programs that generate
+encrypted passwords (such as passwd) will need to be modified to
+generate MD5-based passwords (the salt string needs to be changed from
+two [./0-9A-Za-z] characters to "$1$xxxxxxxx").  For example, the
+"passwd" program in recent versions of the Shadow Password Suite
+already supports MD5 passwords.
+
+Installation
+============
+
+ - To compile, type "make".
+ - As root, type "make install".
+ - Verify that the /lib/libmd5crypt.so.1 file exists, and has correct
+   permissions (0755, owned by root).
+ - Edit /etc/ld.so.preload, add a line containing the above filename.
+ - As root, run "ldconfig -v".
+ - Before logging out, verify that you can log in as root on another
+   virtual console.
+
+Now, both MD5 and traditional passwords (non-shadow, shadow, NIS,
+whatever) should be recognized.  If you have access to a system which
+already has MD5-based passwords (such as FreeBSD), you can test it by
+copying the encrypted password to the /etc/passwd (or /etc/shadow)
+entry for a test account created on your Linux system.
+
+If you are using a recent version of the Shadow Password Suite, edit
+/etc/login.defs and change the MD5_CRYPT_ENAB to "yes".  All newly
+changed passwords will now use the new MD5-based crypt() algorithm
+(the encrypted password field has the form "$1$salt$password").  Note
+that there is no way to automatically convert traditional passwords to
+MD5 (or back), except by forcing all users to change their passwords.
+
+Portability
+===========
+
+As mentioned earlier, this package relies on some advanced features of
+the dynamic linker.  It has been tested on Linux/i386 (Debian 1.3 -
+ld.so-1.8.10, libc5-5.4.33), but should work on other Linux platforms
+too (please verify that MD5 results are correct on big-endian or
+64-bit CPUs).  Note that it is not needed where glibc is already
+"the standard libc" (such as Linux/Alpha), because the MD5-based
+crypt() algorithm is already supported by glibc.
+
+It may be possible to port this package to non-Linux systems, if their
+dynamic linker has the necessary features, or if there is some other
+means to replace object modules in the shared C library.  Good luck!
+
+Related projects
+================
+
+Shadow Password Suite
+ftp://ftp.ists.pwr.wroc.pl/pub/linux/shadow/
+
+Linux-PAM
+http://parc.power.net/morgan/Linux-PAM/
+
+Copyright
+=========
+
+Some people insist that every package must have a copyright statement,
+so here goes...
+
+md5.c (from PGP):
+
+ * The algorithm is due to Ron Rivest.  This code was
+ * written by Colin Plumb in 1993, no copyright is claimed.
+ * This code is in the public domain; do with it what you wish.
+
+crypt_md5.c (from FreeBSD):
+
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <phk@login.dknet.dk> wrote this file.  As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
+
+crypt.c was written by me, Marek Michalkiewicz
+<marekm@piast.t19.ds.pwr.wroc.pl>.  Public domain - it's too short to
+be worth copyrighting :-).  It works for me, but there is no warranty,
+etc. <INSERT YOUR FAVOURITE LENGTHY ALL-CAPS DISCLAIMER HERE>
+
+Some of the changes were made for remotefs project by Jean-Jacques Sarton 
+<jjsarton@users.sourceforge.net>
+
+x86_64 compatibility - Aleksey Tulinov <aleksey_t@users.sourceforge.net> 
+for remotefs project
+
+As you can see, all this is pretty much free software.  Have fun!
+

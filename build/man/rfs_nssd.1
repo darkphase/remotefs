@@ -1,0 +1,114 @@
+.TH "rfs_nss" "1" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+rfs_nssd \- remotefs server for id-mapping
+.SH "SYNOPSIS"
+\fBrfs_nssd\fR [\fIOPTIONS\fR]
+.SH "OPTIONS"
+.PP
+\fB\-r\fR RFS_HOST
+.RS 8
+Host of remotefs connection
+.RE
+.PP
+\fB\-s\fR
+.RS 8
+Start server and/or increase connections counter
+.RE
+.PP
+\fB\-k\fR
+.RS 8
+Stop server and/or decrease connections counter
+.RE
+.PP
+\fB-a\fR
+.RS 8
+Allow other users to use this instance of server 
+(normally used with FUSE's -oallow_other)
+.RE
+.PP
+\fB\-f\fR
+.RS 8
+Run in foreground
+.RE
+.PP
+.SH "DESCRIPTION"
+The purpose of NSS server is to replace id-matching in an automatic way.
+It provides temporary uids and gids for names retrieved from rfsd 
+by remotefs client. This way systems connected with remotefs don't need 
+to be fully synced: all names from server will be known on client for
+remotefs connection life-time.
+.PP
+Technically, rfs process will start one rfs_nss server for each rfs 
+connection (if "ugo" option is used for mounted export). Hovewer, rfs_nss 
+can group several servers in one instance, so you won't see the same number
+of rfs_nssd processes as rfs connections.
+.PP
+For example, if user "alex" is running two rfs connections, it's possible 
+for him to use only one rfs_nss server for both connections. rfs_nss server 
+will count how many rfs connections it handles and will terminate only after 
+all connections are closed.
+.PP
+This is "connections counting" mentioned in options description.
+.PP
+If you're not sure if you need this, then read \fBrfs\fR(1) man page
+section "KNOWN ISSUES" for possible side-effects.
+.PP
+Basically, you need it with the following conditions:
+.br
+1) you're using remotefs export with "ugo" enabled
+.br
+2) remote and local systems' users and groups are not completely synced
+.SH "EXAMPLE"
+.PP
+$ ls -l mount_point/
+.br
+total 20
+.br
+-rw-r--r-- 1 root@10.0.0.1 root@10.0.0.1    0 2009-07-10 17:51 example
+.br
+drwx------ 2 alex alex@10.0.0.1 4096 2009-07-10 17:39 orbit-alex
+.br
+.br
+.PP
+This is typical representation of remote names provided by rfs_nssd. It 
+consists of remote username and rfs host joined with '@'.
+.PP
+Make note that file owner 'alex' isn't transformed by this rule - that's
+because remotefs client is running with 'alex' privileges and logged in as 
+owner of 'orbit-alex' dir. So to declare ownership of this file to local 
+OS, remotefs transformed its owner to local user.
+.SH "KNOWN ISSUES"
+As said above, rfs_nss provides temorary uids and gids for rfs connection
+life-time. This applies that you can use these ids as all other ids. For
+example, to \fBchown\fR(1) files and so on.
+.PP
+rfs_nss can't check if file you're chowning is local or remote, so it
+can't prevent you to change local file's owner to someone like
+alex@10.0.0.1.
+.PP
+This side-effect is somehow similar to 'chown 15000:16000 localfile': 
+you'll get localfile with some probably unassigned (yet) uid and gid.
+.PP
+This is possible security threat. Please don't do so.
+.PP
+Feel free to chown remote files with remote usernames though.
+.SH "NOTES"
+rfs will freely accept "short" remote names as in `chown alex:alex file`
+instead of `chown alex@10.0.0.1:alex@10.0.0.1 file`. Hovewer, user 'alex'
+should be present in local users database.
+.PP
+If he's not, then you need to use "full" remote name with '@rfs_host' 
+after actual username.
+.SH "AUTHORS"
+.PP
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.br
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfsd\fR(8), \fBrfspasswd\fR(8), \fBrfs\fR(1), \fBnsswitch.conf\fR(5)

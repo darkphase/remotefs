@@ -1,0 +1,34 @@
+.TH "rfsnsswitch.sh" "1" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+rfsnsswitch.sh \- enable or disable rfsnss support
+.SH "SYNOPSIS"
+\fBrfsnsswitch.sh\fR [\fIOPTIONS\fR]
+.SH "OPTIONS"
+.PP
+\fBinstall\fR
+.RS 8
+Add rfsnss related entries to nsswitch.conf
+.RE
+.PP
+\fBuninstall\fR
+.RS 8
+Remove rfsnss related entries from nsswitch.conf
+.RE
+.SH "DESCRIPTION"
+This utility will add or remove rfsnss specific entries in nsswitch.conf
+.PP
+Every time this script is executed, it backs up the nsswitch.conf file to 
+nsswitch.conf.bak in the same directory as the original.
+.SH "AUTHORS"
+.PP
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.br
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfs\fR(1)

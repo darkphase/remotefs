@@ -1,0 +1,65 @@
+.TH "mount.rfs" "1" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+mount.rfs \- mount remotefs filesystem
+.SH "SYNOPSIS"
+\fBmount.rfs\fR [\fIOPTIONS\fR]
+.SH "DESCRIPTION"
+.PP
+Wrapper used for mounting remotefs filesystems listed in \fBfstab\fR.
+.SH "OPTIONS"
+.PP
+The only option you usually pass to this script is mount point as specified in \fBfstab\fR.
+.SH "USING WITH FSTAB"
+.PP
+This script is aware of the following \fBrfs\fR options:
+.PP
+\fBusername
+.br
+password\fR
+.PP
+And the following FUSE options:
+.PP
+\fBnonempty
+.br
+atomic_o_trunc
+.br
+auto_cache
+.br
+noauto_cache
+.br
+fsname
+.br
+kernel_cache
+.br
+allow_other
+.br
+allow_root
+.br
+default_permissions
+.br
+no_remote_lock\fR
+.PP
+See \fBrfs\fR(1) and FUSE documentation for description of these options.
+.PP
+Each of options above will be passed to rfs process.
+.PP
+You might also use \fIuid=\fR option to run remotefs connection with privileges
+of user with specified uid (\fBsu\fR(1) will be used in this case).
+.SH "FSTAB EXAMPLES"
+.PP
+172.16.0.1:/mnt/usb/store /mnt/store rfs users,username=shared,password=/var/lib/shared/.auth,allow_other,_netdev 0 0
+.PP
+172.16.0.1:/home/alex /home/alex/remote  rfs user,uid=1000,_netdev 0 0
+.SH "AUTHORS"
+.PP
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.br
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfs\fR(1), \fBfstab\fR(5), \fBsu\fR(1)

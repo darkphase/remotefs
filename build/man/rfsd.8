@@ -1,0 +1,110 @@
+.TH "rfsd" "8" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+rfsd \- remotefs server 
+.SH "SYNOPSIS"
+\fBrfsd\fR [\fIOPTIONS\fR]
+.SH "OPTIONS"
+.PP
+\fB\-h\fR
+.RS 8
+Show help
+.RE
+.PP
+\fB\-v\fR
+.RS 8
+Print version
+.RE
+.PP
+\fB\-a\fR ADDRESS[,ADDRESS[,ADDRESS[,...]]]
+.RS 8
+Listen for connections on ADDRESS(es). You can specify up to 16 addresses to listen to.
+.RE
+.PP
+\fB\-p\fR PORT
+.RS 8
+Listen for connections on PORT
+.RE
+.PP
+\fB\-u\fR USERNAME
+.RS 8
+Worker process be running with privileges of USERNAME
+.RE
+.PP
+\fB\-r\fR PATH
+.RS 8
+Change pidfile path from default to PATH
+.RE
+.PP
+\fB-e\fR PATH
+.RS 8
+Load exports from PATH
+.RE
+.PP
+\fB-s\fR PATH
+.RS 8
+Load passwords from PATH
+.RE
+.PP
+\fB-q\fR
+.RS 8
+Suppress warnings
+.RE
+.SH "DESCRIPTION"
+\fBrfsd\fR may work in two modes:
+.SS Just file server
+.PP
+For this mode all users may be authenticated by IP-address or login and password. 
+All users will be able to read files in exported directory and write to files unless 
+there is an "ro" option specified for this export.
+.PP
+\fBrfsd\fR worker process will be running with privileges of user (and group) 
+specified by \fI-u\fR and \fI-g\fR options (root by default). Alternatively, worker 
+process user and group may be overridden by specifying \fI"user="\fR and 
+\fI"group="\fR options for a particular export.
+.SS UGO compatibility mode
+.PP
+For this mode, \fBrfsd will log the user\fR into the server's OS. It's like remote 
+shell, but without the actual shell, just for file access. To enable this mode, 
+set option \fI"ugo"\fR for export(s).
+.PP
+If \fIugo\fR option is specified, \fI-u\fR and \fI-g\fR options in rsfd command line 
+as well as \fI"user="\fR, \fI"group="\fR and \fI"ro"\fR options in exports file are 
+ignored.
+.PP
+You need to create system users with the same names as remotefs users. However, rfsd 
+will not use system passwords database for authentication, it will use rfspasswd 
+database instead.
+.PP
+In this mode users could use chown and chmod commands to set access rights. Remote 
+and local systems should be synced for this mode to work fully. Otherwise the server 
+may refuse to set the owner if it isn't aware of the specified user or group and the 
+client may report the wrong owner or group.
+.PP
+See \fBrfs\fR(1) for description of side effects of unsynced systems at client's side.
+.SH "SECURITY NOTES"
+.PP
+Official recommendation for remotefs is to keep it away from untrusted networks. You 
+normally setup rfsd to listen on a local network. If you absolutely need to use it 
+over the Internet, you should at least firewall the connection with a specific 
+IP-address. 
+.PP
+Please consider this advice seriously. 
+.PP
+BTW, rfsd will warn you about listening on an interface that is not local and will 
+refuse to run until -q option is provided, or a local interface is specified. 
+.SH EXAMPLES
+.PP
+Please refer to examples in \fI/etc/rfs-exports\fR
+.SH "AUTHORS"
+.PP
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
+.SH "REPORTING BUGS"
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+.PP
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfs\fR(1), \fBrfspasswd\fR(8) 

@@ -1,0 +1,51 @@
+.TH "rfspasswd" "8" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+rfspasswd \- manage passwords for rfsd
+.SH "SYNOPSIS"
+\fBrfspasswd\fR [\fIoptions\fR] [\fILOGIN\fR]
+.SH "OPTIONS"
+.PP
+\fB-d\fR
+.RS 8
+Delete the password for the named account
+.RE
+.PP
+\fB-h\fR
+.RS 8
+Display help message and exit
+.RE
+.PP
+\fB-l\fR
+.RS 8
+Lock the named account
+.RE
+.PP
+\fB-u\fR
+.RS 8
+Unlock the named account
+.RE
+.PP
+\fB-s\fR PATH
+.RS 8
+Load passwords from PATH
+.RE
+.PP
+\fBNOTE:\fR You need to create system users with the same login names if you're using 
+the "ugo" option in any of rfsd exports.
+.PP
+\fBrfspasswd\fR must be called with enough privileges to access /etc/rfs-passwd. 
+If no LOGIN is given then the current user will be modified.
+.SH "AUTHORS"
+.PP
+Aleksey Tulinov: aleksey_t@users.sourceforge.net
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net 
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+.PP
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfs\fR(1), \fBrfsd\fR(8)

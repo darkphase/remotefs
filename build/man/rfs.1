@@ -1,0 +1,124 @@
+.TH "rfs" "1" "0.15" "remotefs" "remotefs"
+.SH "NAME"
+rfs \- remotefs client
+.SH "SYNOPSIS"
+\fBrfs\fR \fIhost:remote_path\fR \fImountpoint\fR [\fIoptions\fR]
+.SH "OPTIONS"
+.SS General options:
+.PP
+\fB\-o opt,\fR[\fBopt...\fR]
+.RS 8
+Mount options
+.RE
+.PP
+\fB\-h, \-\-help\fR
+.RS 8
+Print help
+.RE
+.SS RFS options:
+.PP
+\fB\-q\fR
+.RS 8
+Suppress warnings
+.RE
+.PP
+\fB\-v\fR
+.RS 8
+Print version
+.RE
+.PP
+\fB\-l HOST\fR
+.RS 8
+List available exports on specified HOST
+.RE
+.PP
+\fB\-o\fR username=NAME
+.RS 8
+Auth username
+.RE
+.PP
+\fB\-o\fR password=FILENAME
+.RS 8
+Filename with password for auth
+.RE
+.PP
+\fB\-o\fR port=PORT
+.RS 8
+Port which the server is listening to
+.RE
+.PP
+\fB\-o\fR wr_cache=0\fR
+.RS 8
+Disable write cache
+.RE
+.PP
+\fIhost\fR can be either server's host name or its IP address. \fIremote_path\fR 
+is the path of the directory which is exported on the server. If server's exports 
+file contains the line: \fI/exports/alice alice ()\fR then \fIremote_path\fR must 
+be \fI/exports/alice\fR.
+.PP
+\fI\-o username=NAME\fR User name for rsfd. If UGO option is enabled for a 
+particular export, this name should also be registered in server's user 
+login base.
+.PP
+\fI\-o password=FILENAME\fR This plain-text file must contain the password for 
+accessing the remote directory.
+.PP
+\fBNote that for security reasons this file should only be readable by its owner.\fR
+.PP
+The command line for mounting the remoteresource may look like:
+.PP
+\fIrfs -o username=alice,password=./pwd-home 192.168.1.2:/exports/alice ./mnt/\fR
+.PP
+There are also a lot of options which are offered by FUSE. FUSE has been built for 
+many kinds of file systems and not every option will work with remotefs. Some of the 
+FUSE options may result in errors or decrease the performance of remotefs.
+.PP
+However, \fI-okernel_cache\fR may increase transfer speed for remotefs.
+.PP
+Please avoid usage of \fI-odirect_io\fR as it will most likely lead to errors.
+.SS "Remarks"
+.PP
+\fBSolaris:\fP In order to mount remote directory with remotefs you must have FUSE
+access rights, see user_attr(4). This can be done by setting the 
+"FUSE File System Management" rights with the user and group administrations tools,
+.PP
+\fBFreeBSD:\fP Mounting of FUSE based file system is allowed if vfs.usermount is
+set to 1 via the sysctl command. This can be configured within the file
+/etc/sysctl.conf (add the line "vfs.usermount=1"). You can unmount your private
+mountpoint with the umount command.
+.SH "SECURITY NOTES"
+.PP
+Official recommendation for remotefs is to keep it away from untrusted networks. 
+.PP
+Please consider this advice seriously. 
+.SH "KNOWN ISSUES"
+.PP
+If /etc/passwd and /etc/group file on the client and the server are not identical, 
+the displayed name for unknown user and group will default to nobody (username), 
+nogroup or name of the primary group of the user on the client. In this case, 
+access rights may differ from the ones reported by remotefs.
+.PP
+This actually means that remotefs may not know the real user or group the file 
+belongs to, but in any case access is controlled by the server with its security 
+setup.
+.PP
+For example:
+.PP
+The server has a file that belongs to remotefs:remotefs. There is neither a 
+"remotefs" user nor a group on the client, so this file may be reported as 
+nobody:nogroup. Even if a client's user could access nobody's files on his system, 
+server won't allow it, since the real owner of this file is the "remotefs" user.
+.SH "AUTHORS"
+.PP
+Aleksey Tulinov: aleksey_t@users.sourceforge.net 
+.br
+Jean\-Jacques Sarton: jjsarton@users.sourceforge.net
+.SH "REPORTING BUGS"
+.PP
+See remotefs project on SourceForge: http://remotefs.sourceforge.net/
+.SH "COPYING"
+GNU General Public License (GPL) 
+.SH "SEE ALSO"
+.PP
+\fBrfsd\fR(8), \fBrfspasswd\fR(8), \fBfstab\fR(5)
