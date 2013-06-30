@@ -4,4 +4,4 @@ src/version.h
 *.rpm
 *.a
 *.o
-*.so
+*.so*

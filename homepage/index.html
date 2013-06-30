@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>remotefs</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	</head>
+	
+	<body>
+		<div align="center">
+		<a href="http://sourceforge.net/projects/remotefs/">SourceForge page</a> 
+		| <a href="http://sourceforge.net/projects/remotefs/files/remotefs/">Downloads page</a>
+		</div>
+		
+		<br/>
+
+		<div align="center">
+		<a href="#howitworks">How it works</a>
+		 | <a href="#security">Security notes</a>
+		 | <a href="#mailing">Mailing lists</a>
+		 | <a href="#man">HTML MAN pages</a>
+		</div>
+
+		<div align="center">
+		<a href="http://sourceforge.net/apps/mediawiki/remotefs">Wiki</a>
+		 | <a href="http://sourceforge.net/apps/mediawiki/remotefs/index.php?title=Help:HowTo">HowTo</a>
+		 | <a href="http://sourceforge.net/apps/mediawiki/remotefs/index.php?title=Help:Compatibility">Compatibility</a>
+		</div>
+		
+		<br/><br/>
+
+		<div style="float: right; margin: 5px; padding: 5px; border: 1px solid lightgray;">
+			<div align="center"><img src="Tux.png" alt="Tux"/></div>
+			<div style="margin-top: 5px; padding: 5px;"><i>Works best with Linux</i></div>
+		</div>
+		
+		remotefs is a network file system designed for use with home NAS. Simple to use, few dependencies, reasonable security, completely in user space.
+		
+		<br/><br/>
+		
+		The reasons i've decided to make it are a) samba isn't working for me at all b) NFS is not working well for me c) sshfs is great, but not very fast.
+		So if you have troubles with samba and NFS (as I do), then you may be interested in remotefs.
+		
+		<br/><br/>
+		
+		It is provided with packages for i386/amd64 <a href="http://debian.org">Debian</a>-based systems, i386/amd64 <a href="http://redhat.com">Redhat</a>-based systems, various <a href="http://openwrt.org/">OpenWrt</a>-based systems (server only) and there are also <a href="http://gentoo.org">Gentoo</a>-ebuilds available.
+		See <a href="http://sourceforge.net/projects/remotefs/files/remotefs/">downloads</a> section for the list of available packages.
+		Build scripts are available in SVN (<a href="http://svn.code.sf.net/p/remotefs/code/trunk/">http://svn.code.sf.net/p/remotefs/code/trunk/</a>), so you could make packages for your plastform(s) if you wish so.
+
+		<h4>Note about OpenWrt packages</h4>
+
+		Most OpenWrt packages are marked as "experimental". That's because I don't have the actual hardware to make sure they are working. 
+		I've built them with OpenWrt cross-compilers with great hope of being useful for OpenWrt users with platform other from MIPSEL. 
+		I do have the hardware for MIPSEL, so that package should work just fine. 
+
+		<br/><br/>
+
+		If some package(s) isn't working, i'd be appreciate if you e-mailed me about this (<a href="mailto:aleksey_t@users.sourceforge.net">aleksey_t@users.sourceforge.net</a>). 
+		In this case i need to know the name of the package you used, your processor type ("cat /proc/cpuinfo") and OS version ("uname -a", probably).
+
+		<a name="howitworks"><h3>How it works</h3></a>
+		
+		<h4>Just file server</h4>
+		
+		remotefs only translates the filesystem from remote host to your local host. To do that, the original file-owning user on the remote host is substituted by the local host user who has actually mounted an export via remotefs.
+		
+		<br/><br/>
+		
+		This is may look too simple, but this is enough for tasks performed by my home NAS. 
+		My NAS is single-user and i'm always running remotefs as root on LAN interface (invisible from outside network). 
+		So translating root's files' permissions to alex's permissions works just fine. 
+		Server side has root access to filesystem and client side has alex's access, just as alex expects.
+		
+		<br/><br/>
+		
+		But if you need something more complex, like transferring a home directory from a remote host, you may define users on a per-export basis. 
+		After an export is mounted on the local host, remotefs will lower its privileges to specified user (and/or group) and gain this user’s privileges on the remote host. 
+		Since home directory usually has its user's permissions, you should not have any permission problems with this translation.
+		
+		<br/><br/>
+		
+		As an additional security measure, remotefs server could run connections with user other than root. 
+		Use -u option to specify which user permissions every connection-handling process should aquire.
+		For example: rfsd -h 10.0.0.1 -u rfs. 
+		Right after chroot(), rfsd will lower its priveleges to user rfs setting up rfs' groups.
+		Keep in mind that rfsd process will (possibly) lower its filesystem access privileges as well.
+		<b>Main rfsd process still needs to be run as root to do chroot() properly.</b>
+		
+		<h4>UGO-compatible mode</h4>
+		
+		If "ugo" (UGO stands for User-Group-Other) option is specified for some export, rfsd will log the user into the server’s OS. 
+		It's like remote shell, but without the actual shell, just for file access.
+		
+		<br/><br/>
+		
+		For this mode server will report real files' owner and group. 
+		See MAN pages (<a href="rfsd.8.html"><b>rfsd</b></a>(8), <a href="rfs.1.html"><b>rfs</b></a>(1)) for possible side-effects.
+		rfsd's option -u is ignored for this mode.
+		
+		<a name="security"><h3>Security notes</h3></a>
+		
+		Official recomendation for remotefs is to keep it away from untrusted networks. 
+		You normally setup rfsd to listen to local network. 
+		If you absolutely need to use it over the Internet, you should at least firewall the connection with a specific IP-address.
+		
+		<br/><br/>
+		
+		Please consider this advice seriously.
+		
+		<br/><br/>
+		
+		BTW, rfsd will warn you about listening to interface that is not local and will refuse to run until -q option is provided, or local interface specified.
+		
+		<a name="mailing"><h3>Mailing lists</h3></a>
+
+		<a href="https://lists.sourceforge.net/lists/listinfo/remotefs-devel">remotefs-devel archive and subscription</a><br/>
+		<a href="https://lists.sourceforge.net/lists/listinfo/remotefs-users">remotefs-users archive and subscription</a>
+		
+		<a name="man"><h3>HTML MAN pages</h3></a>
+		
+		<a href="/rfs.1.html"><b>rfs</b></a>(1), 
+		<a href="/rfsd.8.html"><b>rfsd</b></a>(8), 
+		<a href="/rfspasswd.8.html"><b>rfspasswd</b></a>(8)
+		<a href="/rfs_nssd.1.html"><b>rfs_nssd</b></a>(1), 
+		<a href="/rfsnsswitch.sh.1.html"><b>rfsnsswitch.sh</b></a>(1), 
+		<a href="/mount.rfs.8.html"><b>mount.rfs</b></a>(8), 
+		
+		<br/><br/>
+		
+		<hr/>
+		
+		If you interested in the project or feel there's a feature missing, or have suggestions or any remarks, 
+		we'd be glad to hear from you by e-mail at 
+		<a href="mailto:aleksey_t@users.sourceforge.net">aleksey_t@users.sourceforge.net</a> 
+		or <a href="mailto:jjsarton@users.sourceforge.net">jjsarton@users.sourceforge.net</a>.
+		
+		<br/><br/>
+		
+		<div align="center">
+		<a href="http://sourceforge.net/projects/remotefs/">SourceForge page</a> 
+		| <a href="http://sourceforge.net/projects/remotefs/files/remotefs/">Downloads page</a>
+		</div>
+		
+		<br/>
+		
+		<div align="center">
+			<a href="http://sourceforge.net/projects/remotefs"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=229928&type=13" width="120" height="30" border="0" alt="Get remotefs at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+	</body>
+</html>
