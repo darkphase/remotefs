@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -41,9 +41,9 @@ enum
 #endif
 };
 
-#define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v } 
+#define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v }
 
-struct fuse_opt rfs_opts[] = 
+struct fuse_opt rfs_opts[] =
 {
 	FUSE_OPT_KEY("-h", KEY_HELP),
 	FUSE_OPT_KEY("-v", KEY_VERSION),
@@ -59,7 +59,7 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("wr_cache=%u", use_write_cache, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	RFS_OPT("transform_symlinks", transform_symlinks, 1),
-	
+
 	FUSE_OPT_END
 };
 
@@ -90,7 +90,7 @@ static void usage(const char *program)
 	"    -o wr_cache=0           disable write cache\n"
 	"    -o transform_symlinks   transform absolute symlinks to relative\n"
 	"\n"
-	"\n", 
+	"\n",
 	program);
 }
 
@@ -109,9 +109,9 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 	}
 
 	switch (key)
-	{	
+	{
 	case FUSE_OPT_KEY_NONOPT:
-		if (rfs_instance.config.host == NULL 
+		if (rfs_instance.config.host == NULL
 		&& rfs_instance.config.path == NULL)
 		{
 			const char *delimiter = NULL;
@@ -125,18 +125,18 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 					ERROR("%s\n", "No matching ']' in IPv6 host");
 					exit(1);
 				}
-				
+
 				rfs_instance.config.host = malloc(delimiter - arg);
 				memset(rfs_instance.config.host, 0, delimiter - arg);
 				memcpy(rfs_instance.config.host, arg + 1, delimiter - arg - 1);
-				
+
 				delimiter = (delimiter[1] == ':' ? delimiter + 1 : NULL);
 			}
 			else
 			{
 #endif
 				delimiter = strchr(arg, ':');
-				
+
 				if (delimiter != NULL)
 				{
 					rfs_instance.config.host = malloc(delimiter - arg + 1);
@@ -151,18 +151,18 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 #if WITH_IPV6
 			}
 #endif
-			
+
 			if (delimiter != NULL)
 			{
 				rfs_instance.config.path = malloc(strlen(arg) - (delimiter - arg));
 				memset(rfs_instance.config.path, 0, strlen(arg) - (delimiter - arg));
 				memcpy(rfs_instance.config.path, delimiter + 1, strlen(arg) - (delimiter - arg) - 1);
 			}
-			
+
 			return 0;
 		}
 		return 1;
-	
+
 	case KEY_HELP:
 		usage(outargs->argv[0]);
 		fuse_opt_add_arg(outargs, "-ho");
@@ -172,7 +172,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		fuse_main(outargs->argc, outargs->argv, (struct fuse_operations *)NULL);
 #endif
 		exit(0);
-	
+
 	case KEY_VERSION:
 		INFO("%s\n", RFS_FULL_VERSION);
 		exit(0);
@@ -193,7 +193,7 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		just_list_exports = 1;
 		return 0;
 	}
-	
+
 	return 1;
 }
 
@@ -210,7 +210,7 @@ static int read_password()
 	{
 		return -errno;
 	}
-	
+
 	errno = 0;
 	if (fseek(fp, 0, SEEK_END) != 0)
 	{
@@ -218,17 +218,17 @@ static int read_password()
 		fclose(fp);
 		return -saved_errno;
 	}
-	
+
 	errno = 0;
 	long size = ftell(fp);
-	
+
 	if (size == -1)
 	{
 		int saved_errno = errno;
 		fclose(fp);
 		return -saved_errno;
 	}
-	
+
 	errno = 0;
 	if (fseek(fp, 0, SEEK_SET) != 0)
 	{
@@ -236,20 +236,20 @@ static int read_password()
 		fclose(fp);
 		return -saved_errno;
 	}
-	
+
 	char *buffer = malloc(size + 1);
 	memset(buffer, 0, size + 1);
-	
+
 	int done = fread(buffer, 1, size, fp);
-	
+
 	if (done != size)
 	{
 		fclose(fp);
 		return -EIO;
 	}
-	
+
 	fclose(fp);
-	
+
 	while (done > 0 &&
 	(buffer[done - 1] == '\n'
 	|| buffer[done - 1] == '\r'
@@ -259,11 +259,11 @@ static int read_password()
 		--done;
 		buffer[done] = 0;
 	}
-	
+
 	rfs_instance.config.auth_passwd = passwd_hash(buffer, EMPTY_SALT);
 	DEBUG("hashed passwd: %s\n", rfs_instance.config.auth_passwd ? rfs_instance.config.auth_passwd : "NULL");
 	free(buffer);
-	
+
 	return 0;
 }
 
@@ -273,22 +273,22 @@ int main(int argc, char **argv)
 	instance = &rfs_instance;
 
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-	
+
 	if (fuse_opt_parse(&args, &rfs_instance.config, rfs_opts, rfs_opt_proc) == -1)
 	{
 		exit(1);
 	}
-	
+
 	fuse_opt_add_arg(&args, "-s");
 	++argc;
-	
+
 	if (rfs_instance.config.host == NULL)
 	{
 		ERROR("%s\n", "Remote host is not specified");
 		fuse_opt_free_args(&args);
 		exit(1);
 	}
-	
+
 #ifdef WITH_EXPORTS_LIST
 	if (just_list_exports != 0)
 	{
@@ -305,20 +305,20 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 #endif
-	
+
 	if (rfs_instance.config.path == NULL)
 	{
 		ERROR("%s\n", "Remote path is not specified");
 		fuse_opt_free_args(&args);
 		exit(1);
 	}
-	
+
 #ifdef RFS_DEBUG
 	if (rfs_instance.config.use_write_cache != 0)
 	{
 		DEBUG("%s\n", "using write cache");
 	}
-	
+
 	if (rfs_instance.config.transform_symlinks != 0)
 	{
 		DEBUG("%s\n", "transforming symlinks");
@@ -329,7 +329,7 @@ int main(int argc, char **argv)
 		DEBUG("%s\n", "sharing mount with other users");
 	}
 #endif /* RFS_DEBUG */
-	
+
 	if (rfs_instance.config.auth_user != NULL
 	&& rfs_instance.config.auth_passwd_file != NULL)
 	{
@@ -341,11 +341,11 @@ int main(int argc, char **argv)
 			return 1;
 		}
 	}
-	
-	DEBUG("username: %s, password: %s\n", 
-	rfs_instance.config.auth_user ? rfs_instance.config.auth_user : "NULL", 
+
+	DEBUG("username: %s, password: %s\n",
+	rfs_instance.config.auth_user ? rfs_instance.config.auth_user : "NULL",
 	rfs_instance.config.auth_passwd ? rfs_instance.config.auth_passwd : "NULL");
-	
+
 	if (rfs_instance.config.quiet == 0)
 	{
 		suggest_client(&rfs_instance);
@@ -369,20 +369,20 @@ int main(int argc, char **argv)
 #endif
 
 	rfs_disconnect(&rfs_instance, 0);
-	
+
 	fuse_opt_free_args(&args);
 
 	free(rfs_instance.config.host);
 	free(rfs_instance.config.path);
-	
+
 	if (rfs_instance.config.auth_passwd != NULL)
 	{
 		free(rfs_instance.config.auth_passwd);
 	}
-	
+
 	release_fuse_rfs_instance(&fuse_rfs_instance);
 	release_rfs_instance(&rfs_instance);
-	
+
 	return ret;
 }
 
