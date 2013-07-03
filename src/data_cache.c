@@ -42,24 +42,6 @@ struct cache_block* reserve_cache_block(struct list **head, size_t size, off_t o
 	return reserved;
 }
 
-int file_in_cache(const struct list *head, uint64_t descriptor)
-{
-	const struct list *item = head;
-	while (item != NULL)
-	{
-		struct cache_block *block = (struct cache_block *)item->data;
-
-		if (block->descriptor == descriptor)
-		{
-			return 1;
-		}
-
-		item = item->next;
-	}
-
-	return 0;
-}
-
 struct cache_block* find_suitable_cache_block(const struct list *head, size_t size, off_t offset, uint64_t descriptor)
 {
 	DEBUG("searching block with size %u, offset %llu for desc %llu\n", (unsigned int)size, (unsigned long long)offset, (unsigned long long)descriptor);
@@ -78,8 +60,7 @@ struct cache_block* find_suitable_cache_block(const struct list *head, size_t si
 		
 		if (block->descriptor == descriptor
 		&& block->offset <= offset
-		&& block->offset + block->allocated >= offset + size
-		&& block->offset + block->used == offset)
+		&& block->offset + block->allocated >= offset + size)
 		{
 			return block;
 		}
@@ -97,6 +78,25 @@ void clear_cache_by_desc(struct list **head, uint64_t descriptor)
 	{
 		struct cache_block *block = (struct cache_block *)item->data;
 		if (block->descriptor == descriptor)
+		{
+			free(block->data);
+			item = remove_from_list(head, item);
+		}
+		else
+		{
+			item = item->next;
+		}
+	}
+}
+
+void clear_cache_by_offset(struct list **head, uint64_t descriptor, off_t offset)
+{
+	struct list *item = *head;
+	while (item != NULL)
+	{
+		struct cache_block *block = (struct cache_block *)item->data;
+		if (block->descriptor == descriptor
+		&& block->offset <= offset)
 		{
 			free(block->data);
 			item = remove_from_list(head, item);

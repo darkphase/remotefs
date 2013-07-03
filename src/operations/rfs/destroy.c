@@ -34,6 +34,11 @@ void rfs_destroy(struct rfs_instance *instance)
 	
 	rfs_disconnect(instance, 1);
 
+	if (instance->config.use_write_cache != 0)
+	{
+		kill_write_behind(instance);
+	}
+	
 	client_keep_alive_unlock(instance);
 	
 	instance->client.maintenance_please_die = 1;

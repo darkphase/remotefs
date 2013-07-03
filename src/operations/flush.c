@@ -25,6 +25,8 @@ int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
 	DEBUG("flushing file %llu\n", (unsigned long long)desc);
 	
+	struct write_behind_request *write_behind_request = &instance->write_cache.write_behind_request;
+
 	const struct list *cache_item = instance->write_cache.cache;
 	
 	while (cache_item != NULL)
@@ -43,12 +45,20 @@ int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 			block->offset, 
 			block->descriptor);
 			
-			cache_item = cache_item->next; /* fix list pointer before deletion */
-			delete_block_from_cache(&instance->write_cache.cache, block);
-
 			if (ret < 0)
 			{
 				return ret;
+			}
+
+			cache_item = cache_item->next; /* fix list pointer before deletion */
+
+			if (block == write_behind_request->block)
+			{
+				reset_write_behind(instance);
+			}
+			else
+			{
+				delete_block_from_cache(&instance->write_cache.cache, block);
 			}
 
 			continue; /* since list pointer is already fixed */

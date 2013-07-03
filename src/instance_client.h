@@ -59,6 +59,10 @@ struct rfs_instance
 	{
 		size_t max_cache_size;
 		struct list *cache;
+		pthread_t write_behind_thread;
+		rfs_sem_t write_behind_started;
+		rfs_sem_t write_behind_sem;
+		struct write_behind_request write_behind_request;
 	} write_cache;
 	
 	/* sendrecv */

@@ -1,4 +1,3 @@
-
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
@@ -39,7 +38,7 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	
 	if (handle == (uint64_t)-1)
 	{
-		return reject_request_with_cleanup(instance, cmd, EBADF) == 0 ? 1 : -1;
+		return reject_request(instance, cmd, EBADF) == 0 ? 1 : -1;
 	}
 	
 	DEBUG("handle: %llu, offset: %llu, size: %u\n", (unsigned long long)handle, (unsigned long long)offset, size);
@@ -60,24 +59,16 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		{
 			return -1;
 		}
-
+		
 		ssize_t result = pwrite(fd, data, current_block_size, offset + done);
-
-		if (result != current_block_size)
+		
+		if (result == -1)
 		{
 			saved_errno = errno;
-
-			ssize_t cleanup_size = (size - done - current_block_size);
-			if (cleanup_size > 0
-			&& rfs_ignore_incoming_data(&instance->sendrecv, cleanup_size) != cleanup_size)
-			{
-				return -1;
-			}
-
-			done = (size_t)(-1);
+			done = (size_t)-1;
 			break;
 		}
-
+		
 		done += result;
 	}
 
