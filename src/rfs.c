@@ -282,6 +282,9 @@ int main(int argc, char **argv)
 	fuse_opt_add_arg(&args, "-s");
 	++argc;
 
+	fuse_opt_add_arg(&args, "-obig_writes");
+	++argc;
+
 	if (rfs_instance.config.host == NULL)
 	{
 		ERROR("%s\n", "Remote host is not specified");

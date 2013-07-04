@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -49,7 +49,7 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 
 static inline send_token_t* queue_buffer(enum data_widths width, const char *buffer, size_t len, send_token_t *token)
 {
-	DEBUG("data of size %lu\n", (unsigned long)len);
+	/*DEBUG("data of size %lu\n", (unsigned long)len);*/
 	if (token != NULL && len > 0)
 	{
 		if (token->count >= IOV_MAX)
@@ -113,19 +113,16 @@ static inline ssize_t do_send(struct sendrecv_info *info, send_token_t *token)
 			}
 			break;
 		case w16:
-			DEBUG("htons'ing iov %lu\n", (unsigned long)i);
 			*((uint16_t *)token->iov[i].iov_base) = htons(*((uint16_t *)token->iov[i].iov_base));
 			break;
 		case w32:
-			DEBUG("htonl'ing iov %lu\n", (unsigned long)i);
 			*((uint32_t *)token->iov[i].iov_base) = htonl(*((uint32_t *)token->iov[i].iov_base));
 			break;
-		case w64:	
-			DEBUG("htonll'ing iov %lu\n", (unsigned long)i);
+		case w64:
 			*((uint64_t *)token->iov[i].iov_base) = htonll(*((uint64_t *)token->iov[i].iov_base));
 			break;
 		default:
-			DEBUG("skipping iov %lu\n", (unsigned long)i);
+			/*DEBUG("skipping iov %lu\n", (unsigned long)i);*/
 			break;
 		}
 	}
