@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -25,35 +25,35 @@ extern "C" {
 struct rfs_instance
 {
 	/* client variables */
-	struct 
+	struct
 	{
 		pthread_t maintenance_thread;
 		unsigned maintenance_please_die;
-		
+
 		char auth_salt[MAX_SALT_LEN + 1];
 		enum rfs_export_opts export_opts;
-		
+
 		uid_t my_uid;
 		gid_t my_gid;
 		pid_t my_pid;
 	} client;
-	
+
 	/* attributes cache */
 	struct attr_cache attr_cache;
-		
+
 	/* keep-alive */
-	struct 
+	struct
 	{
 		pthread_mutex_t mutex;
 	} keep_alive;
-	
+
 	/* resume */
 	struct
 	{
 		struct list* open_files;
 		struct list* locked_files;
 	} resume;
-	
+
 	/* write cache */
 	struct
 	{
@@ -64,10 +64,10 @@ struct rfs_instance
 		rfs_sem_t write_behind_sem;
 		struct write_behind_request write_behind_request;
 	} write_cache;
-	
+
 	/* sendrecv */
 	struct sendrecv_info sendrecv;
-	
+
 	/* nss server */
 	struct
 	{
