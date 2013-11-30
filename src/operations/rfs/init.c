@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -25,7 +25,7 @@ See the file LICENSE.
 static void* maintenance(void *void_instance)
 {
 	struct rfs_instance *instance = (struct rfs_instance *)(void_instance);
-	
+
 	unsigned keep_alive_slept = 0;
 	unsigned attr_cache_slept = 0;
 	unsigned shorter_sleep = 1; /* secs */
@@ -36,12 +36,12 @@ static void* maintenance(void *void_instance)
 		sleep(shorter_sleep);
 		keep_alive_slept += shorter_sleep;
 		attr_cache_slept += shorter_sleep;
-		
+
 		if (instance->client.maintenance_please_die != 0)
 		{
 			pthread_exit(0);
 		}
-		
+
 		if (keep_alive_slept >= client_keep_alive_period()
 		&& client_keep_alive_trylock(instance) == 0)
 		{
@@ -49,19 +49,19 @@ static void* maintenance(void *void_instance)
 			{
 				rfs_keep_alive(instance);
 			}
-			
+
 			client_keep_alive_unlock(instance);
 			keep_alive_slept = 0;
 		}
-		
-		if (attr_cache_slept >= ATTR_CACHE_TTL * 2 
+
+		if (attr_cache_slept >= ATTR_CACHE_TTL * 2
 		&& client_keep_alive_lock(instance) == 0)
 		{
 			if (cache_is_old(&instance->attr_cache) != 0)
 			{
 				clear_cache(&instance->attr_cache);
 			}
-			
+
 			client_keep_alive_unlock(instance);
 			attr_cache_slept = 0;
 		}
@@ -78,7 +78,7 @@ void* rfs_init(struct rfs_instance *instance)
 		instance->client.maintenance_thread = 0;
 		/* TODO: how to handle ? */
 	}
-	
+
 	if (instance->config.use_write_cache != 0)
 	{
 		init_write_behind(instance);
@@ -87,7 +87,7 @@ void* rfs_init(struct rfs_instance *instance)
 #ifdef WITH_UGO
 	if ((instance->client.export_opts & OPT_UGO) != 1)
 	{
-#if defined RFSNSS_AVAILABLE 
+#if defined RFSNSS_AVAILABLE
 	    if (init_nss_server(instance, 0) != 0)
 	    {
 		    instance->nss.use_nss = 0;

@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -21,9 +21,9 @@ See the file LICENSE.
 static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t offset, uint64_t desc)
 {
 	DEBUG("*** reading %lu bytes at %llu\n", (unsigned long)size, (unsigned long long)offset);
-	
+
 	instance->sendrecv.oob_received = 0;
-	
+
 	uint64_t handle = desc;
 	uint64_t foffset = offset;
 	uint64_t fsize = size;
@@ -33,14 +33,14 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 
 	char buffer[overall_size] = { 0 };
 
-	pack_64(&handle, 
-	pack_64(&foffset, 
+	pack_64(&handle,
+	pack_64(&foffset,
 	pack_64(&fsize, buffer
 	)));
 
 	send_token_t token = { 0 };
-	
-	queue_data(buffer, overall_size, 
+
+	queue_data(buffer, overall_size,
 	queue_cmd(&cmd, &token
 	));
 #undef overall_size
@@ -57,7 +57,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_read 
+	if (ans.command != cmd_read
 	|| ans.data_len > size)
 	{
 		rfs_ignore_incoming_data(&instance->sendrecv, ans.data_len);
@@ -77,7 +77,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 			return -ECONNABORTED;
 		}
 	}
-	
+
 	if (instance->sendrecv.oob_received != 0)
 	{
 		DEBUG("%s\n", "something is wrong, reading fixed answer");
@@ -88,17 +88,17 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 		{
 			return -ECONNABORTED;
 		}
-		
+
 		if (ans.command != cmd_read)
 		{
 			return -EBADMSG;
 		}
-		
+
 		if (ans.ret < 0)
 		{
 			return -ans.ret_errno;
 		}
-		
+
 		return ans.ret;
 	}
 

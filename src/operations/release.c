@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -27,7 +27,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	{
 		return -ECONNABORTED;
 	}
-	
+
 	int flush_ret = _flush_write(instance, path, desc); /* make sure no data is buffered */
 	if (flush_ret < 0)
 	{
@@ -35,14 +35,14 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	}
 
 	clear_cache_by_desc(&instance->write_cache.cache, desc);
-	
+
 	uint64_t handle = htonll(desc);
 
 	struct command cmd = { cmd_release, sizeof(handle) };
 
 	send_token_t token = { 0 };
-	if (do_send(&instance->sendrecv, 
-		queue_data((void *)&handle, sizeof(handle), 
+	if (do_send(&instance->sendrecv,
+		queue_data((void *)&handle, sizeof(handle),
 		queue_cmd(&cmd, &token))) < 0)
 	{
 		return -ECONNABORTED;
@@ -55,12 +55,12 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 		return -ECONNABORTED;
 	}
 
-	if (ans.command != cmd_release 
+	if (ans.command != cmd_release
 	|| ans.data_len != 0)
 	{
 		return cleanup_badmsg(instance, &ans);
 	}
-	
+
 	if (ans.ret == 0)
 	{
 		delete_from_cache(&instance->attr_cache, path);
