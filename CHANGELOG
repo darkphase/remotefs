@@ -1,3 +1,16 @@
+0.16
+
+[+] client-server compatibilty handshake, 0.16 is incompatible
+    with previous versions
+[+] hostnames resolution in exports
+[+] connection and i/o timeout to avoid remotefs hangs
+
+[*] fixed issue with truncate for large files
+[*] fixed newline handling at the end of exports
+[*] fixed file locking (only full file locks are supported)
+[*] enabled big writes for FUSE>=2.8
+[*] simpler (faster) write cache optimized for sequental writes
+
 0.15-2
 
 rfsd:
