@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -43,7 +43,7 @@ unsigned cache_is_old(struct attr_cache *cache)
 		cache->last_time_checked = now;
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -53,29 +53,29 @@ void clear_cache(struct attr_cache *cache)
 	{
 		return;
 	}
-	
+
 	DEBUG("%s\n", "clearing cache");
-	
+
 	struct tree_item key = { 0 };
-	
+
 	key.path = NULL;
 	key.time = time(NULL);
-	
+
 	do
 	{
 		void *found = tfind(&key, &cache->cache, compare_time);
-		
+
 		if (found == NULL)
 		{
 			break;
 		}
-		
+
 		struct tree_item *node = *(struct tree_item **)found;
-		
+
 		if (tdelete(node, &cache->cache, compare_path) != NULL)
 		{
 			DEBUG("deleted from cache: %s\n", node->path);
-			
+
 			free(node->path);
 			free(node);
 		}
@@ -96,21 +96,21 @@ void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf)
 	{
 		return NULL;
 	}
-	
+
 	key->path = strdup(path);
 	key->time = time(NULL);
 	memcpy(&(key->data), stbuf, sizeof(key->data));
-	
+
 	void *found = tfind(key, &cache->cache, compare_path);
 	if (found != NULL)
 	{
 		free(key->path);
 		free(key);
-		
+
 		struct tree_item *value = *(struct tree_item **)found;
 		memcpy(&value->data, stbuf, sizeof(value->data));
 		value->time = time(NULL);
-		
+
 		return found;
 	}
 	else
@@ -126,11 +126,11 @@ void* cache_file(struct attr_cache *cache, const char *path, struct stat *stbuf)
 	}
 }
 
-const struct tree_item* 
+const struct tree_item*
 get_cache(struct attr_cache *cache, const char *path)
 {
 	struct tree_item key = { (char *)path, time(NULL), { 0 } };
-	
+
 	void *found = tfind(&key, &cache->cache, compare_path);
 	if (found != NULL)
 	{
@@ -145,24 +145,24 @@ get_cache(struct attr_cache *cache, const char *path)
 		++cache->misses;
 	}
 #endif
-	
+
 	return NULL;
 }
 
 static void release_cache(const void *nodep, const VISIT which, const int depth)
 {
-	if (which == endorder 
+	if (which == endorder
 	|| which == leaf)
 	{
 		struct tree_item *node = *(struct tree_item **)nodep;
-		
+
 		if (node)
 		{
 			if (node->path)
 			{
 				free(node->path);
 			}
-			
+
 			free(node);
 		}
 	}
@@ -173,7 +173,7 @@ void* destroy_cache(struct attr_cache *cache)
 	if (cache->cache != NULL)
 	{
 		twalk(cache->cache, release_cache);
-		
+
 		while (cache->cache != NULL)
 		{
 			tdelete(NULL, &cache->cache, any_node);
@@ -189,9 +189,9 @@ void delete_from_cache(struct attr_cache *cache, const char *path)
 
 	void *found = tfind(&key, &cache->cache, compare_path);
 	struct tree_item *value = (found != NULL ? *(struct tree_item **)found : NULL);
-	
+
 	tdelete(&key, &cache->cache, compare_path);
-	
+
 	if (value != NULL)
 	{
 		free(value->path);
@@ -203,10 +203,10 @@ void delete_from_cache(struct attr_cache *cache, const char *path)
 #ifdef RFS_DEBUG
 void dump_attr_stats(struct attr_cache *cache)
 {
-	DEBUG("attr cache hits: %lu, misses: %lu, ratio: %.2f\n", 
-	cache->hits, 
-	cache->misses, 
+	DEBUG("### attr cache hits: %lu, misses: %lu, ratio: %.2f\n",
+	cache->hits,
+	cache->misses,
 	ratio(cache->hits, cache->misses));
-	DEBUG("attr cache max number of entries: %lu/%u\n", cache->max_number_of_entries, ATTR_CACHE_MAX_ENTRIES);
+	DEBUG("### attr cache max number of entries: %lu/%u\n", cache->max_number_of_entries, ATTR_CACHE_MAX_ENTRIES);
 }
 #endif
