@@ -24,7 +24,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -67,7 +67,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 
 	if (fd == -1)
 	{
-		struct answer ans = { cmd_open, 0, -1, errno };
+		struct rfs_answer ans = { cmd_open, 0, -1, errno };
 		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 		{
 			return -1;
@@ -105,7 +105,7 @@ int _handle_open(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	unsigned overall_size = sizeof(handle) + sizeof(stat_failed) + STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) + user_len + group_len;
 
-	struct answer ans = { cmd_open, overall_size, 0, 0 };
+	struct rfs_answer ans = { cmd_open, overall_size, 0, 0 };
 
 	DEBUG("mode: %u, size: %lu\n", (unsigned)stbuf.st_mode, (long unsigned)stbuf.st_size);
 

@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "../../sendrecv_server.h"
 #include "../../version.h"
 
-int _handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	uint16_t major = 0;
 	uint16_t minor = 0;
@@ -52,7 +52,7 @@ int _handle_handshake(struct rfsd_instance *instance, const struct sockaddr_in *
 	pack_16(&my_minor,
 	pack_16(&my_major, buffer));
 
-	struct answer ans = { cmd_handshake, overall_size, (compatible != 0 ? 0 : -1), (compatible != 0 ? 0 : EPROTONOSUPPORT) };
+	struct rfs_answer ans = { cmd_handshake, overall_size, (compatible != 0 ? 0 : -1), (compatible != 0 ? 0 : EPROTONOSUPPORT) };
 #undef overall_size
 
 	if (ans.ret == 0)

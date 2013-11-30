@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -54,7 +54,7 @@ int _handle_mknod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		close(ret);
 	}
 	
-	struct answer ans = { cmd_mknod, 0, ret, errno };
+	struct rfs_answer ans = { cmd_mknod, 0, ret, errno };
 	
 	free(buffer);
 	

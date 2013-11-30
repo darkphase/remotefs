@@ -30,7 +30,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 
 	unsigned overall_size = sizeof(path_len) + path_len + target_len;
 
-	struct command cmd = { cmd_link, overall_size };
+	struct rfs_command cmd = { cmd_link, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -50,7 +50,7 @@ int _rfs_link(struct rfs_instance *instance, const char *path, const char *targe
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

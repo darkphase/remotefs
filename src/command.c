@@ -67,12 +67,12 @@ const char* describe_command(const uint32_t cmd)
 }
 
 #ifdef RFS_DEBUG
-void dump_command(const struct command *cmd)
+void dump_command(const struct rfs_command *cmd)
 {
 	DEBUG("command: %s (%d), data length: %u\n", describe_command(cmd->command), cmd->command, cmd->data_len);
 }
 
-void dump_answer(const struct answer *ans)
+void dump_answer(const struct rfs_answer *ans)
 {
 	DEBUG("answer: %s (%d), data length: %u, ret: %d, errno: %s (%d)\n", describe_command(ans->command), ans->command, ans->data_len, ans->ret, strerror(ans->ret_errno), ans->ret_errno);
 }

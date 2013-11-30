@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../../sendrecv_server.h"
 
 #ifdef WITH_EXPORTS_LIST
-int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	const struct list *export_node = instance->exports.list;
 	if (export_node == NULL)
@@ -43,7 +43,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		pack_32(&options, buffer
 		));
 
-		struct answer ans = { cmd_listexports, overall_size, 0, 0 };
+		struct rfs_answer ans = { cmd_listexports, overall_size, 0, 0 };
 		
 		send_token_t token = { 0 };
 		if (do_send(&instance->sendrecv, 
@@ -59,7 +59,7 @@ int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in
 		export_node = export_node->next;
 	}
 	
-	struct answer last_ans = { cmd_listexports, 0, 0, 0 };	
+	struct rfs_answer last_ans = { cmd_listexports, 0, 0, 0 };	
 	return (rfs_send_answer(&instance->sendrecv, &last_ans) == -1 ? -1 : 0);
 }
 #else

@@ -21,14 +21,14 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-static inline struct command* ntoh_cmd(struct command *cmd)
+static inline struct rfs_command* ntoh_cmd(struct rfs_command *cmd)
 {
 	cmd->command = ntohl(cmd->command);
 	cmd->data_len = ntohl(cmd->data_len);
 	return cmd;
 }
 
-static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
+static inline send_token_t* queue_ans(struct rfs_answer *ans, send_token_t *token)
 {
 #ifdef RFS_DEBUG
 	dump_answer(ans);
@@ -36,7 +36,7 @@ static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
 	return queue_buffer(answer, (char *)ans, sizeof(*ans), token);
 }
 
-static inline ssize_t rfs_send_answer(rfs_sendrecv_info_t *info, struct answer *ans)
+static inline ssize_t rfs_send_answer(rfs_sendrecv_info_t *info, struct rfs_answer *ans)
 {
 #ifdef RFS_DEBUG
 	dump_answer(ans);
@@ -47,7 +47,7 @@ static inline ssize_t rfs_send_answer(rfs_sendrecv_info_t *info, struct answer *
 		)) == sizeof(*ans) ? 0 : -1);
 }
 
-static inline ssize_t rfs_send_answer_oob(rfs_sendrecv_info_t *info, struct answer *ans)
+static inline ssize_t rfs_send_answer_oob(rfs_sendrecv_info_t *info, struct rfs_answer *ans)
 {
 	const char oob = 1;
 	if (send(info->socket, &oob, 1, MSG_OOB) < 0)
@@ -57,7 +57,7 @@ static inline ssize_t rfs_send_answer_oob(rfs_sendrecv_info_t *info, struct answ
 	return rfs_send_answer(info, ans);
 }
 
-static inline ssize_t rfs_receive_cmd(rfs_sendrecv_info_t *info, struct command *cmd)
+static inline ssize_t rfs_receive_cmd(rfs_sendrecv_info_t *info, struct rfs_command *cmd)
 {
 	ssize_t ret = rfs_recv(info, (char *)cmd, sizeof(*cmd), 0);
 	if (ret < 0)

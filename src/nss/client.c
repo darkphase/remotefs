@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -62,11 +62,11 @@ static char* find_socket(uid_t uid, const char *rfsd_host, int skip)
 			ret = malloc(overall_len);
 			snprintf(ret, overall_len, "%s%s", NSS_SOCKETS_DIR, entry->d_name);
 			ret[overall_len - 1] = 0;
-			
+
 			break;
 		}
 	}
-	
+
 	closedir(dir);
 
 	return ret;
@@ -97,13 +97,13 @@ static int nss_connect(const char *server)
 			free(socket_name);
 			break;
 		}
-		
+
 		struct sockaddr_un address = { 0 };
 		strcpy(address.sun_path, socket_name);
 		address.sun_family = AF_UNIX;
-	
+
 		free(socket_name);
-	
+
 		DEBUG("%s\n", "connecting");
 
 		if (connect(sock, (struct sockaddr *)&address, sizeof(address)) != 0)
@@ -118,8 +118,8 @@ static int nss_connect(const char *server)
 	return -last_errno;
 }
 
-static int check_name(const char *full_name, enum server_commands cmd_id)
-{	
+static int check_name(const char *full_name, enum rfs_commands cmd_id)
+{
 	char *server = extract_server(full_name);
 	if (server == NULL)
 	{
@@ -134,14 +134,14 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 	}
 
 	free(server);
-		
+
 	int saved_errno = 0;
 
 	char *name = extract_name(full_name);
 
 	size_t overall_size = 0;
-	struct command cmd = { 0 };
-	struct answer ans = { 0 };
+	struct rfs_command cmd = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (name == NULL)
 	{
@@ -190,7 +190,7 @@ static int check_name(const char *full_name, enum server_commands cmd_id)
 		saved_errno = EINVAL;
 		goto error;
 	}
-	
+
 	saved_errno = ans.ret_errno;
 
 error:
@@ -211,7 +211,7 @@ int nss_check_group(const char *full_name)
 	return check_name(full_name, cmd_checkgroup);
 }
 
-static int get_names(const char *server, struct list **names, enum server_commands cmd_id)
+static int get_names(const char *server, struct list **names, enum rfs_commands cmd_id)
 {
 	if (*names != NULL)
 	{
@@ -223,11 +223,11 @@ static int get_names(const char *server, struct list **names, enum server_comman
 	{
 		return sock;
 	}
-			
+
 	int saved_errno = 0;
-	
-	struct command cmd = { cmd_id, 0 };
-	struct answer ans = { 0 };
+
+	struct rfs_command cmd = { cmd_id, 0 };
+	struct rfs_answer ans = { 0 };
 
 #ifdef RFS_DEBUG
 	dump_command(&cmd);

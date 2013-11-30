@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	
@@ -80,7 +80,7 @@ int _handle_getattr(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	group_len = strlen(group) + 1;
 	
 	unsigned overall_size = STAT_BLOCK_SIZE + sizeof(user_len) + sizeof(group_len) + user_len + group_len;
-	struct answer ans = { cmd_getattr, overall_size, 0, 0 };
+	struct rfs_answer ans = { cmd_getattr, overall_size, 0, 0 };
 
 	DEBUG("mode: %u, size: %lu\n", (unsigned)stbuf.st_mode, (long unsigned)stbuf.st_size);
 

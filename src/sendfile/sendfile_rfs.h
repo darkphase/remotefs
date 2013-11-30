@@ -16,7 +16,7 @@ See the file LICENSE.
 #include <stdint.h>
 #include <sys/types.h>
 
-struct command;
+struct rfs_command;
 struct rfsd_instance;
 
 /** generalized interface 
@@ -34,7 +34,7 @@ static inline ssize_t rfs_sendfile(int out_fd, int in_fd, off_t offset, size_t s
 #	include "sendfile_freebsd.h"
 #endif
 
-int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
+int read_with_sendfile(struct rfsd_instance *instance, const struct rfs_command *cmd, uint64_t handle, off_t offset, size_t size);
 
 #endif /* SENDFILE_H */
 #endif /* SENDFILE_AVAILABLE */

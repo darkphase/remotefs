@@ -31,7 +31,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 	
 	unsigned overall_size = sizeof(fi_flags) + path_len;
 
-	struct command cmd = { cmd_open, overall_size };
+	struct rfs_command cmd = { cmd_open, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -50,7 +50,7 @@ int _rfs_open(struct rfs_instance *instance, const char *path, int flags, uint64
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

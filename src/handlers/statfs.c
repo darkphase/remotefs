@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -56,7 +56,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	
 	if (result != 0)
 	{
-		struct answer ans = { cmd_statfs, 0, -1, saved_errno };
+		struct rfs_answer ans = { cmd_statfs, 0, -1, saved_errno };
 		
 		if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 		{
@@ -82,7 +82,7 @@ int _handle_statfs(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	+ sizeof(ffree)
 	+ sizeof(namemax);
 	
-	struct answer ans = { cmd_statfs, overall_size, 0, 0 };
+	struct rfs_answer ans = { cmd_statfs, overall_size, 0, 0 };
 
 	buffer = malloc(ans.data_len);
 	if (buffer == NULL)

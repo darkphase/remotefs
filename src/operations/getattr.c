@@ -46,7 +46,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 
 	unsigned path_len = strlen(path) + 1;
 
-	struct command cmd = { cmd_getattr, path_len };
+	struct rfs_command cmd = { cmd_getattr, path_len };
 	
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
@@ -56,7 +56,7 @@ int _rfs_getattr(struct rfs_instance *instance, const char *path, struct stat *s
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -ECONNABORTED;

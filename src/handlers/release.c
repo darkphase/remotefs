@@ -24,7 +24,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -52,7 +52,7 @@ int _handle_release(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	errno = 0;
 	int ret = close(fd);
 	
-	struct answer ans = { cmd_release, 0, ret, errno };	
+	struct rfs_answer ans = { cmd_release, 0, ret, errno };	
 	
 	if (cleanup_remove_file_from_open_list(&instance->cleanup.open_files, fd) != 0)
 	{

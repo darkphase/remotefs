@@ -88,7 +88,7 @@ static int setup_export_groups(uid_t user_uid)
 	return 0;
 }
 
-int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -201,7 +201,7 @@ int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in 
 	errno = 0;
 	int result = chroot(path);
 
-	struct answer ans = { cmd_changepath, 0, result, errno };
+	struct rfs_answer ans = { cmd_changepath, 0, result, errno };
 	
 	free(buffer);
 	

@@ -24,7 +24,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	
@@ -121,7 +121,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 
 		pack_stat(&stbuf, stat_buffer);
 
-		struct answer ans = { cmd_readdir, overall_size, 0, 0 };
+		struct rfs_answer ans = { cmd_readdir, overall_size, 0, 0 };
 	
 		send_token_t token = { 0 };
 		if (do_send(&instance->sendrecv, 
@@ -145,7 +145,7 @@ int _handle_readdir(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	closedir(dir);
 	free(buffer);
 
-	struct answer last_ans = { cmd_readdir, 0, 0, 0 };
+	struct rfs_answer last_ans = { cmd_readdir, 0, 0, 0 };
 	if (rfs_send_answer(&instance->sendrecv, &last_ans) == -1)
 	{
 		return -1;

@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
 
-int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	
@@ -49,7 +49,7 @@ int _handle_readlink(struct rfsd_instance *instance, const struct sockaddr_in *c
 	errno = 0;
 	int ret = readlink(path, link_buffer, bsize);
 	
-	struct answer ans = { cmd_readlink, 0, ret, errno };
+	struct rfs_answer ans = { cmd_readlink, 0, ret, errno };
 
 	free(buffer);
 

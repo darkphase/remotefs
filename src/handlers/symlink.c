@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../instance_server.h"
 #include "../sendrecv_server.h"
 
-int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -50,7 +50,7 @@ int _handle_symlink(struct rfsd_instance *instance, const struct sockaddr_in *cl
 	errno = 0;
 	int result = symlink(path, target);
 	
-	struct answer ans = { cmd_symlink, 0, result, errno };
+	struct rfs_answer ans = { cmd_symlink, 0, result, errno };
 	
 	free(buffer);
 	

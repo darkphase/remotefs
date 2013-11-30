@@ -11,10 +11,10 @@ See the file LICENSE.
 
 /** changepath  */
 
-struct command;
+struct rfs_command;
 struct rfsd_instance;
 struct sockaddr_in;
 
-int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int _handle_changepath(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd);
 
 #endif /* SERVER_HANDLERS_RFS_CHANGEPATH_H */

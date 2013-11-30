@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "../../sendrecv_server.h"
 #include "../../server.h"
 
-int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	/* send users */
 
@@ -37,7 +37,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 		uid = uid->next;
 	}
 
-	struct answer ans = { cmd_getnames, users_len, 0, 0 };
+	struct rfs_answer ans = { cmd_getnames, users_len, 0, 0 };
 
 	char *users = malloc(users_len);
 	size_t written = 0;

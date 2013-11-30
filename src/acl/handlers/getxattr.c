@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "../server.h"
 #include "../utils.h"
 
-int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 
@@ -107,7 +107,7 @@ int _handle_getxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	DEBUG("acl text len: %llu\n", (long long unsigned)acl_text_len);
 	DEBUG("acl text: \n%s\n", acl_text != NULL ? acl_text : "");
 	
-	struct answer ans = { cmd_getxattr, acl_text_len, 0, 0 };
+	struct rfs_answer ans = { cmd_getxattr, acl_text_len, 0, 0 };
 
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 

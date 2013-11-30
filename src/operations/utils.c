@@ -167,7 +167,7 @@ int _flush_file(struct rfs_instance *instance, const char *path)
 	return 0;
 }
 
-int cleanup_badmsg(struct rfs_instance *instance, const struct answer *ans)
+int cleanup_badmsg(struct rfs_instance *instance, const struct rfs_answer *ans)
 {
 	DEBUG("%s\n", "cleaning bad msg");
 	

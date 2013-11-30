@@ -20,7 +20,7 @@ See the file LICENSE.
 #include "../../instance_server.h"
 #include "../../sendrecv_server.h"
 
-int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	memset(instance->server.auth_salt, 0, sizeof(instance->server.auth_salt));
 	if (generate_salt(instance->server.auth_salt, sizeof(instance->server.auth_salt) - 1) != 0)
@@ -30,7 +30,7 @@ int _handle_request_salt(struct rfsd_instance *instance, const struct sockaddr_i
 	
 	uint32_t salt_len = strlen(instance->server.auth_salt) + 1;
 	
-	struct answer ans = { cmd_request_salt, salt_len, 0, 0 };
+	struct rfs_answer ans = { cmd_request_salt, salt_len, 0, 0 };
 	
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 

@@ -98,14 +98,14 @@ static inline ssize_t do_send(rfs_sendrecv_info_t *info, send_token_t *token)
 		{
 		case command:
 			{
-			struct command *cmd = (struct command *)(token->iov[i].iov_base);
+			struct rfs_command *cmd = (struct rfs_command *)(token->iov[i].iov_base);
 			cmd->command = htonl(cmd->command);
 			cmd->data_len = htonl(cmd->data_len);
 			}
 			break;
 		case answer:
 			{
-			struct answer *ans = (struct answer *)(token->iov[i].iov_base);
+			struct rfs_answer *ans = (struct rfs_answer *)(token->iov[i].iov_base);
 			ans->command = htonl(ans->command);
 			ans->data_len = htonl(ans->data_len);
 			ans->ret = htonl(ans->ret);

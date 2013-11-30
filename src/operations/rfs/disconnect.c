@@ -27,7 +27,7 @@ void rfs_disconnect(struct rfs_instance *instance, int gently)
 
 	if (gently != 0)
 	{
-		struct command cmd = { cmd_closeconnection, 0 };
+		struct rfs_command cmd = { cmd_closeconnection, 0 };
 		rfs_send_cmd(&instance->sendrecv, &cmd);
 	}
 	

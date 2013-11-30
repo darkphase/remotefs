@@ -27,14 +27,14 @@ int rfs_request_salt(struct rfs_instance *instance)
 
 	memset(instance->client.auth_salt, 0, sizeof(instance->client.auth_salt));
 
-	struct command cmd = { cmd_request_salt, 0 };
+	struct rfs_command cmd = { cmd_request_salt, 0 };
 
 	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

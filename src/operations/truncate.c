@@ -30,7 +30,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 
 	unsigned overall_size = sizeof(foffset) + path_len;
 
-	struct command cmd = { cmd_truncate, overall_size };
+	struct rfs_command cmd = { cmd_truncate, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -49,7 +49,7 @@ int _rfs_truncate(struct rfs_instance *instance, const char *path, off_t offset)
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

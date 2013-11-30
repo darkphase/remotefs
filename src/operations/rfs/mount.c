@@ -26,7 +26,7 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 	}
 
 	unsigned path_len = strlen(path);
-	struct command cmd = { cmd_changepath, path_len + 1};
+	struct rfs_command cmd = { cmd_changepath, path_len + 1};
 
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
@@ -36,7 +36,7 @@ int rfs_mount(struct rfs_instance *instance, const char *path)
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

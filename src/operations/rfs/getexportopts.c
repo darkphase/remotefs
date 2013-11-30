@@ -28,14 +28,14 @@ int rfs_getexportopts(struct rfs_instance *instance, enum rfs_export_opts *opts)
 
 	*opts = OPT_NONE;
 	
-	struct command cmd = { cmd_getexportopts, 0 };
+	struct rfs_command cmd = { cmd_getexportopts, 0 };
 	
 	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
 		return -ECONNABORTED;
 	}
 	
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

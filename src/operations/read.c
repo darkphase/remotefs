@@ -28,7 +28,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 	uint64_t fsize = size;
 
 #define overall_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
-	struct command cmd = { cmd_read, overall_size };
+	struct rfs_command cmd = { cmd_read, overall_size };
 
 	char buffer[overall_size] = { 0 };
 
@@ -49,7 +49,7 @@ static int _read(struct rfs_instance *instance, char *buf, size_t size, off_t of
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

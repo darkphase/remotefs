@@ -20,9 +20,9 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "../sendfile/sendfile_rfs.h"
 
-typedef int (*read_method)(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size);
+typedef int (*read_method)(struct rfsd_instance *instance, const struct rfs_command *cmd, uint64_t handle, off_t offset, size_t size);
 
-static int read_small_block(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
+static int read_small_block(struct rfsd_instance *instance, const struct rfs_command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading small block");
 
@@ -38,7 +38,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 	errno = 0;
 	ssize_t result = pread(fd, buffer, size, offset);
 	
-	struct answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno };
+	struct rfs_answer ans = { cmd_read, (uint32_t)result, (int32_t)result, errno };
 
 	if (result < 0)
 	{
@@ -54,7 +54,7 @@ static int read_small_block(struct rfsd_instance *instance, const struct command
 }
 
 #if (! defined SENDFILE_AVAILABLE) /* we don't need this on Linux/Solaris/FreeBSD */
-static int read_as_always(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
+static int read_as_always(struct rfsd_instance *instance, const struct rfs_command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	/* this method used not only when sendfile() isn't available 
 	but also when SSL enabled. 
@@ -83,7 +83,7 @@ static int read_as_always(struct rfsd_instance *instance, const struct command *
 
 	DEBUG("read result: %lld\n", (long long int)result);
 	
-	struct answer ans = { cmd_read, (uint32_t)result >= 0 ? result : 0, (int32_t)result, errno };
+	struct rfs_answer ans = { cmd_read, (uint32_t)result >= 0 ? result : 0, (int32_t)result, errno };
 	
 	send_token_t token = { 0, {{ 0 }} };
 	if (do_send(&instance->sendrecv, 
@@ -116,7 +116,7 @@ static inline read_method choose_read_method(struct rfsd_instance *instance, siz
 #endif /* defined SENDFILE_AVAILABLE */
 }
 
-int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_read(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 #define overall_size sizeof(handle) + sizeof(offset) + sizeof(size)
 	uint64_t handle = (uint64_t)-1;

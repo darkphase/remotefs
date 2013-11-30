@@ -50,7 +50,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 
 	unsigned overall_size = path_len + sizeof(actime) + sizeof(modtime) + sizeof(is_null);
 
-	struct command cmd = { cmd_utime, overall_size };
+	struct rfs_command cmd = { cmd_utime, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -71,7 +71,7 @@ int _rfs_utime(struct rfs_instance *instance, const char *path, struct utimbuf *
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

@@ -31,14 +31,14 @@ int rfs_getnames(struct rfs_instance *instance)
 		return -ECONNABORTED;
 	}
 	
-	struct command cmd = { cmd_getnames, 0 };
+	struct rfs_command cmd = { cmd_getnames, 0 };
 	
 	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{
 		return -ECONNABORTED;
 	}
 	
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

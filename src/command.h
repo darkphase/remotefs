@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -18,10 +18,10 @@ extern "C" {
 #endif
 
 /** commands for remotefs server */
-enum server_commands
-{ 
-	cmd_first = 0, 
-	
+enum rfs_commands
+{
+	cmd_first = 0,
+
 	/* rfs internal commands */
 	cmd_auth               = 10, /* 0a */
 	cmd_request_salt,            /* 0b */
@@ -32,7 +32,7 @@ enum server_commands
 	cmd_listexports,             /* 12 */
 	cmd_getnames,                /* 13 */
 	cmd_handshake,               /* 14 */
-	
+
 	/* reserved */
 
 	/* fs commands */
@@ -64,23 +64,23 @@ enum server_commands
 	/* reserved */
 
 	/* nss */
-	cmd_checkuser          = 100, 
-	cmd_checkgroup, 
-	cmd_getusers, 
-	cmd_getgroups, 
+	cmd_checkuser          = 100,
+	cmd_checkgroup,
+	cmd_getusers,
+	cmd_getgroups,
 
 	cmd_last
 };
 
 /** command for server */
-struct command
+struct rfs_command
 {
 	uint32_t command;
 	uint32_t data_len;
 };
 
 /** answer to client */
-struct answer
+struct rfs_answer
 {
 	uint32_t command;
 	uint32_t data_len;
@@ -93,10 +93,10 @@ const char* describe_command(const uint32_t cmd);
 
 #ifdef RFS_DEBUG
 /** write command to output. debug only */
-void dump_command(const struct command *cmd);
+void dump_command(const struct rfs_command *cmd);
 
 /** write answer to output. debug only */
-void dump_answer(const struct answer *cmd);
+void dump_answer(const struct rfs_answer *cmd);
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)

@@ -54,7 +54,7 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 		+ sizeof(modtime_nsec)
 		+ sizeof(is_null);
 
-	struct command cmd = { cmd_utimens, overall_size };
+	struct rfs_command cmd = { cmd_utimens, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -77,7 +77,7 @@ int _rfs_utimens(struct rfs_instance *instance, const char *path, const struct t
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

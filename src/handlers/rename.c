@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -53,7 +53,7 @@ int _handle_rename(struct rfsd_instance *instance, const struct sockaddr_in *cli
 	errno = 0;
 	int result = rename(path, new_path);
 	
-	struct answer ans = { cmd_rename, 0, result, errno };
+	struct rfs_answer ans = { cmd_rename, 0, result, errno };
 	
 	free(buffer);
 	

@@ -35,7 +35,7 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 	unsigned user_len = strlen(user) + 1;
 	unsigned overall_size = sizeof(crypted_len) + crypted_len + user_len;
 
-	struct command cmd = { cmd_auth, overall_size };
+	struct rfs_command cmd = { cmd_auth, overall_size };
 
 	char *buffer = malloc(overall_size);
 
@@ -58,7 +58,7 @@ int rfs_auth(struct rfs_instance *instance, const char *user, const char *passwd
 	free(buffer);
 	free(crypted);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

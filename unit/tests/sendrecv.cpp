@@ -25,7 +25,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSendrecv);
 /* FIXME: ntoh_* still need some coverage
 void TestSendrecv::testHTON()
 {
-	struct command cmd = { cmd_first, 1 }, cmd_copy = cmd;
+	struct rfs_command cmd = { cmd_first, 1 }, cmd_copy = cmd;
 	struct answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
 
 	CPPUNIT_ASSERT(memcmp(ntoh_cmd(hton_cmd(&cmd)), &cmd_copy, sizeof(cmd_copy)) == 0);
@@ -35,7 +35,7 @@ void TestSendrecv::testHTON()
 
 void TestSendrecv::testQueue()
 {
-	struct command cmd = { cmd_first, 1 }, cmd_copy = cmd;
+	struct rfs_command cmd = { cmd_first, 1 }, cmd_copy = cmd;
 	struct answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
 	uint16_t u16 = 1, u16_copy = u16;
 	uint32_t u32 = 2, u32_copy = u32;

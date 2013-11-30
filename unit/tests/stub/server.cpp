@@ -62,7 +62,7 @@ int Stub::Server::accept()
 	return m_accepted_socket;
 }
 
-void Stub::Server::recv_command(struct command &cmd)
+void Stub::Server::recv_command(struct rfs_command &cmd)
 {
 	if (rfs_receive_cmd(&m_instance.sendrecv, &cmd) < 0)
 	{

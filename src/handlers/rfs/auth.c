@@ -19,7 +19,7 @@ See the file LICENSE.
 #include "../../instance_server.h"
 #include "../../sendrecv_server.h"
 
-int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -54,7 +54,7 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	
 	free(buffer);
 	
-	struct answer ans = { cmd_auth, 0, 0, 0 };
+	struct rfs_answer ans = { cmd_auth, 0, 0, 0 };
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{

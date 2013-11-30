@@ -35,7 +35,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	unsigned overall_size = sizeof(fmode) + path_len;
 
-	struct command cmd = { cmd_mknod, overall_size };
+	struct rfs_command cmd = { cmd_mknod, overall_size };
 
 	char *buffer = malloc(cmd.data_len);
 
@@ -54,7 +54,7 @@ int _rfs_mknod(struct rfs_instance *instance, const char *path, mode_t mode, dev
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

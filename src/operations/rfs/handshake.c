@@ -38,7 +38,7 @@ int rfs_handshake(struct rfs_instance *instance)
 	pack_16(&minor,
 	pack_16(&major, buffer));
 
-	struct command cmd = { cmd_handshake, overall_size };
+	struct rfs_command cmd = { cmd_handshake, overall_size };
 
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv,
@@ -48,7 +48,7 @@ int rfs_handshake(struct rfs_instance *instance)
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

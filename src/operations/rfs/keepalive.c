@@ -21,7 +21,7 @@ int rfs_keep_alive(struct rfs_instance *instance)
 		return -ECONNABORTED;
 	}
 
-	struct command cmd = { cmd_keepalive, 0 };
+	struct rfs_command cmd = { cmd_keepalive, 0 };
 
 	if (rfs_send_cmd(&instance->sendrecv, &cmd) == -1)
 	{

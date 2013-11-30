@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	uint16_t flags = 0;
 	uint16_t type = 0;
@@ -98,7 +98,7 @@ int _handle_lock(struct rfsd_instance *instance, const struct sockaddr_in *clien
 	errno = 0;
 	int ret = fcntl((int)fd, lock_cmd, &fl);
 	
-	struct answer ans = { cmd_lock, 0, ret, errno };
+	struct rfs_answer ans = { cmd_lock, 0, ret, errno };
 	
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{

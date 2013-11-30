@@ -116,7 +116,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 	+ user_len 
 	+ group_len;
 
-	struct command cmd = { cmd_chown, overall_size };
+	struct rfs_command cmd = { cmd_chown, overall_size };
 
 	char *buffer = malloc(overall_size);
 	pack(local_group != NULL ? local_group : group, group_len, 
@@ -157,7 +157,7 @@ int _rfs_chown(struct rfs_instance *instance, const char *path, uid_t uid, gid_t
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

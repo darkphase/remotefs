@@ -12,7 +12,7 @@ See the file LICENSE.
 #include "../../command.h"
 #include "../../instance_server.h"
 
-int handle_keepalive(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int handle_keepalive(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	/* no need of actual handling, 
 	rfsd will update keep-alive on each operation anyway */

@@ -22,7 +22,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -49,7 +49,7 @@ int _handle_chmod(struct rfsd_instance *instance, const struct sockaddr_in *clie
 	errno = 0;
 	int ret = chmod(path, mode);
 	
-	struct answer ans = { cmd_chmod, 0, ret, errno };
+	struct rfs_answer ans = { cmd_chmod, 0, ret, errno };
 	
 	free(buffer);
 	

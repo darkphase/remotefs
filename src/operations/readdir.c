@@ -29,7 +29,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 
 	unsigned path_len = strlen(path) + 1;
 
-	struct command cmd = { cmd_readdir, path_len };
+	struct rfs_command cmd = { cmd_readdir, path_len };
 
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
@@ -39,7 +39,7 @@ int _rfs_readdir(struct rfs_instance *instance, const char *path, const rfs_read
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	struct stat stbuf = { 0 };
 	uint16_t stat_failed = 0;
 

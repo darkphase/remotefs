@@ -44,7 +44,7 @@ static int handle_connection(struct rfsd_instance *instance, int client_socket, 
 	server_keep_alive_update(instance);
 	alarm(server_keep_alive_period());
 	
-	struct command current_command = { 0 };
+	struct rfs_command current_command = { 0 };
 	
 	while (1)
 	{	

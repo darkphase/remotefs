@@ -12,11 +12,11 @@ See the file LICENSE.
 /** listexports */
 
 #ifdef WITH_EXPORTS_LIST
-struct command;
+struct rfs_command;
 struct rfsd_instance;
 struct sockaddr_in;
 
-int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd);
 #endif
 
 #endif /* SERVER_HANDLERS_LISTEXPORTS_H */

@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "../server.h"
 #include "../utils.h"
 
-int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)
@@ -84,7 +84,7 @@ int _handle_setxattr(struct rfsd_instance *instance, const struct sockaddr_in *c
 	free(buffer);
 	acl_free(acl);
 		
-	struct answer ans = { cmd_setxattr, 0, set_acl_ret == 0 ? 0 : -1, -set_acl_ret };
+	struct rfs_answer ans = { cmd_setxattr, 0, set_acl_ret == 0 ? 0 : -1, -set_acl_ret };
 	return (rfs_send_answer(&instance->sendrecv, &ans) == -1 ? -1 : 0);
 }
 

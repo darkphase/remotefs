@@ -40,7 +40,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	unsigned overall_size = sizeof(fmode) + path_len;
 
-	struct command cmd = { cmd_chmod, overall_size };
+	struct rfs_command cmd = { cmd_chmod, overall_size };
 
 	char *buffer = malloc(overall_size);
 	
@@ -59,7 +59,7 @@ int _rfs_chmod(struct rfs_instance *instance, const char *path, mode_t mode)
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

@@ -135,7 +135,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 	int overall_size = path_len + sizeof(bsize);
 	
-	struct command cmd = { cmd_readlink, overall_size };
+	struct rfs_command cmd = { cmd_readlink, overall_size };
 
 	char *buffer = malloc(overall_size);
 
@@ -154,7 +154,7 @@ int _rfs_readlink(struct rfs_instance *instance, const char *path, char *link_bu
 
 	free(buffer);
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

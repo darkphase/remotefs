@@ -17,9 +17,9 @@ See the file LICENSE.
 #include "../../instance_server.h"
 #include "../../sendrecv_server.h"
 
-int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_getexportopts(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
-	struct answer ans = { cmd_getexportopts, 
+	struct rfs_answer ans = { cmd_getexportopts, 
 	0,
 	(instance->server.mounted_export != NULL ? instance->server.mounted_export->options : (unsigned)-1),
 	(instance->server.mounted_export != NULL ? 0 : EACCES) };

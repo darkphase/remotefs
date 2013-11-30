@@ -318,7 +318,7 @@ int _do_write(struct rfs_instance *instance, const char *path, const char *buf, 
 
 #define header_size sizeof(fsize) + sizeof(foffset) + sizeof(handle)
 	unsigned overall_size = header_size + size;
-	struct command cmd = { cmd_write, overall_size };
+	struct rfs_command cmd = { cmd_write, overall_size };
 
 	char header[header_size] = { 0 };
 
@@ -338,7 +338,7 @@ int _do_write(struct rfs_instance *instance, const char *path, const char *buf, 
 	}
 #undef header_size
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

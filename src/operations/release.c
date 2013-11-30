@@ -35,7 +35,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 
 	uint64_t handle = htonll(desc);
 
-	struct command cmd = { cmd_release, sizeof(handle) };
+	struct rfs_command cmd = { cmd_release, sizeof(handle) };
 
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv,
@@ -45,7 +45,7 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 		return -ECONNABORTED;
 	}
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

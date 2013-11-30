@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "../../server.h"
 #include "../../sendrecv_server.h"
 
-int _handle_closeconnection(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_closeconnection(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 #ifdef RFS_DEBUG
 #ifndef WITH_IPV6

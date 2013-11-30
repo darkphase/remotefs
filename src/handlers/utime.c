@@ -25,7 +25,7 @@ See the file LICENSE.
 #include "../sendrecv_server.h"
 #include "utils.h"
 
-int _process_utime(struct rfsd_instance *instance, const struct command *cmd, const char *path, unsigned is_null, uint64_t actime, uint64_t modtime)
+int _process_utime(struct rfsd_instance *instance, const struct rfs_command *cmd, const char *path, unsigned is_null, uint64_t actime, uint64_t modtime)
 {
 	struct utimbuf *buf = NULL;
 	
@@ -39,7 +39,7 @@ int _process_utime(struct rfsd_instance *instance, const struct command *cmd, co
 	errno = 0;
 	int result = utime(path, buf);
 	
-	struct answer ans = { cmd->command, 0, result, errno };
+	struct rfs_answer ans = { cmd->command, 0, result, errno };
 	
 	if (buf != NULL)
 	{
@@ -54,7 +54,7 @@ int _process_utime(struct rfsd_instance *instance, const struct command *cmd, co
 	return (result == 0 ? 0 : 1);
 }
 
-int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_utime(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	char *buffer = malloc(cmd->data_len);
 	if (buffer == NULL)

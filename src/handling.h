@@ -17,18 +17,18 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct command;
+struct rfs_command;
 struct rfsd_instance;
 struct sockaddr_in;
 
 /** reject client's request */
-int reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno);
+int reject_request(struct rfsd_instance *instance, const struct rfs_command *cmd, int32_t ret_errno);
 
 /** reject client's request with cleaning socket from incoming data */
-int reject_request_with_cleanup(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno);
+int reject_request_with_cleanup(struct rfsd_instance *instance, const struct rfs_command *cmd, int32_t ret_errno);
 
 /** handle received command */
-int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd);
+int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

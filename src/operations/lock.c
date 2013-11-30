@@ -90,7 +90,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	pack_64(&fd, buffer
 	))))));
 	
-	struct command cmd = { cmd_lock, overall_size };
+	struct rfs_command cmd = { cmd_lock, overall_size };
 	
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
@@ -101,7 +101,7 @@ int _rfs_lock(struct rfs_instance *instance, const char *path, uint64_t desc, in
 	}
 #undef overall_size
 
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{

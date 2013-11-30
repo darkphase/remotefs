@@ -85,7 +85,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 
 	free(acl_text);
 	
-	struct command cmd = { cmd_setxattr, overall_size };
+	struct rfs_command cmd = { cmd_setxattr, overall_size };
 	
 	send_token_t token = { 0 };
 	if (do_send(&instance->sendrecv, 
@@ -98,7 +98,7 @@ int _rfs_setxattr(struct rfs_instance *instance, const char *path, const char *n
 	
 	free(buffer);
 	
-	struct answer ans = { 0 };
+	struct rfs_answer ans = { 0 };
 	if (rfs_receive_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -ECONNABORTED;

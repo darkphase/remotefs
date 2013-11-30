@@ -17,7 +17,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-static inline struct answer* ntoh_ans(struct answer *ans)
+static inline struct rfs_answer* ntoh_ans(struct rfs_answer *ans)
 {
 	ans->command = ntohl(ans->command);
 	ans->data_len = ntohl(ans->data_len);
@@ -26,7 +26,7 @@ static inline struct answer* ntoh_ans(struct answer *ans)
 	return ans;
 }
 
-static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
+static inline send_token_t* queue_cmd(struct rfs_command *cmd, send_token_t *token)
 {
 #ifdef RFS_DEBUG
 	dump_command(cmd);
@@ -34,7 +34,7 @@ static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
 	return queue_buffer(command, (char *)cmd, sizeof(*cmd), token);
 }
 
-static inline ssize_t rfs_send_cmd(rfs_sendrecv_info_t *info, struct command *cmd)
+static inline ssize_t rfs_send_cmd(rfs_sendrecv_info_t *info, struct rfs_command *cmd)
 {
 #ifdef RFS_DEBUG
 	dump_command(cmd);
@@ -51,7 +51,7 @@ static inline ssize_t rfs_receive_data_oob(rfs_sendrecv_info_t *info, void *data
 	return ((ret < 0 || (size_t)ret != data_len) ? -1 : 0);
 }
 
-static inline ssize_t rfs_receive_answer(rfs_sendrecv_info_t *info, struct answer *ans)
+static inline ssize_t rfs_receive_answer(rfs_sendrecv_info_t *info, struct rfs_answer *ans)
 {
 	ssize_t ret = rfs_recv(info, (char *)ans, sizeof(*ans), 0);
 	if (ret < 0)

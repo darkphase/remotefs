@@ -17,7 +17,7 @@ See the file LICENSE.
 #include "../list.h"
 #include "../sendrecv_server.h"
 
-int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	uint64_t handle = (uint64_t)-1;
 	uint64_t offset = 0;
@@ -72,7 +72,7 @@ int _handle_write(struct rfsd_instance *instance, const struct sockaddr_in *clie
 		done += result;
 	}
 
-	struct answer ans = { cmd_write, 0, (int32_t)done, saved_errno };
+	struct rfs_answer ans = { cmd_write, 0, (int32_t)done, saved_errno };
 
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{

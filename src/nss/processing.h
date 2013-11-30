@@ -18,9 +18,9 @@ extern "C" {
 #endif
 
 struct rfs_instance;
-struct command;
+struct rfs_command;
 
-int process_command(struct rfs_instance *instance, int sock, struct command *cmd);
+int process_command(struct rfs_instance *instance, int sock, struct rfs_command *cmd);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

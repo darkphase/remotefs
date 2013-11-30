@@ -18,7 +18,7 @@ See the file LICENSE.
 #include "sendfile_rfs.h"
 
 #ifdef SENDFILE_AVAILABLE
-int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd, uint64_t handle, off_t offset, size_t size)
+int read_with_sendfile(struct rfsd_instance *instance, const struct rfs_command *cmd, uint64_t handle, off_t offset, size_t size)
 {
 	DEBUG("%s\n", "reading with sendfile");
 	
@@ -36,7 +36,7 @@ int read_with_sendfile(struct rfsd_instance *instance, const struct command *cmd
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
 
-	struct answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
+	struct rfs_answer ans = { cmd_read, (uint32_t)size, (int32_t)size, 0};
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -1;

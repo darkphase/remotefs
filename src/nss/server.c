@@ -147,7 +147,7 @@ static void* nss_server_proc(void *void_instance)
 
 		DEBUG("%s\n", "receiving command");
 
-		struct command cmd = { 0 };
+		struct rfs_command cmd = { 0 };
 		int done = recv(client_sock, &cmd, sizeof(cmd), 0);
 		
 		if (done <= 0)

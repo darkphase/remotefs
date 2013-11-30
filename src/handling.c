@@ -21,11 +21,11 @@ See the file LICENSE.
 #include "keep_alive_server.h"
 #include "sendrecv_server.h"
 
-static int _reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
+static int _reject_request(struct rfsd_instance *instance, const struct rfs_command *cmd, int32_t ret_errno, unsigned data_is_in_queue)
 {
 	DEBUG("%s\n", "rejecting request");
 
-	struct answer ans = { cmd->command, 0, -1, ret_errno };
+	struct rfs_answer ans = { cmd->command, 0, -1, ret_errno };
 
 	if (data_is_in_queue != 0 
 	&& rfs_ignore_incoming_data(&instance->sendrecv, cmd->data_len) != cmd->data_len)
@@ -36,17 +36,17 @@ static int _reject_request(struct rfsd_instance *instance, const struct command 
 	return rfs_send_answer(&instance->sendrecv, &ans) != -1 ? 0 : -1;
 }
 
-int reject_request(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno)
+int reject_request(struct rfsd_instance *instance, const struct rfs_command *cmd, int32_t ret_errno)
 {
 	return _reject_request(instance, cmd, ret_errno, 0);
 }
 
-int reject_request_with_cleanup(struct rfsd_instance *instance, const struct command *cmd, int32_t ret_errno)
+int reject_request_with_cleanup(struct rfsd_instance *instance, const struct rfs_command *cmd, int32_t ret_errno)
 {
 	return _reject_request(instance, cmd, ret_errno, 1);
 }
 
-int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct command *cmd)
+int handle_command(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
 	if (cmd->command <= cmd_first
 	|| cmd->command >= cmd_last)
