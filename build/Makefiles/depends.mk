@@ -67,6 +67,7 @@ src/instance.o:src/instance.h
 src/instance_client.o:src/buffer.h
 src/instance_client.o:src/config.h
 src/instance_client.o:src/instance_client.h
+src/instance_client.o:src/operations/write.h
 src/instance_server.o:src/config.h
 src/instance_server.o:src/instance.h
 src/instance_server.o:src/instance_server.h
@@ -435,6 +436,7 @@ src/operations/rfs/destroy.o:src/operations/rfs/../../keep_alive_client.h
 src/operations/rfs/destroy.o:src/operations/rfs/../../nss/server.h
 src/operations/rfs/destroy.o:src/operations/rfs/../../resume/resume.h
 src/operations/rfs/destroy.o:src/operations/rfs/../../sendrecv_client.h
+src/operations/rfs/destroy.o:src/operations/rfs/../write.h
 src/operations/rfs/destroy.o:src/operations/rfs/disconnect.h
 src/operations/rfs/disconnect.o:src/operations/rfs/../../options.h
 src/operations/rfs/disconnect.o:src/operations/rfs/../../command.h
@@ -466,6 +468,7 @@ src/operations/rfs/init.o:src/operations/rfs/../../keep_alive_client.h
 src/operations/rfs/init.o:src/operations/rfs/../../nss/server.h
 src/operations/rfs/init.o:src/operations/rfs/../../scheduling.h
 src/operations/rfs/init.o:src/operations/rfs/../../sendrecv_client.h
+src/operations/rfs/init.o:src/operations/rfs/../write.h
 src/operations/rfs/init.o:src/operations/rfs/../utils.h
 src/operations/rfs/init.o:src/operations/rfs/keepalive.h
 src/operations/rfs/keepalive.o:src/operations/rfs/../../options.h

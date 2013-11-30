@@ -14,6 +14,7 @@ See the file LICENSE.
 #include "buffer.h"
 #include "config.h"
 #include "instance_client.h"
+#include "operations/write.h"
 
 static void init_client(struct rfs_instance *instance)
 {

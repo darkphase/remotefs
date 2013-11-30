@@ -12,21 +12,11 @@ See the file LICENSE.
 /** rfs write operation(s) */
 
 #include "../config.h"
+#include "../instance_client.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
-
-/** write-behind cache block */
-typedef struct
-{
-	size_t allocated;
-	size_t used;
-	uint64_t descriptor;
-	off_t offset;
-	char data[DEFAULT_RW_CACHE_SIZE / 2];
-	char *path;
-} rfs_write_cache_block_t;
 
 struct rfs_instance;
 

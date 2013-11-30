@@ -19,6 +19,7 @@ See the file LICENSE.
 #include "../../nss/server.h"
 #include "../../scheduling.h"
 #include "../../sendrecv_client.h"
+#include "../write.h"
 #include "../utils.h"
 #include "keepalive.h"
 

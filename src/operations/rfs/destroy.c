@@ -19,6 +19,7 @@ See the file LICENSE.
 #include "../../nss/server.h"
 #include "../../resume/resume.h"
 #include "../../sendrecv_client.h"
+#include "../write.h"
 #include "disconnect.h"
 
 void rfs_destroy(struct rfs_instance *instance)
