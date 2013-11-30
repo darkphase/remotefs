@@ -19,9 +19,9 @@ See the file LICENSE.
 #include "get_id.h"
 #include "manage_server.h"
 
-struct user_info* find_user_name(const struct list *root, const char *name)
+struct user_info* find_user_name(const struct rfs_list *root, const char *name)
 {
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 
 	while (item != NULL)
 	{
@@ -38,9 +38,9 @@ struct user_info* find_user_name(const struct list *root, const char *name)
 	return NULL;
 }
 
-struct user_info* find_user_uid(const struct list *root, const uid_t uid)
+struct user_info* find_user_uid(const struct rfs_list *root, const uid_t uid)
 {
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 
 	while (item != NULL)
 	{
@@ -57,9 +57,9 @@ struct user_info* find_user_uid(const struct list *root, const uid_t uid)
 	return NULL;
 }
 
-struct group_info* find_group_name(const struct list *root, const char *name)
+struct group_info* find_group_name(const struct rfs_list *root, const char *name)
 {
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 
 	while (item != NULL)
 	{
@@ -76,9 +76,9 @@ struct group_info* find_group_name(const struct list *root, const char *name)
 	return NULL;
 }
 
-struct group_info* find_group_gid(const struct list *root, const gid_t gid)
+struct group_info* find_group_gid(const struct rfs_list *root, const gid_t gid)
 {
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 
 	while (item != NULL)
 	{
@@ -95,7 +95,7 @@ struct group_info* find_group_gid(const struct list *root, const gid_t gid)
 	return NULL;
 }
 
-int add_user(struct list **root, const char *user, uid_t uid)
+int add_user(struct rfs_list **root, const char *user, uid_t uid)
 {
 	struct user_info *name_info = find_user_name(*root, user);
 
@@ -123,7 +123,7 @@ int add_user(struct list **root, const char *user, uid_t uid)
 	return 0;
 }
 
-int add_group(struct list **root, const char *group, gid_t gid)
+int add_group(struct rfs_list **root, const char *group, gid_t gid)
 {
 	struct group_info *name_info = find_group_name(*root, group);
 	if (name_info != NULL)
@@ -154,8 +154,8 @@ int add_rfs_server(struct config *config, const char *server_name)
 {
 	DEBUG("adding server %s\n", server_name);
 
-	struct list *users = NULL;
-	struct list *groups = NULL;
+	struct rfs_list *users = NULL;
+	struct rfs_list *groups = NULL;
 
 	if (nss_get_users(server_name, &users) != 0)
 	{
@@ -170,8 +170,8 @@ int add_rfs_server(struct config *config, const char *server_name)
 
 	uid_t myuid = (config->allow_other ? (uid_t)-1 : getuid());
 
-	struct list *user = users;
-	struct list *group = groups;
+	struct rfs_list *user = users;
+	struct rfs_list *group = groups;
 	while (user != NULL)
 	{
 		uid_t uid = get_free_uid(config, user->data);

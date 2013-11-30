@@ -41,7 +41,7 @@ struct rfsd_instance
 	/* clean up after connection */
 	struct
 	{
-		struct list *open_files;
+		struct rfs_list *open_files;
 	} cleanup;
 
 	/* keep-alive */
@@ -54,13 +54,13 @@ struct rfsd_instance
 	/* passwd db */
 	struct
 	{
-		struct list *auths;
+		struct rfs_list *auths;
 	} passwd;
 
 	/* exports */
 	struct
 	{
-		struct list *list;
+		struct rfs_list *list;
 	} exports;
 
 	/* sendrecv */

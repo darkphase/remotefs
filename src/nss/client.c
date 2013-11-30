@@ -211,7 +211,7 @@ int nss_check_group(const char *full_name)
 	return check_name(full_name, cmd_checkgroup);
 }
 
-static int get_names(const char *server, struct list **names, enum rfs_commands cmd_id)
+static int get_names(const char *server, struct rfs_list **names, enum rfs_commands cmd_id)
 {
 	if (*names != NULL)
 	{
@@ -289,12 +289,12 @@ success:
 	return saved_errno;
 }
 
-int nss_get_users(const char *server, struct list **users)
+int nss_get_users(const char *server, struct rfs_list **users)
 {
 	return get_names(server, users, cmd_getusers);
 }
 
-int nss_get_groups(const char *server, struct list **groups)
+int nss_get_groups(const char *server, struct rfs_list **groups)
 {
 	return get_names(server, groups, cmd_getgroups);
 }

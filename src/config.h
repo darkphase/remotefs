@@ -23,7 +23,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 #define DEFAULT_SERVER_PORT     5001
 #define KEEP_ALIVE_PERIOD       60 * 5      /* secs */
@@ -114,7 +114,7 @@ typedef struct
 /** server options */
 typedef struct
 {
-	struct list* listen_addresses;
+	struct rfs_list* listen_addresses;
 	char *pid_file;
 	unsigned int listen_port;
 	uid_t worker_uid;

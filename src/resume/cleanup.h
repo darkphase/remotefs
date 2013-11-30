@@ -15,19 +15,19 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 /** add descriptor to list of open files 
 \return 0 on success */
-int cleanup_add_file_to_open_list(struct list **head, int file);
+int cleanup_add_file_to_open_list(struct rfs_list **head, int file);
 
 /** remove descriptor from list of open files 
 \return 0 on success */
-int cleanup_remove_file_from_open_list(struct list **head, int file);
+int cleanup_remove_file_from_open_list(struct rfs_list **head, int file);
 
 /** unlock locked files ans close open ones 
 \return 0 on success */
-int cleanup_files(struct list **open);
+int cleanup_files(struct rfs_list **open);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

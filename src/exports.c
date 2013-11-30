@@ -88,9 +88,9 @@ static const char* find_chr(const char *buffer, const char *border, const char *
 	return min_ptr;
 }
 
-static int set_export_opts(struct rfs_export *opts_export, const struct list *opts)
+static int set_export_opts(struct rfs_export *opts_export, const struct rfs_list *opts)
 {
-	const struct list *opt = opts;
+	const struct rfs_list *opt = opts;
 	while (opt)
 	{
 		const char *opt_str = opt->data;
@@ -139,9 +139,9 @@ static int set_export_opts(struct rfs_export *opts_export, const struct list *op
 	return 0;
 }
 
-struct list* parse_list(const char *buffer, const char *border)
+struct rfs_list* parse_list(const char *buffer, const char *border)
 {
-	struct list *ret = NULL;
+	struct rfs_list *ret = NULL;
 	
 	const char *local_buffer = buffer;
 	do
@@ -199,11 +199,11 @@ static inline unsigned default_prefix_len(const char *ip_addr)
 	}
 }
 
-static struct list* parse_users(const struct list *users_list)
+static struct rfs_list* parse_users(const struct rfs_list *users_list)
 {
-	struct list *fixed_users = NULL;
+	struct rfs_list *fixed_users = NULL;
 
-	const struct list *item = users_list;
+	const struct rfs_list *item = users_list;
 	while (item != NULL)
 	{
 		const char *id = (const char *)item->data;
@@ -270,7 +270,7 @@ error:
 
 	{
 
-	struct list *fixed_item = fixed_users;
+	struct rfs_list *fixed_item = fixed_users;
 	while (fixed_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)fixed_item->data;
@@ -290,7 +290,7 @@ error:
 
 	destroy_list(&fixed_users);
 	
-	return (struct list *)(-1);
+	return (struct rfs_list *)(-1);
 
 	}
 }
@@ -352,17 +352,17 @@ static char* parse_line(const char *buffer, unsigned size, struct rfs_export *li
 		return (char *)-1;
 	}
 
-	struct list *users_list = parse_list(users, users_end);
-	struct list *this_line_users = (users_list == NULL ? NULL : parse_users(users_list));
+	struct rfs_list *users_list = parse_list(users, users_end);
+	struct rfs_list *this_line_users = (users_list == NULL ? NULL : parse_users(users_list));
 	destroy_list(&users_list);
 
-	if (this_line_users == (struct list *)(-1))
+	if (this_line_users == (struct rfs_list *)(-1))
 	{
 		return (char *)(-1);
 	}
 
 	const char *options = find_chr(users_end, border, "(");
-	struct list *this_line_options = NULL;
+	struct rfs_list *this_line_options = NULL;
 	
 	if (options != NULL)
 	{
@@ -406,10 +406,10 @@ parse_error:
 	return (char *)-1;
 }
 
-static int prevalidate_export(const struct rfs_export *line_export, struct list *exports)
+static int prevalidate_export(const struct rfs_export *line_export, struct rfs_list *exports)
 {
 	/* check that resolvable hostnames doesn't have prefix length defined */
-	struct list *user_item = line_export->users;
+	struct rfs_list *user_item = line_export->users;
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
@@ -427,7 +427,7 @@ static int prevalidate_export(const struct rfs_export *line_export, struct list 
 	return 0;
 }
 
-static int validate_export(const struct rfs_export *line_export, struct list *exports)
+static int validate_export(const struct rfs_export *line_export, struct rfs_list *exports)
 {
 #ifdef WITH_UGO
 	/* check if exports with ugo are specified correctly */
@@ -442,7 +442,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 			return -1;
 		}
 		
-		struct list *user_item = line_export->users;
+		struct rfs_list *user_item = line_export->users;
 		while (user_item != NULL)
 		{
 			const struct user_rec *rec = (const struct user_rec *)user_item->data;
@@ -460,7 +460,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 #endif
 
 	/* check prefix lengths for specified networks */
-	struct list *user_item = line_export->users;
+	struct rfs_list *user_item = line_export->users;
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
@@ -501,7 +501,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	/* check for duplicate exports */
 	if (line_export->path != NULL)
 	{
-		struct list *item = exports;
+		struct rfs_list *item = exports;
 		while (item != NULL)
 		{
 			struct rfs_export *export = (struct rfs_export *)item->data;
@@ -519,7 +519,7 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	if (line_export->users != NULL 
 	&& list_length(line_export->users) > 1)
 	{
-		struct list *user_item = line_export->users;
+		struct rfs_list *user_item = line_export->users;
 		while (user_item != NULL)
 		{
 			struct user_rec *rec = (struct user_rec *)user_item->data;
@@ -536,11 +536,11 @@ static int validate_export(const struct rfs_export *line_export, struct list *ex
 	return 0;
 }
 
-static int resolve_networks(struct rfs_export *line_export, struct list *exports)
+static int resolve_networks(struct rfs_export *line_export, struct rfs_list *exports)
 {
 	int position = 0;
 
-	struct list *user_item = line_export->users;
+	struct rfs_list *user_item = line_export->users;
 	while (user_item != NULL)
 	{
 		++position;
@@ -554,13 +554,13 @@ static int resolve_networks(struct rfs_export *line_export, struct list *exports
 			continue;
 		}
 
-		struct list *ips = host_ips(rec->network, NULL);
+		struct rfs_list *ips = host_ips(rec->network, NULL);
 		if (ips == NULL)
 		{
 			return position;
 		}
 
-		struct list *resolved = ips;
+		struct rfs_list *resolved = ips;
 		while (resolved != NULL)
 		{
 			struct resolved_addr *addr = (struct resolved_addr *)resolved->data;
@@ -577,7 +577,7 @@ static int resolve_networks(struct rfs_export *line_export, struct list *exports
 
 		destroy_list(&ips);
 
-		struct list *next = user_item->next;
+		struct rfs_list *next = user_item->next;
 		remove_from_list(&(line_export->users), user_item);
 		user_item = next;
 	}
@@ -587,7 +587,7 @@ static int resolve_networks(struct rfs_export *line_export, struct list *exports
 
 static void fix_prefix_length(struct rfs_export *line_export)
 {
-	struct list *user_item = line_export->users;
+	struct rfs_list *user_item = line_export->users;
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
@@ -600,7 +600,7 @@ static void fix_prefix_length(struct rfs_export *line_export)
 	}
 }
 
-int parse_exports(const char *exports_file, struct list **exports, uid_t worker_uid)
+int parse_exports(const char *exports_file, struct rfs_list **exports, uid_t worker_uid)
 {
 	FILE *fd = fopen(exports_file, "rt");
 	if (fd == 0)
@@ -685,7 +685,7 @@ int parse_exports(const char *exports_file, struct list **exports, uid_t worker_
 		{
 			int position = 0;
 
-			struct list *user_rec = line_export->users;
+			struct rfs_list *user_rec = line_export->users;
 			while (user_rec != NULL)
 			{
 				++position;
@@ -756,7 +756,7 @@ static void release_export(struct rfs_export *single_export)
 {
 	free(single_export->path);
 
-	struct list *user_item = single_export->users;
+	struct rfs_list *user_item = single_export->users;
 	while (user_item != NULL)
 	{
 		struct user_rec *rec = (struct user_rec *)user_item->data;
@@ -777,21 +777,21 @@ static void release_export(struct rfs_export *single_export)
 	single_export->users = NULL;
 }
 
-void release_exports(struct list **exports)
+void release_exports(struct rfs_list **exports)
 {
-	struct list *single_export = *exports;
+	struct rfs_list *single_export = *exports;
 	while (single_export != NULL)
 	{
-		struct list *next = single_export->next;
+		struct rfs_list *next = single_export->next;
 		release_export(single_export->data);
 		single_export = next;
 	}
 	destroy_list(exports);
 }
 
-const struct rfs_export* get_export(const struct list *exports, const char *path)
+const struct rfs_export* get_export(const struct rfs_list *exports, const char *path)
 {
-	const struct list *single_export = exports;
+	const struct rfs_list *single_export = exports;
 	while (single_export != NULL)
 	{
 		const struct rfs_export *export_data = (const struct rfs_export *)single_export->data;
@@ -812,7 +812,7 @@ static void dump_export(const struct rfs_export *single_export)
 	DEBUG("%s", "dumping export:\n");
 	DEBUG("path: '%s'\n", single_export->path);
 
-	struct list *user = single_export->users;
+	struct rfs_list *user = single_export->users;
 	DEBUG("%s\n", "users: ");
 	while (user != NULL)
 	{
@@ -830,10 +830,10 @@ static void dump_export(const struct rfs_export *single_export)
 	DEBUG("export uid: %d\n", single_export->export_uid);
 }
 
-void dump_exports(const struct list *exports)
+void dump_exports(const struct rfs_list *exports)
 {
 	DEBUG("%s", "dumping exports set:\n");
-	const struct list *single_export = exports;
+	const struct rfs_list *single_export = exports;
 	while (single_export != NULL)
 	{
 		dump_export(single_export->data);

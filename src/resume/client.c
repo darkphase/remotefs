@@ -34,7 +34,7 @@ int resume_files(struct rfs_instance *instance)
 	unsigned resume_failed = 0;
 	
 	/* reopen files */
-	const struct list *open_file = instance->resume.open_files;
+	const struct rfs_list *open_file = instance->resume.open_files;
 	while (open_file != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)open_file->data;
@@ -76,7 +76,7 @@ int resume_files(struct rfs_instance *instance)
 	/* relock files */
 	if (resume_failed == 0)
 	{
-		const struct list *lock_item = instance->resume.locked_files;
+		const struct rfs_list *lock_item = instance->resume.locked_files;
 		while (lock_item != NULL)
 		{
 			const struct lock_rec *lock_info = (const struct lock_rec *)(lock_item->data);
@@ -132,7 +132,7 @@ int resume_files(struct rfs_instance *instance)
 	{
 		DEBUG("%s\n", "resume failed");
 
-		const struct list *locked_file = instance->resume.locked_files;
+		const struct rfs_list *locked_file = instance->resume.locked_files;
 		while (locked_file != NULL)
 		{
 			struct lock_rec *data = (struct lock_rec *)locked_file->data;
@@ -155,7 +155,7 @@ int resume_files(struct rfs_instance *instance)
 			locked_file = locked_file->next;
 		}
 
-		const struct list *open_file = instance->resume.open_files;
+		const struct rfs_list *open_file = instance->resume.open_files;
 		while (open_file != NULL)
 		{
 			struct open_rec *data = (struct open_rec *)open_file->data;

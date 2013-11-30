@@ -60,8 +60,8 @@ struct rfs_instance
 	/* resume */
 	struct
 	{
-		struct list* open_files;
-		struct list* locked_files;
+		struct rfs_list* open_files;
+		struct rfs_list* locked_files;
 	} resume;
 
 	/* write cache */
@@ -84,8 +84,8 @@ struct rfs_instance
 	struct
 	{
 		int socket;
-		struct list *users_storage;
-		struct list *groups_storage;
+		struct rfs_list *users_storage;
+		struct rfs_list *groups_storage;
 		pthread_t server_thread;
 		unsigned use_nss;
 		rfs_sem_t thread_ready;

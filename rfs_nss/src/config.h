@@ -20,7 +20,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 #define COOKIES_TTL             10 * 60 /* secs */
 #define ZERO_CONNECTIONS_TTL    1 * 60 /* secs*/
@@ -72,8 +72,8 @@ struct config
 	uid_t last_uid;
 	gid_t last_gid;
 
-	struct list *users;
-	struct list *groups;
+	struct rfs_list *users;
+	struct rfs_list *groups;
 
 	void *user_cookies;
 	void *group_cookies;
@@ -85,8 +85,8 @@ struct config
 
 void init_config(struct config *config);
 void release_config(struct config *config);
-void release_users(struct list **users);
-void release_groups(struct list **groups);
+void release_users(struct rfs_list **users);
+void release_groups(struct rfs_list **groups);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

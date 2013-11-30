@@ -45,9 +45,9 @@ void release_config(struct config *config)
 	pthread_mutex_destroy(&config->maintenance_lock);
 }
 
-void release_users(struct list **users)
+void release_users(struct rfs_list **users)
 {
-	struct list *entry = *users;
+	struct rfs_list *entry = *users;
 
 	while (entry != NULL)
 	{
@@ -61,9 +61,9 @@ void release_users(struct list **users)
 	destroy_list(users);
 }
 
-void release_groups(struct list **groups)
+void release_groups(struct rfs_list **groups)
 {
-	struct list *entry = *groups;
+	struct rfs_list *entry = *groups;
 
 	while (entry != NULL)
 	{

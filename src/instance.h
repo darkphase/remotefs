@@ -17,7 +17,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 typedef struct
 {
@@ -37,8 +37,8 @@ typedef struct
 
 typedef struct
 {
-	struct list *uids;
-	struct list *gids;
+	struct rfs_list *uids;
+	struct rfs_list *gids;
 } rfs_id_lookup_info_t;
 
 void init_sendrecv(rfs_sendrecv_info_t *sendrecv);

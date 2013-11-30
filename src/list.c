@@ -12,15 +12,15 @@ See the file LICENSE.
 #include "config.h"
 #include "list.h"
 
-struct list* add_to_list(struct list **head, void *data)
+struct rfs_list* add_to_list(struct rfs_list **head, void *data)
 {
-	struct list *tail = *head;
+	struct rfs_list *tail = *head;
 	while (tail != NULL && tail->next != NULL)
 	{
 		tail = tail->next;
 	}
 
-	struct list *new_item = malloc(sizeof(*new_item));
+	struct rfs_list *new_item = malloc(sizeof(*new_item));
 	if (new_item == NULL)
 	{
 		return NULL;
@@ -43,7 +43,7 @@ struct list* add_to_list(struct list **head, void *data)
 	return new_item;
 }
 
-void* extract_from_list(struct list **head, struct list *item)
+void* extract_from_list(struct rfs_list **head, struct rfs_list *item)
 {
 	if (item->prev != NULL)
 	{
@@ -55,7 +55,7 @@ void* extract_from_list(struct list **head, struct list *item)
 		item->next->prev = item->prev;
 	}
 
-	struct list *next = item->next;
+	struct rfs_list *next = item->next;
 	
 	if (item == *head)
 	{
@@ -69,9 +69,9 @@ void* extract_from_list(struct list **head, struct list *item)
 	return data;
 }
 
-struct list* remove_from_list(struct list **head, struct list *item)
+struct rfs_list* remove_from_list(struct rfs_list **head, struct rfs_list *item)
 {
-	struct list *next = item->next;
+	struct rfs_list *next = item->next;
 
 	void *data = extract_from_list(head, item);
 	
@@ -80,7 +80,7 @@ struct list* remove_from_list(struct list **head, struct list *item)
 	return next;
 }
 
-void destroy_list(struct list **head)
+void destroy_list(struct rfs_list **head)
 {
 	if (*head == NULL)
 	{
@@ -92,10 +92,10 @@ void destroy_list(struct list **head)
 		(*head)->prev->next = NULL;
 	}
 
-	struct list *item = *head;
+	struct rfs_list *item = *head;
 	while (item != NULL)
 	{
-		struct list *next = item->next;
+		struct rfs_list *next = item->next;
 		
 		free(item->data);
 		free(item);
@@ -106,11 +106,11 @@ void destroy_list(struct list **head)
 	*head = NULL;
 }
 
-unsigned list_length(const struct list *head)
+unsigned list_length(const struct rfs_list *head)
 {
 	size_t count = 0;
 
-	const struct list *item = head;
+	const struct rfs_list *item = head;
 	while (item != NULL)
 	{
 		++count;

@@ -19,12 +19,12 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 int nss_check_user(const char *full_name);
 int nss_check_group(const char *full_name);
-int nss_get_users(const char *server, struct list **users);
-int nss_get_groups(const char *server, struct list **groups);
+int nss_get_users(const char *server, struct rfs_list **users);
+int nss_get_groups(const char *server, struct rfs_list **groups);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -16,28 +16,28 @@ extern "C" {
 #endif
 
 /** list node */
-struct list
+struct rfs_list
 {
-	struct list *prev;
-	struct list *next;
+	struct rfs_list *prev;
+	struct rfs_list *next;
 	void *data;
 };
 
 /** add data to list */
-struct list* add_to_list(struct list **head, void *data);
+struct rfs_list* add_to_list(struct rfs_list **head, void *data);
 
-/** remove node from list 
+/** remove node from list
 \return next item*/
-struct list* remove_from_list(struct list **head, struct list *item);
+struct rfs_list* remove_from_list(struct rfs_list **head, struct rfs_list *item);
 
 /** remove node from list, but not delete associated data */
-void* extract_from_list(struct list **head, struct list *item);
+void* extract_from_list(struct rfs_list **head, struct rfs_list *item);
 
 /** delete whole list */
-void destroy_list(struct list **head);
+void destroy_list(struct rfs_list **head);
 
 /** *count* list length */
-unsigned list_length(const struct list *head);
+unsigned list_length(const struct rfs_list *head);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

@@ -121,13 +121,13 @@ static int create_pidfile(const char *pidfile)
 	return 0;
 }
 
-static int start_listening(struct list *addresses, int port, int *listen_sockets, unsigned *listen_number)
+static int start_listening(struct rfs_list *addresses, int port, int *listen_sockets, unsigned *listen_number)
 {
 	int max_socket_number = -1;
 	unsigned max_listen_number = *listen_number;
 	*listen_number = 0;
 
-	const struct list *address_item = addresses;
+	const struct rfs_list *address_item = addresses;
 	while (address_item != NULL)
 	{
 		if (*listen_number + 1 > max_listen_number)

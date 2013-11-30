@@ -46,7 +46,7 @@ static int nss_answer(int sock, struct rfs_answer *ans, const char *data)
 	return 0;
 }
 
-static unsigned check_name(int sock, const struct list *names, struct rfs_command *cmd)
+static unsigned check_name(int sock, const struct rfs_list *names, struct rfs_command *cmd)
 {
 	char *name = malloc(cmd->data_len);
 
@@ -62,7 +62,7 @@ static unsigned check_name(int sock, const struct list *names, struct rfs_comman
 		return -EINVAL;
 	}
 
-	const struct list *entry = names;
+	const struct rfs_list *entry = names;
 	unsigned name_valid = 0;
 	while (entry != NULL)
 	{
@@ -99,9 +99,9 @@ static int process_checkgroup(struct rfs_instance *instance, int sock, struct rf
 	return check_name(sock, instance->nss.groups_storage, cmd);
 }
 
-static int send_names(int sock, const struct list *names, enum rfs_commands cmd_id)
+static int send_names(int sock, const struct rfs_list *names, enum rfs_commands cmd_id)
 {
-	const struct list *name_entry = names;
+	const struct rfs_list *name_entry = names;
 
 	while (name_entry != NULL)
 	{

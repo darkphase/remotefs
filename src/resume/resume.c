@@ -16,10 +16,10 @@ See the file LICENSE.
 #include "../list.h"
 #include "resume.h"
 
-int resume_add_file_to_open_list(struct list **head, const char *path, int flags, uint64_t desc)
+int resume_add_file_to_open_list(struct rfs_list **head, const char *path, int flags, uint64_t desc)
 {
 	DEBUG("adding %s to open list with %d flags\n", path, flags);
-	struct list *item = *head;
+	struct rfs_list *item = *head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
@@ -52,11 +52,11 @@ int resume_add_file_to_open_list(struct list **head, const char *path, int flags
 	return 0;
 }
 
-int resume_remove_file_from_open_list(struct list **head, const char *path)
+int resume_remove_file_from_open_list(struct rfs_list **head, const char *path)
 {
 	DEBUG("removing %s from open list\n", path);
 	
-	struct list *item = *head;
+	struct rfs_list *item = *head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
@@ -73,9 +73,9 @@ int resume_remove_file_from_open_list(struct list **head, const char *path)
 	return 0;
 }
 
-uint64_t resume_is_file_in_open_list(const struct list *head, const char *path)
+uint64_t resume_is_file_in_open_list(const struct rfs_list *head, const char *path)
 {
-	const struct list *item = head;
+	const struct rfs_list *item = head;
 	while (item != NULL)
 	{
 		struct open_rec *data = (struct open_rec *)item->data;
@@ -89,11 +89,11 @@ uint64_t resume_is_file_in_open_list(const struct list *head, const char *path)
 	return -1;
 }
 
-int resume_add_file_to_locked_list(struct list **head, const char *path, int lock_type, unsigned fully_locked)
+int resume_add_file_to_locked_list(struct rfs_list **head, const char *path, int lock_type, unsigned fully_locked)
 {
 	DEBUG("adding %s to locked list %s\n", path, fully_locked ? "(fully locked)" : "");
 
-	struct list *item = *head;
+	struct rfs_list *item = *head;
 	while (item != NULL)
 	{
 		struct lock_rec *data = (struct lock_rec *)(item->data);
@@ -127,10 +127,10 @@ int resume_add_file_to_locked_list(struct list **head, const char *path, int loc
 	return 0;
 }
 
-int resume_remove_file_from_locked_list(struct list **head, const char *path)
+int resume_remove_file_from_locked_list(struct rfs_list **head, const char *path)
 {
 	DEBUG("removing %s from locked list\n", path);
-	struct list *item = *head;
+	struct rfs_list *item = *head;
 	while (item != NULL)
 	{
 		struct lock_rec *data = (struct lock_rec *)item->data;
@@ -147,9 +147,9 @@ int resume_remove_file_from_locked_list(struct list **head, const char *path)
 	return 0;
 }
 
-unsigned resume_is_file_in_locked_list(const struct list *head, const char *path)
+unsigned resume_is_file_in_locked_list(const struct rfs_list *head, const char *path)
 {
-	const struct list *item = head;
+	const struct rfs_list *item = head;
 	while (item != NULL)
 	{
 		struct lock_rec *data = (struct lock_rec *)item->data;
@@ -162,10 +162,10 @@ unsigned resume_is_file_in_locked_list(const struct list *head, const char *path
 
 	return 0;
 }
-void destroy_resume_lists(struct list **open, struct list **locked)
+void destroy_resume_lists(struct rfs_list **open, struct rfs_list **locked)
 {
 	DEBUG("%s\n", "destroying resume lists");
-	struct list *open_item = *open;
+	struct rfs_list *open_item = *open;
 	while (open_item != NULL)
 	{
 		free(((struct open_rec *)open_item->data)->path);
@@ -174,7 +174,7 @@ void destroy_resume_lists(struct list **open, struct list **locked)
 	destroy_list(open);
 	*open = NULL;
 	
-	struct list *lock_item = *locked;
+	struct rfs_list *lock_item = *locked;
 	while (lock_item != NULL)
 	{
 		free(((struct lock_rec *)lock_item->data)->path);

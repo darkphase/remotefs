@@ -22,7 +22,7 @@ See the file LICENSE.
 #ifdef WITH_EXPORTS_LIST
 int _handle_listexports(struct rfsd_instance *instance, const struct sockaddr_in *client_addr, const struct rfs_command *cmd)
 {
-	const struct list *export_node = instance->exports.list;
+	const struct rfs_list *export_node = instance->exports.list;
 	if (export_node == NULL)
 	{
 		return reject_request(instance, cmd, ECANCELED);

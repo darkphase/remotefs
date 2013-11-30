@@ -15,7 +15,7 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
 /** authentication record */
 struct auth_entry
@@ -28,29 +28,29 @@ struct auth_entry
 enum operations { OP_CHANGE = 0, OP_DEFAULT = OP_CHANGE, OP_DELETE, OP_HELP, OP_LOCK, OP_UNLOCK, OP_MAX };
 
 /** load records from passwd db */
-int load_passwords(const char *passwd_file, struct list **auths);
+int load_passwords(const char *passwd_file, struct rfs_list **auths);
 
 /** save in-memory records to db */
-int save_passwords(const char *passwd_file, const struct list *auths);
+int save_passwords(const char *passwd_file, const struct rfs_list *auths);
 
 /** free allocated memory */
-void release_passwords(struct list **auths);
+void release_passwords(struct rfs_list **auths);
 
 /** add or replace user with specified name */
-int add_or_replace_auth(struct list **auths, const char *user, const char *passwd);
+int add_or_replace_auth(struct rfs_list **auths, const char *user, const char *passwd);
 
 /** change user's password */
-int change_auth_password(struct list **auths, const char *user, const char *passwd);
+int change_auth_password(struct rfs_list **auths, const char *user, const char *passwd);
 
 /** get password for specified user */
-const char *get_auth_password(const struct list *auths, const char *user);
+const char *get_auth_password(const struct rfs_list *auths, const char *user);
 
 /** delete user's record from db */
-int delete_auth(struct list **auths, const char *user);
+int delete_auth(struct rfs_list **auths, const char *user);
 
 #ifdef RFS_DEBUG
 /** write db to output. debug only */
-void dump_passwords(const struct list *auths);
+void dump_passwords(const struct rfs_list *auths);
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)

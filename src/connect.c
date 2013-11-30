@@ -29,7 +29,7 @@ See the file LICENSE.
 
 int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsigned force_ipv4, unsigned force_ipv6)
 {
-	struct list *ips = host_ips(host, NULL);
+	struct rfs_list *ips = host_ips(host, NULL);
 
 	if (ips == NULL)
 	{
@@ -47,7 +47,7 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 		struct sockaddr_in6 si6;
 	} sockaddr;
 
-	struct list *resolved_item = ips;
+	struct rfs_list *resolved_item = ips;
 
 	while (resolved_item != NULL)
 	{

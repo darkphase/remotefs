@@ -17,12 +17,12 @@ See the file LICENSE.
 #include "passwd.h"
 #include "utils.h"
 
-static int check_listen_addresses(const struct list *addresses)
+static int check_listen_addresses(const struct rfs_list *addresses)
 {
 	/* resolving won't happen for listen address,
 	so this is always an ip-address */
 
-	const struct list *address_item = addresses;
+	const struct rfs_list *address_item = addresses;
 	while (address_item != NULL)
 	{
 		const char *address = (const char *)(address_item->data);
@@ -43,7 +43,7 @@ static int check_listen_addresses(const struct list *addresses)
 	return 0;
 }
 
-static int check_passwd(struct list *auths)
+static int check_passwd(struct rfs_list *auths)
 {
 	if (get_auth_password(auths, "root") != NULL)
 	{

@@ -15,7 +15,7 @@ See the file LICENSE.
 extern "C" {
 # endif
 
-struct list;
+struct rfs_list;
 
 struct resolved_addr
 {
@@ -24,7 +24,7 @@ struct resolved_addr
 };
 
 /** don't forget to destroy_list() returned value */
-struct list* host_ips(const char *host, int *address_family);
+struct rfs_list* host_ips(const char *host, int *address_family);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

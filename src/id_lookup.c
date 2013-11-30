@@ -20,12 +20,12 @@ typedef const void* (*compare_func)(const void *entry, const void *value);
 
 static inline const void* compare_id_name(const void *entry, const void *name)
 {
-	return (strcmp(((struct id_look_ent *)entry)->name, (const char *)name) == 0 ? &((struct id_look_ent *)entry)->id : NULL) ;
+	return (strcmp(((struct rfs_id_look_ent *)entry)->name, (const char *)name) == 0 ? &((struct rfs_id_look_ent *)entry)->id : NULL) ;
 }
 
-static const void* get_id(const struct list *ids, const char *name, compare_func comparator)
+static const void* get_id(const struct rfs_list *ids, const char *name, compare_func comparator)
 {
-	const struct list *entry = ids;
+	const struct rfs_list *entry = ids;
 
 	while (entry != NULL)
 	{
@@ -41,7 +41,7 @@ static const void* get_id(const struct list *ids, const char *name, compare_func
 	return NULL;
 }
 
-uid_t get_uid(const struct list *uids, const char *name)
+uid_t get_uid(const struct rfs_list *uids, const char *name)
 {
 	const void *uid = get_id(uids, name, compare_id_name);
 	if (uid != NULL)
@@ -58,7 +58,7 @@ uid_t get_uid(const struct list *uids, const char *name)
 	return (uid_t)-1;
 }
 
-gid_t get_gid(const struct list *gids, const char *name)
+gid_t get_gid(const struct rfs_list *gids, const char *name)
 {
 	const void *gid = get_id(gids, (void *)name, compare_id_name);
 	if (gid != NULL)
@@ -77,12 +77,12 @@ gid_t get_gid(const struct list *gids, const char *name)
 
 static inline const void* compare_ids(const void *entry, const void *id)
 {
-	return (((struct id_look_ent *)entry)->id == *(gid_t *)id ? ((struct id_look_ent *)entry)->name : NULL) ;
+	return (((struct rfs_id_look_ent *)entry)->id == *(gid_t *)id ? ((struct rfs_id_look_ent *)entry)->name : NULL) ;
 }
 
-static const void* get_name(const struct list *uids, void *id, compare_func comparator)
+static const void* get_name(const struct rfs_list *uids, void *id, compare_func comparator)
 {
-	const struct list *entry = uids;
+	const struct rfs_list *entry = uids;
 
 	while (entry != NULL)
 	{
@@ -98,7 +98,7 @@ static const void* get_name(const struct list *uids, void *id, compare_func comp
 	return NULL;
 }
 
-const char* get_uid_name(const struct list *uids, uid_t uid)
+const char* get_uid_name(const struct rfs_list *uids, uid_t uid)
 {
 	const void *name = get_name(uids, &uid, compare_ids);
 	if (name != NULL)
@@ -115,7 +115,7 @@ const char* get_uid_name(const struct list *uids, uid_t uid)
 	return NULL;
 }
 
-const char* get_gid_name(const struct list *gids, gid_t gid)
+const char* get_gid_name(const struct rfs_list *gids, gid_t gid)
 {
 	const void *name = get_name(gids, &gid, compare_ids);
 
@@ -133,7 +133,7 @@ const char* get_gid_name(const struct list *gids, gid_t gid)
 	return NULL;
 }
 
-static int put_to_ids(struct list **ids, const char *name, uint64_t id)
+static int put_to_ids(struct rfs_list **ids, const char *name, uint64_t id)
 {
 	char *dup_name = strdup(name);
 	if (dup_name == NULL)
@@ -141,7 +141,7 @@ static int put_to_ids(struct list **ids, const char *name, uint64_t id)
 		return -1;
 	}
 
-	struct id_look_ent *entry = malloc(sizeof(*entry));
+	struct rfs_id_look_ent *entry = malloc(sizeof(*entry));
 	if (entry == NULL)
 	{
 		free(dup_name);
@@ -162,7 +162,7 @@ static int put_to_ids(struct list **ids, const char *name, uint64_t id)
 	return 0;
 }
 
-int create_uids_lookup(struct list **uids)
+int create_uids_lookup(struct rfs_list **uids)
 {
 	DEBUG("%s\n", "creating uid lookup table");
 
@@ -191,7 +191,7 @@ int create_uids_lookup(struct list **uids)
 	return 0;
 }
 
-int create_gids_lookup(struct list **gids)
+int create_gids_lookup(struct rfs_list **gids)
 {
 	DEBUG("%s\n", "creating gid lookup table");
 
@@ -220,13 +220,13 @@ int create_gids_lookup(struct list **gids)
 	return 0;
 }
 
-static inline void destroy_ids(struct list **ids)
+static inline void destroy_ids(struct rfs_list **ids)
 {
-	struct list *entry = *ids;
+	struct rfs_list *entry = *ids;
 
 	while (entry != NULL)
 	{
-		free(((struct id_look_ent *)entry->data)->name);
+		free(((struct rfs_id_look_ent *)entry->data)->name);
 		entry = entry->next;
 	}
 
@@ -234,14 +234,14 @@ static inline void destroy_ids(struct list **ids)
 	*ids = NULL;
 }
 
-void destroy_uids_lookup(struct list **uids)
+void destroy_uids_lookup(struct rfs_list **uids)
 {
 	DEBUG("%s\n", "destroying uid lookup table");
 
 	destroy_ids(uids);
 }
 
-void destroy_gids_lookup(struct list **gids)
+void destroy_gids_lookup(struct rfs_list **gids)
 {
 	DEBUG("%s\n", "destroying gid lookup table");
 

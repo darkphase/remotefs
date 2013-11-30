@@ -176,7 +176,7 @@ static int process_getent(int sock, const struct nss_command *cmd, struct config
 
 	DEBUG("current cookie value for this pid: %u\n", ent_cookie->value);
 
-	struct list *item = NULL;
+	struct rfs_list *item = NULL;
 
 	switch (nss_cmd)
 	{

@@ -28,10 +28,10 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	size_t users_len = 0;
 
-	struct list *uid = instance->id_lookup.uids;
+	struct rfs_list *uid = instance->id_lookup.uids;
 	while (uid != NULL)
 	{
-		struct id_look_ent *entry = (struct id_look_ent *)uid->data;
+		struct rfs_id_look_ent *entry = (struct rfs_id_look_ent *)uid->data;
 		users_len += strlen(entry->name) + 1;
 
 		uid = uid->next;
@@ -45,7 +45,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	uid = instance->id_lookup.uids;
 	while (uid != NULL)
 	{
-		struct id_look_ent *entry = (struct id_look_ent *)uid->data;
+		struct rfs_id_look_ent *entry = (struct rfs_id_look_ent *)uid->data;
 
 		DEBUG("%s\n", entry->name);
 
@@ -74,10 +74,10 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 
 	size_t groups_len = 0;
 
-	struct list *gid = instance->id_lookup.gids;
+	struct rfs_list *gid = instance->id_lookup.gids;
 	while (gid != NULL)
 	{
-		struct id_look_ent *entry = (struct id_look_ent *)gid->data;
+		struct rfs_id_look_ent *entry = (struct rfs_id_look_ent *)gid->data;
 		groups_len += strlen(entry->name) + 1;
 
 		gid = gid->next;
@@ -92,7 +92,7 @@ int _handle_getnames(struct rfsd_instance *instance, const struct sockaddr_in *c
 	gid = instance->id_lookup.gids;
 	while (gid != NULL)
 	{
-		struct id_look_ent *entry = (struct id_look_ent *)gid->data;
+		struct rfs_id_look_ent *entry = (struct rfs_id_look_ent *)gid->data;
 
 		memcpy(groups + written, entry->name, strlen(entry->name) + 1);
 		written += strlen(entry->name) + 1;

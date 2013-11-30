@@ -17,37 +17,37 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-struct list;
+struct rfs_list;
 
-struct id_look_ent
+struct rfs_id_look_ent
 {
 	char *name;
 	uint64_t id;
 };
 
 /** get uid of named user */
-uid_t get_uid(const struct list *uids, const char *name);
+uid_t get_uid(const struct rfs_list *uids, const char *name);
 
 /** get username with specified uid */
-const char* get_uid_name(const struct list *uids, uid_t uid);
+const char* get_uid_name(const struct rfs_list *uids, uid_t uid);
 
 /** get gid of named group */
-gid_t get_gid(const struct list *gids, const char *name);
+gid_t get_gid(const struct rfs_list *gids, const char *name);
 
 /** get groupname with specified gid */
-const char* get_gid_name(const struct list *gids, gid_t gid);
+const char* get_gid_name(const struct rfs_list *gids, gid_t gid);
 
 /** create list of uids */
-int create_uids_lookup(struct list **uids);
+int create_uids_lookup(struct rfs_list **uids);
 
 /** create list of gids */
-int create_gids_lookup(struct list **gids);
+int create_gids_lookup(struct rfs_list **gids);
 
 /** destroy list of uids */
-void destroy_uids_lookup(struct list **uids);
+void destroy_uids_lookup(struct rfs_list **uids);
 
 /** destroy list of gids */
-void destroy_gids_lookup(struct list **gids);
+void destroy_gids_lookup(struct rfs_list **gids);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

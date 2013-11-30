@@ -23,7 +23,7 @@ static char *login = NULL;
 static enum operations operation = OP_DEFAULT;
 static struct termios stored_settings = { 0 };
 static unsigned need_to_restore_termio = 0;
-static struct list *auths = NULL;
+static struct rfs_list *auths = NULL;
 
 static char *passwd_file = NULL;
 

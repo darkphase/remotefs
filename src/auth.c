@@ -61,7 +61,7 @@ int check_permissions(struct rfsd_instance *instance, const struct rfs_export *e
 
 	DEBUG("client ip: %s\n", client_ip);
 
-	struct list *user_entry = export_info->users;
+	struct rfs_list *user_entry = export_info->users;
 	while (user_entry != NULL)
 	{
 		const struct user_rec *rec = (const struct user_rec *)user_entry->data;

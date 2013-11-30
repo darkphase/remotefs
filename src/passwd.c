@@ -15,9 +15,9 @@ See the file LICENSE.
 #include "list.h"
 #include "passwd.h"
 
-int add_or_replace_auth(struct list **auths, const char *user, const char *passwd)
+int add_or_replace_auth(struct rfs_list **auths, const char *user, const char *passwd)
 {
-	struct list *item = *auths;
+	struct rfs_list *item = *auths;
 	struct auth_entry *exists = NULL;
 	
 	while (item != 0)
@@ -56,9 +56,9 @@ int add_or_replace_auth(struct list **auths, const char *user, const char *passw
 	return 0;
 }
 
-int change_auth_password(struct list **auths, const char *user, const char *passwd)
+int change_auth_password(struct rfs_list **auths, const char *user, const char *passwd)
 {
-	struct list *item = *auths;
+	struct rfs_list *item = *auths;
 	struct auth_entry *exists = NULL;
 	
 	while (item != 0)
@@ -87,9 +87,9 @@ int change_auth_password(struct list **auths, const char *user, const char *pass
 	return 0;
 }
 
-const char *get_auth_password(const struct list *auths, const char *user)
+const char *get_auth_password(const struct rfs_list *auths, const char *user)
 {
-	const struct list *item = auths;
+	const struct rfs_list *item = auths;
 
 	while (item != NULL)
 	{
@@ -105,7 +105,7 @@ const char *get_auth_password(const struct list *auths, const char *user)
 	return NULL;
 }
 
-int load_passwords(const char *passwd_file, struct list **auths)
+int load_passwords(const char *passwd_file, struct rfs_list **auths)
 {
 	DEBUG("loading passwords from %s\n", passwd_file);
 
@@ -178,7 +178,7 @@ int load_passwords(const char *passwd_file, struct list **auths)
 	return 0;
 }
 
-int save_passwords(const char *passwd_file, const struct list *auths)
+int save_passwords(const char *passwd_file, const struct rfs_list *auths)
 {
 	DEBUG("saving passwords to %s\n", passwd_file);
 
@@ -188,7 +188,7 @@ int save_passwords(const char *passwd_file, const struct list *auths)
 		return -errno;
 	}
 
-	const struct list *item = auths;
+	const struct rfs_list *item = auths;
 	
 	while (item != NULL)
 	{
@@ -213,9 +213,9 @@ int save_passwords(const char *passwd_file, const struct list *auths)
 	return 0;
 }
 
-void release_passwords(struct list **auths)
+void release_passwords(struct rfs_list **auths)
 {
-	struct list *item = *auths;
+	struct rfs_list *item = *auths;
 
 	while (item != NULL)
 	{
@@ -230,9 +230,9 @@ void release_passwords(struct list **auths)
 	*auths = NULL;
 }
 
-int delete_auth(struct list **auths, const char *user)
+int delete_auth(struct rfs_list **auths, const char *user)
 {
-	struct list *item = *auths;
+	struct rfs_list *item = *auths;
 
 	while (item != NULL)
 	{
@@ -254,10 +254,10 @@ int delete_auth(struct list **auths, const char *user)
 }
 
 #ifdef RFS_DEBUG
-void dump_passwords(const struct list *auths)
+void dump_passwords(const struct rfs_list *auths)
 {
 	DEBUG("%s\n", "dumping passwords");
-	const struct list *item = auths;
+	const struct rfs_list *item = auths;
 	while (item != NULL)
 	{
 		struct auth_entry *auth = (struct auth_entry *)item->data;

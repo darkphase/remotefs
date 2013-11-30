@@ -21,7 +21,7 @@ See the file LICENSE.
 #include "list.h"
 #include "resolve.h"
 
-struct list* host_ips(const char *host, int *address_family)
+struct rfs_list* host_ips(const char *host, int *address_family)
 {
 	struct addrinfo *addr_info = NULL;
 	struct addrinfo hints = { 0 };
@@ -47,7 +47,7 @@ struct list* host_ips(const char *host, int *address_family)
 		return NULL;
 	}
 
-	struct list *addresses = NULL;
+	struct rfs_list *addresses = NULL;
 
 	struct addrinfo *current = addr_info;
 	while (current != NULL)
@@ -73,7 +73,7 @@ struct list* host_ips(const char *host, int *address_family)
 		/* filter duplicates */
 		int filtered = 0;
 
-		struct list *addr_rec = addresses;
+		struct rfs_list *addr_rec = addresses;
 		while (addr_rec != NULL)
 		{
 			struct resolved_addr *rec = (struct resolved_addr *)addr_rec->data;

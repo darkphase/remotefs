@@ -16,9 +16,9 @@ See the file LICENSE.
 #include "../list.h"
 #include "cleanup.h"
 
-static struct list* check_file_in_list(struct list *head, int file)
+static struct rfs_list* check_file_in_list(struct rfs_list *head, int file)
 {
-	struct list *item = head;
+	struct rfs_list *item = head;
 	while (item != NULL)
 	{
 		if (*((int *)(item->data)) == file)
@@ -32,9 +32,9 @@ static struct list* check_file_in_list(struct list *head, int file)
 	return NULL;
 }
 
-static int add_file_to_list(struct list **head, int file)
+static int add_file_to_list(struct rfs_list **head, int file)
 {
-	struct list *exist = check_file_in_list(*head, file);
+	struct rfs_list *exist = check_file_in_list(*head, file);
 	if (exist != NULL)
 	{
 		return 0;
@@ -57,15 +57,15 @@ static int add_file_to_list(struct list **head, int file)
 	return 0;
 }
 
-int cleanup_add_file_to_open_list(struct list **head, int file)
+int cleanup_add_file_to_open_list(struct rfs_list **head, int file)
 {
 	DEBUG("adding file to open list: %d\n", file);
 	return add_file_to_list(head, file);
 }
 
-static int remove_file_from_list(struct list **head, int file)
+static int remove_file_from_list(struct rfs_list **head, int file)
 {
-	struct list *exist = check_file_in_list(*head, file);
+	struct rfs_list *exist = check_file_in_list(*head, file);
 	if (exist == NULL)
 	{
 		return -1;
@@ -76,19 +76,19 @@ static int remove_file_from_list(struct list **head, int file)
 	return 0;
 }
 
-int cleanup_remove_file_from_open_list(struct list **head, int file)
+int cleanup_remove_file_from_open_list(struct rfs_list **head, int file)
 {
 	DEBUG("removing file from open list: %d\n", file);
 	return remove_file_from_list(head, file);
 }
 
-int cleanup_files(struct list **open)
+int cleanup_files(struct rfs_list **open)
 {
 	DEBUG("%s\n", "cleaninig up files");
 
 	if (*open != NULL)
 	{
-		struct list *item = *open;
+		struct rfs_list *item = *open;
 		while (item != 0)
 		{
 			DEBUG("closing still open handle: %d\n", *((int *)(item->data)));
