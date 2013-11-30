@@ -15,10 +15,10 @@ namespace Stub
 		virtual int accept();
 		virtual int get_listen_socket() const { return m_listen_socket; }
 		virtual int get_accepted_socket() const { return m_accepted_socket; }
-		
-		virtual void recv_command(command &cmd);
-		virtual void send_answer(answer &ans);
-	
+
+		virtual void recv_command(rfs_command &cmd);
+		virtual void send_answer(rfs_answer &ans);
+
 		rfsd_instance& get_instance() { return m_instance; }
 
 	protected:

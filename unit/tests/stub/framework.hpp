@@ -19,8 +19,8 @@ namespace Stub
 	{
 	public:
 		typedef int (*caller_t) (Client &client);
-		typedef int (*handler_t) (Server &server, const command &cmd);
-	
+		typedef int (*handler_t) (Server &server, const rfs_command &cmd);
+
 	public:
 		struct ret_t
 		{
@@ -32,19 +32,19 @@ namespace Stub
 
 	public:
 		virtual ~Framework() {};
-		
+
 		static Framework* get_instance();
 		static void reset();
-		
+
 		ret_t communicate(handler_t handler, caller_t caller);
-		
+
 	private:
 		Framework();
 
 	protected:
 		Server m_server;
 		Client m_client;
-		
+
 	private:
 		static std::auto_ptr<Framework> m_instance;
 	};

@@ -66,11 +66,11 @@ void Stub::Server::recv_command(struct rfs_command &cmd)
 {
 	if (rfs_receive_cmd(&m_instance.sendrecv, &cmd) < 0)
 	{
-		throw EXCEPTION(ECONNABORTED); 
+		throw EXCEPTION(ECONNABORTED);
 	}
 }
 
-void Stub::Server::send_answer(struct answer &ans)
+void Stub::Server::send_answer(struct rfs_answer &ans)
 {
 	if (rfs_send_answer(&m_instance.sendrecv, &ans) < 0)
 	{

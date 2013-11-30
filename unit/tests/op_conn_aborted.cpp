@@ -6,7 +6,7 @@
 
 namespace
 {
-	int handler_conn_aborted(Stub::Server &server, const command &cmd)
+	int handler_conn_aborted(Stub::Server &server, const rfs_command &cmd)
 	{
 		shutdown(server.get_accepted_socket(), SHUT_RDWR);
 		return 0;

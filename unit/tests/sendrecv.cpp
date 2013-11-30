@@ -26,7 +26,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSendrecv);
 void TestSendrecv::testHTON()
 {
 	struct rfs_command cmd = { cmd_first, 1 }, cmd_copy = cmd;
-	struct answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
+	struct rfs_answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
 
 	CPPUNIT_ASSERT(memcmp(ntoh_cmd(hton_cmd(&cmd)), &cmd_copy, sizeof(cmd_copy)) == 0);
 	CPPUNIT_ASSERT(memcmp(ntoh_ans(hton_ans(&ans)), &ans_copy, sizeof(ans_copy)) == 0);
@@ -36,7 +36,7 @@ void TestSendrecv::testHTON()
 void TestSendrecv::testQueue()
 {
 	struct rfs_command cmd = { cmd_first, 1 }, cmd_copy = cmd;
-	struct answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
+	struct rfs_answer ans = { cmd_first, 1, 2, 3 }, ans_copy = ans;
 	uint16_t u16 = 1, u16_copy = u16;
 	uint32_t u32 = 2, u32_copy = u32;
 	uint64_t u64 = 3, u64_copy = u64;
@@ -47,11 +47,11 @@ void TestSendrecv::testQueue()
 
 	send_token_t token = { 0 };
 	CPPUNIT_ASSERT(
-	queue_cmd(&cmd, 
-	queue_ans(&ans, 
-	queue_16(&u16, 
-	queue_32(&u32, 
-	queue_64(&u64, 
+	queue_cmd(&cmd,
+	queue_ans(&ans,
+	queue_16(&u16,
+	queue_32(&u32,
+	queue_64(&u64,
 	queue_data(data, sizeof(data), &token
 	)))))) == &token);
 
@@ -86,7 +86,7 @@ void TestSendrecv::testMaxIOVecs()
 
 	send_token_t token1 = { IOV_MAX };
 	CPPUNIT_ASSERT(queue_data(buffer, sizeof(buffer), &token1) == NULL);
-	
+
 	send_token_t token2 = { 0 };
 	for (size_t i = 0; i < IOV_MAX; ++i)
 	{

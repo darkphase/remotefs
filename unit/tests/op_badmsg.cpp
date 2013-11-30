@@ -5,9 +5,9 @@
 
 namespace
 {
-	int handler_badmsg(Stub::Server &server, const command &cmd)
+	int handler_badmsg(Stub::Server &server, const rfs_command &cmd)
 	{
-		answer ans = { cmd.command + 1 < cmd_last ? cmd.command + 1 : cmd.command - 1, 0, 0, 0 };
+		rfs_answer ans = { cmd.command + 1 < cmd_last ? cmd.command + 1 : cmd.command - 1, 0, 0, 0 };
 		server.send_answer(ans);
 		return 0;
 	}
