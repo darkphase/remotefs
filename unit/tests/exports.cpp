@@ -50,31 +50,31 @@ void TestExports::tearDown()
 void TestExports::testCorrectParsing()
 {
 	// need to avoid duplicate entries in exports paths
-	const char *correct_exports[] = 
-		{ 
-		"/var root, 127.0.0.1 ()", 
-		"/bin root, 127.0.0.1", 
-		"/tmp root (ro)", 
-		"/sbin 127.0.0.1 ( ro)", 
-		"/home/alex root (user=root )", 
-		"/home 127.0.0.1,root( ro,user=root )", 
-		" /usr 127.0.0.1", 
-		"\t/sys root", 
-		"", 
-		"#", 
-		"#/opt", 
-		"/lib 127.0.0.1/32", 
+	const char *correct_exports[] =
+		{
+		"/var root, 127.0.0.1 ()",
+		"/bin root, 127.0.0.1",
+		"/tmp root (ro)",
+		"/sbin 127.0.0.1 ( ro)",
+		"/home/alex root (user=root )",
+		"/home 127.0.0.1,root( ro,user=root )",
+		" /usr 127.0.0.1",
+		"\t/sys root",
+		"",
+		"#",
+		"#/opt",
+		"/lib 127.0.0.1/32",
 		"/lib32 root (ro) ",           // input after options, but skippable
 		"/lib64 root (ro)\t",          // input after options, but skippable
-		"/etc root@127.0.0.1", 
-		"/emul root@127.0.0.1/32", 
-		"/cdrom *", 
+		"/etc root@127.0.0.1",
+		"/emul root@127.0.0.1/32",
+		"/cdrom *",
 #ifdef WITH_IPV6
-		"/boot root@::1/128", 
-		"/dev root@::1/80", 
+		"/boot root@::1/128",
+		"/dev root@::1/80",
 #endif
 #ifdef WITH_UGO
-		"/home/test root (ugo)", 
+		"/home/test root (ugo)",
 #endif
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
@@ -83,22 +83,22 @@ void TestExports::testCorrectParsing()
 	for (size_t i = 0; i < correct_count; ++i)
 	{
 		std::string export_string = correct_exports[i];
-		while (!export_string.empty() 
+		while (!export_string.empty()
 		&& (export_string[0] == ' ' || export_string[0] == '\t'))
 		{
 			export_string.erase(export_string.begin());
 		}
 
-		if (export_string.empty() 
+		if (export_string.empty()
 		|| export_string[0] == '#')
 		{
 			++ignored_count;
 		}
 	}
-		
-	struct list *exports = NULL;
+
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
-	
+
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 	for (size_t i = 0; i < correct_count; ++i)
@@ -107,17 +107,17 @@ void TestExports::testCorrectParsing()
 	}
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
-	
+
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &exports, 0) == 0);
 
-	struct list *item = exports;
+	struct rfs_list *item = exports;
 	size_t count = 0;
 	while (item != NULL)
 	{
 		++count;
 		item = item->next;
 	}
-	
+
 	CPPUNIT_ASSERT(count == (correct_count - ignored_count));
 
 	release_exports(&exports);
@@ -126,7 +126,7 @@ void TestExports::testCorrectParsing()
 
 void TestExports::testWrongParsing()
 {
-	const char *wrong_exports[] = 
+	const char *wrong_exports[] =
 		{
 		"/root",                                // no users
 		"/proc (ro)",                           // no users
@@ -144,7 +144,7 @@ void TestExports::testWrongParsing()
 		};
 	const size_t wrong_count = sizeof(wrong_exports) / sizeof(wrong_exports[0]);
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
 
 	for (size_t i = 0; i < wrong_count; ++i)
@@ -162,16 +162,16 @@ void TestExports::testWrongParsing()
 
 void TestExports::testDupesParsing()
 {
-	const char *dup_exports[] = 
+	const char *dup_exports[] =
 		{
-		"/root root", 
-		"/root 127.0.0.1 (ro)", 
+		"/root root",
+		"/root 127.0.0.1 (ro)",
 		};
 	const size_t dup_count = sizeof(dup_exports) / sizeof(dup_exports[0]);
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
-	
+
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 	for (size_t i = 0; i < dup_count; ++i)
@@ -187,14 +187,14 @@ void TestExports::testDupesParsing()
 
 void TestExports::testEmptyParsing()
 {
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
 
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
-	
+
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &exports, 0) == 0);
 	CPPUNIT_ASSERT(exports == NULL);
 }
@@ -210,7 +210,7 @@ void TestExports::testResolving()
 
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
 
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
@@ -226,7 +226,7 @@ void TestExports::testResolving()
 	size_t count = list_length(exports);
 	CPPUNIT_ASSERT(count == correct_count);
 
-	struct list *export_item = exports;
+	struct rfs_list *export_item = exports;
 	while (export_item != NULL)
 	{
 		struct rfs_export *rec = (struct rfs_export *)export_item->data;
@@ -259,7 +259,7 @@ void TestExports::testResolvingLimits()
 		};
 	const size_t wrong_count = sizeof(wrong_exports) / sizeof(wrong_exports[0]);
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
 
 	for (size_t i = 0; i < wrong_count; ++i)
@@ -287,11 +287,11 @@ void TestExports::testParamsParsing()
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &exports, 0) == 0);
 
 	struct rfs_export *exp = (struct rfs_export *)exports->data;
-	struct list *user_rec = exp->users;
+	struct rfs_list *user_rec = exp->users;
 
 	unsigned position = 0;
 	while (user_rec != NULL)
@@ -362,7 +362,7 @@ void TestExports::testLineBreak()
 {
 	const std::string export_line("/tmp 127.0.0.1");
 
-	struct list *exports = NULL;
+	struct rfs_list *exports = NULL;
 	std::ofstream stream;
 
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);

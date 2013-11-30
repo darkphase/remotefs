@@ -18,8 +18,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestIdLookup);
 
 void TestIdLookup::testLookup()
 {
-	struct list *uids = NULL;
-	struct list *gids = NULL;
+	struct rfs_list *uids = NULL;
+	struct rfs_list *gids = NULL;
 
 	CPPUNIT_ASSERT(create_uids_lookup(&uids) == 0);
 	CPPUNIT_ASSERT(create_gids_lookup(&gids) == 0);
@@ -29,7 +29,7 @@ void TestIdLookup::testLookup()
 	const char *mygroup = get_gid_name(gids, getgid());
 	const char *root = get_uid_name(uids, 0);
 	const char *root_group = get_gid_name(gids, 0);
-	
+
 	CPPUNIT_ASSERT(whoami != NULL && mygroup != NULL);
 	CPPUNIT_ASSERT(root != NULL && root_group != NULL);
 

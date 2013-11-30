@@ -18,7 +18,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestList);
 
 void TestList::testList()
 {
-	struct list *root = NULL;
+	struct rfs_list *root = NULL;
 	size_t range_start = 0;
 	size_t range_stop = 10;
 
@@ -29,7 +29,7 @@ void TestList::testList()
 
 	CPPUNIT_ASSERT(list_length(root) == (range_stop - range_start));
 
-	struct list *item = root;
+	struct rfs_list *item = root;
 	size_t current = 0;
 	while (item != NULL)
 	{
@@ -39,11 +39,11 @@ void TestList::testList()
 		item = item->next;
 	}
 
-	struct list *new_root = root->next;
+	struct rfs_list *new_root = root->next;
 	size_t *old_root = static_cast<size_t *>(extract_from_list(&root, root));
 	CPPUNIT_ASSERT(*old_root == range_start);
 	delete old_root;
-	
+
 	CPPUNIT_ASSERT(root == new_root);
 	new_root = root->next;
 	CPPUNIT_ASSERT(remove_from_list(&root, root) == new_root);

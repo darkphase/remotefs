@@ -19,7 +19,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestCleanup);
 
 void TestCleanup::testCleanup()
 {
-	struct list *open_files = NULL;
+	struct rfs_list *open_files = NULL;
 	int file_desc = 1;
 	int file_desc_left = 2;
 

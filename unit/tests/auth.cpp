@@ -39,7 +39,7 @@ public:
 
 protected:
 	struct rfsd_instance m_instance;
-	
+
 	static const char* exportsfile;
 };
 
@@ -104,7 +104,7 @@ void TestAuth::testSaltGeneration()
 void TestAuth::testCheckPermissions()
 {
 	// prepare exports
-	const char *correct_exports[] = 
+	const char *correct_exports[] =
 		{
 		"/dev *",                      // 0
 		"/var 127.0.0.1",              // 1
@@ -118,8 +118,8 @@ void TestAuth::testCheckPermissions()
 #endif
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
-	
-	std::ofstream stream;	
+
+	std::ofstream stream;
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 
@@ -129,10 +129,10 @@ void TestAuth::testCheckPermissions()
 	}
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
-	
+
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &m_instance.exports.list, 0) == 0);
 
-	const struct list *export_rec = m_instance.exports.list;
+	const struct rfs_list *export_rec = m_instance.exports.list;
 	unsigned export_no = 0;
 	while (export_rec != NULL)
 	{
@@ -151,7 +151,7 @@ void TestAuth::testCheckPermissions()
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "127.0.0.1") == 0);
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "192.168.0.1") == 0);
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "8.8.8.8") == 0);
-				
+
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "root") == 0);
 				break;
 
@@ -169,7 +169,7 @@ void TestAuth::testCheckPermissions()
 			// /etc root
 			case 2:
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "127.0.0.1") == 0);
-				
+
 				{
 				char *old_user = m_instance.server.auth_user;
 				m_instance.server.auth_user = strdup("notroot");
@@ -240,13 +240,13 @@ void TestAuth::testCheckPermissions()
 void TestAuth::testCheckUGOPermissions()
 {
 	// prepare exports
-	const char *correct_exports[] = 
+	const char *correct_exports[] =
 		{
 		"/dev * (ugo)",                // 0
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
-	
-	std::ofstream stream;	
+
+	std::ofstream stream;
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 
@@ -256,10 +256,10 @@ void TestAuth::testCheckUGOPermissions()
 	}
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
-	
+
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &m_instance.exports.list, 0) == 0);
 
-	const struct list *export_rec = m_instance.exports.list;
+	const struct rfs_list *export_rec = m_instance.exports.list;
 	unsigned export_no = 0;
 	while (export_rec != NULL)
 	{
@@ -270,7 +270,7 @@ void TestAuth::testCheckUGOPermissions()
 			// /dev * (ugo)
 			case 0:
 				CPPUNIT_ASSERT(check_permissions(&m_instance, info, "") == 0);
-				
+
 				// break server's auth to check if login will fail
 				char *auth_user = m_instance.server.auth_user;
 				m_instance.server.auth_user = NULL;
@@ -289,14 +289,14 @@ void TestAuth::testCheckUGOPermissions()
 void TestAuth::testIPVersionFiltering()
 {
 	// prepare exports
-	const char *correct_exports[] = 
+	const char *correct_exports[] =
 		{
 		"/home ::/0",                  // 0
 		"/dev 0.0.0.0/0" ,             // 1
 		};
 	const size_t correct_count = sizeof(correct_exports) / sizeof(correct_exports[0]);
-	
-	std::ofstream stream;	
+
+	std::ofstream stream;
 	stream.open(exportsfile, std::ios_base::out | std::ios_base::trunc);
 	CPPUNIT_ASSERT(stream.is_open());
 
@@ -306,10 +306,10 @@ void TestAuth::testIPVersionFiltering()
 	}
 	stream.close();
 	CPPUNIT_ASSERT(!stream.fail());
-	
+
 	CPPUNIT_ASSERT(parse_exports(exportsfile, &m_instance.exports.list, 0) == 0);
 
-	const struct list *export_rec = m_instance.exports.list;
+	const struct rfs_list *export_rec = m_instance.exports.list;
 	unsigned export_no = 0;
 	while (export_rec != NULL)
 	{

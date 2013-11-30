@@ -34,7 +34,7 @@ void TestPasswd::testSaveLoad()
 	const char *user1 = "cppunit1";
 	const char *user2 = "cppunit2";
 	const char *password = "cppunit";
-	struct list *auths = NULL;
+	struct rfs_list *auths = NULL;
 
 	CPPUNIT_ASSERT(load_passwords(pwdfile, &auths) == 0);
 	CPPUNIT_ASSERT(add_or_replace_auth(&auths, user1, password) == 0);
@@ -42,7 +42,7 @@ void TestPasswd::testSaveLoad()
 	CPPUNIT_ASSERT(save_passwords(pwdfile, auths) == 0);
 	release_passwords(&auths);
 	CPPUNIT_ASSERT(auths == NULL);
-	
+
 	CPPUNIT_ASSERT(load_passwords(pwdfile, &auths) == 0);
 	CPPUNIT_ASSERT(strcmp(get_auth_password(auths, user1), password) == 0);
 	CPPUNIT_ASSERT(strcmp(get_auth_password(auths, user2), password) == 0);
@@ -50,7 +50,7 @@ void TestPasswd::testSaveLoad()
 	CPPUNIT_ASSERT(save_passwords(pwdfile, auths) == 0);
 	release_passwords(&auths);
 	CPPUNIT_ASSERT(auths == NULL);
-	
+
 	CPPUNIT_ASSERT(load_passwords(pwdfile, &auths) == 0);
 	CPPUNIT_ASSERT(get_auth_password(auths, user1) == NULL);
 	CPPUNIT_ASSERT(strcmp(get_auth_password(auths, user2), password) == 0);

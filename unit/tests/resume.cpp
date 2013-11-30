@@ -26,7 +26,7 @@ void TestResume::testOpenFiles()
 	const char *files[] = { "./test1.cpp", "/test2.cpp", "/test/test3.cpp" };
 	size_t files_count = sizeof(files) / sizeof(files[0]);
 
-	struct list *root = NULL;
+	struct rfs_list *root = NULL;
 
 	for (size_t i = 0; i < files_count; ++i)
 	{
@@ -39,7 +39,7 @@ void TestResume::testOpenFiles()
 		CPPUNIT_ASSERT(resume_is_file_in_open_list(root, files[i]) == (uint64_t)(i));
 	}
 
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 	size_t list_pos = 0;
 	while (item != NULL)
 	{
@@ -61,11 +61,11 @@ void TestResume::testOpenFiles()
 }
 
 void TestResume::testLockedFiles()
-{	
+{
 	const char *files[] = { "./test1.cpp", "/test2.cpp", "/tests/test3.cpp" };
 	size_t files_count = sizeof(files) / sizeof(files[0]);
 
-	struct list *root = NULL;
+	struct rfs_list *root = NULL;
 
 	for (size_t i = 0; i < files_count; ++i)
 	{
@@ -73,7 +73,7 @@ void TestResume::testLockedFiles()
 	}
 	CPPUNIT_ASSERT(root != NULL);
 
-	const struct list *item = root;
+	const struct rfs_list *item = root;
 	size_t list_pos = 0;
 	while (item != NULL)
 	{

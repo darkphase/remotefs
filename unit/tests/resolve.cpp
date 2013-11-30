@@ -28,12 +28,12 @@ void TestResolve::testHostIPs()
 	const char *localhost_ip4 = "127.0.0.1";
 
 	int family4 = AF_INET;
-	struct list *ip4 = host_ips(localhost4, &family4);
+	struct rfs_list *ip4 = host_ips(localhost4, &family4);
 	CPPUNIT_ASSERT(ip4 != NULL);
 
 	bool localhost_ip4_present = false;
 	{
-		struct list *current = ip4;
+		struct rfs_list *current = ip4;
 		while (current != NULL)
 		{
 			struct resolved_addr *rec = (struct resolved_addr *)current->data;
@@ -58,7 +58,7 @@ void TestResolve::testHostIPs()
 	const char *localhost_ip6 = "::1";
 
 	int family6 = AF_INET6;
-	struct list *ip6 = host_ips(localhost4, &family6);
+	struct rfs_list *ip6 = host_ips(localhost4, &family6);
 
 	if (ip6 == NULL)
 	{
@@ -70,7 +70,7 @@ void TestResolve::testHostIPs()
 
 	bool localhost_ip6_present = false;
 	{
-		struct list *current = ip6;
+		struct rfs_list *current = ip6;
 		while (current != NULL)
 		{
 			struct resolved_addr *rec = (struct resolved_addr *)current->data;
@@ -91,14 +91,14 @@ void TestResolve::testHostIPs()
 	destroy_list(&ip6);
 #endif
 
-	struct list *ip_unspec = host_ips(localhost4, NULL);
+	struct rfs_list *ip_unspec = host_ips(localhost4, NULL);
 
 	localhost_ip4_present = false;
 #ifdef WITH_IPV6
 	localhost_ip6_present = false;
 #endif
 	{
-		struct list *current = ip_unspec;
+		struct rfs_list *current = ip_unspec;
 		while (current != NULL)
 		{
 			struct resolved_addr *rec = (struct resolved_addr *)current->data;
