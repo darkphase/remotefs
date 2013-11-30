@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /** write-behind cache block */
-struct rfs_write_cache_block
+typedef struct
 {
 	size_t allocated;
 	size_t used;
@@ -26,7 +26,7 @@ struct rfs_write_cache_block
 	off_t offset;
 	char data[DEFAULT_RW_CACHE_SIZE / 2];
 	char *path;
-};
+} rfs_write_cache_block_t;
 
 struct rfs_instance;
 
@@ -37,7 +37,7 @@ int init_write_behind(struct rfs_instance *instance);
 void kill_write_behind(struct rfs_instance *instance);
 
 /** reset write cache block */
-void reset_write_cache_block(struct rfs_write_cache_block *block);
+void reset_write_cache_block(rfs_write_cache_block_t *block);
 
 int _do_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);

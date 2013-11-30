@@ -94,7 +94,7 @@ static int fix_iov(struct iovec *iov, unsigned count, size_t size_left)
 	return ret;
 }
 
-ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count)
+ssize_t rfs_writev(rfs_sendrecv_info_t *info, struct iovec *iov, unsigned count)
 {
 	size_t overall_size = 0;
 	unsigned i = 0; for (i = 0; i < count; ++i)
@@ -151,7 +151,7 @@ ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count
 	return size_sent;
 }
 
-static inline int is_mark(int socket, struct sendrecv_info *info)
+static inline int is_mark(int socket, rfs_sendrecv_info_t *info)
 {
 	/* wait for further data become ready to not miss OOB byte */
 	DEBUG("%s\n", "waiting for further data");
@@ -202,7 +202,7 @@ static inline int is_mark(int socket, struct sendrecv_info *info)
 	return 0;
 }
 
-ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob)
+ssize_t rfs_recv(rfs_sendrecv_info_t *info, char *buffer, size_t size, unsigned check_oob)
 {
 	size_t size_recv = 0;
 	while (size_recv < size)
@@ -264,7 +264,7 @@ ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned
 	return size_recv;
 }
 
-ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len)
+ssize_t rfs_ignore_incoming_data(rfs_sendrecv_info_t *info, const size_t data_len)
 {
 	size_t size_ignored = 0;
 	char buffer[4096] = { 0 };
@@ -288,7 +288,7 @@ ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_l
 }
 
 #ifdef RFS_DEBUG
-void dump_sendrecv_stats(struct sendrecv_info *info)
+void dump_sendrecv_stats(rfs_sendrecv_info_t *info)
 {
 	DEBUG("%s\n", "dumping transfer statistics");
 	DEBUG("### bytes sent: %lu (%.2fM, %.2fK)\n", info->bytes_sent, (float)info->bytes_sent / (1024 * 1024), (float)info->bytes_sent / 1024);

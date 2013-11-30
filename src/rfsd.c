@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -63,7 +63,7 @@ static int parse_opts(int argc, char **argv)
 #endif
 	{
 		switch (opt)
-		{	
+		{
 			case 'h':
 				usage(argv[0]);
 				release_rfsd_instance(&rfsd_instance);
@@ -124,7 +124,7 @@ static int parse_opts(int argc, char **argv)
 	return 0;
 }
 
-static int validate_config(const struct rfsd_config *config)
+static int validate_config(const rfsd_config_t *config)
 {
 	if (list_length(config->listen_addresses) > MAX_LISTEN_ADDRESSES)
 	{
@@ -138,7 +138,7 @@ static int validate_config(const struct rfsd_config *config)
 int main(int argc, char **argv)
 {
 	init_rfsd_instance(&rfsd_instance);
-	
+
 	if (parse_opts(argc, argv) != 0)
 	{
 		release_rfsd_instance(&rfsd_instance);
@@ -151,8 +151,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	int parse_ret = parse_exports(rfsd_instance.config.exports_file, 
-	&rfsd_instance.exports.list, 
+	int parse_ret = parse_exports(rfsd_instance.config.exports_file,
+	&rfsd_instance.exports.list,
 	rfsd_instance.config.worker_uid);
 
 	if (parse_ret > 0)
@@ -167,23 +167,23 @@ int main(int argc, char **argv)
 		release_server(&rfsd_instance);
 		exit(1);
 	}
-	
+
 #ifdef RFS_DEBUG
 	dump_exports(rfsd_instance.exports.list);
 #endif
-	
+
 	if (load_passwords(rfsd_instance.config.passwd_file, &rfsd_instance.passwd.auths) != 0)
 	{
 		ERROR("Error loading passwords from %s\n", rfsd_instance.config.passwd_file);
 		release_server(&rfsd_instance);
 		exit(1);
 	}
-	
+
 #ifdef RFS_DEBUG
 	dump_passwords(rfsd_instance.passwd.auths);
 #endif
 
-	if (rfsd_instance.config.quiet == 0) /* don't do checks, 
+	if (rfsd_instance.config.quiet == 0) /* don't do checks,
 	since they won't be displayed anyway */
 	{
 		if (suggest_server(&rfsd_instance) != 0)
@@ -199,8 +199,8 @@ int main(int argc, char **argv)
 	{
 		return 0;
 	}
-#endif 
-	
+#endif
+
 	install_signal_handlers_server();
 
 	int ret = start_server(&rfsd_instance, daemonize);

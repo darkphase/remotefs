@@ -41,7 +41,7 @@ enum
 #endif
 };
 
-#define RFS_OPT(t, p, v) { t, offsetof(struct rfs_config, p), v }
+#define RFS_OPT(t, p, v) { t, offsetof(rfs_config_t, p), v }
 
 struct fuse_opt rfs_opts[] =
 {
@@ -179,11 +179,11 @@ static int rfs_opt_proc(void *data, const char *arg, int key, struct fuse_args *
 		return 0;
 #if defined WITH_IPV6
 	case KEY_IPV4:
-		((struct rfs_config*)data)->force_ipv4 = 1;
+		((rfs_config_t *)data)->force_ipv4 = 1;
 		return 0;
 
 	case KEY_IPV6:
-		((struct rfs_config*)data)->force_ipv6 = 1;
+		((rfs_config_t *)data)->force_ipv6 = 1;
 		return 0;
 #endif
 

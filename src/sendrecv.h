@@ -42,8 +42,8 @@ typedef struct
 } send_token_t;
 
 /* low lev */
-ssize_t rfs_writev(struct sendrecv_info *info, struct iovec *iov, unsigned count);
-ssize_t rfs_recv(struct sendrecv_info *info, char *buffer, size_t size, unsigned check_oob);
+ssize_t rfs_writev(rfs_sendrecv_info_t *info, struct iovec *iov, unsigned count);
+ssize_t rfs_recv(rfs_sendrecv_info_t *info, char *buffer, size_t size, unsigned check_oob);
 
 /* common */
 
@@ -85,7 +85,7 @@ static inline send_token_t* queue_64(uint64_t *value, send_token_t *token)
 	return queue_buffer(w64, (const char *)value, sizeof(*value), token);
 }
 
-static inline ssize_t do_send(struct sendrecv_info *info, send_token_t *token)
+static inline ssize_t do_send(rfs_sendrecv_info_t *info, send_token_t *token)
 {
 	if (token == NULL)
 	{
@@ -131,15 +131,15 @@ static inline ssize_t do_send(struct sendrecv_info *info, send_token_t *token)
 	return rfs_writev(info, token->iov, token->count);
 }
 
-static inline ssize_t rfs_receive_data(struct sendrecv_info *info, void *data, const size_t data_len)
+static inline ssize_t rfs_receive_data(rfs_sendrecv_info_t *info, void *data, const size_t data_len)
 {
 	return ((size_t)(rfs_recv(info, (char *)data, data_len, 0)) == data_len ? 0 : -1);
 }
 
-ssize_t rfs_ignore_incoming_data(struct sendrecv_info *info, const size_t data_len);
+ssize_t rfs_ignore_incoming_data(rfs_sendrecv_info_t *info, const size_t data_len);
 
 #ifdef RFS_DEBUG
-void dump_sendrecv_stats(struct sendrecv_info *info);
+void dump_sendrecv_stats(rfs_sendrecv_info_t *info);
 #endif
 
 #if defined (__cplusplus) || defined (c_plusplus)

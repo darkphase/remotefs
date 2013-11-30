@@ -27,7 +27,7 @@ See the file LICENSE.
 
 #include <netinet/tcp.h>
 
-int rfs_connect(struct sendrecv_info *info, const char *host, unsigned port, unsigned force_ipv4, unsigned force_ipv6)
+int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsigned force_ipv4, unsigned force_ipv6)
 {
 	struct list *ips = host_ips(host, NULL);
 

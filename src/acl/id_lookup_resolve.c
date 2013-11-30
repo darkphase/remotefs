@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -24,16 +24,16 @@ See the file LICENSE.
 
 char* id_lookup_reverse_resolve(acl_tag_t tag, const void *id, void *lookup_casted)
 {
-	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
+	rfs_id_lookup_info_t *lookup = (rfs_id_lookup_info_t *)(lookup_casted);
 
 	switch (tag)
 	{
 	case ACL_USER:
 		{
 		DEBUG("resolving username with id: %d\n", *(uid_t *)(id));
-		
+
 		const char *username = get_uid_name(lookup->uids, *(uid_t *)(id));
-				
+
 		if (username == NULL)
 		{
 			return NULL;
@@ -46,12 +46,12 @@ char* id_lookup_reverse_resolve(acl_tag_t tag, const void *id, void *lookup_cast
 		DEBUG("resolving groupname with id: %d\n", *(uid_t *)(id));
 
 		const char *groupname = get_gid_name(lookup->gids, *(gid_t *)(id));
-				
+
 		if (groupname == NULL)
 		{
 			return NULL;
 		}
-		
+
 		return strdup(groupname);
 		}
 	}
@@ -61,7 +61,7 @@ char* id_lookup_reverse_resolve(acl_tag_t tag, const void *id, void *lookup_cast
 
 uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, void *lookup_casted)
 {
-	struct id_lookup_info *lookup = (struct id_lookup_info *)(lookup_casted);
+	rfs_id_lookup_info_t *lookup = (rfs_id_lookup_info_t *)(lookup_casted);
 
 	switch (tag)
 	{
@@ -70,13 +70,13 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 		char *username = malloc(name_len + 1);
 		memcpy(username, name, name_len);
 		username[name_len] = 0;
-	
+
 		DEBUG("resolving username: %s\n", username);
-		
+
 		uid_t uid = get_uid(lookup->uids, username);
-				
+
 		free(username);
-				
+
 		if (uid == (uid_t)-1)
 		{
 			return ACL_UNDEFINED_ID;
@@ -89,18 +89,18 @@ uint32_t id_lookup_resolve(acl_tag_t tag, const char *name, size_t name_len, voi
 		char *groupname = malloc(name_len + 1);
 		memcpy(groupname, name, name_len);
 		groupname[name_len] = 0;
-				
+
 		DEBUG("resolving groupname: %s\n", groupname);
 
 		gid_t gid = get_gid(lookup->gids, groupname);
-				
+
 		free(groupname);
-				
+
 		if (gid == (gid_t)-1)
 		{
 			return ACL_UNDEFINED_ID;
 		}
-		
+
 		return (uint32_t)(gid);
 		}
 	}

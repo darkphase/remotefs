@@ -19,7 +19,7 @@ extern "C" {
 
 struct list;
 
-struct sendrecv_info
+typedef struct
 {
 	int socket;
 	unsigned connection_lost;
@@ -33,16 +33,16 @@ struct sendrecv_info
 	unsigned long send_timeouts;
 	unsigned long conn_timeouts;
 #endif
-};
+} rfs_sendrecv_info_t;
 
-struct id_lookup_info
+typedef struct
 {
 	struct list *uids;
 	struct list *gids;
-};
+} rfs_id_lookup_info_t;
 
-void init_sendrecv(struct sendrecv_info *sendrecv);
-void init_id_lookup(struct id_lookup_info *id_lookup);
+void init_sendrecv(rfs_sendrecv_info_t *sendrecv);
+void init_id_lookup(rfs_id_lookup_info_t *id_lookup);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

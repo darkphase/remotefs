@@ -62,13 +62,13 @@ struct rfs_instance
 		pthread_t write_behind_thread;
 		rfs_sem_t write_behind_started;
 		rfs_sem_t write_behind_sem;
-		struct rfs_write_cache_block block1;
-		struct rfs_write_cache_block block2;
-		struct rfs_write_cache_block *current_block;
+		rfs_write_cache_block_t block1;
+		rfs_write_cache_block_t block2;
+		rfs_write_cache_block_t *current_block;
 	} write_cache;
 
 	/* sendrecv */
-	struct sendrecv_info sendrecv;
+	rfs_sendrecv_info_t sendrecv;
 
 	/* nss server */
 	struct
@@ -81,9 +81,9 @@ struct rfs_instance
 		rfs_sem_t thread_ready;
 	} nss;
 
-	struct id_lookup_info id_lookup;
+	rfs_id_lookup_info_t id_lookup;
 
-	struct rfs_config config;
+	rfs_config_t config;
 };
 
 #define DECLARE_RFS_INSTANCE(name) extern struct rfs_instance (name)

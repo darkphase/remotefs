@@ -93,7 +93,7 @@ struct list;
 #endif
 
 /** client options */
-struct rfs_config
+typedef struct
 {
 	char *host;
 	char *path;
@@ -109,10 +109,10 @@ struct rfs_config
 	unsigned force_ipv4;
 	unsigned force_ipv6;
 #endif
-};
+} rfs_config_t;
 
 /** server options */
-struct rfsd_config
+typedef struct
 {
 	struct list* listen_addresses;
 	char *pid_file;
@@ -121,7 +121,7 @@ struct rfsd_config
 	unsigned int quiet;
 	char *exports_file;
 	char *passwd_file;
-};
+} rfsd_config_t;
 
 #if defined (__cplusplus) || defined (c_plusplus)
 }

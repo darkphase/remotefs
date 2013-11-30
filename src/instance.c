@@ -9,7 +9,7 @@ See the file LICENSE.
 #include "config.h"
 #include "instance.h"
 
-void init_sendrecv(struct sendrecv_info *sendrecv)
+void init_sendrecv(rfs_sendrecv_info_t *sendrecv)
 {
 	sendrecv->socket = -1;
 	sendrecv->oob_received = 0;
@@ -25,7 +25,7 @@ void init_sendrecv(struct sendrecv_info *sendrecv)
 #endif
 }
 
-void init_id_lookup(struct id_lookup_info *id_lookup)
+void init_id_lookup(rfs_id_lookup_info_t *id_lookup)
 {
 	id_lookup->uids = NULL;
 	id_lookup->gids = NULL;

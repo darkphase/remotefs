@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -36,18 +36,18 @@ static inline send_token_t* queue_ans(struct answer *ans, send_token_t *token)
 	return queue_buffer(answer, (char *)ans, sizeof(*ans), token);
 }
 
-static inline ssize_t rfs_send_answer(struct sendrecv_info *info, struct answer *ans)
+static inline ssize_t rfs_send_answer(rfs_sendrecv_info_t *info, struct answer *ans)
 {
 #ifdef RFS_DEBUG
 	dump_answer(ans);
 #endif
 	send_token_t token = { 0 };
-	return (do_send(info, 
+	return (do_send(info,
 		queue_ans(ans, &token
 		)) == sizeof(*ans) ? 0 : -1);
 }
 
-static inline ssize_t rfs_send_answer_oob(struct sendrecv_info *info, struct answer *ans)
+static inline ssize_t rfs_send_answer_oob(rfs_sendrecv_info_t *info, struct answer *ans)
 {
 	const char oob = 1;
 	if (send(info->socket, &oob, 1, MSG_OOB) < 0)
@@ -57,7 +57,7 @@ static inline ssize_t rfs_send_answer_oob(struct sendrecv_info *info, struct ans
 	return rfs_send_answer(info, ans);
 }
 
-static inline ssize_t rfs_receive_cmd(struct sendrecv_info *info, struct command *cmd)
+static inline ssize_t rfs_receive_cmd(rfs_sendrecv_info_t *info, struct command *cmd)
 {
 	ssize_t ret = rfs_recv(info, (char *)cmd, sizeof(*cmd), 0);
 	if (ret < 0)

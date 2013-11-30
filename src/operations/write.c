@@ -23,7 +23,7 @@ See the file LICENSE.
 
 static void* write_behind(void *void_instance);
 
-void reset_write_cache_block(struct rfs_write_cache_block *block)
+void reset_write_cache_block(rfs_write_cache_block_t *block)
 {
 	block->allocated = sizeof(block->data) * sizeof(*(block->data));
 	block->used = 0;
@@ -117,7 +117,7 @@ static void* write_behind(void *void_instance)
 
 	DEBUG("%s\n", "*** write behind started");
 
-	struct rfs_write_cache_block *block = instance->write_cache.current_block;
+	rfs_write_cache_block_t *block = instance->write_cache.current_block;
 
 	/* switch current block, so writes can proceed with it */
 	instance->write_cache.current_block =
@@ -216,7 +216,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 	 * rfs_flush() always need to be called before proceeding with writes
 	 * write order matters and should match requests order */
 
-	struct rfs_write_cache_block *current_block = instance->write_cache.current_block;
+	rfs_write_cache_block_t *current_block = instance->write_cache.current_block;
 
 	/* missed bad, flush and prepare cache for this file */
 	if ((current_block->descriptor != (uint64_t)(-1)

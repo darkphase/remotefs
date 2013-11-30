@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -34,24 +34,24 @@ static inline send_token_t* queue_cmd(struct command *cmd, send_token_t *token)
 	return queue_buffer(command, (char *)cmd, sizeof(*cmd), token);
 }
 
-static inline ssize_t rfs_send_cmd(struct sendrecv_info *info, struct command *cmd)
+static inline ssize_t rfs_send_cmd(rfs_sendrecv_info_t *info, struct command *cmd)
 {
 #ifdef RFS_DEBUG
 	dump_command(cmd);
 #endif
 	send_token_t token = { 0 };
-	return (do_send(info, 
+	return (do_send(info,
 		queue_cmd(cmd, &token
 		)) == sizeof(*cmd) ? 0 : -1);
 }
 
-static inline ssize_t rfs_receive_data_oob(struct sendrecv_info *info, void *data, const size_t data_len)
+static inline ssize_t rfs_receive_data_oob(rfs_sendrecv_info_t *info, void *data, const size_t data_len)
 {
 	ssize_t ret = rfs_recv(info, (char *)data, data_len, 1);
 	return ((ret < 0 || (size_t)ret != data_len) ? -1 : 0);
 }
 
-static inline ssize_t rfs_receive_answer(struct sendrecv_info *info, struct answer *ans)
+static inline ssize_t rfs_receive_answer(rfs_sendrecv_info_t *info, struct answer *ans)
 {
 	ssize_t ret = rfs_recv(info, (char *)ans, sizeof(*ans), 0);
 	if (ret < 0)

@@ -24,7 +24,7 @@ int _flush_write(struct rfs_instance *instance, const char *path, uint64_t desc)
 {
 	DEBUG("flushing file %llu\n", (unsigned long long)desc);
 
-	struct rfs_write_cache_block * current_block = instance->write_cache.current_block;
+	rfs_write_cache_block_t *current_block = instance->write_cache.current_block;
 
 	if (current_block->descriptor == desc)
 	{
