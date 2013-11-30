@@ -100,7 +100,6 @@ struct rfs_config
 	char *auth_user;
 	char *auth_passwd_file;
 	char *auth_passwd;
-	unsigned int use_write_cache;
 	unsigned int server_port;
 	unsigned int quiet;
 	unsigned transform_symlinks;

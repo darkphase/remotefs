@@ -56,7 +56,6 @@ struct fuse_opt rfs_opts[] =
 	FUSE_OPT_KEY("--help", KEY_HELP),
 	RFS_OPT("username=%s", auth_user, 0),
 	RFS_OPT("password=%s", auth_passwd_file, 0),
-	RFS_OPT("wr_cache=%u", use_write_cache, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	RFS_OPT("transform_symlinks", transform_symlinks, 1),
 
@@ -87,7 +86,6 @@ static void usage(const char *program)
 	"    -o port=server_port     port which the server is listening to\n"
 	"    -o username=name        auth username\n"
 	"    -o password=filename    filename with password for auth\n"
-	"    -o wr_cache=0           disable write cache\n"
 	"    -o transform_symlinks   transform absolute symlinks to relative\n"
 	"\n"
 	"\n",
@@ -317,11 +315,6 @@ int main(int argc, char **argv)
 	}
 
 #ifdef RFS_DEBUG
-	if (rfs_instance.config.use_write_cache != 0)
-	{
-		DEBUG("%s\n", "using write cache");
-	}
-
 	if (rfs_instance.config.transform_symlinks != 0)
 	{
 		DEBUG("%s\n", "transforming symlinks");

@@ -57,12 +57,14 @@ struct rfs_instance
 	/* write cache */
 	struct
 	{
-		size_t max_cache_size;
-		struct list *cache;
+		int please_die;
+		int last_ret;
 		pthread_t write_behind_thread;
 		rfs_sem_t write_behind_started;
 		rfs_sem_t write_behind_sem;
-		struct write_behind_request write_behind_request;
+		struct rfs_write_cache_block block1;
+		struct rfs_write_cache_block block2;
+		struct rfs_write_cache_block *current_block;
 	} write_cache;
 
 	/* sendrecv */

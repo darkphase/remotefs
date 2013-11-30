@@ -48,10 +48,15 @@ static void init_resume(struct rfs_instance *instance)
 static void init_write_cache(struct rfs_instance *instance)
 {
 	/* write cache */
-	instance->write_cache.max_cache_size = DEFAULT_RW_CACHE_SIZE;
-	instance->write_cache.cache = NULL;
 	instance->write_cache.write_behind_thread = 0;
-	memset(&instance->write_cache.write_behind_request, 0, sizeof(instance->write_cache.write_behind_request));
+	instance->write_cache.please_die = 0;
+	instance->write_cache.last_ret = 0;
+	memset(&instance->write_cache.block1, 0, sizeof(instance->write_cache.block1));
+	memset(&instance->write_cache.block2, 0, sizeof(instance->write_cache.block2));
+	instance->write_cache.current_block = &instance->write_cache.block1;
+
+	reset_write_cache_block(&instance->write_cache.block1);
+	reset_write_cache_block(&instance->write_cache.block2);
 }
 
 static void init_nss(struct rfs_instance *instance)
@@ -69,7 +74,6 @@ static void init_rfs_config(struct rfs_instance *instance)
 {
 	instance->config.server_port = DEFAULT_SERVER_PORT;
 	instance->config.quiet = 0;
-	instance->config.use_write_cache = 1;
 	instance->config.transform_symlinks = 0;
 	instance->config.allow_other = 0;
 	instance->config.set_fsname = 1;

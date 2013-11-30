@@ -28,10 +28,6 @@ src/connect.o:src/sockets.h
 src/crypt.o:src/config.h
 src/crypt.o:src/crypt.h
 src/crypt.o:src/md5crypt/crypt_md5.h
-src/data_cache.o:src/buffer.h
-src/data_cache.o:src/config.h
-src/data_cache.o:src/data_cache.h
-src/data_cache.o:src/list.h
 src/error.o:src/compat.h
 src/error.o:src/error.h
 src/error.o:src/inet.h
@@ -182,7 +178,6 @@ src/changelog.o:src/changelog.c
 src/command.o:src/command.c
 src/connect.o:src/connect.c
 src/crypt.o:src/crypt.c
-src/data_cache.o:src/data_cache.c
 src/error.o:src/error.c
 src/exports.o:src/exports.c
 src/fuse_rfs.o:src/fuse_rfs.c
@@ -239,7 +234,6 @@ src/operations/create.o:src/operations/utils.h
 src/operations/flush.o:src/operations/../buffer.h
 src/operations/flush.o:src/operations/../command.h
 src/operations/flush.o:src/operations/../config.h
-src/operations/flush.o:src/operations/../data_cache.h
 src/operations/flush.o:src/operations/../instance_client.h
 src/operations/flush.o:src/operations/../list.h
 src/operations/flush.o:src/operations/../sendrecv_client.h
@@ -299,7 +293,6 @@ src/operations/read.o:src/operations/../instance_client.h
 src/operations/read.o:src/operations/../keep_alive_client.h
 src/operations/read.o:src/operations/../sendrecv_client.h
 src/operations/read.o:src/operations/operations.h
-src/operations/read.o:src/operations/write.h
 src/operations/readdir.o:src/operations/../buffer.h
 src/operations/readdir.o:src/operations/../command.h
 src/operations/readdir.o:src/operations/../compat.h
@@ -320,7 +313,6 @@ src/operations/release.o:src/operations/../buffer.h
 src/operations/release.o:src/operations/../command.h
 src/operations/release.o:src/operations/../compat.h
 src/operations/release.o:src/operations/../config.h
-src/operations/release.o:src/operations/../data_cache.h
 src/operations/release.o:src/operations/../instance_client.h
 src/operations/release.o:src/operations/../resume/resume.h
 src/operations/release.o:src/operations/../sendrecv_client.h
@@ -395,7 +387,6 @@ src/operations/utimens.o:src/operations/utils.h
 src/operations/write.o:src/operations/../buffer.h
 src/operations/write.o:src/operations/../command.h
 src/operations/write.o:src/operations/../config.h
-src/operations/write.o:src/operations/../data_cache.h
 src/operations/write.o:src/operations/../instance_client.h
 src/operations/write.o:src/operations/../keep_alive_client.h
 src/operations/write.o:src/operations/../list.h

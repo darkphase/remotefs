@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -15,12 +15,14 @@ See the file LICENSE.
 extern "C" {
 #endif
 
-/** write-behind control struct */
-struct write_behind_request
+/** write-behind cache block */
+struct rfs_write_cache_block
 {
-	struct cache_block *block;
-	unsigned int please_die;
-	int last_ret;
+	size_t allocated;
+	size_t used;
+	uint64_t descriptor;
+	off_t offset;
+	char data[DEFAULT_RW_CACHE_SIZE / 2];
 	char *path;
 };
 
@@ -32,7 +34,8 @@ int init_write_behind(struct rfs_instance *instance);
 /** stop write-behind thread */
 void kill_write_behind(struct rfs_instance *instance);
 
-void reset_write_behind(struct rfs_instance *instance);
+/** reset write cache block */
+void reset_write_cache_block(struct rfs_write_cache_block *block);
 
 int _do_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);
 int _rfs_write(struct rfs_instance *instance, const char *path, const char *buf, size_t size, off_t offset, uint64_t desc);

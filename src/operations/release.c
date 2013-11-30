@@ -14,7 +14,6 @@ See the file LICENSE.
 #include "../command.h"
 #include "../compat.h"
 #include "../config.h"
-#include "../data_cache.h"
 #include "../instance_client.h"
 #include "../resume/resume.h"
 #include "../sendrecv_client.h"
@@ -33,8 +32,6 @@ int _rfs_release(struct rfs_instance *instance, const char *path, uint64_t desc)
 	{
 		return flush_ret;
 	}
-
-	clear_cache_by_desc(&instance->write_cache.cache, desc);
 
 	uint64_t handle = htonll(desc);
 
