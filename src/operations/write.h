@@ -11,6 +11,8 @@ See the file LICENSE.
 
 /** rfs write operation(s) */
 
+#include "../config.h"
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
