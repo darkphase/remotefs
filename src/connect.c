@@ -157,7 +157,7 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 		resolved_item = resolved_item->next;
 	}
 
-	destroy_list(&ips);
+	release_ips(&ips);
 
 	if (sock > 0)
 	{

@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -108,4 +108,21 @@ struct rfs_list* host_ips(const char *host, int *address_family)
 	freeaddrinfo(addr_info);
 
 	return addresses;
+}
+
+static void release_ip(struct resolved_addr *ip)
+{
+	free(ip->ip);
+}
+
+void release_ips(struct rfs_list **ips)
+{
+	struct rfs_list *single_ip = *ips;
+	while (single_ip != NULL)
+	{
+		struct rfs_list *next = single_ip->next;
+		release_ip(single_ip->data);
+		single_ip = next;
+	}
+	destroy_list(ips);
 }
