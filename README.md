@@ -5,6 +5,5 @@
 * Issue tracker: [http://sourceforge.net/p/remotefs/bugs/](http://sourceforge.net/p/remotefs/bugs/)
 * Mailing lists: [http://sourceforge.net/p/remotefs/mailman/](http://sourceforge.net/p/remotefs/mailman/)
 
-For build options see BUILD
-For authors information see AUTHORS
-For license see LICENSE
+For build options see BUILD, for authors information see AUTHORS,
+for license see LICENSE.

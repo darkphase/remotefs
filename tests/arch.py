@@ -8,7 +8,7 @@ class ArchTest:
 	def createFile(self, name, size):
 		data = []
 		for i in xrange(0, size):
-			data.append(chr(random.randint(0, 255)))
+			data.append(chr(0))
 		fp = file(name, 'wb')
 		fp.write(''.join(data));
 		fp.close()
@@ -29,6 +29,8 @@ class ArchTest:
 	def calcMD5(self, files):
 		md5s = []
 		for file in files:
+			output = os.popen('stat %s' % file).read().strip()
+			print output
 			output = os.popen('md5sum %s' % file).read().strip()
 			sr = re.search('(\w+)\s.*', output)
 			md5s.append(sr and sr.group(1) or 'invalid file')
