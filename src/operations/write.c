@@ -218,10 +218,18 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 
 	rfs_write_cache_block_t *current_block = instance->write_cache.current_block;
 
-	/* missed bad, flush and prepare cache for this file */
-	if ((current_block->descriptor != (uint64_t)(-1)
-		&& current_block->descriptor != desc)
-	|| size > current_block->allocated) {
+	/* missed bad, leave current cache as is
+	 * this will let original file to be cached properly at least */
+	if (current_block->descriptor != (uint64_t)(-1)
+	&& current_block->descriptor != desc)
+	{
+		return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
+	}
+
+	/* won't fit cache anyway
+	 * normally this would never happen, but still need to be here */
+	if (size > current_block->allocated)
+	{
 		int flush_ret = _rfs_flush_write(instance,
 			current_block->path, current_block->descriptor);
 
@@ -229,12 +237,7 @@ static int _rfs_write_cached(struct rfs_instance *instance, const char *path, co
 		{
 			return flush_ret;
 		}
-	}
 
-	/* won't fit cache anyway
-	 * normally this would never happen, but still need to be here */
-	if (size > current_block->allocated)
-	{
 		return _rfs_write_missed_cache(instance, path, buf, size, offset, desc);
 	}
 
