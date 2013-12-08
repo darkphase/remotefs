@@ -24,7 +24,7 @@ tbz:
 	
 	tar --exclude .svn -cjhf "$(TEMP_TBZ)" \
 	src rfs_nss build Makefile \
-	README LICENSE AUTHORS CHANGELOG
+	README.md LICENSE AUTHORS CHANGELOG
 	
 	mkdir -p "remotefs-$(VERSION)-$(RELEASE)"/
 	tar -xjf "$(TEMP_TBZ)" -C "remotefs-$(VERSION)-$(RELEASE)"/
