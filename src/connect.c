@@ -153,6 +153,10 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 			close(sock);
 			sock = -1;
 		}
+		else
+		{
+			break;
+		}
 
 		resolved_item = resolved_item->next;
 	}
