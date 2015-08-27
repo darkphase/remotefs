@@ -6,3 +6,4 @@ Contributors (in chronological order):
 Oliver Jaksch - Gentoo init script
 Oskari Rauta - OpenWrt init script
 Brandt Dusthimer - rfs_truncate() patch for large files
+Pavel Safronov - rfs_connect() patch for hosts with multiple IPs
