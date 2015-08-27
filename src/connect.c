@@ -148,15 +148,13 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 
 		setup_socket_blocking(sock);
 
-		if (connect_ret != 0)
-		{
-			close(sock);
-			sock = -1;
-		}
-		else
+		if (connect_ret == 0)
 		{
 			break;
 		}
+
+		close(sock);
+		sock = -1;
 
 		resolved_item = resolved_item->next;
 	}
