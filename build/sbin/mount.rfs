@@ -13,7 +13,7 @@ for param in `echo $4 | tr ',' ' '`
 do
         case $param in
                 # rfs parameters
-                username=*|password=*|atomic_o_trunc|auto_cache|noauto_cache|\
+                username=*|password=*|port=*|atomic_o_trunc|auto_cache|noauto_cache|\
                 fsname=*|kernel_cache|allow_other|allow_root|\
                 default_permissions|no_remote_lock|use_ino|nonempty)
                         if [ -z "$params" ]
