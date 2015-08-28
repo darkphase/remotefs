@@ -59,6 +59,7 @@ const char* unpack_stat(struct stat *result, const char *buffer)
 	uint64_t ctime = 0;
 	uint32_t nlink = 0;
 	uint32_t blocks = 0;
+	uint64_t ino = 0;
 
 #ifdef RFS_DEBUG
 	dump(buffer, STAT_BLOCK_SIZE);
@@ -70,8 +71,9 @@ const char* unpack_stat(struct stat *result, const char *buffer)
 	unpack_64(&mtime, 
 	unpack_64(&atime, 
 	unpack_64(&size, 
-	unpack_32(&mode, buffer
-	)))))));
+	unpack_32(&mode,
+	unpack_64(&ino, buffer
+	))))))));
 
 	result->st_mode = mode;
 	result->st_size = size;
@@ -80,6 +82,7 @@ const char* unpack_stat(struct stat *result, const char *buffer)
 	result->st_ctime = ctime;
 	result->st_nlink = nlink;
 	result->st_blocks = blocks;
+	result->st_ino = ino;
 	
 	return buffer + STAT_BLOCK_SIZE;
 }

@@ -56,6 +56,7 @@ struct rfs_list;
 	+ sizeof(uint64_t) /* ctime */                  \
 	+ sizeof(uint32_t) /* nlink */                  \
 	+ sizeof(uint32_t) /* blocks */                 \
+	+ sizeof(uint64_t) /* ino */                    \
 
 #ifdef RFS_DEBUG
 #define DEFAULT_PASSWD_FILE      "./rfs-passwd"

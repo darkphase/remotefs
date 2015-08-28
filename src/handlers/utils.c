@@ -46,6 +46,7 @@ char* pack_stat(struct stat *stbuf, char *buffer)
 	uint64_t ctime     = stbuf->st_ctime;
 	uint32_t nlink     = stbuf->st_nlink;
 	uint32_t blocks    = stbuf->st_blocks;
+	uint64_t ino       = stbuf->st_ino;
 
 	pack_32(&blocks, 
 	pack_32(&nlink, 
@@ -53,8 +54,9 @@ char* pack_stat(struct stat *stbuf, char *buffer)
 	pack_64(&mtime, 
 	pack_64(&atime, 
 	pack_64(&size, 
-	pack_32(&mode, buffer
-	)))))));
+	pack_32(&mode,
+	pack_64(&ino, buffer
+	))))))));
 
 #ifdef RFS_DEBUG
 	dump(buffer, STAT_BLOCK_SIZE);
