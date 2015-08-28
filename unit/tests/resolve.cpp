@@ -120,8 +120,6 @@ void TestResolve::testHostIPs()
 #endif
 			CPPUNIT_ASSERT(rec->ip != NULL);
 
-			printf("rec->ip: %s\n", rec->ip);
-
 			if (strcmp(rec->ip, localhost_ip4) == 0)
 			{
 				localhost_ip4_present = true;
