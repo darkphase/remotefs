@@ -47,6 +47,16 @@ Filename with password for auth
 Port which the server is listening to
 .RE
 .PP
+\fB\-o\fR timeouts=timeout
+.RS 8
+Timeouts for send-recv operations on sockets in seconds
+.RE
+.PP
+\fB\-o\fR connect_timeout=timeout
+.RS 8
+Timeout for connecting to remote host in seconds
+.RE
+.PP
 \fIhost\fR can be either server's host name or its IP address. \fIremote_path\fR 
 is the path of the directory which is exported on the server. If server's exports 
 file contains the line: \fI/exports/alice alice ()\fR then \fIremote_path\fR must 
