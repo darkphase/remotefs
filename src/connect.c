@@ -112,8 +112,8 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 			FD_ZERO(&write_set);
 			FD_SET(sock, &write_set);
 
-			struct timeval timeout = { DEFAULT_CONNECT_TIMEOUT / 1000000,
-				DEFAULT_CONNECT_TIMEOUT % 1000000 };
+			struct timeval timeout = { info->connect_timeout / 1000000,
+				info->connect_timeout % 1000000 };
 
 			DEBUG("%s\n", "selecting...");
 

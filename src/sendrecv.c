@@ -161,8 +161,8 @@ static inline int is_mark(int socket, rfs_sendrecv_info_t *info)
 	FD_ZERO(&read_set);
 	FD_SET(socket, &read_set);
 
-	struct timeval timeout = { DEFAULT_RECV_TIMEOUT / 1000000,
-		DEFAULT_RECV_TIMEOUT % 1000000 };
+	struct timeval timeout = { info->recv_timeout / 1000000,
+		info->recv_timeout % 1000000 };
 
 	DEBUG("%s\n", "selecting...");
 

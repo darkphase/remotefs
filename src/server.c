@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -40,27 +40,27 @@ static int handle_connection(struct rfsd_instance *instance, int client_socket, 
 	instance->sendrecv.connection_lost = 0;
 
 	srand(time(NULL));
-	
+
 	server_keep_alive_update(instance);
 	alarm(server_keep_alive_period());
-	
+
 	struct rfs_command current_command = { 0 };
-	
+
 	while (1)
-	{	
+	{
 		rfs_receive_cmd(&instance->sendrecv, &current_command);
-		
+
 		if (instance->sendrecv.connection_lost != 0)
 		{
 			server_close_connection(instance);
 			return 1;
 		}
-		
+
 		if (handle_command(instance, (struct sockaddr_in*)client_addr, &current_command) == -1)
 		{
 			DEBUG("command executed with internal error: %s\n", describe_command(current_command.command));
 			server_close_connection(instance);
-			
+
 			return 1;
 		}
 	}
@@ -73,30 +73,30 @@ void server_close_connection(struct rfsd_instance *instance)
 		shutdown(instance->sendrecv.socket, SHUT_RDWR);
 		close(instance->sendrecv.socket);
 	}
-	
+
 	cleanup_files(&instance->cleanup.open_files);
 
 	if (instance->server.auth_user != NULL)
 	{
 		free(instance->server.auth_user);
 	}
-	
+
 	if (instance->server.auth_passwd != NULL)
 	{
 		free(instance->server.auth_passwd);
 	}
-	
+
 	release_passwords(&instance->passwd.auths);
 	release_exports(&instance->exports.list);
-	
+
 	if (instance->server.mounted_export != NULL)
 	{
 		free(instance->server.mounted_export);
 	}
-	
+
 	destroy_uids_lookup(&instance->id_lookup.uids);
 	destroy_gids_lookup(&instance->id_lookup.gids);
-	
+
 #ifdef RFS_DEBUG
 	dump_sendrecv_stats(&instance->sendrecv);
 #endif
@@ -109,15 +109,15 @@ static int create_pidfile(const char *pidfile)
 	{
 		return -1;
 	}
-	
+
 	if (fprintf(fp, "%lu", (long unsigned)getpid()) < 1)
 	{
 		fclose(fp);
 		return -1;
 	}
-	
+
 	fclose(fp);
-	
+
 	return 0;
 }
 
@@ -135,7 +135,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 			ERROR("Too many addresses to listen: max is %d\n", max_listen_number);
 			return -1;
 		}
-		
+
 		const char *address = (const char *)address_item->data;
 		int listen_family = -1;
 
@@ -148,7 +148,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 		addr6.sin6_family = AF_INET6;
 		addr6.sin6_port = htons(port);
 #endif
-		
+
 		errno = 0;
 		if (inet_pton(AF_INET, address, &(addr.sin_addr)) == 1)
 		{
@@ -160,7 +160,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 			listen_family = AF_INET6;
 		}
 #endif
-		
+
 		if (listen_family == -1)
 		{
 			ERROR("Invalid address for listening to: %s\n", address);
@@ -182,7 +182,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 #endif
 
 		if (listen_socket == -1)
-		{	
+		{
 			ERROR("Error creating listen socket for %s: %s\n", address, strerror(errno));
 			return 1;
 		}
@@ -221,7 +221,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 		}
 #ifdef WITH_IPV6
 		else if (listen_family == AF_INET6)
-		{			
+		{
 			errno = 0;
 			if (bind(listen_socket, (struct sockaddr*)&addr6, sizeof(addr6)) != 0)
 			{
@@ -242,7 +242,7 @@ static int start_listening(struct rfs_list *addresses, int port, int *listen_soc
 #else
 		DEBUG("listening to IPv4 interface: %s (%d)\n", address, port);
 #endif
-			
+
 		address_item = address_item->next;
 	}
 
@@ -260,7 +260,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 		{
 			FD_SET(listen_sockets[i], &listen_set);
 		}
-		
+
 		errno = 0;
 		int retval = select(max_socket_number + 1, &listen_set, NULL, NULL, NULL);
 
@@ -274,7 +274,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 			DEBUG("select retval: %d: %s\n", retval, strerror(errno));
 			return -1;
 		}
-			
+
 		DEBUG("select retval: %d\n", retval);
 
 		if (retval < 1)
@@ -287,7 +287,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 			if (FD_ISSET(listen_sockets[i], &listen_set))
 			{
 				int listen_socket = listen_sockets[i];
-				
+
 				struct sockaddr_storage client_addr;
 				socklen_t addr_len = sizeof(client_addr);
 
@@ -296,7 +296,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 				{
 					continue;
 				}
-		
+
 #ifdef RFS_DEBUG
 				char straddr[256] = { 0 };
 #ifdef WITH_IPV6
@@ -312,7 +312,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 
 				DEBUG("incoming connection from %s\n", straddr);
 #endif /* RFS_DEBUG */
-				
+
 				if (fork() == 0) /* child */
 				{
 					unsigned j = 0; for (; j < listen_number; ++j)
@@ -330,7 +330,7 @@ static int start_accepting(struct rfsd_instance *instance, int *listen_sockets, 
 				else
 				{
 					close(client_socket);
-				}		
+				}
 			}
 		}
 	}
@@ -355,16 +355,19 @@ int start_server(struct rfsd_instance *instance, unsigned daemonize)
 	}
 
 	int max_socket_number = start_listening(
-		instance->config.listen_addresses, 
-		instance->config.listen_port, 
-		listen_sockets, 
+		instance->config.listen_addresses,
+		instance->config.listen_port,
+		listen_sockets,
 		&listen_number);
-	
+
 	if (max_socket_number < 0)
 	{
 		return -1;
 	}
-	
+
+	DEBUG("send timeout: %ld (usecs)\n", instance->sendrecv.send_timeout);
+	DEBUG("recv timeout: %ld (usecs)\n", instance->sendrecv.recv_timeout);
+
 	/* the server should not apply it own mask while mknod
 	file or directory creation is called. These settings
 	are allready done by the client */
@@ -375,7 +378,7 @@ int start_server(struct rfsd_instance *instance, unsigned daemonize)
 	{
 		return 1;
 	}
-	
+
 	if (daemonize)
 	{
 		fclose(stdin);
@@ -383,7 +386,7 @@ int start_server(struct rfsd_instance *instance, unsigned daemonize)
 		fclose(stderr);
 	}
 #endif
-	
+
 	return start_accepting(instance, listen_sockets, listen_number, max_socket_number);
 }
 
@@ -413,6 +416,6 @@ void check_keep_alive(struct rfsd_instance *instance)
 		server_close_connection(instance);
 		exit(1);
 	}
-	
+
 	alarm(server_keep_alive_period());
 }

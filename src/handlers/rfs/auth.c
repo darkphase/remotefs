@@ -1,7 +1,7 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
@@ -32,34 +32,34 @@ int _handle_auth(struct rfsd_instance *instance, const struct sockaddr_in *clien
 		free(buffer);
 		return -1;
 	}
-	
+
 	uint32_t passwd_len = 0;
-	
-	const char *passwd = 
+
+	const char *passwd =
 	unpack_32(&passwd_len, buffer);
 	const char *user = passwd + passwd_len;
-	
-	if (strlen(user) + 1 
-	+ sizeof(passwd_len) 
+
+	if (strlen(user) + 1
+	+ sizeof(passwd_len)
 	+ strlen(passwd) + 1 != cmd->data_len)
 	{
 		free(buffer);
 		return reject_request(instance, cmd, EINVAL) == 0 ? 1 : -1;
 	}
-		
-	DEBUG("user: %s, passwd: %s, salt: %s\n", user, passwd, instance->server.auth_salt);
-	
+
+	DEBUG("user: %s, passwd: %s, salt: %s\n", user, "*****", instance->server.auth_salt);
+
 	instance->server.auth_user = strdup(user);
 	instance->server.auth_passwd = strdup(passwd);
-	
+
 	free(buffer);
-	
+
 	struct rfs_answer ans = { cmd_auth, 0, 0, 0 };
-	
+
 	if (rfs_send_answer(&instance->sendrecv, &ans) == -1)
 	{
 		return -1;
 	}
-	
+
 	return 0;
 }

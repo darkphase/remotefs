@@ -63,7 +63,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	}
 
 	/* no handling of error - it is supposedly done in rfs_recv() and rfs_send() */
-	int setrecvt_ret = setup_socket_recv_timeout(sock, DEFAULT_RECV_TIMEOUT);
+	int setrecvt_ret = setup_socket_recv_timeout(sock, instance->sendrecv.recv_timeout);
 	if (setrecvt_ret != 0)
 	{
 		if (show_errors != 0)
@@ -72,7 +72,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 		}
 	}
 
-	int setsendt_ret = setup_socket_send_timeout(sock, DEFAULT_SEND_TIMEOUT);
+	int setsendt_ret = setup_socket_send_timeout(sock, instance->sendrecv.send_timeout);
 	if (setsendt_ret != 0)
 	{
 		if (show_errors != 0)

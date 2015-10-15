@@ -24,6 +24,9 @@ typedef struct
 	int socket;
 	unsigned connection_lost;
 	unsigned oob_received; /* used by client only */
+	long connect_timeout;
+	long recv_timeout;
+	long send_timeout;
 #ifdef RFS_DEBUG
 	unsigned long bytes_sent;
 	unsigned long bytes_recv;

@@ -6,13 +6,14 @@ This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
-#include <unistd.h>
+#include <assert.h>
 #include <errno.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "exports.h"
@@ -35,6 +36,8 @@ DEFINE_RFSD_INSTANCE(rfsd_instance);
 
 static void usage(const char *app_name)
 {
+	assert(DEFAULT_SEND_TIMEOUT == DEFAULT_RECV_TIMEOUT);
+
 	printf("usage: %s [options]\n"
 	"\n"
 	"Options:\n"
@@ -47,19 +50,20 @@ static void usage(const char *app_name)
 	"-f                  stay foreground\n"
 	"-e [path]           exports file\n"
 	"-s [path]           passwd file\n"
+	"-t [timeout]        timeouts for send-recv operations on sockets in seconds (default: %d)\n"
 	"-q                  quite mode - supress warnings\n"
 	"                    (and don't treat them as errors)\n"
 	"\n"
-	, app_name);
+	, app_name, DEFAULT_SEND_TIMEOUT / 1000000);
 }
 
 static int parse_opts(int argc, char **argv)
 {
 	int opt;
 #ifdef WITH_IPV6
-	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:f46")) != -1)
+	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:t:f46")) != -1)
 #else
-	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:f")) != -1)
+	while ((opt = getopt(argc, argv, "vhqa:p:u:r:e:s:t:f")) != -1)
 #endif
 	{
 		switch (opt)
@@ -108,6 +112,16 @@ static int parse_opts(int argc, char **argv)
 			case 'f':
 				daemonize = 0;
 				break;
+			case 't':
+			{
+				int timeouts = atoi(optarg);
+				if (timeouts > 0)
+				{
+					rfsd_instance.sendrecv.recv_timeout = timeouts * 1000000; /* in useconds */
+					rfsd_instance.sendrecv.send_timeout = timeouts * 1000000;
+				}
+				break;
+			}
 #ifdef WITH_IPV6
 			case '4':
 				WARN("%s\n", "WARNING: -4 option is deprecated. Use -a with an IPv4 address instead.");

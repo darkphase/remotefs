@@ -106,6 +106,8 @@ typedef struct
 	unsigned transform_symlinks;
 	unsigned allow_other;
 	unsigned set_fsname;
+	unsigned timeouts;
+	unsigned connect_timeout;
 #ifdef WITH_IPV6
 	unsigned force_ipv4;
 	unsigned force_ipv6;

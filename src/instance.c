@@ -14,6 +14,9 @@ void init_sendrecv(rfs_sendrecv_info_t *sendrecv)
 	sendrecv->socket = -1;
 	sendrecv->oob_received = 0;
 	sendrecv->connection_lost = 1; /* yes, it should be set to 0 on connect or accept */
+	sendrecv->connect_timeout = DEFAULT_CONNECT_TIMEOUT;
+	sendrecv->recv_timeout = DEFAULT_RECV_TIMEOUT;
+	sendrecv->send_timeout = DEFAULT_SEND_TIMEOUT;
 #ifdef RFS_DEBUG
 	sendrecv->bytes_sent = 0;
 	sendrecv->bytes_recv = 0;
