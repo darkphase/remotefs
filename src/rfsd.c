@@ -50,7 +50,7 @@ static void usage(const char *app_name)
 	"-f                  stay foreground\n"
 	"-e [path]           exports file\n"
 	"-s [path]           passwd file\n"
-	"-t [timeout]        timeouts for send-recv operations on sockets in seconds (default: %d)\n"
+	"-t [timeout]        timeouts for send-recv operations on sockets in seconds (default: %d; disable: 0)\n"
 	"-q                  quite mode - supress warnings\n"
 	"                    (and don't treat them as errors)\n"
 	"\n"

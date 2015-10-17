@@ -93,8 +93,8 @@ static void usage(const char *program)
 	"    -o username=name       auth username\n"
 	"    -o password=filename   filename with password for auth\n"
 	"    -o transform_symlinks  transform absolute symlinks to relative\n"
-	"    -o timeouts=timeout    timeouts for send-recv operations on sockets in seconds (default: %d) \n"
-	"    -o connect_timeout=timeout timeout for connecting to remote host in seconds (default: %d) \n"
+	"    -o timeouts=timeout    timeouts for send-recv operations on sockets in seconds (default: %d; disable: 0) \n"
+	"    -o connect_timeout=timeout timeout for connecting to remote host in seconds (default: %d; disable: 0) \n"
 	"\n"
 	"\n",
 	program, DEFAULT_SEND_TIMEOUT / 1000000, DEFAULT_CONNECT_TIMEOUT / 1000000);
