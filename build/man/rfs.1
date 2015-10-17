@@ -49,12 +49,14 @@ Port which the server is listening to
 .PP
 \fB\-o\fR timeouts=timeout
 .RS 8
-Timeouts for send-recv operations on sockets in seconds
+Timeouts for send-recv operations on sockets in seconds. Setting this option
+to 0 will disable timeouts for send-recv operations (block infinitely).
 .RE
 .PP
 \fB\-o\fR connect_timeout=timeout
 .RS 8
-Timeout for connecting to remote host in seconds
+Timeout for connecting to remote host in seconds. Setting this option to 0 will
+disable connect timeout.
 .RE
 .PP
 \fIhost\fR can be either server's host name or its IP address. \fIremote_path\fR 
