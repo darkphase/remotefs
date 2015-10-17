@@ -101,8 +101,8 @@ typedef struct
 	char *auth_user;
 	char *auth_passwd_file;
 	char *auth_passwd;
-	unsigned int server_port;
-	unsigned int quiet;
+	unsigned server_port;
+	unsigned quiet;
 	unsigned transform_symlinks;
 	unsigned allow_other;
 	unsigned set_fsname;

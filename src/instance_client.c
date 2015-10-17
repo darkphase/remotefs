@@ -78,6 +78,8 @@ static void init_rfs_config(struct rfs_instance *instance)
 	instance->config.transform_symlinks = 0;
 	instance->config.allow_other = 0;
 	instance->config.set_fsname = 1;
+	instance->config.timeouts = (DEFAULT_SEND_TIMEOUT / 1000000);
+	instance->config.connect_timeout = (DEFAULT_CONNECT_TIMEOUT / 1000000);
 }
 
 void init_rfs_instance(struct rfs_instance *instance)

@@ -59,8 +59,8 @@ struct fuse_opt rfs_opts[] =
 	RFS_OPT("password=%s", auth_passwd_file, 0),
 	RFS_OPT("port=%u", server_port, DEFAULT_SERVER_PORT),
 	RFS_OPT("transform_symlinks", transform_symlinks, 1),
-	RFS_OPT("timeouts=%d", timeouts, 0),
-	RFS_OPT("connect_timeout=%d", connect_timeout, 0),
+	RFS_OPT("timeouts=%u", timeouts, (DEFAULT_SEND_TIMEOUT / 1000000)),
+	RFS_OPT("connect_timeout=%u", connect_timeout, (DEFAULT_CONNECT_TIMEOUT / 1000000)),
 
 	FUSE_OPT_END
 };
@@ -78,22 +78,22 @@ static void usage(const char *program)
 	"\n"
 	"\n"
 	"general options:\n"
-	"    -o opt,[opt...]            mount options\n"
-	"    -h   --help                print help\n"
-	"    -v                         print version and quit\n"
+	"    -o opt,[opt...]        mount options\n"
+	"    -h   --help            print help\n"
+	"    -v                     print version and quit\n"
 	"\n"
 	"RFS options:\n"
-	"    -q                         suppress warnings\n"
-	"    -4                         force use of IPv4\n"
-	"    -6                         force use of IPv6\n"
+	"    -q                     suppress warnings\n"
+	"    -4                     force use of IPv4\n"
+	"    -6                     force use of IPv6\n"
 #ifdef WITH_EXPORTS_LIST
-	"    -l                         list exports of specified host (and exit)\n"
+	"    -l                     list exports of specified host (and exit)\n"
 #endif
-	"    -o port=server_port        port which the server is listening to\n"
-	"    -o username=name           auth username\n"
-	"    -o password=filename       filename with password for auth\n"
-	"    -o transform_symlinks      transform absolute symlinks to relative\n"
-	"    -o timeouts=timeout        timeouts for send-recv operations on sockets in seconds (default: %d) \n"
+	"    -o port=server_port    port which the server is listening to\n"
+	"    -o username=name       auth username\n"
+	"    -o password=filename   filename with password for auth\n"
+	"    -o transform_symlinks  transform absolute symlinks to relative\n"
+	"    -o timeouts=timeout    timeouts for send-recv operations on sockets in seconds (default: %d) \n"
 	"    -o connect_timeout=timeout timeout for connecting to remote host in seconds (default: %d) \n"
 	"\n"
 	"\n",
@@ -346,12 +346,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (rfs_instance.config.connect_timeout > 0)
+	if (rfs_instance.config.connect_timeout >= 0)
 	{
 		rfs_instance.sendrecv.connect_timeout = rfs_instance.config.connect_timeout * 1000000;
 	}
 
-	if (rfs_instance.config.timeouts > 0)
+	if (rfs_instance.config.timeouts >= 0)
 	{
 		rfs_instance.sendrecv.send_timeout = rfs_instance.config.timeouts * 1000000;
 		rfs_instance.sendrecv.recv_timeout = rfs_instance.config.timeouts * 1000000;

@@ -166,7 +166,7 @@ static inline int is_mark(int socket, rfs_sendrecv_info_t *info)
 
 	DEBUG("%s\n", "selecting...");
 
-	int select_ret = select(socket + 1, &read_set, NULL, NULL, &timeout);
+	int select_ret = select(socket + 1, &read_set, NULL, NULL, info->recv_timeout > 0 ? &timeout : 0);
 
 	if (select_ret < 0)
 	{

@@ -117,7 +117,7 @@ int rfs_connect(rfs_sendrecv_info_t *info, const char *host, unsigned port, unsi
 
 			DEBUG("%s\n", "selecting...");
 
-			if (select(sock + 1, NULL, &write_set, NULL, &timeout) < 0)
+			if (select(sock + 1, NULL, &write_set, NULL, info->connect_timeout > 0 ? &timeout : 0) < 0)
 			{
 				int saved_errno = errno;
 				setup_socket_blocking(sock);

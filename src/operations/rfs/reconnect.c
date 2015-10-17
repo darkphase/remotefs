@@ -63,21 +63,27 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	}
 
 	/* no handling of error - it is supposedly done in rfs_recv() and rfs_send() */
-	int setrecvt_ret = setup_socket_recv_timeout(sock, instance->sendrecv.recv_timeout);
-	if (setrecvt_ret != 0)
+	if (instance->sendrecv.recv_timeout > 0)
 	{
-		if (show_errors != 0)
+		int setrecvt_ret = setup_socket_recv_timeout(sock, instance->sendrecv.recv_timeout);
+		if (setrecvt_ret != 0)
 		{
-			WARN("Error setting socket recv timeout: %s (%d)\n", strerror(-setrecvt_ret), -setrecvt_ret);
+			if (show_errors != 0)
+			{
+				WARN("Error setting socket recv timeout: %s (%d)\n", strerror(-setrecvt_ret), -setrecvt_ret);
+			}
 		}
 	}
 
-	int setsendt_ret = setup_socket_send_timeout(sock, instance->sendrecv.send_timeout);
-	if (setsendt_ret != 0)
+	if (instance->sendrecv.send_timeout > 0)
 	{
-		if (show_errors != 0)
+		int setsendt_ret = setup_socket_send_timeout(sock, instance->sendrecv.send_timeout);
+		if (setsendt_ret != 0)
 		{
-			WARN("Error setting socket send timeout: %s (%d)\n", strerror(-setsendt_ret), -setsendt_ret);
+			if (show_errors != 0)
+			{
+				WARN("Error setting socket send timeout: %s (%d)\n", strerror(-setsendt_ret), -setsendt_ret);
+			}
 		}
 	}
 
@@ -99,7 +105,7 @@ int rfs_reconnect(struct rfs_instance *instance, unsigned int show_errors, unsig
 	if (instance->config.auth_user != NULL
 	&& instance->config.auth_passwd != NULL)
 	{
-		DEBUG("authenticating as %s with pwd %s\n", instance->config.auth_user, instance->config.auth_passwd);
+		DEBUG("authenticating as %s with pwd %s\n", instance->config.auth_user, "*****");
 
 		int req_ret = rfs_request_salt(instance);
 		if (req_ret != 0)
