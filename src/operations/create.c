@@ -1,12 +1,13 @@
 /*
 remotefs file system
 See the file AUTHORS for copyright information.
-	
+
 This program can be distributed under the terms of the GNU GPL.
 See the file LICENSE.
 */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,6 +16,7 @@ See the file LICENSE.
 #include "../compat.h"
 #include "../config.h"
 #include "../instance_client.h"
+#include "../resume/resume.h"
 #include "../sendrecv_client.h"
 #include "utils.h"
 
@@ -40,14 +42,14 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 
 	char *buffer = malloc(cmd.data_len);
 
-	pack(path, path_len, 
-	pack_16(&fi_flags, 
+	pack(path, path_len,
+	pack_16(&fi_flags,
 	pack_32(&fmode, buffer
 	)));
 
 	send_token_t token = { 0 };
-	if (do_send(&instance->sendrecv, 
-		queue_data(buffer, overall_size, 
+	if (do_send(&instance->sendrecv,
+		queue_data(buffer, overall_size,
 		queue_cmd(&cmd, &token))) < 0)
 	{
 		free(buffer);
@@ -83,6 +85,10 @@ int _rfs_create(struct rfs_instance *instance, const char *path, mode_t mode, in
 		}
 
 		*desc = ntohll(handle);
+
+		/* add file to open list, but without O_CREAT flag to just reopen file
+		 * on connection resume */
+		resume_add_file_to_open_list(&instance->resume.open_files, path, (flags & ~O_CREAT), *desc);
 	}
 
 	return (ans.ret == 0 ? 0 : -ans.ret_errno);
